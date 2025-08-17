@@ -67,16 +67,28 @@ pub fn main() !void {
     const db = try open_database(gpa_alloc, arena_alloc, db_path);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
-    if (app_infos.len != 0) {
-        const app_info_json = app_infos[app_infos.len - 1].payload;
-        const vk_app_info = try parsing.parse_application_info(
-            arena_alloc,
-            scratch_alloc,
-            app_info_json,
-        );
-        log.info(@src(), "app name {s}", .{vk_app_info.pApplicationName});
-        log.info(@src(), "engine name {s}", .{vk_app_info.pEngineName});
-    }
+    const app_info_json = app_infos[0].payload;
+    const parsed_application_info = try parsing.parse_application_info(
+        arena_alloc,
+        scratch_alloc,
+        app_info_json,
+    );
+
+    try vk.check_result(vk.volkInitialize());
+    const vk_instance = try create_vk_instance(
+        arena_alloc,
+        parsed_application_info.application_info,
+    );
+    vk.volkLoadInstance(vk_instance);
+
+    const physical_device = try select_physical_device(arena_alloc, vk_instance);
+    const vk_device = try create_vk_device(
+        arena_alloc,
+        &physical_device,
+        parsed_application_info.device_features2,
+    );
+    _ = vk_device;
+
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
     for (samplers) |sampler| {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
@@ -97,25 +109,6 @@ pub fn main() !void {
         );
         parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
     }
-
-    // try vk.check_result(vk.volkInitialize());
-    // const api_version = vk.volkGetInstanceVersion();
-    // log.info(
-    //     @src(),
-    //     "Vulkan version: {d}.{d}.{d}",
-    //     .{
-    //         vk.VK_API_VERSION_MAJOR(api_version),
-    //         vk.VK_API_VERSION_MINOR(api_version),
-    //         vk.VK_API_VERSION_PATCH(api_version),
-    //     },
-    // );
-    //
-    // const vk_instance = try create_vk_instance(arena_alloc, api_version);
-    // vk.volkLoadInstance(vk_instance);
-    //
-    // const physical_device = try select_physical_device(arena_alloc, vk_instance);
-    // const vk_device = try create_vk_device(arena_alloc, &physical_device);
-    // _ = vk_device;
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -404,7 +397,36 @@ pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayer
     return layers;
 }
 
-pub fn create_vk_instance(arena_alloc: Allocator, api_version: u32) !vk.VkInstance {
+pub fn create_vk_instance(
+    arena_alloc: Allocator,
+    requested_app_info: ?*const vk.VkApplicationInfo,
+) !vk.VkInstance {
+    const api_version = vk.volkGetInstanceVersion();
+    log.info(
+        @src(),
+        "Supported vulkan version: {d}.{d}.{d}",
+        .{
+            vk.VK_API_VERSION_MAJOR(api_version),
+            vk.VK_API_VERSION_MINOR(api_version),
+            vk.VK_API_VERSION_PATCH(api_version),
+        },
+    );
+    if (requested_app_info) |app_info| {
+        log.info(
+            @src(),
+            "Requested app info vulkan version: {d}.{d}.{d}",
+            .{
+                vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
+                vk.VK_API_VERSION_MINOR(app_info.apiVersion),
+                vk.VK_API_VERSION_PATCH(app_info.apiVersion),
+            },
+        );
+        if (api_version < app_info.apiVersion) {
+            log.err(@src(), "Requested vulkan api version is above the supported version", .{});
+            return error.UnsupportedVulkanApiVersion;
+        }
+    }
+
     const extensions = try get_instance_extensions(arena_alloc);
     if (!contains_all_extensions("Instance", extensions, &VK_ADDITIONAL_EXTENSIONS_NAMES))
         return error.AdditionalExtensionsNotFound;
@@ -417,18 +439,21 @@ pub fn create_vk_instance(arena_alloc: Allocator, api_version: u32) !vk.VkInstan
     if (!contains_all_layers("Instance", layers, &VK_VALIDATION_LAYERS_NAMES))
         return error.InstanceValidationLayersNotFound;
 
-    const app_info = vk.VkApplicationInfo{
-        .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName = "glacier",
-        .applicationVersion = vk.VK_MAKE_VERSION(0, 0, 1),
-        .pEngineName = "glacier",
-        .engineVersion = vk.VK_MAKE_VERSION(0, 0, 1),
-        .apiVersion = api_version,
-        .pNext = null,
-    };
+    const app_info = if (requested_app_info) |app_info|
+        app_info
+    else
+        &vk.VkApplicationInfo{
+            .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO,
+            .pApplicationName = "glacier",
+            .applicationVersion = vk.VK_MAKE_VERSION(0, 0, 1),
+            .pEngineName = "glacier",
+            .engineVersion = vk.VK_MAKE_VERSION(0, 0, 1),
+            .apiVersion = api_version,
+            .pNext = null,
+        };
     const instance_create_info = vk.VkInstanceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &app_info,
+        .pApplicationInfo = app_info,
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
         .ppEnabledLayerNames = @ptrCast(&VK_VALIDATION_LAYERS_NAMES),
@@ -640,6 +665,7 @@ pub fn select_physical_device(
 pub fn create_vk_device(
     arena_alloc: Allocator,
     physical_device: *const PhysicalDevice,
+    device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
 ) !vk.VkDevice {
     const queue_priority: f32 = 1.0;
     const queue_create_info = vk.VkDeviceQueueCreateInfo{
@@ -669,6 +695,9 @@ pub fn create_vk_device(
         all_extension_names[i] = &e.extensionName;
     if (physical_device.has_validation_cache)
         all_extension_names[all_extensions_len - 1] = vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
+
+    // TODO filter feateres_2 and extension_names based on the device_features2
+    _ = device_features2;
 
     const create_info = vk.VkDeviceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,

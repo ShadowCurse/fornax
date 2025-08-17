@@ -339,11 +339,15 @@ pub fn parse_pnext_chain(
     return first_in_chain;
 }
 
+pub const ParsedApplicationInfo = struct {
+    application_info: *const vk.VkApplicationInfo,
+    device_features2: *const vk.VkPhysicalDeviceFeatures2,
+};
 pub fn parse_application_info(
     arena_alloc: Allocator,
     scratch_alloc: Allocator,
     json_str: []const u8,
-) !*const vk.VkApplicationInfo {
+) !ParsedApplicationInfo {
     const Inner = struct {
         fn parse_app_info(
             aa: Allocator,
@@ -435,10 +439,12 @@ pub fn parse_application_info(
                 &scanner,
                 vk_physical_device_features2,
             );
-            vk_application_info.pNext = @ptrCast(vk_physical_device_features2);
         }
     }
-    return vk_application_info;
+    return .{
+        .application_info = vk_application_info,
+        .device_features2 = vk_physical_device_features2,
+    };
 }
 
 test "parse_application_info" {
