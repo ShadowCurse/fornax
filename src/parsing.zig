@@ -340,6 +340,7 @@ pub fn parse_pnext_chain(
 }
 
 pub const ParsedApplicationInfo = struct {
+    version: u32,
     application_info: *const vk.VkApplicationInfo,
     device_features2: *const vk.VkPhysicalDeviceFeatures2,
 };
@@ -421,15 +422,16 @@ pub fn parse_application_info(
     const vk_physical_device_features2 = try arena_alloc.create(vk.VkPhysicalDeviceFeatures2);
     vk_physical_device_features2.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
 
+    var result: ParsedApplicationInfo = .{
+        .version = 0,
+        .application_info = vk_application_info,
+        .device_features2 = vk_physical_device_features2,
+    };
+
     while (try scanner_object_next_field(&scanner)) |s| {
         if (std.mem.eql(u8, s, "version")) {
-            switch (try scanner.next()) {
-                .number => |n| {
-                    const version = try std.fmt.parseInt(u32, n, 10);
-                    log.info(@src(), "version: {d}", .{version});
-                },
-                else => return error.InvalidJson,
-            }
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "applicationInfo")) {
             try Inner.parse_app_info(arena_alloc, &scanner, vk_application_info);
         } else if (std.mem.eql(u8, s, "physicalDeviceFeatures")) {
@@ -441,10 +443,7 @@ pub fn parse_application_info(
             );
         }
     }
-    return .{
-        .application_info = vk_application_info,
-        .device_features2 = vk_physical_device_features2,
-    };
+    return result;
 }
 
 test "parse_application_info" {
@@ -491,6 +490,7 @@ test "parse_application_info" {
 }
 
 pub const ParsedSampler = struct {
+    version: u32,
     hash: u64,
     sampler_create_info: *const vk.VkSamplerCreateInfo,
 };
@@ -503,6 +503,7 @@ pub fn parse_sampler(
     vk_sampler_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
     var result: ParsedSampler = .{
+        .version = 0,
         .hash = 0,
         .sampler_create_info = vk_sampler_create_info,
     };
@@ -510,14 +511,11 @@ pub fn parse_sampler(
     while (try scanner_object_next_field(&scanner)) |s| {
         if (std.mem.eql(u8, s, "version")) {
             const v = try scanner_next_number(&scanner);
-            const version = try std.fmt.parseInt(u32, v, 10);
-            log.info(@src(), "version: {d}", .{version});
+            result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "samplers")) {
             if (try scanner.next() != .object_begin) return error.InvalidJson;
             const ss = try scanner_next_string(&scanner);
-            const hash = try std.fmt.parseInt(u64, ss, 16);
-            log.info(@src(), "hash: 0x{x}", .{hash});
-            result.hash = hash;
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
             if (try scanner.next() != .object_begin) return error.InvalidJson;
             try parse_type(
                 &.{
@@ -647,6 +645,7 @@ test "parse_sampler" {
 }
 
 pub const ParsedDescriptorSetLayout = struct {
+    version: u32,
     hash: u64,
     descriptor_set_layout_create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 };
@@ -728,6 +727,7 @@ pub fn parse_descriptor_set_layout(
         .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
 
     var result: ParsedDescriptorSetLayout = .{
+        .version = 0,
         .hash = 0,
         .descriptor_set_layout_create_info = vk_descriptor_set_layout_create_info,
     };
@@ -737,14 +737,11 @@ pub fn parse_descriptor_set_layout(
             .string => |s| {
                 if (std.mem.eql(u8, s, "version")) {
                     const v = try scanner_next_number(&scanner);
-                    const version = try std.fmt.parseInt(u32, v, 10);
-                    log.info(@src(), "version: {d}", .{version});
+                    result.version = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "setLayouts")) {
                     if (try scanner.next() != .object_begin) return error.InvalidJson;
                     const ss = try scanner_next_string(&scanner);
-                    const hash = try std.fmt.parseInt(u64, ss, 16);
-                    log.info(@src(), "hash: 0x{x}", .{hash});
-                    result.hash = hash;
+                    result.hash = try std.fmt.parseInt(u64, ss, 16);
                     if (try scanner.next() != .object_begin) return error.InvalidJson;
                     try Inner.parse_layout(
                         arena_alloc,

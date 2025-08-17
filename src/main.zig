@@ -73,6 +73,8 @@ pub fn main() !void {
         scratch_alloc,
         app_info_json,
     );
+    if (parsed_application_info.version != 6)
+        return error.ApllicationInfoVersionMissmatch;
 
     try vk.check_result(vk.volkInitialize());
     const vk_instance = try create_vk_instance(
@@ -95,20 +97,28 @@ pub fn main() !void {
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
         log.info(@src(), "Parsed sampler create info:", .{});
         parsing.print_vk_struct(parsed_sampler.sampler_create_info);
+        if (parsed_sampler.version != 6)
+            return error.SamplerVersionMissmatch;
+        if (parsed_sampler.hash != try e.get_value())
+            return error.SamplerHashMissmatch;
         sampler.object = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
     }
 
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
     for (descriptor_set_layouts) |dsl| {
         const e = Database.Entry.from_ptr(dsl.entry_ptr);
-        log.info(@src(), "Descriptor set layout entry: {any}", .{e});
-        log.info(@src(), "Descriptor set layout payload: {s}", .{dsl.payload});
+        log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
             arena_alloc,
             scratch_alloc,
             dsl.payload,
         );
+        log.info(@src(), "Parsed sampler create info:", .{});
         parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
+        if (parsed_descriptro_set_layout.version != 6)
+            return error.DescriptorSetLayoutVersionMissmatch;
+        if (parsed_descriptro_set_layout.hash != try e.get_value())
+            return error.DescriptorSetLayoutHashMissmatch;
     }
 }
 
