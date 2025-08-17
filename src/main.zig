@@ -112,8 +112,9 @@ pub fn main() !void {
             arena_alloc,
             scratch_alloc,
             dsl.payload,
+            &db,
         );
-        log.info(@src(), "Parsed sampler create info:", .{});
+        log.info(@src(), "Parsed descriptor set layout create info:", .{});
         parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
         if (parsed_descriptro_set_layout.version != 6)
             return error.DescriptorSetLayoutVersionMissmatch;

@@ -1,8 +1,10 @@
 const std = @import("std");
 const vk = @import("volk.zig");
 const log = @import("log.zig");
+const root = @import("main.zig");
 
 const Allocator = std.mem.Allocator;
+const Database = root.Database;
 
 pub fn print_vk_struct(@"struct": anytype) void {
     const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
@@ -21,6 +23,14 @@ pub fn print_vk_struct(@"struct": anytype) void {
             },
             ?*anyopaque, ?*const anyopaque => {
                 log.info(@src(), "\t{s}: {?}", .{ field.name, @field(@"struct", field.name) });
+            },
+            [*c]const vk.VkDescriptorSetLayoutBinding => {
+                const len = @field(@"struct", "bindingCount");
+                var bindings: []const vk.VkDescriptorSetLayoutBinding = undefined;
+                bindings.ptr = @field(@"struct", field.name);
+                bindings.len = len;
+                for (bindings) |*binding|
+                    print_vk_struct(binding);
             },
             else => log.info(
                 @src(),
@@ -485,8 +495,9 @@ test "parse_application_info" {
     var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const scratch_alloc = scratch_arena.allocator();
 
-    const vk_app_info = try parse_application_info(arena_alloc, scratch_alloc, json);
-    print_vk_chain(vk_app_info);
+    const parsed_application_info = try parse_application_info(arena_alloc, scratch_alloc, json);
+    print_vk_chain(parsed_application_info.application_info);
+    print_vk_chain(parsed_application_info.device_features2);
 }
 
 pub const ParsedSampler = struct {
@@ -653,6 +664,7 @@ pub fn parse_descriptor_set_layout(
     arena_alloc: Allocator,
     scratch_alloc: Allocator,
     json_str: []const u8,
+    database: *const Database,
 ) !ParsedDescriptorSetLayout {
     const Inner = struct {
         fn parse_layout(
@@ -660,13 +672,14 @@ pub fn parse_descriptor_set_layout(
             sa: Allocator,
             scanner: *std.json.Scanner,
             vk_descriptor_set_layout_create_info: *vk.VkDescriptorSetLayoutCreateInfo,
+            db: *const Database,
         ) !void {
             while (try scanner_object_next_field(scanner)) |s| {
                 if (std.mem.eql(u8, s, "flags")) {
                     const v = try scanner_next_number(scanner);
                     vk_descriptor_set_layout_create_info.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "bindings")) {
-                    const bindings = try parse_bindings(aa, sa, scanner);
+                    const bindings = try parse_bindings(aa, sa, scanner, db);
                     vk_descriptor_set_layout_create_info.pBindings =
                         @ptrCast(bindings.ptr);
                     vk_descriptor_set_layout_create_info.bindingCount =
@@ -684,37 +697,44 @@ pub fn parse_descriptor_set_layout(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
+            db: *const Database,
         ) ![]vk.VkDescriptorSetLayoutBinding {
             var tmp_bindings: std.ArrayListUnmanaged(vk.VkDescriptorSetLayoutBinding) = .empty;
             while (try scanner_array_next(scanner)) {
                 try tmp_bindings.append(sa, .{});
-                try parse_type(
-                    &.{
-                        .{
-                            .json_name = "descriptorType",
-                            .field_name = "descriptorType",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "descriptorCount",
-                            .field_name = "descriptorCount",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "stageFlags",
-                            .field_name = "stageFlags",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "binding",
-                            .field_name = "binding",
-                            .type = u32,
-                        },
-                    },
-                    null,
-                    scanner,
-                    &tmp_bindings.items[tmp_bindings.items.len - 1],
-                );
+                const binding = &tmp_bindings.items[tmp_bindings.items.len - 1];
+                while (try scanner_object_next_field(scanner)) |s| {
+                    if (std.mem.eql(u8, s, "descriptorType")) {
+                        const v = try scanner_next_number(scanner);
+                        binding.descriptorType = try std.fmt.parseInt(u32, v, 10);
+                    } else if (std.mem.eql(u8, s, "descriptorCount")) {
+                        const v = try scanner_next_number(scanner);
+                        binding.descriptorCount = try std.fmt.parseInt(u32, v, 10);
+                    } else if (std.mem.eql(u8, s, "stageFlags")) {
+                        const v = try scanner_next_number(scanner);
+                        binding.stageFlags = try std.fmt.parseInt(u32, v, 10);
+                    } else if (std.mem.eql(u8, s, "binding")) {
+                        const v = try scanner_next_number(scanner);
+                        binding.binding = try std.fmt.parseInt(u32, v, 10);
+                    } else if (std.mem.eql(u8, s, "immutableSamplers")) {
+                        if (try scanner.next() != .array_begin) return error.InvalidJson;
+                        var tmp_samplers: std.ArrayListUnmanaged(vk.VkSampler) = .empty;
+                        while (true) {
+                            switch (try scanner.next()) {
+                                .string => |hash_str| {
+                                    const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                                    const samplers = db.entries.getPtrConst(.SAMPLER);
+                                    const sampler = samplers.getPtr(hash).?;
+                                    try tmp_samplers.append(sa, @ptrCast(sampler.object));
+                                },
+                                .array_end => break,
+                                else => return error.InvalidJson,
+                            }
+                        }
+                        const samplers = try aa.dupe(vk.VkSampler, tmp_samplers.items);
+                        binding.pImmutableSamplers = @ptrCast(samplers.ptr);
+                    }
+                }
             }
             return aa.dupe(vk.VkDescriptorSetLayoutBinding, tmp_bindings.items);
         }
@@ -748,6 +768,7 @@ pub fn parse_descriptor_set_layout(
                         scratch_alloc,
                         &scanner,
                         vk_descriptor_set_layout_create_info,
+                        database,
                     );
                 } else {
                     return error.InvalidJson;
@@ -778,7 +799,10 @@ test "parse_descriptor_set_layout" {
         \\          "descriptorType": 2,
         \\          "descriptorCount": 65536,
         \\          "stageFlags": 16185,
-        \\          "binding": 46
+        \\          "binding": 46,
+        \\          "immutableSamplers": [
+        \\            "8c0a0c8a78e29f7c"
+        \\          ]
         \\        }
         \\      ],
         \\      "pNext": [
@@ -794,29 +818,6 @@ test "parse_descriptor_set_layout" {
         \\  }
         \\}
     ;
-    const json2 =
-        \\{
-        \\  "version": 6,
-        \\  "setLayouts": {
-        \\    "01fe45398ef51d72": {
-        \\      "flags": 2,
-        \\      "bindings": [
-        \\        {
-        \\          "descriptorType": 2,
-        \\          "descriptorCount": 65536,
-        \\          "stageFlags": 16185,
-        \\          "binding": 46,
-        \\          "immutableSamplers": [
-        \\            "8c0a0c8a78e29f7c"
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
-        \\}
-    ;
-    // TODO handle `immutableSamplers`.
-    _ = json2;
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
@@ -824,10 +825,22 @@ test "parse_descriptor_set_layout" {
     var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const scratch_alloc = scratch_arena.allocator();
 
+    var db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+    try db.entries.getPtr(.SAMPLER).put(arena_alloc, 0x8c0a0c8a78e29f7c, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .object = @ptrFromInt(0x69),
+    });
+
     const parsed_descriptro_set_layout = try parse_descriptor_set_layout(
         arena_alloc,
         scratch_alloc,
         json,
+        &db,
     );
     print_vk_chain(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
 }
