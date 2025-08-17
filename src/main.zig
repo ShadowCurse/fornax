@@ -66,9 +66,9 @@ pub fn main() !void {
     const db_path = std.mem.span(args.database_paths.values[0]);
     const db = try open_database(gpa_alloc, arena_alloc, db_path);
 
-    const app_infos = db.entries.getPtrConst(.APPLICATION_INFO);
+    const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len != 0) {
-        const app_info_json = app_infos.*[app_infos.len - 1].payload;
+        const app_info_json = app_infos[app_infos.len - 1].payload;
         const vk_app_info = try parsing.parse_application_info(
             arena_alloc,
             scratch_alloc,
@@ -77,16 +77,16 @@ pub fn main() !void {
         log.info(@src(), "app name {s}", .{vk_app_info.pApplicationName});
         log.info(@src(), "engine name {s}", .{vk_app_info.pEngineName});
     }
-    const samplers = db.entries.getPtrConst(.SAMPLER);
-    for (samplers.*) |sampler| {
+    const samplers = db.entries.getPtrConst(.SAMPLER).values();
+    for (samplers) |sampler| {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
         log.info(@src(), "Sampler entry: {any}", .{e});
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
         parsing.print_vk_struct(parsed_sampler.sampler_create_info);
     }
 
-    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT);
-    for (descriptor_set_layouts.*) |dsl| {
+    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
+    for (descriptor_set_layouts) |dsl| {
         const e = Database.Entry.from_ptr(dsl.entry_ptr);
         log.info(@src(), "Descriptor set layout entry: {any}", .{e});
         log.info(@src(), "Descriptor set layout payload: {s}", .{dsl.payload});
@@ -136,7 +136,7 @@ pub fn mmap_file(path: []const u8) ![]const u8 {
 
 pub const Database = struct {
     file_mem: []const u8,
-    entries: std.EnumArray(Entry.Tag, []EntryMeta),
+    entries: EntriesType,
     arena: std.heap.ArenaAllocator,
 
     pub const MAGIC = "\x81FOSSILIZEDB";
@@ -148,9 +148,14 @@ pub const Database = struct {
         version: u8,
     };
 
+    pub const EntriesType = std.EnumArray(
+        Database.Entry.Tag,
+        std.AutoArrayHashMapUnmanaged(u64, Database.EntryMeta),
+    );
     pub const EntryMeta = struct {
         entry_ptr: [*]const u8,
         payload: []const u8,
+        object: ?*anyopaque = null,
     };
     pub const Entry = extern struct {
         // 8 bytes: ???
@@ -239,8 +244,7 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
 
-    var entries: std.EnumArray(Database.Entry.Tag, std.ArrayListUnmanaged(Database.EntryMeta)) =
-        .initFill(.empty);
+    var entries: Database.EntriesType = .initFill(.empty);
     var remaining_file_mem = file_mem[@sizeOf(Database.Header)..];
 
     while (0 < remaining_file_mem.len) {
@@ -289,17 +293,17 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
                 break :blk decompressed_payload;
             },
         };
-        try entries.getPtr(entry_tag).append(scratch_alloc, .{
+        try entries.getPtr(entry_tag).put(scratch_alloc, try entry.get_value(), .{
             .entry_ptr = entry_ptr,
             .payload = payload,
         });
         remaining_file_mem = remaining_file_mem[total_entry_size..];
     }
 
-    var final_entries: std.EnumArray(Database.Entry.Tag, []Database.EntryMeta) = undefined;
+    var final_entries: Database.EntriesType = undefined;
     var fe_iter = final_entries.iterator();
     while (fe_iter.next()) |e|
-        e.value.* = try arena_alloc.dupe(Database.EntryMeta, entries.getPtrConst(e.key).items);
+        e.value.* = try entries.getPtrConst(e.key).clone(arena_alloc);
     return .{
         .file_mem = file_mem,
         .entries = final_entries,
