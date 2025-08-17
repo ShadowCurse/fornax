@@ -87,14 +87,15 @@ pub fn main() !void {
         &physical_device,
         parsed_application_info.device_features2,
     );
-    _ = vk_device;
 
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
-    for (samplers) |sampler| {
+    for (samplers) |*sampler| {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
-        log.info(@src(), "Sampler entry: {any}", .{e});
+        log.info(@src(), "Processing sampler entry: {any}", .{e});
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
+        log.info(@src(), "Parsed sampler create info:", .{});
         parsing.print_vk_struct(parsed_sampler.sampler_create_info);
+        sampler.object = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
     }
 
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
@@ -719,6 +720,20 @@ pub fn create_vk_device(
         &vk_device,
     ));
     return vk_device;
+}
+
+pub fn create_vk_sampler(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkSamplerCreateInfo,
+) !vk.VkSampler {
+    var sampler: vk.VkSampler = undefined;
+    try vk.check_result(vk.vkCreateSampler.?(
+        vk_device,
+        create_info,
+        null,
+        &sampler,
+    ));
+    return sampler;
 }
 
 test "all" {
