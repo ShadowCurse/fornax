@@ -95,17 +95,18 @@ pub fn main() !void {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
         log.info(@src(), "Processing sampler entry: {any}", .{e});
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
-        log.info(@src(), "Parsed sampler create info:", .{});
-        parsing.print_vk_struct(parsed_sampler.sampler_create_info);
+        // log.info(@src(), "Parsed sampler create info:", .{});
+        // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
         if (parsed_sampler.version != 6)
             return error.SamplerVersionMissmatch;
         if (parsed_sampler.hash != try e.get_value())
             return error.SamplerHashMissmatch;
         sampler.object = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
+        log.info(@src(), "Created object: {?}", .{sampler.object});
     }
 
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
-    for (descriptor_set_layouts) |dsl| {
+    for (descriptor_set_layouts) |*dsl| {
         const e = Database.Entry.from_ptr(dsl.entry_ptr);
         log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
@@ -114,12 +115,17 @@ pub fn main() !void {
             dsl.payload,
             &db,
         );
-        log.info(@src(), "Parsed descriptor set layout create info:", .{});
-        parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
+        // log.info(@src(), "Parsed descriptor set layout create info:", .{});
+        // parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
         if (parsed_descriptro_set_layout.version != 6)
             return error.DescriptorSetLayoutVersionMissmatch;
         if (parsed_descriptro_set_layout.hash != try e.get_value())
             return error.DescriptorSetLayoutHashMissmatch;
+        dsl.object = try create_descriptor_set_layout(
+            vk_device,
+            parsed_descriptro_set_layout.descriptor_set_layout_create_info,
+        );
+        log.info(@src(), "Created object: {?}", .{dsl.object});
     }
 }
 
@@ -265,7 +271,12 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         if (remaining_file_mem.len < total_entry_size)
             break;
 
+        remaining_file_mem = remaining_file_mem[total_entry_size..];
         const entry_tag = try entry.get_tag();
+        // if (!(entry_tag == .APPLICATION_INFO or
+        //     entry_tag == .SAMPLER or
+        //     entry_tag == .DESCRIPTOR_SET_LAYOUT))
+        //     continue;
         log.info(@src(), "Found entry: {}", .{entry});
 
         const payload_start: [*]const u8 =
@@ -302,7 +313,6 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
             .entry_ptr = entry_ptr,
             .payload = payload,
         });
-        remaining_file_mem = remaining_file_mem[total_entry_size..];
     }
 
     var final_entries: Database.EntriesType = undefined;
@@ -745,6 +755,20 @@ pub fn create_vk_sampler(
         &sampler,
     ));
     return sampler;
+}
+
+pub fn create_descriptor_set_layout(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
+) !vk.VkDescriptorSetLayout {
+    var descriptor_set_layout: vk.VkDescriptorSetLayout = undefined;
+    try vk.check_result(vk.vkCreateDescriptorSetLayout.?(
+        vk_device,
+        create_info,
+        null,
+        &descriptor_set_layout,
+    ));
+    return descriptor_set_layout;
 }
 
 test "all" {
