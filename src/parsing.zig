@@ -41,6 +41,11 @@ pub fn print_vk_chain(chain: anytype) void {
                 print_vk_struct(nn);
                 current = nn.pNext;
             },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorSetLayoutCreateInfo = @alignCast(@ptrCast(c));
+                print_vk_struct(nn);
+                current = nn.pNext;
+            },
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 => {
                 const nn: *const vk.VkPhysicalDeviceFeatures2 = @alignCast(@ptrCast(c));
                 print_vk_struct(nn);
@@ -53,6 +58,11 @@ pub fn print_vk_chain(chain: anytype) void {
             },
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
                 const nn: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR = @alignCast(@ptrCast(c));
+                print_vk_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT => {
+                const nn: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT = @alignCast(@ptrCast(c));
                 print_vk_struct(nn);
                 current = nn.pNext;
             },
@@ -190,7 +200,60 @@ pub fn parse_physical_device_fragment_shading_rate_features_khr(
     );
 }
 
-pub fn parse_pnext_chain(arena_alloc: Allocator, scanner: *std.json.Scanner) !?*anyopaque {
+pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
+    arena_alloc: Allocator,
+    scratch_alloc: Allocator,
+    scanner: *std.json.Scanner,
+    obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
+) !void {
+    const Inner = struct {
+        fn parse_flags(
+            al: Allocator,
+            tal: Allocator,
+            s: *std.json.Scanner,
+        ) ![]vk.VkDescriptorBindingFlags {
+            if (try s.next() != .array_begin) return error.InvalidJson;
+            switch (try s.peekNextTokenType()) {
+                .array_end => return &.{},
+                .number => {},
+                else => return error.InvalidJson,
+            }
+            var tmp_flags: std.ArrayListUnmanaged(vk.VkDescriptorBindingFlags) = .empty;
+            while (true) {
+                switch (try s.next()) {
+                    .number => |n| {
+                        const flag = try std.fmt.parseInt(u32, n, 10);
+                        try tmp_flags.append(tal, flag);
+                    },
+                    .array_end => break,
+                    else => return error.InvalidJson,
+                }
+            }
+            return al.dupe(vk.VkDescriptorBindingFlags, tmp_flags.items);
+        }
+    };
+    while (true) {
+        switch (try scanner.next()) {
+            .string => |s| {
+                if (std.mem.eql(u8, s, "bindingFlags")) {
+                    const flags = try Inner.parse_flags(arena_alloc, scratch_alloc, scanner);
+                    obj.pBindingFlags = @ptrCast(flags.ptr);
+                    obj.bindingCount = @intCast(flags.len);
+                } else {
+                    return error.InvalidJson;
+                }
+            },
+            .object_end => break,
+            else => return error.InvalidJson,
+        }
+    }
+}
+
+pub fn parse_pnext_chain(
+    arena_alloc: Allocator,
+    scratch_alloc: Allocator,
+    scanner: *std.json.Scanner,
+) !?*anyopaque {
     if (try scanner.next() != .array_begin) return error.InvalidJson;
     if (try scanner.next() != .object_begin) return error.InvalidJson;
     var first_in_chain: ?*anyopaque = null;
@@ -227,6 +290,18 @@ pub fn parse_pnext_chain(arena_alloc: Allocator, scanner: *std.json.Scanner) !?*
                                     last_pnext_in_chain = @ptrCast(&obj.pNext);
                                     try parse_physical_device_fragment_shading_rate_features_khr(scanner, obj);
                                 },
+                                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT => {
+                                    const obj =
+                                        try arena_alloc.create(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
+                                    obj.* = .{ .sType = stype };
+                                    if (first_in_chain == null)
+                                        first_in_chain = obj;
+                                    if (last_pnext_in_chain) |lpic| {
+                                        lpic.* = obj;
+                                    }
+                                    last_pnext_in_chain = @ptrCast(&obj.pNext);
+                                    try parse_descriptor_set_layout_binding_flags_create_info_ext(arena_alloc, scratch_alloc, scanner, obj);
+                                },
                                 else => return error.InvalidJson,
                             }
                         },
@@ -244,6 +319,7 @@ pub fn parse_pnext_chain(arena_alloc: Allocator, scanner: *std.json.Scanner) !?*
 
 pub fn parse_application_info(
     arena_alloc: Allocator,
+    scratch_alloc: Allocator,
     json_str: []const u8,
 ) !*const vk.VkApplicationInfo {
     const Inner = struct {
@@ -287,6 +363,7 @@ pub fn parse_application_info(
         }
         fn parse_device_features(
             aa: Allocator,
+            sa: Allocator,
             scanner: *std.json.Scanner,
             vk_physical_device_features2: *vk.VkPhysicalDeviceFeatures2,
         ) !void {
@@ -302,7 +379,7 @@ pub fn parse_application_info(
                                 else => return error.InvalidJson,
                             }
                         } else if (std.mem.eql(u8, s, "pNext")) {
-                            vk_physical_device_features2.pNext = try parse_pnext_chain(aa, scanner);
+                            vk_physical_device_features2.pNext = try parse_pnext_chain(aa, sa, scanner);
                         } else {
                             return error.InvalidJson;
                         }
@@ -337,6 +414,7 @@ pub fn parse_application_info(
                 } else if (std.mem.eql(u8, s, "physicalDeviceFeatures")) {
                     try Inner.parse_device_features(
                         arena_alloc,
+                        scratch_alloc,
                         &scanner,
                         vk_physical_device_features2,
                     );
@@ -386,8 +464,10 @@ test "parse_application_info" {
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
+    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const scratch_alloc = scratch_arena.allocator();
 
-    const vk_app_info = try parse_application_info(arena_alloc, json);
+    const vk_app_info = try parse_application_info(arena_alloc, scratch_alloc, json);
     print_vk_chain(vk_app_info);
 }
 
@@ -559,4 +639,239 @@ test "parse_sampler" {
 
     const parsed_sampler = try parse_sampler(arena_alloc, json);
     print_vk_struct(parsed_sampler.sampler_create_info);
+}
+
+//{
+//  "version": 6,
+//  "setLayouts": {
+//    "cb32b2cfac4b21ee": {
+//      "flags": 0,
+//      "bindings": [
+//        {
+//          "descriptorType": 1,
+//          "descriptorCount": 3,
+//          "stageFlags": 16,
+//          "binding": 0
+//        }
+//      ]
+//    }
+//  }
+//}
+pub const ParsedDescriptorSetLayout = struct {
+    hash: u64,
+    descriptor_set_layout_create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
+};
+pub fn parse_descriptor_set_layout(
+    arena_alloc: Allocator,
+    scratch_alloc: Allocator,
+    json_str: []const u8,
+) !ParsedDescriptorSetLayout {
+    const Inner = struct {
+        fn parse_layout(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            vk_descriptor_set_layout_create_info: *vk.VkDescriptorSetLayoutCreateInfo,
+        ) !void {
+            while (true) {
+                switch (try scanner.next()) {
+                    .string => |s| {
+                        if (std.mem.eql(u8, s, "flags")) {
+                            switch (try scanner.next()) {
+                                .number => |v| {
+                                    vk_descriptor_set_layout_create_info.flags =
+                                        try std.fmt.parseInt(u32, v, 10);
+                                },
+                                else => return error.InvalidJson,
+                            }
+                        } else if (std.mem.eql(u8, s, "bindings")) {
+                            const bindings = try parse_bindings(aa, sa, scanner);
+                            vk_descriptor_set_layout_create_info.pBindings =
+                                @ptrCast(bindings.ptr);
+                            vk_descriptor_set_layout_create_info.bindingCount =
+                                @intCast(bindings.len);
+                        } else if (std.mem.eql(u8, s, "pNext")) {
+                            vk_descriptor_set_layout_create_info.pNext =
+                                try parse_pnext_chain(aa, sa, scanner);
+                        } else {
+                            return error.InvalidJson;
+                        }
+                    },
+                    .object_begin => {},
+                    .object_end => break,
+                    else => return error.InvalidJson,
+                }
+            }
+        }
+
+        fn parse_bindings(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) ![]vk.VkDescriptorSetLayoutBinding {
+            if (try scanner.next() != .array_begin) return error.InvalidJson;
+            switch (try scanner.next()) {
+                .array_end => return &.{},
+                .object_begin => {},
+                else => return error.InvalidJson,
+            }
+            var tmp_bindings: std.ArrayListUnmanaged(vk.VkDescriptorSetLayoutBinding) = .empty;
+            while (true) {
+                try tmp_bindings.append(sa, .{});
+                try parse_type(
+                    &.{
+                        .{
+                            .json_name = "descriptorType",
+                            .field_name = "descriptorType",
+                            .type = u32,
+                        },
+                        .{
+                            .json_name = "descriptorCount",
+                            .field_name = "descriptorCount",
+                            .type = u32,
+                        },
+                        .{
+                            .json_name = "stageFlags",
+                            .field_name = "stageFlags",
+                            .type = u32,
+                        },
+                        .{
+                            .json_name = "binding",
+                            .field_name = "binding",
+                            .type = u32,
+                        },
+                    },
+                    null,
+                    scanner,
+                    &tmp_bindings.items[tmp_bindings.items.len - 1],
+                );
+                switch (try scanner.next()) {
+                    .array_end => break,
+                    else => {},
+                }
+            }
+            return aa.dupe(vk.VkDescriptorSetLayoutBinding, tmp_bindings.items);
+        }
+    };
+
+    var scanner = std.json.Scanner.initCompleteInput(arena_alloc, json_str);
+    const vk_descriptor_set_layout_create_info =
+        try arena_alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
+    vk_descriptor_set_layout_create_info.* =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+
+    var result: ParsedDescriptorSetLayout = .{
+        .hash = 0,
+        .descriptor_set_layout_create_info = vk_descriptor_set_layout_create_info,
+    };
+
+    while (true) {
+        switch (try scanner.next()) {
+            .string => |s| {
+                if (std.mem.eql(u8, s, "version")) {
+                    switch (try scanner.next()) {
+                        .number => |n| {
+                            const version = try std.fmt.parseInt(u32, n, 10);
+                            log.info(@src(), "version: {d}", .{version});
+                        },
+                        else => return error.InvalidJson,
+                    }
+                } else if (std.mem.eql(u8, s, "setLayouts")) {
+                    if (try scanner.next() != .object_begin) return error.InvalidJson;
+                    switch (try scanner.next()) {
+                        .string => |ss| {
+                            const hash = try std.fmt.parseInt(u64, ss, 16);
+                            log.info(@src(), "hash: 0x{x}", .{hash});
+                            result.hash = hash;
+                        },
+                        else => return error.InvalidJson,
+                    }
+                    if (try scanner.next() != .object_begin) return error.InvalidJson;
+                    try Inner.parse_layout(
+                        arena_alloc,
+                        scratch_alloc,
+                        &scanner,
+                        vk_descriptor_set_layout_create_info,
+                    );
+                } else {
+                    return error.InvalidJson;
+                }
+            },
+            .end_of_document => break,
+            else => {},
+        }
+    }
+    return result;
+}
+
+test "parse_descriptor_set_layout" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "setLayouts": {
+        \\    "01fe45398ef51d72": {
+        \\      "flags": 2,
+        \\      "bindings": [
+        \\        {
+        \\          "descriptorType": 0,
+        \\          "descriptorCount": 2048,
+        \\          "stageFlags": 16185,
+        \\          "binding": 29
+        \\        },
+        \\        {
+        \\          "descriptorType": 2,
+        \\          "descriptorCount": 65536,
+        \\          "stageFlags": 16185,
+        \\          "binding": 46
+        \\        }
+        \\      ],
+        \\      "pNext": [
+        \\        {
+        \\          "sType": 1000161000,
+        \\          "bindingFlags": [
+        \\            5,
+        \\            5
+        \\          ]
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    const json2 =
+        \\{
+        \\  "version": 6,
+        \\  "setLayouts": {
+        \\    "01fe45398ef51d72": {
+        \\      "flags": 2,
+        \\      "bindings": [
+        \\        {
+        \\          "descriptorType": 2,
+        \\          "descriptorCount": 65536,
+        \\          "stageFlags": 16185,
+        \\          "binding": 46,
+        \\          "immutableSamplers": [
+        \\            "8c0a0c8a78e29f7c"
+        \\          ]
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    // TODO handle `immutableSamplers`.
+    _ = json2;
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const arena_alloc = arena.allocator();
+    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const scratch_alloc = scratch_arena.allocator();
+
+    const parsed_descriptro_set_layout = try parse_descriptor_set_layout(
+        arena_alloc,
+        scratch_alloc,
+        json,
+    );
+    print_vk_chain(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
 }

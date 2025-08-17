@@ -60,6 +60,8 @@ pub fn main() !void {
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
+    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const scratch_alloc = scratch_arena.allocator();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
     const db = try open_database(gpa_alloc, arena_alloc, db_path);
@@ -67,7 +69,11 @@ pub fn main() !void {
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO);
     if (app_infos.len != 0) {
         const app_info_json = app_infos.*[app_infos.len - 1].payload;
-        const vk_app_info = try parsing.parse_application_info(arena_alloc, app_info_json);
+        const vk_app_info = try parsing.parse_application_info(
+            arena_alloc,
+            scratch_alloc,
+            app_info_json,
+        );
         log.info(@src(), "app name {s}", .{vk_app_info.pApplicationName});
         log.info(@src(), "engine name {s}", .{vk_app_info.pEngineName});
     }
@@ -77,6 +83,19 @@ pub fn main() !void {
         log.info(@src(), "Sampler entry: {any}", .{e});
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
         parsing.print_vk_struct(parsed_sampler.sampler_create_info);
+    }
+
+    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT);
+    for (descriptor_set_layouts.*) |dsl| {
+        const e = Database.Entry.from_ptr(dsl.entry_ptr);
+        log.info(@src(), "Descriptor set layout entry: {any}", .{e});
+        log.info(@src(), "Descriptor set layout payload: {s}", .{dsl.payload});
+        const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
+            arena_alloc,
+            scratch_alloc,
+            dsl.payload,
+        );
+        parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
     }
 
     // try vk.check_result(vk.volkInitialize());
