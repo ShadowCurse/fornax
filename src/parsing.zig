@@ -122,7 +122,7 @@ fn scanner_array_next(scanner: *std.json.Scanner) !bool {
 pub const NameMap = struct { json_name: []const u8, field_name: []const u8, type: type };
 pub fn parse_type(
     comptime name_map: []const NameMap,
-    arena_alloc: ?Allocator,
+    alloc: ?Allocator,
     scanner: *std.json.Scanner,
     output: anytype,
 ) !void {
@@ -142,7 +142,7 @@ pub fn parse_type(
                     },
                     []const u8 => {
                         const name = try scanner_next_string(scanner);
-                        if (arena_alloc) |aa| {
+                        if (alloc) |aa| {
                             const n = try aa.dupeZ(u8, name);
                             @field(output, nm.field_name) = @ptrCast(n.ptr);
                         } else {
@@ -231,8 +231,8 @@ pub fn parse_physical_device_fragment_shading_rate_features_khr(
 }
 
 pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
-    arena_alloc: Allocator,
-    scratch_alloc: Allocator,
+    alloc: Allocator,
+    tmp_alloc: Allocator,
     scanner: *std.json.Scanner,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
 ) !void {
@@ -264,7 +264,7 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
     };
     while (try scanner_object_next_field(scanner)) |s| {
         if (std.mem.eql(u8, s, "bindingFlags")) {
-            const flags = try Inner.parse_flags(arena_alloc, scratch_alloc, scanner);
+            const flags = try Inner.parse_flags(alloc, tmp_alloc, scanner);
             obj.pBindingFlags = @ptrCast(flags.ptr);
             obj.bindingCount = @intCast(flags.len);
         } else {
@@ -274,8 +274,8 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
 }
 
 pub fn parse_pnext_chain(
-    arena_alloc: Allocator,
-    scratch_alloc: Allocator,
+    alloc: Allocator,
+    tmp_alloc: Allocator,
     scanner: *std.json.Scanner,
 ) !?*anyopaque {
     const Inner = struct {
@@ -338,8 +338,8 @@ pub fn parse_pnext_chain(
         const s = try scanner_object_next_field(scanner) orelse return error.InvalidJson;
         if (std.mem.eql(u8, s, "sType")) {
             try Inner.parse_next(
-                arena_alloc,
-                scratch_alloc,
+                alloc,
+                tmp_alloc,
                 scanner,
                 &first_in_chain,
                 &last_pnext_in_chain,
@@ -355,8 +355,8 @@ pub const ParsedApplicationInfo = struct {
     device_features2: *const vk.VkPhysicalDeviceFeatures2,
 };
 pub fn parse_application_info(
-    arena_alloc: Allocator,
-    scratch_alloc: Allocator,
+    alloc: Allocator,
+    tmp_alloc: Allocator,
     json_str: []const u8,
 ) !ParsedApplicationInfo {
     const Inner = struct {
@@ -426,10 +426,10 @@ pub fn parse_application_info(
         }
     };
 
-    var scanner = std.json.Scanner.initCompleteInput(arena_alloc, json_str);
-    const vk_application_info = try arena_alloc.create(vk.VkApplicationInfo);
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_application_info = try alloc.create(vk.VkApplicationInfo);
     vk_application_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
-    const vk_physical_device_features2 = try arena_alloc.create(vk.VkPhysicalDeviceFeatures2);
+    const vk_physical_device_features2 = try alloc.create(vk.VkPhysicalDeviceFeatures2);
     vk_physical_device_features2.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
 
     var result: ParsedApplicationInfo = .{
@@ -443,11 +443,11 @@ pub fn parse_application_info(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "applicationInfo")) {
-            try Inner.parse_app_info(arena_alloc, &scanner, vk_application_info);
+            try Inner.parse_app_info(alloc, &scanner, vk_application_info);
         } else if (std.mem.eql(u8, s, "physicalDeviceFeatures")) {
             try Inner.parse_device_features(
-                arena_alloc,
-                scratch_alloc,
+                alloc,
+                tmp_alloc,
                 &scanner,
                 vk_physical_device_features2,
             );
@@ -491,11 +491,11 @@ test "parse_application_info" {
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const arena_alloc = arena.allocator();
+    const alloc = arena.allocator();
     var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const scratch_alloc = scratch_arena.allocator();
+    const tmp_alloc = scratch_arena.allocator();
 
-    const parsed_application_info = try parse_application_info(arena_alloc, scratch_alloc, json);
+    const parsed_application_info = try parse_application_info(alloc, tmp_alloc, json);
     print_vk_chain(parsed_application_info.application_info);
     print_vk_chain(parsed_application_info.device_features2);
 }
@@ -506,11 +506,12 @@ pub const ParsedSampler = struct {
     sampler_create_info: *const vk.VkSamplerCreateInfo,
 };
 pub fn parse_sampler(
-    arena_alloc: Allocator,
+    alloc: Allocator,
+    tmp_alloc: Allocator,
     json_str: []const u8,
 ) !ParsedSampler {
-    var scanner = std.json.Scanner.initCompleteInput(arena_alloc, json_str);
-    const vk_sampler_create_info = try arena_alloc.create(vk.VkSamplerCreateInfo);
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_sampler_create_info = try alloc.create(vk.VkSamplerCreateInfo);
     vk_sampler_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
     var result: ParsedSampler = .{
@@ -611,7 +612,7 @@ pub fn parse_sampler(
                         .type = f32,
                     },
                 },
-                arena_alloc,
+                alloc,
                 &scanner,
                 vk_sampler_create_info,
             );
@@ -649,9 +650,9 @@ test "parse_sampler" {
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const arena_alloc = arena.allocator();
+    const alloc = arena.allocator();
 
-    const parsed_sampler = try parse_sampler(arena_alloc, json);
+    const parsed_sampler = try parse_sampler(alloc, json);
     print_vk_struct(parsed_sampler.sampler_create_info);
 }
 
@@ -661,8 +662,8 @@ pub const ParsedDescriptorSetLayout = struct {
     descriptor_set_layout_create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 };
 pub fn parse_descriptor_set_layout(
-    arena_alloc: Allocator,
-    scratch_alloc: Allocator,
+    alloc: Allocator,
+    tmp_alloc: Allocator,
     json_str: []const u8,
     database: *const Database,
 ) !ParsedDescriptorSetLayout {
@@ -740,9 +741,9 @@ pub fn parse_descriptor_set_layout(
         }
     };
 
-    var scanner = std.json.Scanner.initCompleteInput(arena_alloc, json_str);
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_descriptor_set_layout_create_info =
-        try arena_alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
+        try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
     vk_descriptor_set_layout_create_info.* =
         .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
 
@@ -764,8 +765,8 @@ pub fn parse_descriptor_set_layout(
                     result.hash = try std.fmt.parseInt(u64, ss, 16);
                     if (try scanner.next() != .object_begin) return error.InvalidJson;
                     try Inner.parse_layout(
-                        arena_alloc,
-                        scratch_alloc,
+                        alloc,
+                        tmp_alloc,
                         &scanner,
                         vk_descriptor_set_layout_create_info,
                         database,
@@ -821,24 +822,24 @@ test "parse_descriptor_set_layout" {
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const arena_alloc = arena.allocator();
+    const alloc = arena.allocator();
     var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const scratch_alloc = scratch_arena.allocator();
+    const tmp_alloc = scratch_arena.allocator();
 
     var db: Database = .{
         .file_mem = &.{},
         .entries = .initFill(.empty),
         .arena = arena,
     };
-    try db.entries.getPtr(.SAMPLER).put(arena_alloc, 0x8c0a0c8a78e29f7c, .{
+    try db.entries.getPtr(.SAMPLER).put(alloc, 0x8c0a0c8a78e29f7c, .{
         .entry_ptr = undefined,
         .payload = undefined,
         .object = @ptrFromInt(0x69),
     });
 
     const parsed_descriptro_set_layout = try parse_descriptor_set_layout(
-        arena_alloc,
-        scratch_alloc,
+        alloc,
+        tmp_alloc,
         json,
         &db,
     );

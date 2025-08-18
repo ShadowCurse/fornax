@@ -60,8 +60,8 @@ pub fn main() !void {
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
-    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const scratch_alloc = scratch_arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
     const db = try open_database(gpa_alloc, arena_alloc, db_path);
@@ -70,7 +70,7 @@ pub fn main() !void {
     const app_info_json = app_infos[0].payload;
     const parsed_application_info = try parsing.parse_application_info(
         arena_alloc,
-        scratch_alloc,
+        tmp_alloc,
         app_info_json,
     );
     if (parsed_application_info.version != 6)
@@ -78,14 +78,14 @@ pub fn main() !void {
 
     try vk.check_result(vk.volkInitialize());
     const vk_instance = try create_vk_instance(
-        arena_alloc,
+        tmp_alloc,
         parsed_application_info.application_info,
     );
     vk.volkLoadInstance(vk_instance);
 
-    const physical_device = try select_physical_device(arena_alloc, vk_instance);
+    const physical_device = try select_physical_device(tmp_alloc, vk_instance);
     const vk_device = try create_vk_device(
-        arena_alloc,
+        tmp_alloc,
         &physical_device,
         parsed_application_info.device_features2,
     );
@@ -94,7 +94,7 @@ pub fn main() !void {
     for (samplers) |*sampler| {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
         log.info(@src(), "Processing sampler entry: {any}", .{e});
-        const parsed_sampler = try parsing.parse_sampler(arena_alloc, sampler.payload);
+        const parsed_sampler = try parsing.parse_sampler(arena_alloc, tmp_alloc, sampler.payload);
         // log.info(@src(), "Parsed sampler create info:", .{});
         // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
         if (parsed_sampler.version != 6)
@@ -111,7 +111,7 @@ pub fn main() !void {
         log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
             arena_alloc,
-            scratch_alloc,
+            tmp_alloc,
             dsl.payload,
             &db,
         );
