@@ -77,15 +77,16 @@ pub fn main() !void {
         return error.ApllicationInfoVersionMissmatch;
 
     try vk.check_result(vk.volkInitialize());
-    const vk_instance = try create_vk_instance(
+    const instance = try create_vk_instance(
         tmp_alloc,
         parsed_application_info.application_info,
     );
-    vk.volkLoadInstance(vk_instance);
+    vk.volkLoadInstance(instance.instance);
 
-    const physical_device = try select_physical_device(tmp_alloc, vk_instance);
+    const physical_device = try select_physical_device(tmp_alloc, instance.instance);
     const vk_device = try create_vk_device(
         tmp_alloc,
+        &instance,
         &physical_device,
         parsed_application_info.device_features2,
     );
@@ -93,7 +94,7 @@ pub fn main() !void {
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
     for (samplers) |*sampler| {
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
-        log.info(@src(), "Processing sampler entry: {any}", .{e});
+        // log.info(@src(), "Processing sampler entry: {any}", .{e});
         const parsed_sampler = try parsing.parse_sampler(arena_alloc, tmp_alloc, sampler.payload);
         // log.info(@src(), "Parsed sampler create info:", .{});
         // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
@@ -102,13 +103,13 @@ pub fn main() !void {
         if (parsed_sampler.hash != try e.get_value())
             return error.SamplerHashMissmatch;
         sampler.object = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
-        log.info(@src(), "Created object: {?}", .{sampler.object});
+        // log.info(@src(), "Created object: {?}", .{sampler.object});
     }
 
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
     for (descriptor_set_layouts) |*dsl| {
         const e = Database.Entry.from_ptr(dsl.entry_ptr);
-        log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
+        // log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
             arena_alloc,
             tmp_alloc,
@@ -125,7 +126,7 @@ pub fn main() !void {
             vk_device,
             parsed_descriptro_set_layout.descriptor_set_layout_create_info,
         );
-        log.info(@src(), "Created object: {?}", .{dsl.object});
+        // log.info(@src(), "Created object: {?}", .{dsl.object});
     }
 }
 
@@ -419,10 +420,14 @@ pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayer
     return layers;
 }
 
+pub const Instance = struct {
+    instance: vk.VkInstance,
+    has_properties_2: bool,
+};
 pub fn create_vk_instance(
     arena_alloc: Allocator,
     requested_app_info: ?*const vk.VkApplicationInfo,
-) !vk.VkInstance {
+) !Instance {
     const api_version = vk.volkGetInstanceVersion();
     log.info(
         @src(),
@@ -452,6 +457,12 @@ pub fn create_vk_instance(
     const extensions = try get_instance_extensions(arena_alloc);
     if (!contains_all_extensions("Instance", extensions, &VK_ADDITIONAL_EXTENSIONS_NAMES))
         return error.AdditionalExtensionsNotFound;
+
+    const has_properties_2 = contains_all_extensions(
+        "Instance",
+        extensions,
+        &.{vk.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
+    );
 
     const all_extension_names = try arena_alloc.alloc([*c]const u8, extensions.len);
     for (extensions, 0..) |e, i|
@@ -484,7 +495,10 @@ pub fn create_vk_instance(
 
     var vk_instance: vk.VkInstance = undefined;
     try vk.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
-    return vk_instance;
+    return .{
+        .instance = vk_instance,
+        .has_properties_2 = has_properties_2,
+    };
 }
 
 pub fn init_debug_callback(instance: vk.VkInstance) void {
@@ -538,7 +552,7 @@ pub fn get_physical_devices(
     return physical_devices;
 }
 
-pub fn get_physical_divece_exensions(
+pub fn get_physical_device_exensions(
     arena_alloc: Allocator,
     physical_device: vk.VkPhysicalDevice,
     extension_name: [*c]const u8,
@@ -582,7 +596,6 @@ pub fn get_physical_device_layers(
 pub const PhysicalDevice = struct {
     device: vk.VkPhysicalDevice,
     graphics_queue_family: u32,
-    has_properties_2: bool,
     has_validation_cache: bool,
 };
 
@@ -617,20 +630,13 @@ pub fn select_physical_device(
             properties.deviceType,
         });
 
-        const extensions = try get_physical_divece_exensions(arena_alloc, physical_device, null);
-        const has_properties_2 = contains_all_extensions(
-            &properties.deviceName,
-            extensions,
-            &.{vk.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
-        );
-
         const layers = try get_physical_device_layers(arena_alloc, physical_device);
         if (!contains_all_layers(&properties.deviceName, layers, &VK_VALIDATION_LAYERS_NAMES))
             return error.PhysicalDeviceValidationLayersNotFound;
 
         // With validation layers being mandatory for now, check if caching of the
         // validation layer is available.
-        const validation_extensions = try get_physical_divece_exensions(
+        const validation_extensions = try get_physical_device_exensions(
             arena_alloc,
             physical_device,
             "VK_LAYER_KHRONOS_validation",
@@ -665,18 +671,16 @@ pub fn select_physical_device(
         if (graphics_queue_family != null) {
             log.debug(
                 @src(),
-                "Selected device: {s} Graphics queue family: {d} Has properties 2: {} Has validation cache: {}",
+                "Selected device: {s} Graphics queue family: {d} Has validation cache: {}",
                 .{
                     properties.deviceName,
                     graphics_queue_family.?,
-                    has_properties_2,
                     has_validation_cache,
                 },
             );
             return .{
                 .device = physical_device,
                 .graphics_queue_family = graphics_queue_family.?,
-                .has_properties_2 = has_properties_2,
                 .has_validation_cache = has_validation_cache,
             };
         }
@@ -686,6 +690,7 @@ pub fn select_physical_device(
 
 pub fn create_vk_device(
     arena_alloc: Allocator,
+    instance: *const Instance,
     physical_device: *const PhysicalDevice,
     device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
 ) !vk.VkDevice {
@@ -700,15 +705,16 @@ pub fn create_vk_device(
     var features_2 = vk.VkPhysicalDeviceFeatures2{
         .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
     };
-    if (physical_device.has_properties_2)
-        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &features_2)
-    else
-        vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &features_2.features);
+    if (instance.has_properties_2) {
+        // TODO
+        // build pNext chain with all extension structs based on the device extensions
+        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &features_2);
+    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &features_2.features);
 
     // All extensions will be activated for the device. If it
     // supports validation caching, enable it's extension as well.
     const extensions =
-        try get_physical_divece_exensions(arena_alloc, physical_device.device, null);
+        try get_physical_device_exensions(arena_alloc, physical_device.device, null);
     var all_extensions_len = extensions.len;
     if (physical_device.has_validation_cache)
         all_extensions_len += 1;
@@ -718,6 +724,7 @@ pub fn create_vk_device(
     if (physical_device.has_validation_cache)
         all_extension_names[all_extensions_len - 1] = vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
 
+    // TODO add a robustness2 check for older dxvk/vkd3d databases.
     // TODO filter feateres_2 and extension_names based on the device_features2
     _ = device_features2;
 
@@ -729,8 +736,8 @@ pub fn create_vk_device(
         .enabledLayerCount = @as(u32, @intCast(VK_VALIDATION_LAYERS_NAMES.len)),
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
-        .pEnabledFeatures = if (physical_device.has_properties_2) null else &features_2.features,
-        .pNext = if (physical_device.has_properties_2) &features_2 else null,
+        .pEnabledFeatures = if (instance.has_properties_2) null else &features_2.features,
+        .pNext = if (instance.has_properties_2) &features_2 else null,
     };
 
     var vk_device: vk.VkDevice = undefined;
