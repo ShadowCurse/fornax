@@ -465,7 +465,7 @@ pub fn create_vk_instance(
     );
 
     const all_extension_names = try arena_alloc.alloc([*c]const u8, extensions.len);
-    for (extensions, 0..) |e, i|
+    for (extensions, 0..) |*e, i|
         all_extension_names[i] = &e.extensionName;
 
     const layers = try get_instance_layer_properties(arena_alloc);
