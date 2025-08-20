@@ -331,7 +331,7 @@ const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"
 const VK_ADDITIONAL_EXTENSIONS_NAMES = [_][*c]const u8{"VK_EXT_debug_utils"};
 
 pub fn contains_all_extensions(
-    log_prefix: []const u8,
+    log_prefix: ?[]const u8,
     extensions: []const vk.VkExtensionProperties,
     to_find: []const [*c]const u8,
 ) bool {
@@ -352,20 +352,21 @@ pub fn contains_all_extensions(
                 required = "required";
             }
         }
-        log.debug(@src(), "({s})({s}) Extension version: {d}.{d}.{d} Name: {s}", .{
-            required,
-            log_prefix,
-            vk.VK_API_VERSION_MAJOR(e.specVersion),
-            vk.VK_API_VERSION_MINOR(e.specVersion),
-            vk.VK_API_VERSION_PATCH(e.specVersion),
-            e.extensionName,
-        });
+        if (log_prefix) |lp|
+            log.debug(@src(), "({s})({s}) Extension version: {d}.{d}.{d} Name: {s}", .{
+                required,
+                lp,
+                vk.VK_API_VERSION_MAJOR(e.specVersion),
+                vk.VK_API_VERSION_MINOR(e.specVersion),
+                vk.VK_API_VERSION_PATCH(e.specVersion),
+                e.extensionName,
+            });
     }
     return found_extensions == to_find.len;
 }
 
 pub fn contains_all_layers(
-    log_prefix: []const u8,
+    log_prefix: ?[]const u8,
     layers: []const vk.VkLayerProperties,
     to_find: []const [*c]const u8,
 ) bool {
@@ -380,15 +381,16 @@ pub fn contains_all_layers(
                 required = "required";
             }
         }
-        log.debug(@src(), "({s})({s}) Layer name: {s} Spec version: {d}.{d}.{d} Description: {s}", .{
-            required,
-            log_prefix,
-            l.layerName,
-            vk.VK_API_VERSION_MAJOR(l.specVersion),
-            vk.VK_API_VERSION_MINOR(l.specVersion),
-            vk.VK_API_VERSION_PATCH(l.specVersion),
-            l.description,
-        });
+        if (log_prefix) |lp|
+            log.debug(@src(), "({s})({s}) Layer name: {s} Spec version: {d}.{d}.{d} Description: {s}", .{
+                required,
+                lp,
+                l.layerName,
+                vk.VK_API_VERSION_MAJOR(l.specVersion),
+                vk.VK_API_VERSION_MINOR(l.specVersion),
+                vk.VK_API_VERSION_PATCH(l.specVersion),
+                l.description,
+            });
     }
     return found_layers == to_find.len;
 }
@@ -459,7 +461,7 @@ pub fn create_vk_instance(
         return error.AdditionalExtensionsNotFound;
 
     const has_properties_2 = contains_all_extensions(
-        "Instance",
+        null,
         extensions,
         &.{vk.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
     );
