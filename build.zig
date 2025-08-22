@@ -20,7 +20,7 @@ pub fn build(b: *std.Build) !void {
     exe_mod.addIncludePath(miniz_config_header.getOutput());
     exe_mod.addIncludePath(b.path("thirdparty/volk"));
     exe_mod.addIncludePath(b.path("thirdparty/miniz"));
-    exe_mod.addIncludePath(.{ .cwd_relative = env_map.get("VULKAN_INCLUDE_PATH").? });
+    exe_mod.addIncludePath(b.path("thirdparty/Vulkan-Headers/include"));
     exe_mod.addCSourceFile(.{ .file = b.path("thirdparty/volk/volk.c") });
     exe_mod.addConfigHeader(miniz_config_header);
     exe_mod.addCSourceFiles(.{
