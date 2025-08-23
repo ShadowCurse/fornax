@@ -4,8 +4,15 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    var env_map = try std.process.getEnvMap(b.allocator);
-    defer env_map.deinit();
+    const vulkan_features_gen = b.addExecutable(.{
+        .name = "physical_device_features_gen",
+        .root_source_file = b.path("gen/physical_device_features_gen.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const rc = b.addRunArtifact(vulkan_features_gen);
+    const rs = b.step("gen", "Gen");
+    rs.dependOn(&rc.step);
 
     const miniz_config_header = b.addConfigHeader(
         .{ .include_path = "miniz_export.h" },
