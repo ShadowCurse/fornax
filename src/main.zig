@@ -4,6 +4,7 @@ const log = @import("log.zig");
 const miniz = @import("miniz.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
+const PDF = @import("physical_device_features.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -424,6 +425,7 @@ pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayer
 
 pub const Instance = struct {
     instance: vk.VkInstance,
+    api_version: u32,
     has_properties_2: bool,
 };
 pub fn create_vk_instance(
@@ -497,8 +499,19 @@ pub fn create_vk_instance(
 
     var vk_instance: vk.VkInstance = undefined;
     try vk.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
+    log.debug(
+        @src(),
+        "Created instance api version: {}.{}.{} has_properties_2: {}",
+        .{
+            vk.VK_API_VERSION_MAJOR(api_version),
+            vk.VK_API_VERSION_MINOR(api_version),
+            vk.VK_API_VERSION_PATCH(api_version),
+            has_properties_2,
+        },
+    );
     return .{
         .instance = vk_instance,
+        .api_version = api_version,
         .has_properties_2 = has_properties_2,
     };
 }
@@ -644,7 +657,7 @@ pub fn select_physical_device(
             "VK_LAYER_KHRONOS_validation",
         );
         const has_validation_cache = contains_all_extensions(
-            &properties.deviceName,
+            null,
             validation_extensions,
             &.{vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME},
         );
@@ -690,6 +703,61 @@ pub fn select_physical_device(
     return error.PhysicalDeviceNotSelected;
 }
 
+pub fn usable_device_extension(
+    ext: [*c]const u8,
+    all_ext_props: []const vk.VkExtensionProperties,
+    api_version: u32,
+) bool {
+    const e = std.mem.span(ext);
+    if (std.mem.eql(u8, e, vk.VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME))
+        return false;
+    if (std.mem.eql(u8, e, vk.VK_NV_RAY_TRACING_EXTENSION_NAME))
+        return false;
+    if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_INFO_EXTENSION_NAME))
+        return false;
+    if (std.mem.eql(u8, e, vk.VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
+        for (all_ext_props) |other_ext| {
+            const other_e = std.mem.span(@as([*c]const u8, @ptrCast(&other_ext.extensionName)));
+            if (std.mem.eql(u8, other_e, vk.VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
+                return false;
+        };
+    if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME))
+        for (all_ext_props) |other_ext| {
+            const other_e = std.mem.span(@as([*c]const u8, @ptrCast(&other_ext.extensionName)));
+            if (std.mem.eql(u8, other_e, vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+                return false;
+        };
+
+    const VK_1_1_EXTS: []const []const u8 = &.{
+        vk.VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME,
+        vk.VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+        vk.VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
+        vk.VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+        vk.VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+        vk.VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        vk.VK_KHR_RAY_QUERY_EXTENSION_NAME,
+        vk.VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+        vk.VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME,
+        vk.VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME,
+        vk.VK_NV_SHADER_SM_BUILTINS_EXTENSION_NAME,
+        vk.VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME,
+        vk.VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
+    };
+
+    var is_vk_1_1_ext: bool = false;
+    for (VK_1_1_EXTS) |vk_1_1_ext|
+        if (std.mem.eql(u8, vk_1_1_ext, e)) {
+            is_vk_1_1_ext = true;
+            break;
+        };
+
+    if (api_version < vk.VK_API_VERSION_1_1 and is_vk_1_1_ext) {
+        return false;
+    }
+
+    return true;
+}
+
 pub fn create_vk_device(
     arena_alloc: Allocator,
     instance: *const Instance,
@@ -704,15 +772,6 @@ pub fn create_vk_device(
         .pQueuePriorities = &queue_priority,
     };
 
-    var features_2 = vk.VkPhysicalDeviceFeatures2{
-        .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-    };
-    if (instance.has_properties_2) {
-        // TODO
-        // build pNext chain with all extension structs based on the device extensions
-        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &features_2);
-    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &features_2.features);
-
     // All extensions will be activated for the device. If it
     // supports validation caching, enable it's extension as well.
     const extensions =
@@ -720,11 +779,40 @@ pub fn create_vk_device(
     var all_extensions_len = extensions.len;
     if (physical_device.has_validation_cache)
         all_extensions_len += 1;
-    const all_extension_names = try arena_alloc.alloc([*c]const u8, all_extensions_len);
-    for (extensions, 0..) |e, i|
-        all_extension_names[i] = &e.extensionName;
-    if (physical_device.has_validation_cache)
-        all_extension_names[all_extensions_len - 1] = vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
+    var all_extension_names = try arena_alloc.alloc([*c]const u8, all_extensions_len);
+    all_extensions_len = 0;
+    for (extensions) |*e| {
+        var enabled: []const u8 = "enabled";
+        if (usable_device_extension(&e.extensionName, extensions, instance.api_version)) {
+            all_extension_names[all_extensions_len] = &e.extensionName;
+            all_extensions_len += 1;
+        } else enabled = "filtered";
+        log.debug(@src(), "(PhysicalDevice)({s<8}) Extension version: {d}.{d}.{d} Name: {s}", .{
+            enabled,
+            vk.VK_API_VERSION_MAJOR(e.specVersion),
+            vk.VK_API_VERSION_MINOR(e.specVersion),
+            vk.VK_API_VERSION_PATCH(e.specVersion),
+            e.extensionName,
+        });
+    }
+    if (physical_device.has_validation_cache) {
+        all_extension_names[all_extensions_len] = vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
+        all_extensions_len += 1;
+    }
+    all_extension_names = all_extension_names[0..all_extensions_len];
+
+    var features_2 = vk.VkPhysicalDeviceFeatures2{
+        .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+    };
+    var stats: vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+    };
+    features_2.pNext = &stats;
+    var physical_device_features: PDF = .{};
+    if (instance.has_properties_2) {
+        stats.pNext = physical_device_features.chain_supported(all_extension_names);
+        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &features_2);
+    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &features_2.features);
 
     // TODO add a robustness2 check for older dxvk/vkd3d databases.
     // TODO filter feateres_2 and extension_names based on the device_features2
