@@ -21,6 +21,15 @@ pub fn print_vk_struct(@"struct": anytype) void {
             [*c]const u8 => {
                 log.info(@src(), "\t{s}: {s}", .{ field.name, @field(@"struct", field.name) });
             },
+            [*c]const u32 => {
+                if (@hasField(t, "codeSize")) {
+                    const len = @field(@"struct", "codeSize");
+                    var code: []const u32 = undefined;
+                    code.ptr = @field(@"struct", field.name);
+                    code.len = len / @sizeOf(u32);
+                    log.info(@src(), "\t{s}: {any}", .{ field.name, code });
+                }
+            },
             ?*anyopaque, ?*const anyopaque => {
                 log.info(@src(), "\t{s}: {?}", .{ field.name, @field(@"struct", field.name) });
             },
@@ -1078,4 +1087,139 @@ test "parse_pipeline_layout" {
         &db,
     );
     print_vk_chain(parsed_pipeline_layout.pipeline_layout_create_info);
+}
+
+pub const ParsedShaderModule = struct {
+    version: u32,
+    hash: u64,
+    shader_module_create_info: *const vk.VkShaderModuleCreateInfo,
+};
+pub fn parse_shader_module(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    payload: []const u8,
+) !ParsedShaderModule {
+    const Inner = struct {
+        fn parse_sm(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+            vk_shader_module_create_info: *vk.VkShaderModuleCreateInfo,
+            shader_code_payload: []const u8,
+        ) !void {
+            // NOTE: there is a possibility that the json object does not have
+            // `varintOffset` and `variantSize` fields. In such case the shader code
+            // is inlined in the `code` string. Skip this case for now.
+            var variant_offset: u64 = 0;
+            var variant_size: u64 = 0;
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "varintOffset")) {
+                    const v = try scanner_next_number(scanner);
+                    variant_offset = try std.fmt.parseInt(u64, v, 10);
+                } else if (std.mem.eql(u8, s, "varintSize")) {
+                    const v = try scanner_next_number(scanner);
+                    variant_size = try std.fmt.parseInt(u64, v, 10);
+                } else if (std.mem.eql(u8, s, "codeSize")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_shader_module_create_info.codeSize = try std.fmt.parseInt(u64, v, 10);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_shader_module_create_info.flags = try std.fmt.parseInt(u32, v, 10);
+                }
+            }
+            if (shader_code_payload.len < variant_offset + variant_size)
+                return error.InvalidShaderPayload;
+            const code = try aa.alignedAlloc(
+                u32,
+                64,
+                vk_shader_module_create_info.codeSize / @sizeOf(u32),
+            );
+            if (!decode_shader_payload(
+                shader_code_payload[variant_offset..][0..variant_size],
+                code,
+            ))
+                return error.InvalidShaderPayloadEncoding;
+            vk_shader_module_create_info.pCode = @ptrCast(code.ptr);
+        }
+
+        fn decode_shader_payload(input: []const u8, output: []u32) bool {
+            var offset: u64 = 0;
+            for (output) |*out| {
+                out.* = 0;
+                var shift: u32 = 0;
+                while (true) : ({
+                    offset += 1;
+                    shift += 7;
+                }) {
+                    if (input.len < offset or 32 < shift)
+                        return false;
+                    out.* |= @as(u32, @intCast(input[offset] & 0x7f)) << @truncate(shift);
+                    if (input[offset] & 0x80 == 0)
+                        break;
+                }
+                offset += 1;
+            }
+            return offset == input.len;
+        }
+    };
+    // For shader modules the payload is divided in to 2 parts: json and code.
+    // json part is 0 teriminated.
+    const json_str = std.mem.span(@as([*c]const u8, @ptrCast(payload.ptr)));
+    if (json_str.len == payload.len)
+        return error.NoShaderCodePayload;
+    // The 0 byte is not included into the `json_str.len`, so add it manually.
+    const shader_code_payload = payload[json_str.len + 1 ..];
+
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_shader_module_create_info = try alloc.create(vk.VkShaderModuleCreateInfo);
+    vk_shader_module_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+
+    var result: ParsedShaderModule = .{
+        .version = 0,
+        .hash = 0,
+        .shader_module_create_info = vk_shader_module_create_info,
+    };
+
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "shaderModules")) {
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try Inner.parse_sm(
+                alloc,
+                &scanner,
+                vk_shader_module_create_info,
+                shader_code_payload,
+            );
+        }
+    }
+    return result;
+}
+
+test "parse_shader_module" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "shaderModules": {
+        \\    "959dfe0bd6073194": {
+        \\      "varintOffset": 0,
+        \\      "varintSize": 4,
+        \\      "codeSize": 4,
+        \\      "flags": 0
+        \\    }
+        \\  }
+        \\}
+    ++ "\x00\x81\x82\x83\x00";
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
+
+    const parsed_shader_module = try parse_shader_module(alloc, tmp_alloc, json);
+    print_vk_struct(parsed_shader_module.shader_module_create_info);
 }

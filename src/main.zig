@@ -151,6 +151,27 @@ pub fn main() !void {
         );
         // log.info(@src(), "Created object: {?}", .{pl.object});
     }
+
+    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
+    for (shader_modules) |*sm| {
+        const e = Database.Entry.from_ptr(sm.entry_ptr);
+        const parsed_shader_module = try parsing.parse_shader_module(
+            arena_alloc,
+            tmp_alloc,
+            sm.payload,
+        );
+        // log.info(@src(), "Parsed shader module create info:", .{});
+        // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
+        if (parsed_shader_module.version != 6)
+            return error.ShaderModuleVersionMissmatch;
+        if (parsed_shader_module.hash != try e.get_value())
+            return error.ShaderModuleHashMissmatch;
+        sm.object = try create_shader_module(
+            vk_device,
+            parsed_shader_module.shader_module_create_info,
+        );
+        // log.info(@src(), "Created object: {?}", .{sm.object});
+    }
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -300,7 +321,8 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         // if (!(entry_tag == .APPLICATION_INFO or
         //     entry_tag == .SAMPLER or
         //     entry_tag == .DESCRIPTOR_SET_LAYOUT or
-        //     entry_tag == .PIPELINE_LAYOUT))
+        //     entry_tag == .PIPELINE_LAYOUT or
+        //     entry_tag == .SHADER_MODULE))
         //     continue;
         log.info(@src(), "Found entry: {}", .{entry});
 
@@ -903,6 +925,20 @@ pub fn create_pipeline_layout(
         &pipeline_layout,
     ));
     return pipeline_layout;
+}
+
+pub fn create_shader_module(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkShaderModuleCreateInfo,
+) !vk.VkShaderModule {
+    var shader_module: vk.VkShaderModule = undefined;
+    try vk.check_result(vk.vkCreateShaderModule.?(
+        vk_device,
+        create_info,
+        null,
+        &shader_module,
+    ));
+    return shader_module;
 }
 
 test "all" {
