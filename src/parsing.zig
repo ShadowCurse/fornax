@@ -184,6 +184,31 @@ pub fn parse_type(
     }
 }
 
+fn parse_object_array(
+    comptime T: type,
+    comptime TAG: Database.Entry.Tag,
+    aa: Allocator,
+    sa: Allocator,
+    scanner: *std.json.Scanner,
+    db: *const Database,
+) ![]T {
+    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    var tmp: std.ArrayListUnmanaged(T) = .empty;
+    while (true) {
+        switch (try scanner.next()) {
+            .string => |hash_str| {
+                const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                const entries = db.entries.getPtrConst(TAG);
+                const entry = entries.getPtr(hash).?;
+                try tmp.append(sa, @ptrCast(entry.object));
+            },
+            .array_end => break,
+            else => return error.InvalidJson,
+        }
+    }
+    return try aa.dupe(T, tmp.items);
+}
+
 pub fn parse_physical_device_mesh_shader_features_ext(
     scanner: *std.json.Scanner,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
@@ -740,21 +765,14 @@ pub fn parse_descriptor_set_layout(
                         const v = try scanner_next_number(scanner);
                         binding.binding = try std.fmt.parseInt(u32, v, 10);
                     } else if (std.mem.eql(u8, s, "immutableSamplers")) {
-                        if (try scanner.next() != .array_begin) return error.InvalidJson;
-                        var tmp_samplers: std.ArrayListUnmanaged(vk.VkSampler) = .empty;
-                        while (true) {
-                            switch (try scanner.next()) {
-                                .string => |hash_str| {
-                                    const hash = try std.fmt.parseInt(u64, hash_str, 16);
-                                    const samplers = db.entries.getPtrConst(.SAMPLER);
-                                    const sampler = samplers.getPtr(hash).?;
-                                    try tmp_samplers.append(sa, @ptrCast(sampler.object));
-                                },
-                                .array_end => break,
-                                else => return error.InvalidJson,
-                            }
-                        }
-                        const samplers = try aa.dupe(vk.VkSampler, tmp_samplers.items);
+                        const samplers = try parse_object_array(
+                            vk.VkSampler,
+                            .SAMPLER,
+                            aa,
+                            sa,
+                            scanner,
+                            db,
+                        );
                         binding.pImmutableSamplers = @ptrCast(samplers.ptr);
                     }
                 }
@@ -898,7 +916,14 @@ pub fn parse_pipeline_layout(
                     vk_pipeline_layout_create_info.pushConstantRangeCount =
                         @intCast(constant_ranges.len);
                 } else if (std.mem.eql(u8, s, "setLayouts")) {
-                    const set_layouts = try parse_descriptor_set_layouts(aa, sa, scanner, db);
+                    const set_layouts = try parse_object_array(
+                        vk.VkDescriptorSetLayout,
+                        .DESCRIPTOR_SET_LAYOUT,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
                     vk_pipeline_layout_create_info.pSetLayouts = @ptrCast(set_layouts.ptr);
                     vk_pipeline_layout_create_info.setLayoutCount = @intCast(set_layouts.len);
                 } else {
