@@ -129,6 +129,23 @@ pub fn main() !void {
         );
         // log.info(@src(), "Created object: {?}", .{dsl.object});
     }
+
+    const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
+    for (pipeline_layouts) |*pl| {
+        const e = Database.Entry.from_ptr(pl.entry_ptr);
+        const parsed_pipeline_layout = try parsing.parse_pipeline_layout(
+            arena_alloc,
+            tmp_alloc,
+            pl.payload,
+            &db,
+        );
+        // log.info(@src(), "Parsed descriptor set layout create info:", .{});
+        // parsing.print_vk_struct(parsed_pipeline_layout.pipeline_layout_create_info);
+        if (parsed_pipeline_layout.version != 6)
+            return error.PipelineLayoutVersionMissmatch;
+        if (parsed_pipeline_layout.hash != try e.get_value())
+            return error.PipelineLayoutHashMissmatch;
+    }
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -277,7 +294,8 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         const entry_tag = try entry.get_tag();
         // if (!(entry_tag == .APPLICATION_INFO or
         //     entry_tag == .SAMPLER or
-        //     entry_tag == .DESCRIPTOR_SET_LAYOUT))
+        //     entry_tag == .DESCRIPTOR_SET_LAYOUT or
+        //     entry_tag == .PIPELINE_LAYOUT))
         //     continue;
         log.info(@src(), "Found entry: {}", .{entry});
 

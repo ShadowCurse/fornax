@@ -26,10 +26,25 @@ pub fn print_vk_struct(@"struct": anytype) void {
             },
             [*c]const vk.VkDescriptorSetLayoutBinding => {
                 const len = @field(@"struct", "bindingCount");
-                var bindings: []const vk.VkDescriptorSetLayoutBinding = undefined;
-                bindings.ptr = @field(@"struct", field.name);
-                bindings.len = len;
-                for (bindings) |*binding|
+                var elements: []const vk.VkDescriptorSetLayoutBinding = undefined;
+                elements.ptr = @field(@"struct", field.name);
+                elements.len = len;
+                for (elements) |*binding|
+                    print_vk_struct(binding);
+            },
+            [*c]const vk.VkDescriptorSetLayout => {
+                const len = @field(@"struct", "setLayoutCount");
+                var elements: []const *anyopaque = undefined;
+                elements.ptr = @ptrCast(@field(@"struct", field.name));
+                elements.len = len;
+                log.info(@src(), "\t{s}: {any}", .{ field.name, elements });
+            },
+            [*c]const vk.VkPushConstantRange => {
+                const len = @field(@"struct", "pushConstantRangeCount");
+                var elements: []const vk.VkPushConstantRange = undefined;
+                elements.ptr = @field(@"struct", field.name);
+                elements.len = len;
+                for (elements) |*binding|
                     print_vk_struct(binding);
             },
             else => log.info(
@@ -53,6 +68,11 @@ pub fn print_vk_chain(chain: anytype) void {
             },
             vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO => {
                 const nn: *const vk.VkDescriptorSetLayoutCreateInfo = @alignCast(@ptrCast(c));
+                print_vk_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO => {
+                const nn: *const vk.VkPipelineLayoutCreateInfo = @alignCast(@ptrCast(c));
                 print_vk_struct(nn);
                 current = nn.pNext;
             },
@@ -651,8 +671,10 @@ test "parse_sampler" {
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
 
-    const parsed_sampler = try parse_sampler(alloc, json);
+    const parsed_sampler = try parse_sampler(alloc, tmp_alloc, json);
     print_vk_struct(parsed_sampler.sampler_create_info);
 }
 
@@ -823,8 +845,8 @@ test "parse_descriptor_set_layout" {
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const alloc = arena.allocator();
-    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = scratch_arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
 
     var db: Database = .{
         .file_mem = &.{},
@@ -844,4 +866,191 @@ test "parse_descriptor_set_layout" {
         &db,
     );
     print_vk_chain(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
+}
+
+pub const ParsedPipelineLayout = struct {
+    version: u32,
+    hash: u64,
+    pipeline_layout_create_info: *const vk.VkPipelineLayoutCreateInfo,
+};
+pub fn parse_pipeline_layout(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    json_str: []const u8,
+    database: *const Database,
+) !ParsedPipelineLayout {
+    const Inner = struct {
+        fn parse_layout(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            vk_pipeline_layout_create_info: *vk.VkPipelineLayoutCreateInfo,
+            db: *const Database,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_pipeline_layout_create_info.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "pushConstantRanges")) {
+                    const constant_ranges = try parse_push_constant_ranges(aa, sa, scanner);
+                    vk_pipeline_layout_create_info.pPushConstantRanges =
+                        @ptrCast(constant_ranges.ptr);
+                    vk_pipeline_layout_create_info.pushConstantRangeCount =
+                        @intCast(constant_ranges.len);
+                } else if (std.mem.eql(u8, s, "setLayouts")) {
+                    const set_layouts = try parse_descriptor_set_layouts(aa, sa, scanner, db);
+                    vk_pipeline_layout_create_info.pSetLayouts = @ptrCast(set_layouts.ptr);
+                    vk_pipeline_layout_create_info.setLayoutCount = @intCast(set_layouts.len);
+                } else {
+                    return error.InvalidJson;
+                }
+            }
+        }
+
+        fn parse_push_constant_ranges(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) ![]vk.VkPushConstantRange {
+            var tmp_ranges: std.ArrayListUnmanaged(vk.VkPushConstantRange) = .empty;
+            while (try scanner_array_next(scanner)) {
+                try tmp_ranges.append(sa, .{});
+                const range = &tmp_ranges.items[tmp_ranges.items.len - 1];
+                try parse_type(
+                    &.{
+                        .{
+                            .json_name = "stageFlags",
+                            .field_name = "stageFlags",
+                            .type = u32,
+                        },
+                        .{
+                            .json_name = "size",
+                            .field_name = "size",
+                            .type = u32,
+                        },
+                        .{
+                            .json_name = "offset",
+                            .field_name = "offset",
+                            .type = u32,
+                        },
+                    },
+                    aa,
+                    scanner,
+                    range,
+                );
+            }
+            return aa.dupe(vk.VkPushConstantRange, tmp_ranges.items);
+        }
+
+        fn parse_descriptor_set_layouts(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+        ) ![]vk.VkDescriptorSetLayout {
+            if (try scanner.next() != .array_begin) return error.InvalidJson;
+            var tmp_layouts: std.ArrayListUnmanaged(vk.VkDescriptorSetLayout) = .empty;
+            while (true) {
+                switch (try scanner.next()) {
+                    .string => |hash_str| {
+                        const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                        const layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT);
+                        const layout = layouts.getPtr(hash).?;
+                        try tmp_layouts.append(sa, @ptrCast(layout.object));
+                    },
+                    .array_end => break,
+                    else => return error.InvalidJson,
+                }
+            }
+            return try aa.dupe(vk.VkDescriptorSetLayout, tmp_layouts.items);
+        }
+    };
+
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_pipeline_layout_create_info =
+        try alloc.create(vk.VkPipelineLayoutCreateInfo);
+    vk_pipeline_layout_create_info.* =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+
+    var result: ParsedPipelineLayout = .{
+        .version = 0,
+        .hash = 0,
+        .pipeline_layout_create_info = vk_pipeline_layout_create_info,
+    };
+
+    while (true) {
+        switch (try scanner.next()) {
+            .string => |s| {
+                if (std.mem.eql(u8, s, "version")) {
+                    const v = try scanner_next_number(&scanner);
+                    result.version = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "pipelineLayouts")) {
+                    if (try scanner.next() != .object_begin) return error.InvalidJson;
+                    const ss = try scanner_next_string(&scanner);
+                    result.hash = try std.fmt.parseInt(u64, ss, 16);
+                    if (try scanner.next() != .object_begin) return error.InvalidJson;
+                    try Inner.parse_layout(
+                        alloc,
+                        tmp_alloc,
+                        &scanner,
+                        vk_pipeline_layout_create_info,
+                        database,
+                    );
+                } else {
+                    return error.InvalidJson;
+                }
+            },
+            .end_of_document => break,
+            else => {},
+        }
+    }
+    return result;
+}
+
+test "parse_pipeline_layout" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "pipelineLayouts": {
+        \\    "3dc5f23c21306af3": {
+        \\      "flags": 0,
+        \\      "pushConstantRanges": [
+        \\        {
+        \\          "stageFlags": 17,
+        \\          "size": 16,
+        \\          "offset": 0
+        \\        }
+        \\      ],
+        \\      "setLayouts": [
+        \\        "cb32b2cfac4b21ee"
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
+
+    var db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+    try db.entries.getPtr(.DESCRIPTOR_SET_LAYOUT).put(alloc, 0xcb32b2cfac4b21ee, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .object = @ptrFromInt(0x69),
+    });
+
+    const parsed_pipeline_layout = try parse_pipeline_layout(
+        alloc,
+        tmp_alloc,
+        json,
+        &db,
+    );
+    print_vk_chain(parsed_pipeline_layout.pipeline_layout_create_info);
 }
