@@ -172,6 +172,27 @@ pub fn main() !void {
         );
         // log.info(@src(), "Created object: {?}", .{sm.object});
     }
+
+    const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
+    for (render_passes) |*rp| {
+        const e = Database.Entry.from_ptr(rp.entry_ptr);
+        const parsed_render_pass = try parsing.parse_render_pass(
+            arena_alloc,
+            tmp_alloc,
+            rp.payload,
+        );
+        // log.info(@src(), "Parsed shader module create info:", .{});
+        // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
+        if (parsed_render_pass.version != 6)
+            return error.RenderPassVersionMissmatch;
+        if (parsed_render_pass.hash != try e.get_value())
+            return error.RenderPassHashMissmatch;
+        rp.object = try create_render_pass(
+            vk_device,
+            parsed_render_pass.render_pass_create_info,
+        );
+        // log.info(@src(), "Created object: {?}", .{rp.object});
+    }
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -322,6 +343,7 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         //     entry_tag == .SAMPLER or
         //     entry_tag == .DESCRIPTOR_SET_LAYOUT or
         //     entry_tag == .PIPELINE_LAYOUT or
+        //     entry_tag == .RENDER_PASS or
         //     entry_tag == .SHADER_MODULE))
         //     continue;
         log.info(@src(), "Found entry: {}", .{entry});
@@ -939,6 +961,20 @@ pub fn create_shader_module(
         &shader_module,
     ));
     return shader_module;
+}
+
+pub fn create_render_pass(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkRenderPassCreateInfo,
+) !vk.VkRenderPass {
+    var render_pass: vk.VkRenderPass = undefined;
+    try vk.check_result(vk.vkCreateRenderPass.?(
+        vk_device,
+        create_info,
+        null,
+        &render_pass,
+    ));
+    return render_pass;
 }
 
 test "all" {
