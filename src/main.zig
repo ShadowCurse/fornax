@@ -145,6 +145,11 @@ pub fn main() !void {
             return error.PipelineLayoutVersionMissmatch;
         if (parsed_pipeline_layout.hash != try e.get_value())
             return error.PipelineLayoutHashMissmatch;
+        pl.object = try create_pipeline_layout(
+            vk_device,
+            parsed_pipeline_layout.pipeline_layout_create_info,
+        );
+        // log.info(@src(), "Created object: {?}", .{pl.object});
     }
 }
 
@@ -884,6 +889,20 @@ pub fn create_descriptor_set_layout(
         &descriptor_set_layout,
     ));
     return descriptor_set_layout;
+}
+
+pub fn create_pipeline_layout(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkPipelineLayoutCreateInfo,
+) !vk.VkPipelineLayout {
+    var pipeline_layout: vk.VkPipelineLayout = undefined;
+    try vk.check_result(vk.vkCreatePipelineLayout.?(
+        vk_device,
+        create_info,
+        null,
+        &pipeline_layout,
+    ));
+    return pipeline_layout;
 }
 
 test "all" {
