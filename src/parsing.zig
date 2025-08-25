@@ -377,6 +377,50 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
     }
 }
 
+pub fn parse_pipeline_rendering_create_info_khr(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPipelineRenderingCreateInfo,
+) !void {
+    while (try scanner_object_next_field(scanner)) |s| {
+        if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
+            const v = try scanner_next_number(scanner);
+            obj.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
+            const v = try scanner_next_number(scanner);
+            obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "viewMask")) {
+            const v = try scanner_next_number(scanner);
+            obj.viewMask = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "colorAttachmentFormats")) {
+            if (try scanner.next() != .array_begin) return error.InvalidJson;
+            var tmp: std.ArrayListUnmanaged(vk.VkFormat) = .empty;
+            while (true) {
+                switch (try scanner.next()) {
+                    .number => |v| {
+                        const format = try std.fmt.parseInt(u32, v, 10);
+                        try tmp.append(tmp_alloc, format);
+                    },
+                    .array_end => break,
+                    else => return error.InvalidJson,
+                }
+            }
+            const formats = try alloc.dupe(vk.VkFormat, tmp.items);
+            obj.pColorAttachmentFormats = @ptrCast(formats.ptr);
+            obj.colorAttachmentCount = @intCast(formats.len);
+        } else if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
+            const v = try scanner_next_number(scanner);
+            obj.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
+            const v = try scanner_next_number(scanner);
+            obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else {
+            return error.InvalidJson;
+        }
+    }
+}
+
 pub fn parse_pnext_chain(
     alloc: Allocator,
     tmp_alloc: Allocator,
@@ -425,6 +469,22 @@ pub fn parse_pnext_chain(
                     }
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
                     try parse_descriptor_set_layout_binding_flags_create_info_ext(
+                        aa,
+                        sa,
+                        s,
+                        obj,
+                    );
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR => {
+                    const obj = try aa.create(vk.VkPipelineRenderingCreateInfo);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_pipeline_rendering_create_info_khr(
                         aa,
                         sa,
                         s,
@@ -1628,4 +1688,868 @@ test "parse_render_pass" {
 
     const parsed_render_pass = try parse_render_pass(alloc, tmp_alloc, json);
     print_vk_struct(parsed_render_pass.render_pass_create_info);
+}
+
+pub const ParsedGraphicsPipeline = struct {
+    version: u32,
+    hash: u64,
+    graphics_pipeline_create_info: *const vk.VkGraphicsPipelineCreateInfo,
+};
+pub fn parse_graphics_pipeline(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    json_str: []const u8,
+    database: *const Database,
+) !ParsedGraphicsPipeline {
+    const Inner = struct {
+        fn parse_gp(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            vk_graphics_pipeline_create_info: *vk.VkGraphicsPipelineCreateInfo,
+            db: *const Database,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_graphics_pipeline_create_info.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
+                    const v = try scanner_next_string(scanner);
+                    const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
+                    if (base_pipeline_hash != 0)
+                        return error.BasePipelinesNotSupported;
+                } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_graphics_pipeline_create_info.basePipelineIndex =
+                        try std.fmt.parseInt(i32, v, 10);
+                } else if (std.mem.eql(u8, s, "layout")) {
+                    const v = try scanner_next_string(scanner);
+                    const layout_hash = try std.fmt.parseInt(u64, v, 16);
+                    const layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT);
+                    const layout = layouts.getPtr(layout_hash).?;
+                    vk_graphics_pipeline_create_info.layout = @ptrCast(layout.object);
+                } else if (std.mem.eql(u8, s, "renderPass")) {
+                    const v = try scanner_next_string(scanner);
+                    const render_pass_hash = try std.fmt.parseInt(u64, v, 16);
+                    if (render_pass_hash != 0) {
+                        const render_passes = db.entries.getPtrConst(.RENDER_PASS);
+                        const render_pass = render_passes.getPtr(render_pass_hash).?;
+                        vk_graphics_pipeline_create_info.renderPass =
+                            @ptrCast(render_pass.object);
+                    }
+                } else if (std.mem.eql(u8, s, "subpass")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_graphics_pipeline_create_info.subpass = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "dynamicState")) {
+                    const dynamic_state = try parse_dynamic_state(aa, sa, scanner);
+                    vk_graphics_pipeline_create_info.pDynamicState = dynamic_state;
+                } else if (std.mem.eql(u8, s, "multisampleState")) {
+                    const multisample_state = try parse_multisample_state(aa, scanner);
+                    vk_graphics_pipeline_create_info.pMultisampleState = multisample_state;
+                } else if (std.mem.eql(u8, s, "vertexInputState")) {
+                    const vertex_input_state = try parse_vertex_input_state(aa, sa, scanner);
+                    vk_graphics_pipeline_create_info.pVertexInputState = vertex_input_state;
+                } else if (std.mem.eql(u8, s, "rasterizationState")) {
+                    const raseterization_state = try parse_rasterization_state(aa, scanner);
+                    vk_graphics_pipeline_create_info.pRasterizationState = raseterization_state;
+                } else if (std.mem.eql(u8, s, "inputAssemblyState")) {
+                    const input_assembly_state = try parse_input_assembly_state(aa, scanner);
+                    vk_graphics_pipeline_create_info.pInputAssemblyState = input_assembly_state;
+                } else if (std.mem.eql(u8, s, "colorBlendState")) {
+                    const color_blend_state = try parse_color_blend_state(aa, sa, scanner);
+                    vk_graphics_pipeline_create_info.pColorBlendState = color_blend_state;
+                } else if (std.mem.eql(u8, s, "viewportState")) {
+                    const viewport_state = try parse_viewport_state(aa, scanner);
+                    vk_graphics_pipeline_create_info.pViewportState = viewport_state;
+                } else if (std.mem.eql(u8, s, "depthStencilState")) {
+                    const depth_stencil_state = try parse_depth_stencil_state(aa, scanner);
+                    vk_graphics_pipeline_create_info.pDepthStencilState = depth_stencil_state;
+                } else if (std.mem.eql(u8, s, "stages")) {
+                    const stages = try parse_stages(aa, sa, scanner, db);
+                    vk_graphics_pipeline_create_info.pStages = @ptrCast(stages.ptr);
+                    vk_graphics_pipeline_create_info.stageCount = @intCast(stages.len);
+                } else if (std.mem.eql(u8, s, "pNext")) {
+                    vk_graphics_pipeline_create_info.pNext =
+                        try parse_pnext_chain(aa, sa, scanner);
+                }
+            }
+        }
+
+        fn parse_dynamic_state(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineDynamicStateCreateInfo {
+            const dynamic_state = try aa.create(vk.VkPipelineDynamicStateCreateInfo);
+            dynamic_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    dynamic_state.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "dynamicState")) {
+                    if (try scanner.next() != .array_begin) return error.InvalidJson;
+                    var tmp: std.ArrayListUnmanaged(vk.VkDynamicState) = .empty;
+                    while (true) {
+                        switch (try scanner.next()) {
+                            .number => |v| {
+                                const state = try std.fmt.parseInt(u32, v, 10);
+                                try tmp.append(sa, state);
+                            },
+                            .array_end => break,
+                            else => return error.InvalidJson,
+                        }
+                    }
+                    const states = try aa.dupe(vk.VkDynamicState, tmp.items);
+                    dynamic_state.pDynamicStates = @ptrCast(states.ptr);
+                    dynamic_state.dynamicStateCount = @intCast(states.len);
+                }
+            }
+            return dynamic_state;
+        }
+
+        fn parse_multisample_state(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineMultisampleStateCreateInfo {
+            const multisample_state =
+                try aa.create(vk.VkPipelineMultisampleStateCreateInfo);
+            multisample_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+            };
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "flags",
+                        .field_name = "flags",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "rasterizationSamples",
+                        .field_name = "rasterizationSamples",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "sampleShadingEnable",
+                        .field_name = "sampleShadingEnable",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "minSampleShading",
+                        .field_name = "minSampleShading",
+                        .type = f32,
+                    },
+                    .{
+                        .json_name = "alphaToOneEnable",
+                        .field_name = "alphaToOneEnable",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "alphaToCoverageEnable",
+                        .field_name = "alphaToCoverageEnable",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                multisample_state,
+            );
+            return multisample_state;
+        }
+
+        fn parse_vertex_input_state(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineVertexInputStateCreateInfo {
+            const vertex_input_state =
+                try aa.create(vk.VkPipelineVertexInputStateCreateInfo);
+            vertex_input_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    vertex_input_state.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "attributes")) {
+                    if (try scanner.next() != .array_begin) return error.InvalidJson;
+                    var tmp: std.ArrayListUnmanaged(vk.VkVertexInputAttributeDescription) =
+                        .empty;
+                    while (try scanner_array_next(scanner)) {
+                        try tmp.append(sa, .{});
+                        const item = &tmp.items[tmp.items.len - 1];
+                        try parse_type(
+                            &.{
+                                .{
+                                    .json_name = "location",
+                                    .field_name = "location",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "binding",
+                                    .field_name = "binding",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "format",
+                                    .field_name = "format",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "offset",
+                                    .field_name = "offset",
+                                    .type = u32,
+                                },
+                            },
+
+                            null,
+                            scanner,
+                            item,
+                        );
+                    }
+                    const attributes =
+                        try aa.dupe(vk.VkVertexInputAttributeDescription, tmp.items);
+                    vertex_input_state.pVertexAttributeDescriptions = @ptrCast(attributes.ptr);
+                    vertex_input_state.vertexAttributeDescriptionCount = @intCast(attributes.len);
+                } else if (std.mem.eql(u8, s, "bindings")) {
+                    if (try scanner.next() != .array_begin) return error.InvalidJson;
+                    var tmp: std.ArrayListUnmanaged(vk.VkVertexInputBindingDescription) =
+                        .empty;
+                    while (try scanner_array_next(scanner)) {
+                        try tmp.append(sa, .{});
+                        const item = &tmp.items[tmp.items.len - 1];
+                        try parse_type(
+                            &.{
+                                .{
+                                    .json_name = "binding",
+                                    .field_name = "binding",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "stride",
+                                    .field_name = "stride",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "inputRate",
+                                    .field_name = "inputRate",
+                                    .type = u32,
+                                },
+                            },
+
+                            null,
+                            scanner,
+                            item,
+                        );
+                    }
+                    const bindings =
+                        try aa.dupe(vk.VkVertexInputBindingDescription, tmp.items);
+                    vertex_input_state.pVertexBindingDescriptions = @ptrCast(bindings.ptr);
+                    vertex_input_state.vertexBindingDescriptionCount = @intCast(bindings.len);
+                }
+            }
+            return vertex_input_state;
+        }
+
+        fn parse_rasterization_state(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineRasterizationStateCreateInfo {
+            const rasterization_state =
+                try aa.create(vk.VkPipelineRasterizationStateCreateInfo);
+            rasterization_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            };
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "flags",
+                        .field_name = "flags",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "depthBiasConstantFactor",
+                        .field_name = "depthBiasConstantFactor",
+                        .type = f32,
+                    },
+                    .{
+                        .json_name = "depthBiasSlopeFactor",
+                        .field_name = "depthBiasSlopeFactor",
+                        .type = f32,
+                    },
+                    .{
+                        .json_name = "depthBiasClamp",
+                        .field_name = "depthBiasClamp",
+                        .type = f32,
+                    },
+                    .{
+                        .json_name = "depthBiasEnable",
+                        .field_name = "depthBiasEnable",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "depthClampEnable",
+                        .field_name = "depthClampEnable",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "polygonMode",
+                        .field_name = "polygonMode",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "rasterizerDiscardEnable",
+                        .field_name = "rasterizerDiscardEnable",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "frontFace",
+                        .field_name = "frontFace",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "lineWidth",
+                        .field_name = "lineWidth",
+                        .type = f32,
+                    },
+                    .{
+                        .json_name = "cullMode",
+                        .field_name = "cullMode",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                rasterization_state,
+            );
+            return rasterization_state;
+        }
+
+        fn parse_input_assembly_state(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineInputAssemblyStateCreateInfo {
+            const input_assembly_state =
+                try aa.create(vk.VkPipelineInputAssemblyStateCreateInfo);
+            input_assembly_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            };
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "flags",
+                        .field_name = "flags",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "topology",
+                        .field_name = "topology",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "primitiveRestartEnable",
+                        .field_name = "primitiveRestartEnable",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                input_assembly_state,
+            );
+            return input_assembly_state;
+        }
+
+        fn parse_color_blend_state(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineColorBlendStateCreateInfo {
+            const color_blend_state =
+                try aa.create(vk.VkPipelineColorBlendStateCreateInfo);
+            color_blend_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    color_blend_state.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "logicOp")) {
+                    const v = try scanner_next_number(scanner);
+                    color_blend_state.logicOp = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "logicOpEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    color_blend_state.logicOpEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "blendConstants")) {
+                    if (try scanner.next() != .array_begin) return error.InvalidJson;
+                    var i: u32 = 0;
+                    while (true) {
+                        switch (try scanner.next()) {
+                            .number => |v| {
+                                color_blend_state.blendConstants[i] =
+                                    try std.fmt.parseFloat(f32, v);
+                            },
+                            .array_end => break,
+                            else => return error.InvalidJson,
+                        }
+                        i += 1;
+                    }
+                } else if (std.mem.eql(u8, s, "attachments")) {
+                    var tmp: std.ArrayListUnmanaged(vk.VkPipelineColorBlendAttachmentState) =
+                        .empty;
+                    while (try scanner_array_next(scanner)) {
+                        try tmp.append(sa, .{});
+                        const item = &tmp.items[tmp.items.len - 1];
+                        try parse_type(
+                            &.{
+                                .{
+                                    .json_name = "dstAlphaBlendFactor",
+                                    .field_name = "dstAlphaBlendFactor",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "srcAlphaBlendFactor",
+                                    .field_name = "srcAlphaBlendFactor",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "dstColorBlendFactor",
+                                    .field_name = "dstColorBlendFactor",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "srcColorBlendFactor",
+                                    .field_name = "srcColorBlendFactor",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "colorWriteMask",
+                                    .field_name = "colorWriteMask",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "alphaBlendOp",
+                                    .field_name = "alphaBlendOp",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "colorBlendOp",
+                                    .field_name = "colorBlendOp",
+                                    .type = u32,
+                                },
+                                .{
+                                    .json_name = "blendEnable",
+                                    .field_name = "blendEnable",
+                                    .type = u32,
+                                },
+                            },
+                            null,
+                            scanner,
+                            item,
+                        );
+                    }
+                    const attachments =
+                        try aa.dupe(vk.VkPipelineColorBlendAttachmentState, tmp.items);
+                    color_blend_state.pAttachments = @ptrCast(attachments.ptr);
+                    color_blend_state.attachmentCount = @intCast(attachments.len);
+                }
+            }
+            return color_blend_state;
+        }
+
+        fn parse_viewport_state(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineViewportStateCreateInfo {
+            const viewport_state =
+                try aa.create(vk.VkPipelineViewportStateCreateInfo);
+            viewport_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+            };
+            // TODO pViewports and pScissors
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "flags",
+                        .field_name = "flags",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "viewportCount",
+                        .field_name = "viewportCount",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "scissorCount",
+                        .field_name = "scissorCount",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                viewport_state,
+            );
+            return viewport_state;
+        }
+
+        fn parse_depth_stencil_state(
+            aa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineDepthStencilStateCreateInfo {
+            const depth_stencil_state =
+                try aa.create(vk.VkPipelineDepthStencilStateCreateInfo);
+            depth_stencil_state.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stencilTestEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.stencilTestEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "maxDepthBounds")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.maxDepthBounds = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "minDepthBounds")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.minDepthBounds = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "depthBoundsTestEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.depthBoundsTestEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthWriteEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.depthWriteEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthTestEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.depthTestEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthCompareOp")) {
+                    const v = try scanner_next_number(scanner);
+                    depth_stencil_state.depthCompareOp = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "front")) {
+                    try parse_type(
+                        &.{
+                            .{
+                                .json_name = "compareOp",
+                                .field_name = "compareOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "writeMask",
+                                .field_name = "writeMask",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "reference",
+                                .field_name = "reference",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "compareMask",
+                                .field_name = "compareMask",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "passOp",
+                                .field_name = "passOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "failOp",
+                                .field_name = "failOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "depthFailOp",
+                                .field_name = "depthFailOp",
+                                .type = u32,
+                            },
+                        },
+                        null,
+                        scanner,
+                        &depth_stencil_state.front,
+                    );
+                } else if (std.mem.eql(u8, s, "back")) {
+                    try parse_type(
+                        &.{
+                            .{
+                                .json_name = "compareOp",
+                                .field_name = "compareOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "writeMask",
+                                .field_name = "writeMask",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "reference",
+                                .field_name = "reference",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "compareMask",
+                                .field_name = "compareMask",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "passOp",
+                                .field_name = "passOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "failOp",
+                                .field_name = "failOp",
+                                .type = u32,
+                            },
+                            .{
+                                .json_name = "depthFailOp",
+                                .field_name = "depthFailOp",
+                                .type = u32,
+                            },
+                        },
+                        null,
+                        scanner,
+                        &depth_stencil_state.front,
+                    );
+                }
+            }
+            return depth_stencil_state;
+        }
+
+        fn parse_stages(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+        ) ![]vk.VkPipelineShaderStageCreateInfo {
+            var tmp: std.ArrayListUnmanaged(vk.VkPipelineShaderStageCreateInfo) = .empty;
+            while (try scanner_array_next(scanner)) {
+                try tmp.append(sa, .{});
+                const item = &tmp.items[tmp.items.len - 1];
+                item.* = .{
+                    .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                };
+                while (try scanner_object_next_field(scanner)) |s| {
+                    if (std.mem.eql(u8, s, "flags")) {
+                        const v = try scanner_next_number(scanner);
+                        item.flags = try std.fmt.parseInt(u32, v, 10);
+                    } else if (std.mem.eql(u8, s, "name")) {
+                        const name_str = try scanner_next_string(scanner);
+                        const name = try aa.dupeZ(u8, name_str);
+                        item.pName = @ptrCast(name.ptr);
+                    } else if (std.mem.eql(u8, s, "module")) {
+                        const hash_str = try scanner_next_string(scanner);
+                        const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                        const shader_modules = db.entries.getPtrConst(.SHADER_MODULE);
+                        const shader_module = shader_modules.getPtr(hash).?;
+                        item.module = @ptrCast(shader_module.object);
+                    } else if (std.mem.eql(u8, s, "stage")) {
+                        const v = try scanner_next_number(scanner);
+                        item.stage = try std.fmt.parseInt(u32, v, 10);
+                    }
+                }
+            }
+            return aa.dupe(vk.VkPipelineShaderStageCreateInfo, tmp.items);
+        }
+    };
+
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
+    vk_graphics_pipeline_create_info.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+    };
+
+    var result: ParsedGraphicsPipeline = .{
+        .version = 0,
+        .hash = 0,
+        .graphics_pipeline_create_info = vk_graphics_pipeline_create_info,
+    };
+
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "graphicsPipelines")) {
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try Inner.parse_gp(
+                alloc,
+                tmp_alloc,
+                &scanner,
+                vk_graphics_pipeline_create_info,
+                database,
+            );
+        }
+    }
+    return result;
+}
+
+test "parse_graphics_pipeline" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "graphicsPipelines": {
+        \\    "ef491d980afbddf7": {
+        \\      "flags": 0,
+        \\      "basePipelineHandle": "0000000000000000",
+        \\      "basePipelineIndex": -1,
+        \\      "layout": "3dc5f23c21306af3",
+        \\      "renderPass": "0000000000000000",
+        \\      "subpass": 0,
+        \\      "dynamicState": {
+        \\        "flags": 0,
+        \\        "dynamicState": [
+        \\          0,
+        \\          1
+        \\        ]
+        \\      },
+        \\      "multisampleState": {
+        \\        "flags": 0,
+        \\        "rasterizationSamples": 1,
+        \\        "sampleShadingEnable": 0,
+        \\        "minSampleShading": 1,
+        \\        "alphaToOneEnable": 0,
+        \\        "alphaToCoverageEnable": 0
+        \\      },
+        \\      "vertexInputState": {
+        \\        "flags": 0,
+        \\        "attributes": [],
+        \\        "bindings": []
+        \\      },
+        \\      "rasterizationState": {
+        \\        "flags": 0,
+        \\        "depthBiasConstantFactor": 0,
+        \\        "depthBiasSlopeFactor": 0,
+        \\        "depthBiasClamp": 0,
+        \\        "depthBiasEnable": 0,
+        \\        "depthClampEnable": 0,
+        \\        "polygonMode": 0,
+        \\        "rasterizerDiscardEnable": 0,
+        \\        "frontFace": 1,
+        \\        "lineWidth": 1,
+        \\        "cullMode": 0
+        \\      },
+        \\      "inputAssemblyState": {
+        \\        "flags": 0,
+        \\        "topology": 3,
+        \\        "primitiveRestartEnable": 0
+        \\      },
+        \\      "colorBlendState": {
+        \\        "flags": 0,
+        \\        "logicOp": 3,
+        \\        "logicOpEnable": 0,
+        \\        "blendConstants": [
+        \\          0,
+        \\          0,
+        \\          0,
+        \\          0
+        \\        ],
+        \\        "attachments": [
+        \\          {
+        \\            "dstAlphaBlendFactor": 0,
+        \\            "srcAlphaBlendFactor": 1,
+        \\            "dstColorBlendFactor": 7,
+        \\            "srcColorBlendFactor": 6,
+        \\            "colorWriteMask": 15,
+        \\            "alphaBlendOp": 0,
+        \\            "colorBlendOp": 0,
+        \\            "blendEnable": 1
+        \\          }
+        \\        ]
+        \\      },
+        \\      "viewportState": {
+        \\        "flags": 0,
+        \\        "viewportCount": 1,
+        \\        "scissorCount": 1
+        \\      },
+        \\      "depthStencilState": {
+        \\        "flags": 0,
+        \\        "stencilTestEnable": 0,
+        \\        "maxDepthBounds": 1,
+        \\        "minDepthBounds": 0,
+        \\        "depthBoundsTestEnable": 0,
+        \\        "depthWriteEnable": 1,
+        \\        "depthTestEnable": 1,
+        \\        "depthCompareOp": 6,
+        \\        "front": {
+        \\          "compareOp": 0,
+        \\          "writeMask": 0,
+        \\          "reference": 0,
+        \\          "compareMask": 0,
+        \\          "passOp": 0,
+        \\          "failOp": 0,
+        \\          "depthFailOp": 0
+        \\        },
+        \\        "back": {
+        \\          "compareOp": 0,
+        \\          "writeMask": 0,
+        \\          "reference": 0,
+        \\          "compareMask": 0,
+        \\          "passOp": 0,
+        \\          "failOp": 0,
+        \\          "depthFailOp": 0
+        \\        }
+        \\      },
+        \\      "stages": [
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "main",
+        \\          "module": "959dfe0bd6073194",
+        \\          "stage": 1
+        \\        },
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "main",
+        \\          "module": "0925def2d6ede3d9",
+        \\          "stage": 16
+        \\        }
+        \\      ],
+        \\      "pNext": [
+        \\        {
+        \\          "sType": 1000044002,
+        \\          "depthAttachmentFormat": 126,
+        \\          "stencilAttachmentFormat": 0,
+        \\          "viewMask": 0,
+        \\          "colorAttachmentFormats": [
+        \\            44
+        \\          ]
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
+
+    var db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x3dc5f23c21306af3, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .object = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x959dfe0bd6073194, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .object = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x0925def2d6ede3d9, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .object = @ptrFromInt(0x69),
+    });
+
+    const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
+    print_vk_struct(parsed_graphics_pipeline.graphics_pipeline_create_info);
 }

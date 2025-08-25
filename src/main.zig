@@ -193,6 +193,12 @@ pub fn main() !void {
         );
         // log.info(@src(), "Created object: {?}", .{rp.object});
     }
+
+    const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
+    for (graphics_pipelines) |*gp| {
+        _ = gp;
+        // log.info(@src(), "{s}", .{gp.payload});
+    }
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -344,7 +350,8 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         //     entry_tag == .DESCRIPTOR_SET_LAYOUT or
         //     entry_tag == .PIPELINE_LAYOUT or
         //     entry_tag == .RENDER_PASS or
-        //     entry_tag == .SHADER_MODULE))
+        //     entry_tag == .SHADER_MODULE or
+        //     entry_tag == .GRAPHICS_PIPELINE))
         //     continue;
         log.info(@src(), "Found entry: {}", .{entry});
 
