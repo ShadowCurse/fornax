@@ -180,6 +180,14 @@ fn scanner_next_string(scanner: *std.json.Scanner) ![]const u8 {
     }
 }
 
+fn scanner_next_number_or_string(scanner: *std.json.Scanner) ![]const u8 {
+    switch (try scanner.next()) {
+        .string => |s| return s,
+        .number => |v| return v,
+        else => return error.InvalidJson,
+    }
+}
+
 fn scanner_object_next_field(scanner: *std.json.Scanner) !?[]const u8 {
     loop: switch (try scanner.next()) {
         .string => |s| return s,
@@ -224,6 +232,7 @@ pub fn parse_simple_type(
     const output_fields = @typeInfo(output_type).@"struct".fields;
     var field_is_parsed: [output_fields.len]bool = .{false} ** output_fields.len;
     while (try scanner_object_next_field(scanner)) |s| {
+        var consumed: bool = false;
         inline for (output_fields, 0..) |field, i| {
             if (!field_is_parsed[i] and std.mem.eql(u8, s, field.name)) {
                 field_is_parsed[i] = true;
@@ -231,14 +240,20 @@ pub fn parse_simple_type(
                     i32, u32, c_uint => {
                         const v = try scanner_next_number(scanner);
                         @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
+                        consumed = true;
                     },
                     f32 => {
                         const v = try scanner_next_number(scanner);
                         @field(output, field.name) = try std.fmt.parseFloat(field.type, v);
+                        consumed = true;
                     },
                     else => {},
                 }
             }
+        }
+        if (!consumed) {
+            const v = try scanner_next_number_or_string(scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
 }
@@ -326,6 +341,9 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
             const flags = try parse_number_array(u32, alloc, tmp_alloc, scanner);
             obj.pBindingFlags = @ptrCast(flags.ptr);
             obj.bindingCount = @intCast(flags.len);
+        } else {
+            const v = try scanner_next_number_or_string(scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
 }
@@ -356,6 +374,9 @@ pub fn parse_pipeline_rendering_create_info_khr(
         } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
             const v = try scanner_next_number(scanner);
             obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else {
+            const v = try scanner_next_number_or_string(scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
 }
@@ -447,6 +468,9 @@ pub fn parse_pnext_chain(
                 &first_in_chain,
                 &last_pnext_in_chain,
             );
+        } else {
+            const v = try scanner_next_number_or_string(scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return first_in_chain;
@@ -471,10 +495,12 @@ pub fn parse_application_info(
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
             while (try scanner_object_next_field(scanner)) |s| {
                 if (std.mem.eql(u8, s, "applicationName")) {
-                    const name = try aa.dupeZ(u8, s);
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
                     item.pApplicationName = @ptrCast(name.ptr);
                 } else if (std.mem.eql(u8, s, "engineName")) {
-                    const name = try aa.dupeZ(u8, s);
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
                     item.pEngineName = @ptrCast(name.ptr);
                 } else if (std.mem.eql(u8, s, "applicationVersion")) {
                     const v = try scanner_next_number(scanner);
@@ -485,6 +511,9 @@ pub fn parse_application_info(
                 } else if (std.mem.eql(u8, s, "apiVersion")) {
                     const v = try scanner_next_number(scanner);
                     item.apiVersion = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -502,6 +531,9 @@ pub fn parse_application_info(
                     item.features.robustBufferAccess = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     item.pNext = try parse_pnext_chain(aa, sa, scanner);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -530,6 +562,9 @@ pub fn parse_application_info(
                 &scanner,
                 vk_physical_device_features2,
             );
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -609,6 +644,9 @@ pub fn parse_sampler(
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             if (try scanner.next() != .object_begin) return error.InvalidJson;
             try parse_simple_type(&scanner, vk_sampler_create_info);
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -689,6 +727,9 @@ pub fn parse_descriptor_set_layout(
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     item.pNext =
                         try parse_pnext_chain(aa, sa, scanner);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -723,6 +764,9 @@ pub fn parse_descriptor_set_layout(
                         db.?,
                     );
                     item.pImmutableSamplers = @ptrCast(samplers.ptr);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -754,6 +798,9 @@ pub fn parse_descriptor_set_layout(
                 database,
                 vk_descriptor_set_layout_create_info,
             );
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -869,6 +916,9 @@ pub fn parse_pipeline_layout(
                     );
                     item.pSetLayouts = @ptrCast(set_layouts.ptr);
                     item.setLayoutCount = @intCast(set_layouts.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -912,6 +962,9 @@ pub fn parse_pipeline_layout(
                 database,
                 vk_pipeline_layout_create_info,
             );
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -1001,6 +1054,9 @@ pub fn parse_shader_module(
                 } else if (std.mem.eql(u8, s, "flags")) {
                     const v = try scanner_next_number(scanner);
                     item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             if (shader_code_payload.len < variant_offset + variant_size)
@@ -1066,6 +1122,9 @@ pub fn parse_shader_module(
                 vk_shader_module_create_info,
                 shader_code_payload,
             );
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -1151,6 +1210,9 @@ pub fn parse_render_pass(
                     );
                     item.pSubpasses = @ptrCast(subpasses.ptr);
                     item.subpassCount = @intCast(subpasses.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -1243,6 +1305,9 @@ pub fn parse_render_pass(
                     );
                     item.pPreserveAttachments = @ptrCast(attachments.ptr);
                     item.preserveAttachmentCount = @intCast(attachments.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -1285,6 +1350,9 @@ pub fn parse_render_pass(
                 &scanner,
                 vk_render_pass_create_info,
             );
+        } else {
+            const v = try scanner_next_number_or_string(&scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
     return result;
@@ -1464,6 +1532,9 @@ pub fn parse_graphics_pipeline(
                     item.stageCount = @intCast(stages.len);
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     item.pNext = try parse_pnext_chain(aa, sa, scanner);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
@@ -1483,6 +1554,9 @@ pub fn parse_graphics_pipeline(
                     const states = try parse_number_array(u32, aa, sa, scanner);
                     item.pDynamicStates = @ptrCast(states.ptr);
                     item.dynamicStateCount = @intCast(states.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             return item;
@@ -1557,6 +1631,9 @@ pub fn parse_graphics_pipeline(
                     );
                     item.pVertexBindingDescriptions = @ptrCast(bindings.ptr);
                     item.vertexBindingDescriptionCount = @intCast(bindings.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             return item;
@@ -1630,6 +1707,9 @@ pub fn parse_graphics_pipeline(
                     );
                     item.pAttachments = @ptrCast(attachments.ptr);
                     item.attachmentCount = @intCast(attachments.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             return item;
@@ -1657,6 +1737,9 @@ pub fn parse_graphics_pipeline(
                     // Do nothing for now
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     // Do nothing for now
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             return item;
@@ -1697,6 +1780,9 @@ pub fn parse_graphics_pipeline(
                     try parse_simple_type(scanner, &item.front);
                 } else if (std.mem.eql(u8, s, "back")) {
                     try parse_simple_type(scanner, &item.front);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
             return item;
@@ -1730,6 +1816,9 @@ pub fn parse_graphics_pipeline(
                 } else if (std.mem.eql(u8, s, "stage")) {
                     const v = try scanner_next_number(scanner);
                     item.stage = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
                 }
             }
         }
