@@ -189,11 +189,29 @@ fn scanner_object_next_field(scanner: *std.json.Scanner) !?[]const u8 {
     }
 }
 
-fn scanner_array_next(scanner: *std.json.Scanner) !bool {
+fn scanner_array_next_object(scanner: *std.json.Scanner) !bool {
     loop: switch (try scanner.next()) {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return false,
         .object_begin => return true,
+        else => return error.InvalidJson,
+    }
+}
+
+fn scanner_array_next_number(scanner: *std.json.Scanner) !?[]const u8 {
+    loop: switch (try scanner.next()) {
+        .array_begin => continue :loop try scanner.next(),
+        .array_end => return null,
+        .number => |v| return v,
+        else => return error.InvalidJson,
+    }
+}
+
+fn scanner_array_next_string(scanner: *std.json.Scanner) !?[]const u8 {
+    loop: switch (try scanner.next()) {
+        .array_begin => continue :loop try scanner.next(),
+        .array_end => return null,
+        .string => |s| return s,
         else => return error.InvalidJson,
     }
 }
@@ -243,6 +261,21 @@ pub fn parse_type(
     }
 }
 
+fn parse_number_array(
+    comptime T: type,
+    aa: Allocator,
+    sa: Allocator,
+    scanner: *std.json.Scanner,
+) ![]T {
+    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    var tmp: std.ArrayListUnmanaged(T) = .empty;
+    while (try scanner_array_next_number(scanner)) |v| {
+        const number = try std.fmt.parseInt(T, v, 10);
+        try tmp.append(sa, number);
+    }
+    return try aa.dupe(T, tmp.items);
+}
+
 fn parse_handle_array(
     comptime T: type,
     comptime TAG: Database.Entry.Tag,
@@ -253,17 +286,11 @@ fn parse_handle_array(
 ) ![]T {
     if (try scanner.next() != .array_begin) return error.InvalidJson;
     var tmp: std.ArrayListUnmanaged(T) = .empty;
-    while (true) {
-        switch (try scanner.next()) {
-            .string => |hash_str| {
-                const hash = try std.fmt.parseInt(u64, hash_str, 16);
-                const entries = db.entries.getPtrConst(TAG);
-                const entry = entries.getPtr(hash).?;
-                try tmp.append(sa, @ptrCast(entry.handle));
-            },
-            .array_end => break,
-            else => return error.InvalidJson,
-        }
+    while (try scanner_array_next_string(scanner)) |hash_str| {
+        const hash = try std.fmt.parseInt(u64, hash_str, 16);
+        const entries = db.entries.getPtrConst(TAG);
+        const entry = entries.getPtr(hash).?;
+        try tmp.append(sa, @ptrCast(entry.handle));
     }
     return try aa.dupe(T, tmp.items);
 }
@@ -340,39 +367,11 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
     scanner: *std.json.Scanner,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
 ) !void {
-    const Inner = struct {
-        fn parse_flags(
-            al: Allocator,
-            tal: Allocator,
-            s: *std.json.Scanner,
-        ) ![]vk.VkDescriptorBindingFlags {
-            if (try s.next() != .array_begin) return error.InvalidJson;
-            switch (try s.peekNextTokenType()) {
-                .array_end => return &.{},
-                .number => {},
-                else => return error.InvalidJson,
-            }
-            var tmp_flags: std.ArrayListUnmanaged(vk.VkDescriptorBindingFlags) = .empty;
-            while (true) {
-                switch (try s.next()) {
-                    .number => |n| {
-                        const flag = try std.fmt.parseInt(u32, n, 10);
-                        try tmp_flags.append(tal, flag);
-                    },
-                    .array_end => break,
-                    else => return error.InvalidJson,
-                }
-            }
-            return al.dupe(vk.VkDescriptorBindingFlags, tmp_flags.items);
-        }
-    };
     while (try scanner_object_next_field(scanner)) |s| {
         if (std.mem.eql(u8, s, "bindingFlags")) {
-            const flags = try Inner.parse_flags(alloc, tmp_alloc, scanner);
+            const flags = try parse_number_array(u32, alloc, tmp_alloc, scanner);
             obj.pBindingFlags = @ptrCast(flags.ptr);
             obj.bindingCount = @intCast(flags.len);
-        } else {
-            return error.InvalidJson;
         }
     }
 }
@@ -394,19 +393,7 @@ pub fn parse_pipeline_rendering_create_info_khr(
             const v = try scanner_next_number(scanner);
             obj.viewMask = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "colorAttachmentFormats")) {
-            if (try scanner.next() != .array_begin) return error.InvalidJson;
-            var tmp: std.ArrayListUnmanaged(vk.VkFormat) = .empty;
-            while (true) {
-                switch (try scanner.next()) {
-                    .number => |v| {
-                        const format = try std.fmt.parseInt(u32, v, 10);
-                        try tmp.append(tmp_alloc, format);
-                    },
-                    .array_end => break,
-                    else => return error.InvalidJson,
-                }
-            }
-            const formats = try alloc.dupe(vk.VkFormat, tmp.items);
+            const formats = try parse_number_array(u32, alloc, tmp_alloc, scanner);
             obj.pColorAttachmentFormats = @ptrCast(formats.ptr);
             obj.colorAttachmentCount = @intCast(formats.len);
         } else if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
@@ -415,8 +402,6 @@ pub fn parse_pipeline_rendering_create_info_khr(
         } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
             const v = try scanner_next_number(scanner);
             obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
-        } else {
-            return error.InvalidJson;
         }
     }
 }
@@ -498,7 +483,7 @@ pub fn parse_pnext_chain(
 
     var first_in_chain: ?*anyopaque = null;
     var last_pnext_in_chain: ?**anyopaque = null;
-    while (try scanner_array_next(scanner)) {
+    while (try scanner_array_next_object(scanner)) {
         const s = try scanner_object_next_field(scanner) orelse return error.InvalidJson;
         if (std.mem.eql(u8, s, "sType")) {
             try Inner.parse_next(
@@ -508,7 +493,7 @@ pub fn parse_pnext_chain(
                 &first_in_chain,
                 &last_pnext_in_chain,
             );
-        } else return error.InvalidJson;
+        }
     }
     return first_in_chain;
 }
@@ -867,7 +852,7 @@ pub fn parse_descriptor_set_layout(
             db: *const Database,
         ) ![]vk.VkDescriptorSetLayoutBinding {
             var tmp_bindings: std.ArrayListUnmanaged(vk.VkDescriptorSetLayoutBinding) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp_bindings.append(sa, .{});
                 const binding = &tmp_bindings.items[tmp_bindings.items.len - 1];
                 while (try scanner_object_next_field(scanner)) |s| {
@@ -912,30 +897,22 @@ pub fn parse_descriptor_set_layout(
         .descriptor_set_layout_create_info = vk_descriptor_set_layout_create_info,
     };
 
-    while (true) {
-        switch (try scanner.next()) {
-            .string => |s| {
-                if (std.mem.eql(u8, s, "version")) {
-                    const v = try scanner_next_number(&scanner);
-                    result.version = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "setLayouts")) {
-                    if (try scanner.next() != .object_begin) return error.InvalidJson;
-                    const ss = try scanner_next_string(&scanner);
-                    result.hash = try std.fmt.parseInt(u64, ss, 16);
-                    if (try scanner.next() != .object_begin) return error.InvalidJson;
-                    try Inner.parse_layout(
-                        alloc,
-                        tmp_alloc,
-                        &scanner,
-                        vk_descriptor_set_layout_create_info,
-                        database,
-                    );
-                } else {
-                    return error.InvalidJson;
-                }
-            },
-            .end_of_document => break,
-            else => {},
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "setLayouts")) {
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try Inner.parse_layout(
+                alloc,
+                tmp_alloc,
+                &scanner,
+                vk_descriptor_set_layout_create_info,
+                database,
+            );
         }
     }
     return result;
@@ -1057,7 +1034,7 @@ pub fn parse_pipeline_layout(
             scanner: *std.json.Scanner,
         ) ![]vk.VkPushConstantRange {
             var tmp_ranges: std.ArrayListUnmanaged(vk.VkPushConstantRange) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp_ranges.append(sa, .{});
                 const range = &tmp_ranges.items[tmp_ranges.items.len - 1];
                 try parse_type(
@@ -1085,29 +1062,6 @@ pub fn parse_pipeline_layout(
             }
             return aa.dupe(vk.VkPushConstantRange, tmp_ranges.items);
         }
-
-        fn parse_descriptor_set_layouts(
-            aa: Allocator,
-            sa: Allocator,
-            scanner: *std.json.Scanner,
-            db: *const Database,
-        ) ![]vk.VkDescriptorSetLayout {
-            if (try scanner.next() != .array_begin) return error.InvalidJson;
-            var tmp_layouts: std.ArrayListUnmanaged(vk.VkDescriptorSetLayout) = .empty;
-            while (true) {
-                switch (try scanner.next()) {
-                    .string => |hash_str| {
-                        const hash = try std.fmt.parseInt(u64, hash_str, 16);
-                        const layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT);
-                        const layout = layouts.getPtr(hash).?;
-                        try tmp_layouts.append(sa, @ptrCast(layout.handle));
-                    },
-                    .array_end => break,
-                    else => return error.InvalidJson,
-                }
-            }
-            return try aa.dupe(vk.VkDescriptorSetLayout, tmp_layouts.items);
-        }
     };
 
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
@@ -1122,30 +1076,22 @@ pub fn parse_pipeline_layout(
         .pipeline_layout_create_info = vk_pipeline_layout_create_info,
     };
 
-    while (true) {
-        switch (try scanner.next()) {
-            .string => |s| {
-                if (std.mem.eql(u8, s, "version")) {
-                    const v = try scanner_next_number(&scanner);
-                    result.version = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "pipelineLayouts")) {
-                    if (try scanner.next() != .object_begin) return error.InvalidJson;
-                    const ss = try scanner_next_string(&scanner);
-                    result.hash = try std.fmt.parseInt(u64, ss, 16);
-                    if (try scanner.next() != .object_begin) return error.InvalidJson;
-                    try Inner.parse_layout(
-                        alloc,
-                        tmp_alloc,
-                        &scanner,
-                        vk_pipeline_layout_create_info,
-                        database,
-                    );
-                } else {
-                    return error.InvalidJson;
-                }
-            },
-            .end_of_document => break,
-            else => {},
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "pipelineLayouts")) {
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try Inner.parse_layout(
+                alloc,
+                tmp_alloc,
+                &scanner,
+                vk_pipeline_layout_create_info,
+                database,
+            );
         }
     }
     return result;
@@ -1377,7 +1323,7 @@ pub fn parse_render_pass(
             scanner: *std.json.Scanner,
         ) ![]vk.VkSubpassDependency {
             var tmp: std.ArrayListUnmanaged(vk.VkSubpassDependency) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp.append(sa, .{});
                 const item = &tmp.items[tmp.items.len - 1];
                 try parse_type(
@@ -1432,7 +1378,7 @@ pub fn parse_render_pass(
             scanner: *std.json.Scanner,
         ) ![]vk.VkAttachmentDescription {
             var tmp: std.ArrayListUnmanaged(vk.VkAttachmentDescription) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp.append(sa, .{});
                 const item = &tmp.items[tmp.items.len - 1];
                 try parse_type(
@@ -1497,7 +1443,7 @@ pub fn parse_render_pass(
             scanner: *std.json.Scanner,
         ) ![]vk.VkSubpassDescription {
             var tmp: std.ArrayListUnmanaged(vk.VkSubpassDescription) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp.append(sa, .{});
                 const item = &tmp.items[tmp.items.len - 1];
 
@@ -1555,7 +1501,7 @@ pub fn parse_render_pass(
             scanner: *std.json.Scanner,
         ) ![]vk.VkAttachmentReference {
             var tmp: std.ArrayListUnmanaged(vk.VkAttachmentReference) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp.append(sa, .{});
                 const item = &tmp.items[tmp.items.len - 1];
                 try parse_type(
@@ -1789,19 +1735,7 @@ pub fn parse_graphics_pipeline(
                     const v = try scanner_next_number(scanner);
                     dynamic_state.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "dynamicState")) {
-                    if (try scanner.next() != .array_begin) return error.InvalidJson;
-                    var tmp: std.ArrayListUnmanaged(vk.VkDynamicState) = .empty;
-                    while (true) {
-                        switch (try scanner.next()) {
-                            .number => |v| {
-                                const state = try std.fmt.parseInt(u32, v, 10);
-                                try tmp.append(sa, state);
-                            },
-                            .array_end => break,
-                            else => return error.InvalidJson,
-                        }
-                    }
-                    const states = try aa.dupe(vk.VkDynamicState, tmp.items);
+                    const states = try parse_number_array(u32, aa, sa, scanner);
                     dynamic_state.pDynamicStates = @ptrCast(states.ptr);
                     dynamic_state.dynamicStateCount = @intCast(states.len);
                 }
@@ -1876,7 +1810,7 @@ pub fn parse_graphics_pipeline(
                     if (try scanner.next() != .array_begin) return error.InvalidJson;
                     var tmp: std.ArrayListUnmanaged(vk.VkVertexInputAttributeDescription) =
                         .empty;
-                    while (try scanner_array_next(scanner)) {
+                    while (try scanner_array_next_object(scanner)) {
                         try tmp.append(sa, .{});
                         const item = &tmp.items[tmp.items.len - 1];
                         try parse_type(
@@ -1916,7 +1850,7 @@ pub fn parse_graphics_pipeline(
                     if (try scanner.next() != .array_begin) return error.InvalidJson;
                     var tmp: std.ArrayListUnmanaged(vk.VkVertexInputBindingDescription) =
                         .empty;
-                    while (try scanner_array_next(scanner)) {
+                    while (try scanner_array_next_object(scanner)) {
                         try tmp.append(sa, .{});
                         const item = &tmp.items[tmp.items.len - 1];
                         try parse_type(
@@ -2083,21 +2017,14 @@ pub fn parse_graphics_pipeline(
                 } else if (std.mem.eql(u8, s, "blendConstants")) {
                     if (try scanner.next() != .array_begin) return error.InvalidJson;
                     var i: u32 = 0;
-                    while (true) {
-                        switch (try scanner.next()) {
-                            .number => |v| {
-                                color_blend_state.blendConstants[i] =
-                                    try std.fmt.parseFloat(f32, v);
-                            },
-                            .array_end => break,
-                            else => return error.InvalidJson,
-                        }
+                    while (try scanner_array_next_number(scanner)) |v| {
+                        color_blend_state.blendConstants[i] = try std.fmt.parseFloat(f32, v);
                         i += 1;
                     }
                 } else if (std.mem.eql(u8, s, "attachments")) {
                     var tmp: std.ArrayListUnmanaged(vk.VkPipelineColorBlendAttachmentState) =
                         .empty;
-                    while (try scanner_array_next(scanner)) {
+                    while (try scanner_array_next_object(scanner)) {
                         try tmp.append(sa, .{});
                         const item = &tmp.items[tmp.items.len - 1];
                         try parse_type(
@@ -2324,7 +2251,7 @@ pub fn parse_graphics_pipeline(
             db: *const Database,
         ) ![]vk.VkPipelineShaderStageCreateInfo {
             var tmp: std.ArrayListUnmanaged(vk.VkPipelineShaderStageCreateInfo) = .empty;
-            while (try scanner_array_next(scanner)) {
+            while (try scanner_array_next_object(scanner)) {
                 try tmp.append(sa, .{});
                 const item = &tmp.items[tmp.items.len - 1];
                 item.* = .{
