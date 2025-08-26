@@ -103,7 +103,7 @@ pub fn main() !void {
             return error.SamplerVersionMissmatch;
         if (parsed_sampler.hash != try e.get_value())
             return error.SamplerHashMissmatch;
-        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
+        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
         // log.info(@src(), "Created object: {?}", .{sampler.object});
     }
 
@@ -125,7 +125,7 @@ pub fn main() !void {
             return error.DescriptorSetLayoutHashMissmatch;
         dsl.handle = try create_descriptor_set_layout(
             vk_device,
-            parsed_descriptro_set_layout.descriptor_set_layout_create_info,
+            parsed_descriptro_set_layout.create_info,
         );
         // log.info(@src(), "Created object: {?}", .{dsl.object});
     }
@@ -147,7 +147,7 @@ pub fn main() !void {
             return error.PipelineLayoutHashMissmatch;
         pl.handle = try create_pipeline_layout(
             vk_device,
-            parsed_pipeline_layout.pipeline_layout_create_info,
+            parsed_pipeline_layout.create_info,
         );
         // log.info(@src(), "Created object: {?}", .{pl.object});
     }
@@ -168,7 +168,7 @@ pub fn main() !void {
             return error.ShaderModuleHashMissmatch;
         sm.handle = try create_shader_module(
             vk_device,
-            parsed_shader_module.shader_module_create_info,
+            parsed_shader_module.create_info,
         );
         // log.info(@src(), "Created object: {?}", .{sm.object});
     }
@@ -189,7 +189,7 @@ pub fn main() !void {
             return error.RenderPassHashMissmatch;
         rp.handle = try create_render_pass(
             vk_device,
-            parsed_render_pass.render_pass_create_info,
+            parsed_render_pass.create_info,
         );
         // log.info(@src(), "Created object: {?}", .{rp.object});
     }

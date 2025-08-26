@@ -582,7 +582,7 @@ test "parse_application_info" {
 pub const ParsedSampler = struct {
     version: u32,
     hash: u64,
-    sampler_create_info: *const vk.VkSamplerCreateInfo,
+    create_info: *const vk.VkSamplerCreateInfo,
 };
 pub fn parse_sampler(
     alloc: Allocator,
@@ -596,7 +596,7 @@ pub fn parse_sampler(
     var result: ParsedSampler = .{
         .version = 0,
         .hash = 0,
-        .sampler_create_info = vk_sampler_create_info,
+        .create_info = vk_sampler_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -648,13 +648,13 @@ test "parse_sampler" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_sampler = try parse_sampler(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_sampler.sampler_create_info);
+    print_vk_struct(parsed_sampler.create_info);
 }
 
 pub const ParsedDescriptorSetLayout = struct {
     version: u32,
     hash: u64,
-    descriptor_set_layout_create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
+    create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 };
 pub fn parse_descriptor_set_layout(
     alloc: Allocator,
@@ -735,7 +735,7 @@ pub fn parse_descriptor_set_layout(
     var result: ParsedDescriptorSetLayout = .{
         .version = 0,
         .hash = 0,
-        .descriptor_set_layout_create_info = vk_descriptor_set_layout_create_info,
+        .create_info = vk_descriptor_set_layout_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -820,13 +820,13 @@ test "parse_descriptor_set_layout" {
         json,
         &db,
     );
-    print_vk_chain(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
+    print_vk_chain(parsed_descriptro_set_layout.create_info);
 }
 
 pub const ParsedPipelineLayout = struct {
     version: u32,
     hash: u64,
-    pipeline_layout_create_info: *const vk.VkPipelineLayoutCreateInfo,
+    create_info: *const vk.VkPipelineLayoutCreateInfo,
 };
 pub fn parse_pipeline_layout(
     alloc: Allocator,
@@ -893,7 +893,7 @@ pub fn parse_pipeline_layout(
     var result: ParsedPipelineLayout = .{
         .version = 0,
         .hash = 0,
-        .pipeline_layout_create_info = vk_pipeline_layout_create_info,
+        .create_info = vk_pipeline_layout_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -962,13 +962,13 @@ test "parse_pipeline_layout" {
         json,
         &db,
     );
-    print_vk_chain(parsed_pipeline_layout.pipeline_layout_create_info);
+    print_vk_chain(parsed_pipeline_layout.create_info);
 }
 
 pub const ParsedShaderModule = struct {
     version: u32,
     hash: u64,
-    shader_module_create_info: *const vk.VkShaderModuleCreateInfo,
+    create_info: *const vk.VkShaderModuleCreateInfo,
 };
 pub fn parse_shader_module(
     alloc: Allocator,
@@ -1048,7 +1048,7 @@ pub fn parse_shader_module(
     var result: ParsedShaderModule = .{
         .version = 0,
         .hash = 0,
-        .shader_module_create_info = vk_shader_module_create_info,
+        .create_info = vk_shader_module_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -1093,13 +1093,13 @@ test "parse_shader_module" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_shader_module = try parse_shader_module(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_shader_module.shader_module_create_info);
+    print_vk_struct(parsed_shader_module.create_info);
 }
 
 pub const ParsedRenderPass = struct {
     version: u32,
     hash: u64,
-    render_pass_create_info: *const vk.VkRenderPassCreateInfo,
+    create_info: *const vk.VkRenderPassCreateInfo,
 };
 pub fn parse_render_pass(
     alloc: Allocator,
@@ -1267,7 +1267,7 @@ pub fn parse_render_pass(
     var result: ParsedRenderPass = .{
         .version = 0,
         .hash = 0,
-        .render_pass_create_info = vk_render_pass_create_info,
+        .create_info = vk_render_pass_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -1367,13 +1367,13 @@ test "parse_render_pass" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_render_pass = try parse_render_pass(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_render_pass.render_pass_create_info);
+    print_vk_struct(parsed_render_pass.create_info);
 }
 
 pub const ParsedGraphicsPipeline = struct {
     version: u32,
     hash: u64,
-    graphics_pipeline_create_info: *const vk.VkGraphicsPipelineCreateInfo,
+    create_info: *const vk.VkGraphicsPipelineCreateInfo,
 };
 pub fn parse_graphics_pipeline(
     alloc: Allocator,
@@ -1741,7 +1741,7 @@ pub fn parse_graphics_pipeline(
     var result: ParsedGraphicsPipeline = .{
         .version = 0,
         .hash = 0,
-        .graphics_pipeline_create_info = vk_graphics_pipeline_create_info,
+        .create_info = vk_graphics_pipeline_create_info,
     };
 
     while (try scanner_object_next_field(&scanner)) |s| {
@@ -1929,5 +1929,5 @@ test "parse_graphics_pipeline" {
     });
 
     const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
-    print_vk_struct(parsed_graphics_pipeline.graphics_pipeline_create_info);
+    print_vk_struct(parsed_graphics_pipeline.create_info);
 }
