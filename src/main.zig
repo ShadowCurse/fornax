@@ -103,7 +103,7 @@ pub fn main() !void {
             return error.SamplerVersionMissmatch;
         if (parsed_sampler.hash != try e.get_value())
             return error.SamplerHashMissmatch;
-        sampler.object = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
+        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.sampler_create_info);
         // log.info(@src(), "Created object: {?}", .{sampler.object});
     }
 
@@ -123,7 +123,7 @@ pub fn main() !void {
             return error.DescriptorSetLayoutVersionMissmatch;
         if (parsed_descriptro_set_layout.hash != try e.get_value())
             return error.DescriptorSetLayoutHashMissmatch;
-        dsl.object = try create_descriptor_set_layout(
+        dsl.handle = try create_descriptor_set_layout(
             vk_device,
             parsed_descriptro_set_layout.descriptor_set_layout_create_info,
         );
@@ -145,7 +145,7 @@ pub fn main() !void {
             return error.PipelineLayoutVersionMissmatch;
         if (parsed_pipeline_layout.hash != try e.get_value())
             return error.PipelineLayoutHashMissmatch;
-        pl.object = try create_pipeline_layout(
+        pl.handle = try create_pipeline_layout(
             vk_device,
             parsed_pipeline_layout.pipeline_layout_create_info,
         );
@@ -166,7 +166,7 @@ pub fn main() !void {
             return error.ShaderModuleVersionMissmatch;
         if (parsed_shader_module.hash != try e.get_value())
             return error.ShaderModuleHashMissmatch;
-        sm.object = try create_shader_module(
+        sm.handle = try create_shader_module(
             vk_device,
             parsed_shader_module.shader_module_create_info,
         );
@@ -187,7 +187,7 @@ pub fn main() !void {
             return error.RenderPassVersionMissmatch;
         if (parsed_render_pass.hash != try e.get_value())
             return error.RenderPassHashMissmatch;
-        rp.object = try create_render_pass(
+        rp.handle = try create_render_pass(
             vk_device,
             parsed_render_pass.render_pass_create_info,
         );
@@ -238,7 +238,7 @@ pub const Database = struct {
     pub const EntryMeta = struct {
         entry_ptr: [*]const u8,
         payload: []const u8,
-        object: ?*anyopaque = null,
+        handle: ?*anyopaque = null,
     };
     pub const Entry = extern struct {
         // 8 bytes: ???

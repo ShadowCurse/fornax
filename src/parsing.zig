@@ -243,7 +243,7 @@ pub fn parse_type(
     }
 }
 
-fn parse_object_array(
+fn parse_handle_array(
     comptime T: type,
     comptime TAG: Database.Entry.Tag,
     aa: Allocator,
@@ -259,7 +259,7 @@ fn parse_object_array(
                 const hash = try std.fmt.parseInt(u64, hash_str, 16);
                 const entries = db.entries.getPtrConst(TAG);
                 const entry = entries.getPtr(hash).?;
-                try tmp.append(sa, @ptrCast(entry.object));
+                try tmp.append(sa, @ptrCast(entry.handle));
             },
             .array_end => break,
             else => return error.InvalidJson,
@@ -884,7 +884,7 @@ pub fn parse_descriptor_set_layout(
                         const v = try scanner_next_number(scanner);
                         binding.binding = try std.fmt.parseInt(u32, v, 10);
                     } else if (std.mem.eql(u8, s, "immutableSamplers")) {
-                        const samplers = try parse_object_array(
+                        const samplers = try parse_handle_array(
                             vk.VkSampler,
                             .SAMPLER,
                             aa,
@@ -993,7 +993,7 @@ test "parse_descriptor_set_layout" {
     try db.entries.getPtr(.SAMPLER).put(alloc, 0x8c0a0c8a78e29f7c, .{
         .entry_ptr = undefined,
         .payload = undefined,
-        .object = @ptrFromInt(0x69),
+        .handle = @ptrFromInt(0x69),
     });
 
     const parsed_descriptro_set_layout = try parse_descriptor_set_layout(
@@ -1035,7 +1035,7 @@ pub fn parse_pipeline_layout(
                     vk_pipeline_layout_create_info.pushConstantRangeCount =
                         @intCast(constant_ranges.len);
                 } else if (std.mem.eql(u8, s, "setLayouts")) {
-                    const set_layouts = try parse_object_array(
+                    const set_layouts = try parse_handle_array(
                         vk.VkDescriptorSetLayout,
                         .DESCRIPTOR_SET_LAYOUT,
                         aa,
@@ -1100,7 +1100,7 @@ pub fn parse_pipeline_layout(
                         const hash = try std.fmt.parseInt(u64, hash_str, 16);
                         const layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT);
                         const layout = layouts.getPtr(hash).?;
-                        try tmp_layouts.append(sa, @ptrCast(layout.object));
+                        try tmp_layouts.append(sa, @ptrCast(layout.handle));
                     },
                     .array_end => break,
                     else => return error.InvalidJson,
@@ -1187,7 +1187,7 @@ test "parse_pipeline_layout" {
     try db.entries.getPtr(.DESCRIPTOR_SET_LAYOUT).put(alloc, 0xcb32b2cfac4b21ee, .{
         .entry_ptr = undefined,
         .payload = undefined,
-        .object = @ptrFromInt(0x69),
+        .handle = @ptrFromInt(0x69),
     });
 
     const parsed_pipeline_layout = try parse_pipeline_layout(
@@ -1727,7 +1727,7 @@ pub fn parse_graphics_pipeline(
                     const layout_hash = try std.fmt.parseInt(u64, v, 16);
                     const layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT);
                     const layout = layouts.getPtr(layout_hash).?;
-                    vk_graphics_pipeline_create_info.layout = @ptrCast(layout.object);
+                    vk_graphics_pipeline_create_info.layout = @ptrCast(layout.handle);
                 } else if (std.mem.eql(u8, s, "renderPass")) {
                     const v = try scanner_next_string(scanner);
                     const render_pass_hash = try std.fmt.parseInt(u64, v, 16);
@@ -1735,7 +1735,7 @@ pub fn parse_graphics_pipeline(
                         const render_passes = db.entries.getPtrConst(.RENDER_PASS);
                         const render_pass = render_passes.getPtr(render_pass_hash).?;
                         vk_graphics_pipeline_create_info.renderPass =
-                            @ptrCast(render_pass.object);
+                            @ptrCast(render_pass.handle);
                     }
                 } else if (std.mem.eql(u8, s, "subpass")) {
                     const v = try scanner_next_number(scanner);
@@ -2343,7 +2343,7 @@ pub fn parse_graphics_pipeline(
                         const hash = try std.fmt.parseInt(u64, hash_str, 16);
                         const shader_modules = db.entries.getPtrConst(.SHADER_MODULE);
                         const shader_module = shader_modules.getPtr(hash).?;
-                        item.module = @ptrCast(shader_module.object);
+                        item.module = @ptrCast(shader_module.handle);
                     } else if (std.mem.eql(u8, s, "stage")) {
                         const v = try scanner_next_number(scanner);
                         item.stage = try std.fmt.parseInt(u32, v, 10);
@@ -2537,17 +2537,17 @@ test "parse_graphics_pipeline" {
     try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x3dc5f23c21306af3, .{
         .entry_ptr = undefined,
         .payload = undefined,
-        .object = @ptrFromInt(0x69),
+        .handle = @ptrFromInt(0x69),
     });
     try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x959dfe0bd6073194, .{
         .entry_ptr = undefined,
         .payload = undefined,
-        .object = @ptrFromInt(0x69),
+        .handle = @ptrFromInt(0x69),
     });
     try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x0925def2d6ede3d9, .{
         .entry_ptr = undefined,
         .payload = undefined,
-        .object = @ptrFromInt(0x69),
+        .handle = @ptrFromInt(0x69),
     });
 
     const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
