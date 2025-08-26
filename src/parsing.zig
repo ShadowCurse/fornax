@@ -216,45 +216,27 @@ fn scanner_array_next_string(scanner: *std.json.Scanner) !?[]const u8 {
     }
 }
 
-pub const NameMap = struct { json_name: []const u8, field_name: []const u8, type: type };
-pub fn parse_type(
-    comptime name_map: []const NameMap,
-    alloc: ?Allocator,
+pub fn parse_simple_type(
     scanner: *std.json.Scanner,
     output: anytype,
 ) !void {
-    var field_is_parsed: [name_map.len]bool = .{false} ** name_map.len;
+    const output_type = @typeInfo(@TypeOf(output)).pointer.child;
+    const output_fields = @typeInfo(output_type).@"struct".fields;
+    var field_is_parsed: [output_fields.len]bool = .{false} ** output_fields.len;
     while (try scanner_object_next_field(scanner)) |s| {
-        inline for (name_map, 0..) |nm, i| {
-            if (!field_is_parsed[i] and std.mem.eql(u8, s, nm.json_name)) {
+        inline for (output_fields, 0..) |field, i| {
+            if (!field_is_parsed[i] and std.mem.eql(u8, s, field.name)) {
                 field_is_parsed[i] = true;
-                switch (nm.type) {
-                    u8, u32 => {
+                switch (field.type) {
+                    i32, u32, c_uint => {
                         const v = try scanner_next_number(scanner);
-                        @field(output, nm.field_name) = try std.fmt.parseInt(nm.type, v, 10);
+                        @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
                     },
                     f32 => {
                         const v = try scanner_next_number(scanner);
-                        @field(output, nm.field_name) = try std.fmt.parseFloat(nm.type, v);
+                        @field(output, field.name) = try std.fmt.parseFloat(field.type, v);
                     },
-                    []const u8 => {
-                        const name = try scanner_next_string(scanner);
-                        if (alloc) |aa| {
-                            const n = try aa.dupeZ(u8, name);
-                            @field(output, nm.field_name) = @ptrCast(n.ptr);
-                        } else {
-                            log.panic(
-                                @src(),
-                                "Trying to parse field with type string, but there is no allocator provided to copy the string",
-                                .{},
-                            );
-                        }
-                    },
-                    else => log.comptime_err(
-                        @src(),
-                        "Cannot parse field with type: {any}",
-                        .{nm[2]},
-                    ),
+                    else => {},
                 }
             }
         }
@@ -323,66 +305,14 @@ pub fn parse_physical_device_mesh_shader_features_ext(
     scanner: *std.json.Scanner,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
 ) !void {
-    return parse_type(
-        &.{
-            .{
-                .json_name = "taskShader",
-                .field_name = "taskShader",
-                .type = u8,
-            },
-            .{
-                .json_name = "meshShader",
-                .field_name = "meshShader",
-                .type = u8,
-            },
-            .{
-                .json_name = "multiviewMeshShader",
-                .field_name = "multiviewMeshShader",
-                .type = u8,
-            },
-            .{
-                .json_name = "primitiveFragmentShadingRateMeshShader",
-                .field_name = "primitiveFragmentShadingRateMeshShader",
-                .type = u8,
-            },
-            .{
-                .json_name = "meshShaderQueries",
-                .field_name = "meshShaderQueries",
-                .type = u8,
-            },
-        },
-        null,
-        scanner,
-        obj,
-    );
+    return parse_simple_type(scanner, obj);
 }
 
 pub fn parse_physical_device_fragment_shading_rate_features_khr(
     scanner: *std.json.Scanner,
     obj: *vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
 ) !void {
-    return parse_type(
-        &.{
-            .{
-                .json_name = "pipelineFragmentShadingRate",
-                .field_name = "pipelineFragmentShadingRate",
-                .type = u8,
-            },
-            .{
-                .json_name = "primitiveFragmentShadingRate",
-                .field_name = "primitiveFragmentShadingRate",
-                .type = u8,
-            },
-            .{
-                .json_name = "attachmentFragmentShadingRate",
-                .field_name = "attachmentFragmentShadingRate",
-                .type = u8,
-            },
-        },
-        null,
-        scanner,
-        obj,
-    );
+    return parse_simple_type(scanner, obj);
 }
 
 pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
@@ -538,39 +468,26 @@ pub fn parse_application_info(
             scanner: *std.json.Scanner,
             vk_application_info: *vk.VkApplicationInfo,
         ) !void {
-            return parse_type(
-                &.{
-                    .{
-                        .json_name = "applicationName",
-                        .field_name = "pApplicationName",
-                        .type = []const u8,
-                    },
-                    .{
-                        .json_name = "engineName",
-                        .field_name = "pEngineName",
-                        .type = []const u8,
-                    },
-                    .{
-                        .json_name = "applicationVersion",
-                        .field_name = "applicationVersion",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "engineVersion",
-                        .field_name = "engineVersion",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "apiVersion",
-                        .field_name = "apiVersion",
-                        .type = u32,
-                    },
-                },
-                aa,
-                scanner,
-                vk_application_info,
-            );
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "applicationName")) {
+                    const name = try aa.dupeZ(u8, s);
+                    vk_application_info.pApplicationName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "engineName")) {
+                    const name = try aa.dupeZ(u8, s);
+                    vk_application_info.pEngineName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "applicationVersion")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_application_info.applicationVersion = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "engineVersion")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_application_info.engineVersion = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "apiVersion")) {
+                    const v = try scanner_next_number(scanner);
+                    vk_application_info.apiVersion = try std.fmt.parseInt(u32, v, 10);
+                }
+            }
         }
+
         fn parse_device_features(
             aa: Allocator,
             sa: Allocator,
@@ -702,93 +619,7 @@ pub fn parse_sampler(
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             if (try scanner.next() != .object_begin) return error.InvalidJson;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "minFilter",
-                        .field_name = "minFilter",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "magFilter",
-                        .field_name = "magFilter",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "maxAnisotropy",
-                        .field_name = "maxAnisotropy",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "compareOp",
-                        .field_name = "compareOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "anisotropyEnable",
-                        .field_name = "anisotropyEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "mipmapMode",
-                        .field_name = "mipmapMode",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "addressModeU",
-                        .field_name = "addressModeU",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "addressModeV",
-                        .field_name = "addressModeV",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "addressModeW",
-                        .field_name = "addressModeW",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "borderColor",
-                        .field_name = "borderColor",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "unnormalizedCoordinates",
-                        .field_name = "unnormalizedCoordinates",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "compareEnable",
-                        .field_name = "compareEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "mipLodBias",
-                        .field_name = "mipLodBias",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "minLod",
-                        .field_name = "minLod",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "maxLod",
-                        .field_name = "maxLod",
-                        .type = f32,
-                    },
-                },
-                alloc,
-                &scanner,
-                vk_sampler_create_info,
-            );
+            try parse_simple_type(&scanner, vk_sampler_create_info);
         }
     }
     return result;
@@ -1067,28 +898,7 @@ pub fn parse_pipeline_layout(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "stageFlags",
-                        .field_name = "stageFlags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "size",
-                        .field_name = "size",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "offset",
-                        .field_name = "offset",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
     };
 
@@ -1376,48 +1186,7 @@ pub fn parse_render_pass(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "dependencyFlags",
-                        .field_name = "dependencyFlags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "dstAccessMask",
-                        .field_name = "dstAccessMask",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "srcAccessMask",
-                        .field_name = "srcAccessMask",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "dstStageMask",
-                        .field_name = "dstStageMask",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "srcStageMask",
-                        .field_name = "srcStageMask",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "dstSubpass",
-                        .field_name = "dstSubpass",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "srcSubpass",
-                        .field_name = "srcSubpass",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
 
         fn parse_vk_attachment_description(
@@ -1430,58 +1199,7 @@ pub fn parse_render_pass(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "format",
-                        .field_name = "format",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "finalLayout",
-                        .field_name = "finalLayout",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "initialLayout",
-                        .field_name = "initialLayout",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "loadOp",
-                        .field_name = "loadOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "storeOp",
-                        .field_name = "storeOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "samples",
-                        .field_name = "samples",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "stencilLoadOp",
-                        .field_name = "stencilLoadOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "stencilStoreOp",
-                        .field_name = "stencilStoreOp",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
 
         fn parse_vk_subpass_description(
@@ -1560,23 +1278,7 @@ pub fn parse_render_pass(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "attachment",
-                        .field_name = "attachment",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "layout",
-                        .field_name = "layout",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
     };
 
@@ -1813,43 +1515,7 @@ pub fn parse_graphics_pipeline(
             multisample_state.* = .{
                 .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             };
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "rasterizationSamples",
-                        .field_name = "rasterizationSamples",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "sampleShadingEnable",
-                        .field_name = "sampleShadingEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "minSampleShading",
-                        .field_name = "minSampleShading",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "alphaToOneEnable",
-                        .field_name = "alphaToOneEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "alphaToCoverageEnable",
-                        .field_name = "alphaToCoverageEnable",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                multisample_state,
-            );
+            try parse_simple_type(scanner, multisample_state);
             return multisample_state;
         }
 
@@ -1863,33 +1529,7 @@ pub fn parse_graphics_pipeline(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "location",
-                        .field_name = "location",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "binding",
-                        .field_name = "binding",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "format",
-                        .field_name = "format",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "offset",
-                        .field_name = "offset",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
 
         fn parse_vk_vertex_input_binding_description(
@@ -1902,28 +1542,7 @@ pub fn parse_graphics_pipeline(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "binding",
-                        .field_name = "binding",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "stride",
-                        .field_name = "stride",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "inputRate",
-                        .field_name = "inputRate",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
 
         fn parse_vertex_input_state(
@@ -1962,68 +1581,7 @@ pub fn parse_graphics_pipeline(
             rasterization_state.* = .{
                 .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             };
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "depthBiasConstantFactor",
-                        .field_name = "depthBiasConstantFactor",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "depthBiasSlopeFactor",
-                        .field_name = "depthBiasSlopeFactor",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "depthBiasClamp",
-                        .field_name = "depthBiasClamp",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "depthBiasEnable",
-                        .field_name = "depthBiasEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "depthClampEnable",
-                        .field_name = "depthClampEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "polygonMode",
-                        .field_name = "polygonMode",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "rasterizerDiscardEnable",
-                        .field_name = "rasterizerDiscardEnable",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "frontFace",
-                        .field_name = "frontFace",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "lineWidth",
-                        .field_name = "lineWidth",
-                        .type = f32,
-                    },
-                    .{
-                        .json_name = "cullMode",
-                        .field_name = "cullMode",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                rasterization_state,
-            );
+            try parse_simple_type(scanner, rasterization_state);
             return rasterization_state;
         }
 
@@ -2036,28 +1594,7 @@ pub fn parse_graphics_pipeline(
             input_assembly_state.* = .{
                 .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             };
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "topology",
-                        .field_name = "topology",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "primitiveRestartEnable",
-                        .field_name = "primitiveRestartEnable",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                input_assembly_state,
-            );
+            try parse_simple_type(scanner, input_assembly_state);
             return input_assembly_state;
         }
 
@@ -2071,53 +1608,7 @@ pub fn parse_graphics_pipeline(
             _ = aa;
             _ = sa;
             _ = db;
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "dstAlphaBlendFactor",
-                        .field_name = "dstAlphaBlendFactor",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "srcAlphaBlendFactor",
-                        .field_name = "srcAlphaBlendFactor",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "dstColorBlendFactor",
-                        .field_name = "dstColorBlendFactor",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "srcColorBlendFactor",
-                        .field_name = "srcColorBlendFactor",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "colorWriteMask",
-                        .field_name = "colorWriteMask",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "alphaBlendOp",
-                        .field_name = "alphaBlendOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "colorBlendOp",
-                        .field_name = "colorBlendOp",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "blendEnable",
-                        .field_name = "blendEnable",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                item,
-            );
+            try parse_simple_type(scanner, item);
         }
 
         fn parse_color_blend_state(
@@ -2172,29 +1663,24 @@ pub fn parse_graphics_pipeline(
             viewport_state.* = .{
                 .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             };
-            // TODO pViewports and pScissors
-            try parse_type(
-                &.{
-                    .{
-                        .json_name = "flags",
-                        .field_name = "flags",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "viewportCount",
-                        .field_name = "viewportCount",
-                        .type = u32,
-                    },
-                    .{
-                        .json_name = "scissorCount",
-                        .field_name = "scissorCount",
-                        .type = u32,
-                    },
-                },
-                null,
-                scanner,
-                viewport_state,
-            );
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    viewport_state.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "viewportCount")) {
+                    const v = try scanner_next_number(scanner);
+                    viewport_state.viewportCount = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "pViewports")) {
+                    // Do nothing for now
+                } else if (std.mem.eql(u8, s, "scissorCount")) {
+                    const v = try scanner_next_number(scanner);
+                    viewport_state.scissorCount = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "pScissors")) {
+                    // Do nothing for now
+                } else if (std.mem.eql(u8, s, "pNext")) {
+                    // Do nothing for now
+                }
+            }
             return viewport_state;
         }
 
@@ -2233,91 +1719,9 @@ pub fn parse_graphics_pipeline(
                     const v = try scanner_next_number(scanner);
                     depth_stencil_state.depthCompareOp = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "front")) {
-                    try parse_type(
-                        &.{
-                            .{
-                                .json_name = "compareOp",
-                                .field_name = "compareOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "writeMask",
-                                .field_name = "writeMask",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "reference",
-                                .field_name = "reference",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "compareMask",
-                                .field_name = "compareMask",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "passOp",
-                                .field_name = "passOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "failOp",
-                                .field_name = "failOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "depthFailOp",
-                                .field_name = "depthFailOp",
-                                .type = u32,
-                            },
-                        },
-                        null,
-                        scanner,
-                        &depth_stencil_state.front,
-                    );
+                    try parse_simple_type(scanner, &depth_stencil_state.front);
                 } else if (std.mem.eql(u8, s, "back")) {
-                    try parse_type(
-                        &.{
-                            .{
-                                .json_name = "compareOp",
-                                .field_name = "compareOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "writeMask",
-                                .field_name = "writeMask",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "reference",
-                                .field_name = "reference",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "compareMask",
-                                .field_name = "compareMask",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "passOp",
-                                .field_name = "passOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "failOp",
-                                .field_name = "failOp",
-                                .type = u32,
-                            },
-                            .{
-                                .json_name = "depthFailOp",
-                                .field_name = "depthFailOp",
-                                .type = u32,
-                            },
-                        },
-                        null,
-                        scanner,
-                        &depth_stencil_state.front,
-                    );
+                    try parse_simple_type(scanner, &depth_stencil_state.front);
                 }
             }
             return depth_stencil_state;
