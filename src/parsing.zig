@@ -295,6 +295,30 @@ fn parse_handle_array(
     return try aa.dupe(T, tmp.items);
 }
 
+fn parse_object_array(
+    comptime T: type,
+    comptime PARSE_FN: fn (
+        Allocator,
+        Allocator,
+        *std.json.Scanner,
+        ?*const Database,
+        *T,
+    ) anyerror!void,
+    aa: Allocator,
+    sa: Allocator,
+    scanner: *std.json.Scanner,
+    db: ?*const Database,
+) ![]T {
+    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    var tmp: std.ArrayListUnmanaged(T) = .empty;
+    while (try scanner_array_next_object(scanner)) {
+        try tmp.append(sa, .{});
+        const item = &tmp.items[tmp.items.len - 1];
+        try PARSE_FN(aa, sa, scanner, db, item);
+    }
+    return try aa.dupe(T, tmp.items);
+}
+
 pub fn parse_physical_device_mesh_shader_features_ext(
     scanner: *std.json.Scanner,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
@@ -831,57 +855,55 @@ pub fn parse_descriptor_set_layout(
                     const v = try scanner_next_number(scanner);
                     vk_descriptor_set_layout_create_info.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "bindings")) {
-                    const bindings = try parse_bindings(aa, sa, scanner, db);
-                    vk_descriptor_set_layout_create_info.pBindings =
-                        @ptrCast(bindings.ptr);
-                    vk_descriptor_set_layout_create_info.bindingCount =
-                        @intCast(bindings.len);
+                    const bindings = try parse_object_array(
+                        vk.VkDescriptorSetLayoutBinding,
+                        parse_vk_descriptor_set_layout_binding,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
+                    vk_descriptor_set_layout_create_info.pBindings = @ptrCast(bindings.ptr);
+                    vk_descriptor_set_layout_create_info.bindingCount = @intCast(bindings.len);
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     vk_descriptor_set_layout_create_info.pNext =
                         try parse_pnext_chain(aa, sa, scanner);
-                } else {
-                    return error.InvalidJson;
                 }
             }
         }
 
-        fn parse_bindings(
+        fn parse_vk_descriptor_set_layout_binding(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-            db: *const Database,
-        ) ![]vk.VkDescriptorSetLayoutBinding {
-            var tmp_bindings: std.ArrayListUnmanaged(vk.VkDescriptorSetLayoutBinding) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp_bindings.append(sa, .{});
-                const binding = &tmp_bindings.items[tmp_bindings.items.len - 1];
-                while (try scanner_object_next_field(scanner)) |s| {
-                    if (std.mem.eql(u8, s, "descriptorType")) {
-                        const v = try scanner_next_number(scanner);
-                        binding.descriptorType = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "descriptorCount")) {
-                        const v = try scanner_next_number(scanner);
-                        binding.descriptorCount = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "stageFlags")) {
-                        const v = try scanner_next_number(scanner);
-                        binding.stageFlags = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "binding")) {
-                        const v = try scanner_next_number(scanner);
-                        binding.binding = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "immutableSamplers")) {
-                        const samplers = try parse_handle_array(
-                            vk.VkSampler,
-                            .SAMPLER,
-                            aa,
-                            sa,
-                            scanner,
-                            db,
-                        );
-                        binding.pImmutableSamplers = @ptrCast(samplers.ptr);
-                    }
+            db: ?*const Database,
+            item: *vk.VkDescriptorSetLayoutBinding,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "descriptorType")) {
+                    const v = try scanner_next_number(scanner);
+                    item.descriptorType = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "descriptorCount")) {
+                    const v = try scanner_next_number(scanner);
+                    item.descriptorCount = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stageFlags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.stageFlags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "binding")) {
+                    const v = try scanner_next_number(scanner);
+                    item.binding = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "immutableSamplers")) {
+                    const samplers = try parse_handle_array(
+                        vk.VkSampler,
+                        .SAMPLER,
+                        aa,
+                        sa,
+                        scanner,
+                        db.?,
+                    );
+                    item.pImmutableSamplers = @ptrCast(samplers.ptr);
                 }
             }
-            return aa.dupe(vk.VkDescriptorSetLayoutBinding, tmp_bindings.items);
         }
     };
 
@@ -1006,7 +1028,14 @@ pub fn parse_pipeline_layout(
                     const v = try scanner_next_number(scanner);
                     vk_pipeline_layout_create_info.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "pushConstantRanges")) {
-                    const constant_ranges = try parse_push_constant_ranges(aa, sa, scanner);
+                    const constant_ranges = try parse_object_array(
+                        vk.VkPushConstantRange,
+                        parse_vk_push_constant_range,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
                     vk_pipeline_layout_create_info.pPushConstantRanges =
                         @ptrCast(constant_ranges.ptr);
                     vk_pipeline_layout_create_info.pushConstantRangeCount =
@@ -1028,39 +1057,38 @@ pub fn parse_pipeline_layout(
             }
         }
 
-        fn parse_push_constant_ranges(
+        fn parse_vk_push_constant_range(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-        ) ![]vk.VkPushConstantRange {
-            var tmp_ranges: std.ArrayListUnmanaged(vk.VkPushConstantRange) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp_ranges.append(sa, .{});
-                const range = &tmp_ranges.items[tmp_ranges.items.len - 1];
-                try parse_type(
-                    &.{
-                        .{
-                            .json_name = "stageFlags",
-                            .field_name = "stageFlags",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "size",
-                            .field_name = "size",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "offset",
-                            .field_name = "offset",
-                            .type = u32,
-                        },
+            db: ?*const Database,
+            item: *vk.VkPushConstantRange,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "stageFlags",
+                        .field_name = "stageFlags",
+                        .type = u32,
                     },
-                    aa,
-                    scanner,
-                    range,
-                );
-            }
-            return aa.dupe(vk.VkPushConstantRange, tmp_ranges.items);
+                    .{
+                        .json_name = "size",
+                        .field_name = "size",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "offset",
+                        .field_name = "offset",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
         }
     };
 
@@ -1302,227 +1330,253 @@ pub fn parse_render_pass(
                     const v = try scanner_next_number(scanner);
                     vk_render_pass_create_info.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "dependencies")) {
-                    const dependencies = try parse_dependencies(aa, sa, scanner);
+                    const dependencies = try parse_object_array(
+                        vk.VkSubpassDependency,
+                        parse_vk_subpass_dependency,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
                     vk_render_pass_create_info.pDependencies = @ptrCast(dependencies.ptr);
                     vk_render_pass_create_info.dependencyCount = @intCast(dependencies.len);
                 } else if (std.mem.eql(u8, s, "attachments")) {
-                    const attachments = try parse_attachments(aa, sa, scanner);
+                    const attachments = try parse_object_array(
+                        vk.VkAttachmentDescription,
+                        parse_vk_attachment_description,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
                     vk_render_pass_create_info.pAttachments = @ptrCast(attachments.ptr);
                     vk_render_pass_create_info.attachmentCount = @intCast(attachments.len);
                 } else if (std.mem.eql(u8, s, "subpasses")) {
-                    const subpasses = try parse_subpasses(aa, sa, scanner);
+                    const subpasses = try parse_object_array(
+                        vk.VkSubpassDescription,
+                        parse_vk_subpass_description,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
                     vk_render_pass_create_info.pSubpasses = @ptrCast(subpasses.ptr);
                     vk_render_pass_create_info.subpassCount = @intCast(subpasses.len);
                 }
             }
         }
 
-        fn parse_dependencies(
+        fn parse_vk_subpass_dependency(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-        ) ![]vk.VkSubpassDependency {
-            var tmp: std.ArrayListUnmanaged(vk.VkSubpassDependency) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp.append(sa, .{});
-                const item = &tmp.items[tmp.items.len - 1];
-                try parse_type(
-                    &.{
-                        .{
-                            .json_name = "dependencyFlags",
-                            .field_name = "dependencyFlags",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "dstAccessMask",
-                            .field_name = "dstAccessMask",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "srcAccessMask",
-                            .field_name = "srcAccessMask",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "dstStageMask",
-                            .field_name = "dstStageMask",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "srcStageMask",
-                            .field_name = "srcStageMask",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "dstSubpass",
-                            .field_name = "dstSubpass",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "srcSubpass",
-                            .field_name = "srcSubpass",
-                            .type = u32,
-                        },
+            db: ?*const Database,
+            item: *vk.VkSubpassDependency,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "dependencyFlags",
+                        .field_name = "dependencyFlags",
+                        .type = u32,
                     },
-                    null,
-                    scanner,
-                    item,
-                );
-            }
-            return aa.dupe(vk.VkSubpassDependency, tmp.items);
+                    .{
+                        .json_name = "dstAccessMask",
+                        .field_name = "dstAccessMask",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "srcAccessMask",
+                        .field_name = "srcAccessMask",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "dstStageMask",
+                        .field_name = "dstStageMask",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "srcStageMask",
+                        .field_name = "srcStageMask",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "dstSubpass",
+                        .field_name = "dstSubpass",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "srcSubpass",
+                        .field_name = "srcSubpass",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
         }
 
-        fn parse_attachments(
+        fn parse_vk_attachment_description(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-        ) ![]vk.VkAttachmentDescription {
-            var tmp: std.ArrayListUnmanaged(vk.VkAttachmentDescription) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp.append(sa, .{});
-                const item = &tmp.items[tmp.items.len - 1];
-                try parse_type(
-                    &.{
-                        .{
-                            .json_name = "flags",
-                            .field_name = "flags",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "format",
-                            .field_name = "format",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "finalLayout",
-                            .field_name = "finalLayout",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "initialLayout",
-                            .field_name = "initialLayout",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "loadOp",
-                            .field_name = "loadOp",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "storeOp",
-                            .field_name = "storeOp",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "samples",
-                            .field_name = "samples",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "stencilLoadOp",
-                            .field_name = "stencilLoadOp",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "stencilStoreOp",
-                            .field_name = "stencilStoreOp",
-                            .type = u32,
-                        },
+            db: ?*const Database,
+            item: *vk.VkAttachmentDescription,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "flags",
+                        .field_name = "flags",
+                        .type = u32,
                     },
-                    null,
-                    scanner,
-                    item,
-                );
-            }
-            return aa.dupe(vk.VkAttachmentDescription, tmp.items);
+                    .{
+                        .json_name = "format",
+                        .field_name = "format",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "finalLayout",
+                        .field_name = "finalLayout",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "initialLayout",
+                        .field_name = "initialLayout",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "loadOp",
+                        .field_name = "loadOp",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "storeOp",
+                        .field_name = "storeOp",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "samples",
+                        .field_name = "samples",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "stencilLoadOp",
+                        .field_name = "stencilLoadOp",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "stencilStoreOp",
+                        .field_name = "stencilStoreOp",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
         }
 
-        fn parse_subpasses(
+        fn parse_vk_subpass_description(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-        ) ![]vk.VkSubpassDescription {
-            var tmp: std.ArrayListUnmanaged(vk.VkSubpassDescription) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp.append(sa, .{});
-                const item = &tmp.items[tmp.items.len - 1];
-
-                while (try scanner_object_next_field(scanner)) |s| {
-                    if (std.mem.eql(u8, s, "flags")) {
-                        const v = try scanner_next_number(scanner);
-                        item.flags = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "pipelineBindPoint")) {
-                        const v = try scanner_next_number(scanner);
-                        item.pipelineBindPoint = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "inputAttachments")) {
-                        const attachments = try parse_attachment_references(aa, sa, scanner);
-                        item.pInputAttachments = @ptrCast(attachments.ptr);
-                        item.inputAttachmentCount = @intCast(attachments.len);
-                    } else if (std.mem.eql(u8, s, "colorAttachments")) {
-                        const attachments = try parse_attachment_references(aa, sa, scanner);
-                        item.pColorAttachments = @ptrCast(attachments.ptr);
-                        item.colorAttachmentCount = @intCast(attachments.len);
-                    } else if (std.mem.eql(u8, s, "resolveAttachments")) {
-                        const attachments = try parse_attachment_references(aa, sa, scanner);
-                        item.pResolveAttachments = @ptrCast(attachments.ptr);
-                    } else if (std.mem.eql(u8, s, "depthStencilAttachment")) {
-                        const attachment = try aa.create(vk.VkAttachmentReference);
-                        try parse_type(
-                            &.{
-                                .{
-                                    .json_name = "attachment",
-                                    .field_name = "attachment",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "layout",
-                                    .field_name = "layout",
-                                    .type = u32,
-                                },
-                            },
-                            null,
-                            scanner,
-                            attachment,
-                        );
-                        item.pDepthStencilAttachment = attachment;
-                    } else if (std.mem.eql(u8, s, "preserveAttachments")) {
-                        const attachments = try parse_attachment_references(aa, sa, scanner);
-                        item.pPreserveAttachments = @ptrCast(attachments.ptr);
-                        item.preserveAttachmentCount = @intCast(attachments.len);
-                    }
+            db: ?*const Database,
+            item: *vk.VkSubpassDescription,
+        ) !void {
+            _ = db;
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "pipelineBindPoint")) {
+                    const v = try scanner_next_number(scanner);
+                    item.pipelineBindPoint = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "inputAttachments")) {
+                    const attachments = try parse_object_array(
+                        vk.VkAttachmentReference,
+                        parse_vk_attachment_reference,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pInputAttachments = @ptrCast(attachments.ptr);
+                    item.inputAttachmentCount = @intCast(attachments.len);
+                } else if (std.mem.eql(u8, s, "colorAttachments")) {
+                    const attachments = try parse_object_array(
+                        vk.VkAttachmentReference,
+                        parse_vk_attachment_reference,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pColorAttachments = @ptrCast(attachments.ptr);
+                    item.colorAttachmentCount = @intCast(attachments.len);
+                } else if (std.mem.eql(u8, s, "resolveAttachments")) {
+                    const attachments = try parse_object_array(
+                        vk.VkAttachmentReference,
+                        parse_vk_attachment_reference,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pResolveAttachments = @ptrCast(attachments.ptr);
+                } else if (std.mem.eql(u8, s, "depthStencilAttachment")) {
+                    const attachment = try aa.create(vk.VkAttachmentReference);
+                    try parse_vk_attachment_reference(aa, sa, scanner, null, attachment);
+                    item.pDepthStencilAttachment = attachment;
+                } else if (std.mem.eql(u8, s, "preserveAttachments")) {
+                    const attachments = try parse_object_array(
+                        vk.VkAttachmentReference,
+                        parse_vk_attachment_reference,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pPreserveAttachments = @ptrCast(attachments.ptr);
+                    item.preserveAttachmentCount = @intCast(attachments.len);
                 }
             }
-            return aa.dupe(vk.VkSubpassDescription, tmp.items);
         }
 
-        fn parse_attachment_references(
+        fn parse_vk_attachment_reference(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-        ) ![]vk.VkAttachmentReference {
-            var tmp: std.ArrayListUnmanaged(vk.VkAttachmentReference) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp.append(sa, .{});
-                const item = &tmp.items[tmp.items.len - 1];
-                try parse_type(
-                    &.{
-                        .{
-                            .json_name = "attachment",
-                            .field_name = "attachment",
-                            .type = u32,
-                        },
-                        .{
-                            .json_name = "layout",
-                            .field_name = "layout",
-                            .type = u32,
-                        },
+            db: ?*const Database,
+            item: *vk.VkAttachmentReference,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "attachment",
+                        .field_name = "attachment",
+                        .type = u32,
                     },
-                    null,
-                    scanner,
-                    item,
-                );
-            }
-            return aa.dupe(vk.VkAttachmentReference, tmp.items);
+                    .{
+                        .json_name = "layout",
+                        .field_name = "layout",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
         }
     };
 
@@ -1711,7 +1765,14 @@ pub fn parse_graphics_pipeline(
                     const depth_stencil_state = try parse_depth_stencil_state(aa, scanner);
                     vk_graphics_pipeline_create_info.pDepthStencilState = depth_stencil_state;
                 } else if (std.mem.eql(u8, s, "stages")) {
-                    const stages = try parse_stages(aa, sa, scanner, db);
+                    const stages = try parse_object_array(
+                        vk.VkPipelineShaderStageCreateInfo,
+                        parse_vk_pipeline_shader_stage_create_info,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
                     vk_graphics_pipeline_create_info.pStages = @ptrCast(stages.ptr);
                     vk_graphics_pipeline_create_info.stageCount = @intCast(stages.len);
                 } else if (std.mem.eql(u8, s, "pNext")) {
@@ -1792,6 +1853,79 @@ pub fn parse_graphics_pipeline(
             return multisample_state;
         }
 
+        fn parse_vk_vertex_input_attribute_description(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkVertexInputAttributeDescription,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "location",
+                        .field_name = "location",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "binding",
+                        .field_name = "binding",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "format",
+                        .field_name = "format",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "offset",
+                        .field_name = "offset",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
+        }
+
+        fn parse_vk_vertex_input_binding_description(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkVertexInputBindingDescription,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "binding",
+                        .field_name = "binding",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "stride",
+                        .field_name = "stride",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "inputRate",
+                        .field_name = "inputRate",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
+        }
+
         fn parse_vertex_input_state(
             aa: Allocator,
             sa: Allocator,
@@ -1807,78 +1941,11 @@ pub fn parse_graphics_pipeline(
                     const v = try scanner_next_number(scanner);
                     vertex_input_state.flags = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "attributes")) {
-                    if (try scanner.next() != .array_begin) return error.InvalidJson;
-                    var tmp: std.ArrayListUnmanaged(vk.VkVertexInputAttributeDescription) =
-                        .empty;
-                    while (try scanner_array_next_object(scanner)) {
-                        try tmp.append(sa, .{});
-                        const item = &tmp.items[tmp.items.len - 1];
-                        try parse_type(
-                            &.{
-                                .{
-                                    .json_name = "location",
-                                    .field_name = "location",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "binding",
-                                    .field_name = "binding",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "format",
-                                    .field_name = "format",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "offset",
-                                    .field_name = "offset",
-                                    .type = u32,
-                                },
-                            },
-
-                            null,
-                            scanner,
-                            item,
-                        );
-                    }
-                    const attributes =
-                        try aa.dupe(vk.VkVertexInputAttributeDescription, tmp.items);
+                    const attributes = try parse_object_array(vk.VkVertexInputAttributeDescription, parse_vk_vertex_input_attribute_description, aa, sa, scanner, null);
                     vertex_input_state.pVertexAttributeDescriptions = @ptrCast(attributes.ptr);
                     vertex_input_state.vertexAttributeDescriptionCount = @intCast(attributes.len);
                 } else if (std.mem.eql(u8, s, "bindings")) {
-                    if (try scanner.next() != .array_begin) return error.InvalidJson;
-                    var tmp: std.ArrayListUnmanaged(vk.VkVertexInputBindingDescription) =
-                        .empty;
-                    while (try scanner_array_next_object(scanner)) {
-                        try tmp.append(sa, .{});
-                        const item = &tmp.items[tmp.items.len - 1];
-                        try parse_type(
-                            &.{
-                                .{
-                                    .json_name = "binding",
-                                    .field_name = "binding",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "stride",
-                                    .field_name = "stride",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "inputRate",
-                                    .field_name = "inputRate",
-                                    .type = u32,
-                                },
-                            },
-
-                            null,
-                            scanner,
-                            item,
-                        );
-                    }
-                    const bindings =
-                        try aa.dupe(vk.VkVertexInputBindingDescription, tmp.items);
+                    const bindings = try parse_object_array(vk.VkVertexInputBindingDescription, parse_vk_vertex_input_binding_description, aa, sa, scanner, null);
                     vertex_input_state.pVertexBindingDescriptions = @ptrCast(bindings.ptr);
                     vertex_input_state.vertexBindingDescriptionCount = @intCast(bindings.len);
                 }
@@ -1994,6 +2061,65 @@ pub fn parse_graphics_pipeline(
             return input_assembly_state;
         }
 
+        fn parse_vk_pipeline_color_blend_attachment_state(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkPipelineColorBlendAttachmentState,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_type(
+                &.{
+                    .{
+                        .json_name = "dstAlphaBlendFactor",
+                        .field_name = "dstAlphaBlendFactor",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "srcAlphaBlendFactor",
+                        .field_name = "srcAlphaBlendFactor",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "dstColorBlendFactor",
+                        .field_name = "dstColorBlendFactor",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "srcColorBlendFactor",
+                        .field_name = "srcColorBlendFactor",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "colorWriteMask",
+                        .field_name = "colorWriteMask",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "alphaBlendOp",
+                        .field_name = "alphaBlendOp",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "colorBlendOp",
+                        .field_name = "colorBlendOp",
+                        .type = u32,
+                    },
+                    .{
+                        .json_name = "blendEnable",
+                        .field_name = "blendEnable",
+                        .type = u32,
+                    },
+                },
+                null,
+                scanner,
+                item,
+            );
+        }
+
         fn parse_color_blend_state(
             aa: Allocator,
             sa: Allocator,
@@ -2022,61 +2148,14 @@ pub fn parse_graphics_pipeline(
                         i += 1;
                     }
                 } else if (std.mem.eql(u8, s, "attachments")) {
-                    var tmp: std.ArrayListUnmanaged(vk.VkPipelineColorBlendAttachmentState) =
-                        .empty;
-                    while (try scanner_array_next_object(scanner)) {
-                        try tmp.append(sa, .{});
-                        const item = &tmp.items[tmp.items.len - 1];
-                        try parse_type(
-                            &.{
-                                .{
-                                    .json_name = "dstAlphaBlendFactor",
-                                    .field_name = "dstAlphaBlendFactor",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "srcAlphaBlendFactor",
-                                    .field_name = "srcAlphaBlendFactor",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "dstColorBlendFactor",
-                                    .field_name = "dstColorBlendFactor",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "srcColorBlendFactor",
-                                    .field_name = "srcColorBlendFactor",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "colorWriteMask",
-                                    .field_name = "colorWriteMask",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "alphaBlendOp",
-                                    .field_name = "alphaBlendOp",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "colorBlendOp",
-                                    .field_name = "colorBlendOp",
-                                    .type = u32,
-                                },
-                                .{
-                                    .json_name = "blendEnable",
-                                    .field_name = "blendEnable",
-                                    .type = u32,
-                                },
-                            },
-                            null,
-                            scanner,
-                            item,
-                        );
-                    }
-                    const attachments =
-                        try aa.dupe(vk.VkPipelineColorBlendAttachmentState, tmp.items);
+                    const attachments = try parse_object_array(
+                        vk.VkPipelineColorBlendAttachmentState,
+                        parse_vk_pipeline_color_blend_attachment_state,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
                     color_blend_state.pAttachments = @ptrCast(attachments.ptr);
                     color_blend_state.attachmentCount = @intCast(attachments.len);
                 }
@@ -2244,40 +2323,36 @@ pub fn parse_graphics_pipeline(
             return depth_stencil_state;
         }
 
-        fn parse_stages(
+        fn parse_vk_pipeline_shader_stage_create_info(
             aa: Allocator,
             sa: Allocator,
             scanner: *std.json.Scanner,
-            db: *const Database,
-        ) ![]vk.VkPipelineShaderStageCreateInfo {
-            var tmp: std.ArrayListUnmanaged(vk.VkPipelineShaderStageCreateInfo) = .empty;
-            while (try scanner_array_next_object(scanner)) {
-                try tmp.append(sa, .{});
-                const item = &tmp.items[tmp.items.len - 1];
-                item.* = .{
-                    .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                };
-                while (try scanner_object_next_field(scanner)) |s| {
-                    if (std.mem.eql(u8, s, "flags")) {
-                        const v = try scanner_next_number(scanner);
-                        item.flags = try std.fmt.parseInt(u32, v, 10);
-                    } else if (std.mem.eql(u8, s, "name")) {
-                        const name_str = try scanner_next_string(scanner);
-                        const name = try aa.dupeZ(u8, name_str);
-                        item.pName = @ptrCast(name.ptr);
-                    } else if (std.mem.eql(u8, s, "module")) {
-                        const hash_str = try scanner_next_string(scanner);
-                        const hash = try std.fmt.parseInt(u64, hash_str, 16);
-                        const shader_modules = db.entries.getPtrConst(.SHADER_MODULE);
-                        const shader_module = shader_modules.getPtr(hash).?;
-                        item.module = @ptrCast(shader_module.handle);
-                    } else if (std.mem.eql(u8, s, "stage")) {
-                        const v = try scanner_next_number(scanner);
-                        item.stage = try std.fmt.parseInt(u32, v, 10);
-                    }
+            db: ?*const Database,
+            item: *vk.VkPipelineShaderStageCreateInfo,
+        ) !void {
+            _ = sa;
+            item.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "name")) {
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
+                    item.pName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "module")) {
+                    const hash_str = try scanner_next_string(scanner);
+                    const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                    const shader_modules = db.?.entries.getPtrConst(.SHADER_MODULE);
+                    const shader_module = shader_modules.getPtr(hash).?;
+                    item.module = @ptrCast(shader_module.handle);
+                } else if (std.mem.eql(u8, s, "stage")) {
+                    const v = try scanner_next_number(scanner);
+                    item.stage = try std.fmt.parseInt(u32, v, 10);
                 }
             }
-            return aa.dupe(vk.VkPipelineShaderStageCreateInfo, tmp.items);
         }
     };
 
