@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const vk = @cImport({
     @cInclude("volk.h");
 });

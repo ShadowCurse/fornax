@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 
 const DEFAULT_COLOR = "\x1b[0m";

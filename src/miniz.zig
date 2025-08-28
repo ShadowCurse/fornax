@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const miniz = @cImport({
     @cDefine("MINIZ_NO_STDIO", "");
     @cDefine("MINIZ_NO_MALLOC", "");

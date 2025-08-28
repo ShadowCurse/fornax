@@ -1,3 +1,6 @@
+// Copyright (c) 2025 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 
 pub const LastArgs = struct { values: []const [*:0]const u8 = &.{} };

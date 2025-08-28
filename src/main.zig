@@ -1,3 +1,10 @@
+// Copyright (c) 2025 Egor Lazarchuk
+//
+// Based in part on Fossilize project which is:
+// Copyright (c) 2025 Hans-Kristian Arntzen
+//
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 const vk = @import("volk.zig");
 const log = @import("log.zig");
