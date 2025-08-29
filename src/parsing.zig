@@ -388,6 +388,20 @@ pub fn parse_pipeline_rendering_create_info_khr(
     }
 }
 
+pub fn parse_physical_device_robustness_2_features_khr(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
+pub fn parse_physical_device_descriptor_buffer_features_ext(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
 pub fn parse_pnext_chain(
     alloc: Allocator,
     tmp_alloc: Allocator,
@@ -435,12 +449,7 @@ pub fn parse_pnext_chain(
                         lpic.* = obj;
                     }
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_descriptor_set_layout_binding_flags_create_info_ext(
-                        aa,
-                        sa,
-                        s,
-                        obj,
-                    );
+                    try parse_descriptor_set_layout_binding_flags_create_info_ext(aa, sa, s, obj);
                 },
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR => {
                     const obj = try aa.create(vk.VkPipelineRenderingCreateInfo);
@@ -451,12 +460,29 @@ pub fn parse_pnext_chain(
                         lpic.* = obj;
                     }
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_pipeline_rendering_create_info_khr(
-                        aa,
-                        sa,
-                        s,
-                        obj,
-                    );
+                    try parse_pipeline_rendering_create_info_khr(aa, sa, s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR => {
+                    const obj = try aa.create(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_physical_device_robustness_2_features_khr(s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
+                    const obj = try aa.create(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_physical_device_descriptor_buffer_features_ext(s, obj);
                 },
                 else => return error.InvalidJson,
             }
