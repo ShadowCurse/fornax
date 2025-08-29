@@ -203,8 +203,24 @@ pub fn main() !void {
 
     const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
     for (graphics_pipelines) |*gp| {
-        _ = gp;
-        // log.info(@src(), "{s}", .{gp.payload});
+        const e = Database.Entry.from_ptr(gp.entry_ptr);
+        const parsed_graphics_pipeline = try parsing.parse_graphics_pipeline(
+            arena_alloc,
+            tmp_alloc,
+            gp.payload,
+            &db,
+        );
+        // log.info(@src(), "Parsed graphics pipeline create info:", .{});
+        // parsing.print_vk_struct(parsed_graphics_pipeline.create_info);
+        if (parsed_graphics_pipeline.version != 6)
+            return error.RenderPassVersionMissmatch;
+        if (parsed_graphics_pipeline.hash != try e.get_value())
+            return error.RenderPassHashMissmatch;
+        gp.handle = try create_graphics_pipeline(
+            vk_device,
+            parsed_graphics_pipeline.create_info,
+        );
+        // log.info(@src(), "Created object: {?}", .{gp.handle});
     }
 }
 
@@ -989,6 +1005,22 @@ pub fn create_render_pass(
         &render_pass,
     ));
     return render_pass;
+}
+
+pub fn create_graphics_pipeline(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkGraphicsPipelineCreateInfo,
+) !vk.VkPipeline {
+    var pipeline: vk.VkPipeline = undefined;
+    try vk.check_result(vk.vkCreateGraphicsPipelines.?(
+        vk_device,
+        null,
+        1,
+        create_info,
+        null,
+        &pipeline,
+    ));
+    return pipeline;
 }
 
 test "all" {
