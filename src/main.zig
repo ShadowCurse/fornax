@@ -16,7 +16,7 @@ const PDF = @import("physical_device_features.zig");
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
-    .level = .Debug,
+    .level = .Info,
 };
 
 const Args = struct {
@@ -71,16 +71,28 @@ pub fn main() !void {
     var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const tmp_alloc = tmp_arena.allocator();
 
+    var progress = std.Progress.start(.{});
+    defer progress.end();
+
     const db_path = std.mem.span(args.database_paths.values[0]);
-    const db = try open_database(gpa_alloc, arena_alloc, db_path);
+    const db = try open_database(gpa_alloc, arena_alloc, &progress, db_path);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
+    if (app_infos.len == 0)
+        return error.NoApplicationInfoInTheDatabase;
     const app_info_json = app_infos[0].payload;
-    const parsed_application_info = try parsing.parse_application_info(
+    const parsed_application_info = parsing.parse_application_info(
         arena_alloc,
         tmp_alloc,
         app_info_json,
-    );
+    ) catch |e| {
+        log.err(
+            @src(),
+            "Encountered error {} while parsing application info json: {s}",
+            .{ e, app_info_json },
+        );
+        return e;
+    };
     if (parsed_application_info.version != 6)
         return error.ApllicationInfoVersionMissmatch;
 
@@ -99,128 +111,164 @@ pub fn main() !void {
         parsed_application_info.device_features2,
     );
 
-    const samplers = db.entries.getPtrConst(.SAMPLER).values();
-    for (samplers) |*sampler| {
-        const e = Database.Entry.from_ptr(sampler.entry_ptr);
-        // log.info(@src(), "Processing sampler entry: {any}", .{e});
-        const parsed_sampler = try parsing.parse_sampler(arena_alloc, tmp_alloc, sampler.payload);
-        // log.info(@src(), "Parsed sampler create info:", .{});
-        // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
-        if (parsed_sampler.version != 6)
-            return error.SamplerVersionMissmatch;
-        if (parsed_sampler.hash != try e.get_value())
-            return error.SamplerHashMissmatch;
-        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
-        // log.info(@src(), "Created object: {?}", .{sampler.object});
+    {
+        const sub_progress = progress.start("replaying samplers", 0);
+        defer sub_progress.end();
+        const samplers = db.entries.getPtrConst(.SAMPLER).values();
+        for (samplers) |*sampler| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(sampler.entry_ptr);
+            // log.info(@src(), "Processing sampler entry: {any}", .{e});
+            const parsed_sampler = try parsing.parse_sampler(arena_alloc, tmp_alloc, sampler.payload);
+            // log.info(@src(), "Parsed sampler create info:", .{});
+            // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
+            if (parsed_sampler.version != 6)
+                return error.SamplerVersionMissmatch;
+            if (parsed_sampler.hash != try e.get_value())
+                return error.SamplerHashMissmatch;
+            sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
+            // log.info(@src(), "Created object: {?}", .{sampler.object});
+        }
     }
 
-    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
-    for (descriptor_set_layouts) |*dsl| {
-        const e = Database.Entry.from_ptr(dsl.entry_ptr);
-        // log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
-        const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
-            arena_alloc,
-            tmp_alloc,
-            dsl.payload,
-            &db,
-        );
-        // log.info(@src(), "Parsed descriptor set layout create info:", .{});
-        // parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
-        if (parsed_descriptro_set_layout.version != 6)
-            return error.DescriptorSetLayoutVersionMissmatch;
-        if (parsed_descriptro_set_layout.hash != try e.get_value())
-            return error.DescriptorSetLayoutHashMissmatch;
-        dsl.handle = try create_descriptor_set_layout(
-            vk_device,
-            parsed_descriptro_set_layout.create_info,
-        );
-        // log.info(@src(), "Created object: {?}", .{dsl.object});
+    {
+        const sub_progress = progress.start("replaying descripot set layouts", 0);
+        defer sub_progress.end();
+        const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
+        for (descriptor_set_layouts) |*dsl| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(dsl.entry_ptr);
+            // log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
+            const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
+                arena_alloc,
+                tmp_alloc,
+                dsl.payload,
+                &db,
+            );
+            // log.info(@src(), "Parsed descriptor set layout create info:", .{});
+            // parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
+            if (parsed_descriptro_set_layout.version != 6)
+                return error.DescriptorSetLayoutVersionMissmatch;
+            if (parsed_descriptro_set_layout.hash != try e.get_value())
+                return error.DescriptorSetLayoutHashMissmatch;
+            dsl.handle = try create_descriptor_set_layout(
+                vk_device,
+                parsed_descriptro_set_layout.create_info,
+            );
+            // log.info(@src(), "Created object: {?}", .{dsl.object});
+        }
     }
 
-    const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
-    for (pipeline_layouts) |*pl| {
-        const e = Database.Entry.from_ptr(pl.entry_ptr);
-        const parsed_pipeline_layout = try parsing.parse_pipeline_layout(
-            arena_alloc,
-            tmp_alloc,
-            pl.payload,
-            &db,
-        );
-        // log.info(@src(), "Parsed descriptor set layout create info:", .{});
-        // parsing.print_vk_struct(parsed_pipeline_layout.pipeline_layout_create_info);
-        if (parsed_pipeline_layout.version != 6)
-            return error.PipelineLayoutVersionMissmatch;
-        if (parsed_pipeline_layout.hash != try e.get_value())
-            return error.PipelineLayoutHashMissmatch;
-        pl.handle = try create_pipeline_layout(
-            vk_device,
-            parsed_pipeline_layout.create_info,
-        );
-        // log.info(@src(), "Created object: {?}", .{pl.object});
+    {
+        const sub_progress = progress.start("replaying pipeline layouts", 0);
+        defer sub_progress.end();
+        const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
+        for (pipeline_layouts) |*pl| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(pl.entry_ptr);
+            const parsed_pipeline_layout = try parsing.parse_pipeline_layout(
+                arena_alloc,
+                tmp_alloc,
+                pl.payload,
+                &db,
+            );
+            // log.info(@src(), "Parsed descriptor set layout create info:", .{});
+            // parsing.print_vk_struct(parsed_pipeline_layout.pipeline_layout_create_info);
+            if (parsed_pipeline_layout.version != 6)
+                return error.PipelineLayoutVersionMissmatch;
+            if (parsed_pipeline_layout.hash != try e.get_value())
+                return error.PipelineLayoutHashMissmatch;
+            pl.handle = try create_pipeline_layout(
+                vk_device,
+                parsed_pipeline_layout.create_info,
+            );
+            // log.info(@src(), "Created object: {?}", .{pl.object});
+        }
     }
 
-    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
-    for (shader_modules) |*sm| {
-        const e = Database.Entry.from_ptr(sm.entry_ptr);
-        const parsed_shader_module = try parsing.parse_shader_module(
-            arena_alloc,
-            tmp_alloc,
-            sm.payload,
-        );
-        // log.info(@src(), "Parsed shader module create info:", .{});
-        // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
-        if (parsed_shader_module.version != 6)
-            return error.ShaderModuleVersionMissmatch;
-        if (parsed_shader_module.hash != try e.get_value())
-            return error.ShaderModuleHashMissmatch;
-        sm.handle = try create_shader_module(
-            vk_device,
-            parsed_shader_module.create_info,
-        );
-        // log.info(@src(), "Created object: {?}", .{sm.object});
+    {
+        const sub_progress = progress.start("replaying shader modules", 0);
+        defer sub_progress.end();
+        const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
+        for (shader_modules) |*sm| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(sm.entry_ptr);
+            const parsed_shader_module = try parsing.parse_shader_module(
+                arena_alloc,
+                tmp_alloc,
+                sm.payload,
+            );
+            // log.info(@src(), "Parsed shader module create info:", .{});
+            // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
+            if (parsed_shader_module.version != 6)
+                return error.ShaderModuleVersionMissmatch;
+            if (parsed_shader_module.hash != try e.get_value())
+                return error.ShaderModuleHashMissmatch;
+            sm.handle = try create_shader_module(
+                vk_device,
+                parsed_shader_module.create_info,
+            );
+            // log.info(@src(), "Created object: {?}", .{sm.object});
+        }
     }
 
-    const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
-    for (render_passes) |*rp| {
-        const e = Database.Entry.from_ptr(rp.entry_ptr);
-        const parsed_render_pass = try parsing.parse_render_pass(
-            arena_alloc,
-            tmp_alloc,
-            rp.payload,
-        );
-        // log.info(@src(), "Parsed shader module create info:", .{});
-        // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
-        if (parsed_render_pass.version != 6)
-            return error.RenderPassVersionMissmatch;
-        if (parsed_render_pass.hash != try e.get_value())
-            return error.RenderPassHashMissmatch;
-        rp.handle = try create_render_pass(
-            vk_device,
-            parsed_render_pass.create_info,
-        );
-        // log.info(@src(), "Created object: {?}", .{rp.object});
+    {
+        const sub_progress = progress.start("replaying render passes", 0);
+        defer sub_progress.end();
+        const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
+        for (render_passes) |*rp| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(rp.entry_ptr);
+            const parsed_render_pass = try parsing.parse_render_pass(
+                arena_alloc,
+                tmp_alloc,
+                rp.payload,
+            );
+            // log.info(@src(), "Parsed shader module create info:", .{});
+            // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
+            if (parsed_render_pass.version != 6)
+                return error.RenderPassVersionMissmatch;
+            if (parsed_render_pass.hash != try e.get_value())
+                return error.RenderPassHashMissmatch;
+            rp.handle = try create_render_pass(
+                vk_device,
+                parsed_render_pass.create_info,
+            );
+            // log.info(@src(), "Created object: {?}", .{rp.object});
+        }
     }
 
-    const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
-    for (graphics_pipelines) |*gp| {
-        const e = Database.Entry.from_ptr(gp.entry_ptr);
-        const parsed_graphics_pipeline = try parsing.parse_graphics_pipeline(
-            arena_alloc,
-            tmp_alloc,
-            gp.payload,
-            &db,
-        );
-        // log.info(@src(), "Parsed graphics pipeline create info:", .{});
-        // parsing.print_vk_struct(parsed_graphics_pipeline.create_info);
-        if (parsed_graphics_pipeline.version != 6)
-            return error.RenderPassVersionMissmatch;
-        if (parsed_graphics_pipeline.hash != try e.get_value())
-            return error.RenderPassHashMissmatch;
-        gp.handle = try create_graphics_pipeline(
-            vk_device,
-            parsed_graphics_pipeline.create_info,
-        );
-        // log.info(@src(), "Created object: {?}", .{gp.handle});
+    {
+        const sub_progress = progress.start("replaying graphics pipelines", 0);
+        defer sub_progress.end();
+        const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
+        for (graphics_pipelines) |*gp| {
+            defer sub_progress.completeOne();
+
+            const e = Database.Entry.from_ptr(gp.entry_ptr);
+            const parsed_graphics_pipeline = try parsing.parse_graphics_pipeline(
+                arena_alloc,
+                tmp_alloc,
+                gp.payload,
+                &db,
+            );
+            // log.info(@src(), "Parsed graphics pipeline create info:", .{});
+            // parsing.print_vk_struct(parsed_graphics_pipeline.create_info);
+            if (parsed_graphics_pipeline.version != 6)
+                return error.RenderPassVersionMissmatch;
+            if (parsed_graphics_pipeline.hash != try e.get_value())
+                return error.RenderPassHashMissmatch;
+            gp.handle = try create_graphics_pipeline(
+                vk_device,
+                parsed_graphics_pipeline.create_info,
+            );
+            // log.info(@src(), "Created object: {?}", .{gp.handle});
+        }
     }
 }
 
@@ -336,7 +384,12 @@ pub const Database = struct {
     };
 };
 
-pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []const u8) !Database {
+pub fn open_database(
+    gpa_alloc: Allocator,
+    scratch_alloc: Allocator,
+    progress: *std.Progress.Node,
+    path: []const u8,
+) !Database {
     log.info(@src(), "Openning database as path: {s}", .{path});
     const file_mem = try mmap_file(path);
 
@@ -353,7 +406,10 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
     var entries: Database.EntriesType = .initFill(.empty);
     var remaining_file_mem = file_mem[@sizeOf(Database.Header)..];
 
+    const progress_node = progress.start("reading database", 0);
+    defer progress_node.end();
     while (0 < remaining_file_mem.len) {
+        progress_node.completeOne();
         // If entry is incomplete, stop
         if (remaining_file_mem.len < @sizeOf(Database.Entry))
             break;
@@ -376,7 +432,7 @@ pub fn open_database(gpa_alloc: Allocator, scratch_alloc: Allocator, path: []con
         //     entry_tag == .SHADER_MODULE or
         //     entry_tag == .GRAPHICS_PIPELINE))
         //     continue;
-        log.info(@src(), "Found entry: {}", .{entry});
+        // log.info(@src(), "Found entry: {}", .{entry});
 
         const payload_start: [*]const u8 =
             @ptrFromInt(@as(usize, @intFromPtr(entry_ptr)) + @sizeOf(Database.Entry));
