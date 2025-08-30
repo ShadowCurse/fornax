@@ -85,13 +85,13 @@ pub fn main() !void {
         arena_alloc,
         tmp_alloc,
         app_info_json,
-    ) catch |e| {
+    ) catch |err| {
         log.err(
             @src(),
             "Encountered error {} while parsing application info json: {s}",
-            .{ e, app_info_json },
+            .{ err, app_info_json },
         );
-        return e;
+        return err;
     };
     if (parsed_application_info.version != 6)
         return error.ApllicationInfoVersionMissmatch;
@@ -120,7 +120,18 @@ pub fn main() !void {
 
             const e = Database.Entry.from_ptr(sampler.entry_ptr);
             // log.info(@src(), "Processing sampler entry: {any}", .{e});
-            const parsed_sampler = try parsing.parse_sampler(arena_alloc, tmp_alloc, sampler.payload);
+            const parsed_sampler = parsing.parse_sampler(
+                arena_alloc,
+                tmp_alloc,
+                sampler.payload,
+            ) catch |err| {
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing sampler json: {s}",
+                    .{ err, sampler.payload },
+                );
+                return err;
+            };
             // log.info(@src(), "Parsed sampler create info:", .{});
             // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
             if (parsed_sampler.version != 6)
@@ -141,12 +152,19 @@ pub fn main() !void {
 
             const e = Database.Entry.from_ptr(dsl.entry_ptr);
             // log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
-            const parsed_descriptro_set_layout = try parsing.parse_descriptor_set_layout(
+            const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
                 arena_alloc,
                 tmp_alloc,
                 dsl.payload,
                 &db,
-            );
+            ) catch |err| {
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing descriptor set layout json: {s}",
+                    .{ err, dsl.payload },
+                );
+                continue;
+            };
             // log.info(@src(), "Parsed descriptor set layout create info:", .{});
             // parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
             if (parsed_descriptro_set_layout.version != 6)
@@ -169,12 +187,19 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(pl.entry_ptr);
-            const parsed_pipeline_layout = try parsing.parse_pipeline_layout(
+            const parsed_pipeline_layout = parsing.parse_pipeline_layout(
                 arena_alloc,
                 tmp_alloc,
                 pl.payload,
                 &db,
-            );
+            ) catch |err| {
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing pipeline layout json: {s}",
+                    .{ err, pl.payload },
+                );
+                continue;
+            };
             // log.info(@src(), "Parsed descriptor set layout create info:", .{});
             // parsing.print_vk_struct(parsed_pipeline_layout.pipeline_layout_create_info);
             if (parsed_pipeline_layout.version != 6)
@@ -197,11 +222,19 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(sm.entry_ptr);
-            const parsed_shader_module = try parsing.parse_shader_module(
+            const parsed_shader_module = parsing.parse_shader_module(
                 arena_alloc,
                 tmp_alloc,
                 sm.payload,
-            );
+            ) catch |err| {
+                const json_str = std.mem.span(@as([*c]const u8, @ptrCast(sm.payload.ptr)));
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing shader module json: {s}",
+                    .{ err, json_str },
+                );
+                continue;
+            };
             // log.info(@src(), "Parsed shader module create info:", .{});
             // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
             if (parsed_shader_module.version != 6)
@@ -224,11 +257,18 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(rp.entry_ptr);
-            const parsed_render_pass = try parsing.parse_render_pass(
+            const parsed_render_pass = parsing.parse_render_pass(
                 arena_alloc,
                 tmp_alloc,
                 rp.payload,
-            );
+            ) catch |err| {
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing render pass json: {s}",
+                    .{ err, rp.payload },
+                );
+                continue;
+            };
             // log.info(@src(), "Parsed shader module create info:", .{});
             // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
             if (parsed_render_pass.version != 6)
@@ -251,22 +291,29 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(gp.entry_ptr);
-            const parsed_graphics_pipeline = try parsing.parse_graphics_pipeline(
+            const parsed_graphics_pipeline = parsing.parse_graphics_pipeline(
                 arena_alloc,
                 tmp_alloc,
                 gp.payload,
                 &db,
-            );
+            ) catch |err| {
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing graphics pipeline json: {s}",
+                    .{ err, gp.payload },
+                );
+                continue;
+            };
             // log.info(@src(), "Parsed graphics pipeline create info:", .{});
             // parsing.print_vk_struct(parsed_graphics_pipeline.create_info);
             if (parsed_graphics_pipeline.version != 6)
                 return error.RenderPassVersionMissmatch;
             if (parsed_graphics_pipeline.hash != try e.get_value())
                 return error.RenderPassHashMissmatch;
-            gp.handle = try create_graphics_pipeline(
-                vk_device,
-                parsed_graphics_pipeline.create_info,
-            );
+            // gp.handle = try create_graphics_pipeline(
+            //     vk_device,
+            //     parsed_graphics_pipeline.create_info,
+            // );
             // log.info(@src(), "Created object: {?}", .{gp.handle});
         }
     }
