@@ -640,7 +640,12 @@ fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) v
                     log.output("{s}: {any},\n", .{ field.name, code });
                 }
             },
-            ?*anyopaque, ?*const anyopaque => {
+            ?*anyopaque,
+            ?*const anyopaque,
+            vk.VkPipelineLayout,
+            vk.VkRenderPass,
+            vk.VkPipeline,
+            => {
                 log.output("{s}: {?},\n", .{ field.name, @field(@"struct", field.name) });
             },
             [*c]const vk.VkDescriptorSetLayoutBinding => {
@@ -714,6 +719,43 @@ fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) v
                 elements.len = len;
                 for (elements) |*binding|
                     print_struct_offset(field.name, binding, fields_base_offset);
+            },
+            [*c]const vk.VkPipelineShaderStageCreateInfo => {
+                const len = @field(@"struct", "stageCount");
+                var elements: []const vk.VkPipelineShaderStageCreateInfo = undefined;
+                elements.ptr = @field(@"struct", field.name);
+                elements.len = len;
+                for (elements) |*binding|
+                    print_struct_offset(field.name, binding, fields_base_offset);
+            },
+            [*c]const vk.VkSpecializationMapEntry => {
+                const len = @field(@"struct", "mapEntryCount");
+                var elements: []const vk.VkSpecializationMapEntry = undefined;
+                elements.ptr = @field(@"struct", field.name);
+                elements.len = len;
+                for (elements) |*binding|
+                    print_struct_offset(field.name, binding, fields_base_offset);
+            },
+
+            [*c]const vk.VkPipelineVertexInputStateCreateInfo,
+            [*c]const vk.VkPipelineInputAssemblyStateCreateInfo,
+            [*c]const vk.VkPipelineTessellationStateCreateInfo,
+            [*c]const vk.VkPipelineViewportStateCreateInfo,
+            [*c]const vk.VkPipelineRasterizationStateCreateInfo,
+            [*c]const vk.VkPipelineMultisampleStateCreateInfo,
+            [*c]const vk.VkPipelineDepthStencilStateCreateInfo,
+            [*c]const vk.VkPipelineColorBlendStateCreateInfo,
+            [*c]const vk.VkPipelineDynamicStateCreateInfo,
+            [*c]const vk.VkSpecializationInfo,
+            [*c]const vk.VkViewport,
+            [*c]const vk.VkRect2D,
+            => {
+                const element_type = @typeInfo(field.type).pointer.child;
+                const element: ?*const element_type = @field(@"struct", field.name);
+                if (element) |e|
+                    print_struct_offset(field.name, e, fields_base_offset)
+                else
+                    log.output("{s}: {?},\n", .{ field.name, element });
             },
             vk.VkPhysicalDeviceFeatures => print_struct_offset(
                 field.name,
