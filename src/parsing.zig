@@ -9,169 +9,10 @@ const std = @import("std");
 const vk = @import("volk.zig");
 const log = @import("log.zig");
 const root = @import("main.zig");
+const vk_print = @import("vulkan_print.zig");
 
 const Allocator = std.mem.Allocator;
 const Database = root.Database;
-
-pub fn print_vk_struct(@"struct": anytype) void {
-    const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
-    const fields = @typeInfo(t).@"struct".fields;
-    log.info(@src(), "Type: {s}", .{@typeName(t)});
-    inline for (fields) |field| {
-        switch (field.type) {
-            u32, u64, vk.VkStructureType => {
-                log.info(@src(), "\t{s}: {d}", .{ field.name, @field(@"struct", field.name) });
-            },
-            f32, f64 => {
-                log.info(@src(), "\t{s}: {d}", .{ field.name, @field(@"struct", field.name) });
-            },
-            [*c]const u8 => {
-                log.info(@src(), "\t{s}: {s}", .{ field.name, @field(@"struct", field.name) });
-            },
-            [*c]const u32 => {
-                if (@hasField(t, "codeSize")) {
-                    const len = @field(@"struct", "codeSize");
-                    var code: []const u32 = undefined;
-                    code.ptr = @field(@"struct", field.name);
-                    code.len = len / @sizeOf(u32);
-                    log.info(@src(), "\t{s}: {any}", .{ field.name, code });
-                }
-            },
-            ?*anyopaque, ?*const anyopaque => {
-                log.info(@src(), "\t{s}: {?}", .{ field.name, @field(@"struct", field.name) });
-            },
-            [*c]const vk.VkDescriptorSetLayoutBinding => {
-                const len = @field(@"struct", "bindingCount");
-                var elements: []const vk.VkDescriptorSetLayoutBinding = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding|
-                    print_vk_struct(binding);
-            },
-            [*c]const vk.VkDescriptorSetLayout => {
-                const len = @field(@"struct", "setLayoutCount");
-                var elements: []const *anyopaque = undefined;
-                elements.ptr = @ptrCast(@field(@"struct", field.name));
-                elements.len = len;
-                log.info(@src(), "\t{s}: {any}", .{ field.name, elements });
-            },
-            [*c]const vk.VkPushConstantRange => {
-                const len = @field(@"struct", "pushConstantRangeCount");
-                var elements: []const vk.VkPushConstantRange = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding|
-                    print_vk_struct(binding);
-            },
-            [*c]const vk.VkAttachmentDescription => {
-                const len = @field(@"struct", "attachmentCount");
-                var elements: []const vk.VkAttachmentDescription = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding|
-                    print_vk_struct(binding);
-            },
-            [*c]const vk.VkSubpassDescription => {
-                const len = @field(@"struct", "subpassCount");
-                var elements: []const vk.VkSubpassDescription = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding|
-                    print_vk_struct(binding);
-            },
-            [*c]const vk.VkAttachmentReference => {
-                const len = if (std.mem.eql(u8, field.name, "pInputAttachments"))
-                    @field(@"struct", "inputAttachmentCount")
-                else if (std.mem.eql(u8, field.name, "pColorAttachments"))
-                    @field(@"struct", "colorAttachmentCount")
-                else if (std.mem.eql(u8, field.name, "pResolveAttachments")) blk: {
-                    if (@field(@"struct", field.name) != null)
-                        break :blk @field(@"struct", "colorAttachmentCount")
-                    else
-                        break :blk 0;
-                } else if (std.mem.eql(u8, field.name, "pDepthStencilAttachment"))
-                    @intFromBool(@field(@"struct", field.name) != null)
-                else if (std.mem.eql(u8, field.name, "pPreserveAttachments"))
-                    @field(@"struct", "preserveAttachmentCount")
-                else
-                    @panic("Cannot find length for the VkAttachmentReference array");
-
-                log.info(@src(), "{s} {d}", .{ field.name, len });
-                if (len != 0) {
-                    var elements: []const vk.VkAttachmentReference = undefined;
-                    elements.ptr = @field(@"struct", field.name);
-                    elements.len = len;
-                    for (elements) |*binding|
-                        print_vk_struct(binding);
-                }
-            },
-            [*c]const vk.VkSubpassDependency => {
-                const len = @field(@"struct", "dependencyCount");
-                var elements: []const vk.VkSubpassDependency = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding|
-                    print_vk_struct(binding);
-            },
-            else => log.info(
-                @src(),
-                "\tCannot format field {s} of type {s}",
-                .{ field.name, @typeName(field.type) },
-            ),
-        }
-    }
-}
-
-pub fn print_vk_chain(chain: anytype) void {
-    var current: ?*const anyopaque = chain;
-    while (current) |c| {
-        const struct_type: *const vk.VkStructureType = @alignCast(@ptrCast(c));
-        switch (struct_type.*) {
-            vk.VK_STRUCTURE_TYPE_APPLICATION_INFO => {
-                const nn: *const vk.VkApplicationInfo = @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorSetLayoutCreateInfo = @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO => {
-                const nn: *const vk.VkPipelineLayoutCreateInfo = @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 => {
-                const nn: *const vk.VkPhysicalDeviceFeatures2 = @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
-                    @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
-                    @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT => {
-                const nn: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT =
-                    @alignCast(@ptrCast(c));
-                print_vk_struct(nn);
-                current = nn.pNext;
-            },
-            else => {
-                log.info(@src(), "unknown struct type: {d}", .{struct_type.*});
-                break;
-            },
-        }
-    }
-}
 
 fn scanner_next_number(scanner: *std.json.Scanner) ![]const u8 {
     switch (try scanner.next()) {
@@ -755,8 +596,8 @@ test "parse_application_info" {
     const tmp_alloc = scratch_arena.allocator();
 
     const parsed_application_info = try parse_application_info(alloc, tmp_alloc, json);
-    print_vk_chain(parsed_application_info.application_info);
-    print_vk_chain(parsed_application_info.device_features2);
+    vk_print.print_chain(parsed_application_info.application_info);
+    vk_print.print_chain(parsed_application_info.device_features2);
 }
 
 pub const ParsedSampler = struct {
@@ -831,7 +672,7 @@ test "parse_sampler" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_sampler = try parse_sampler(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_sampler.create_info);
+    vk_print.print_struct(parsed_sampler.create_info);
 }
 
 pub const ParsedDescriptorSetLayout = struct {
@@ -1012,7 +853,7 @@ test "parse_descriptor_set_layout" {
         json,
         &db,
     );
-    print_vk_chain(parsed_descriptro_set_layout.create_info);
+    vk_print.print_chain(parsed_descriptro_set_layout.create_info);
 }
 
 pub const ParsedPipelineLayout = struct {
@@ -1160,7 +1001,7 @@ test "parse_pipeline_layout" {
         json,
         &db,
     );
-    print_vk_chain(parsed_pipeline_layout.create_info);
+    vk_print.print_chain(parsed_pipeline_layout.create_info);
 }
 
 pub const ParsedShaderModule = struct {
@@ -1297,7 +1138,7 @@ test "parse_shader_module" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_shader_module = try parse_shader_module(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_shader_module.create_info);
+    vk_print.print_struct(parsed_shader_module.create_info);
 }
 
 pub const ParsedRenderPass = struct {
@@ -1580,7 +1421,7 @@ test "parse_render_pass" {
     const tmp_alloc = tmp_arena.allocator();
 
     const parsed_render_pass = try parse_render_pass(alloc, tmp_alloc, json);
-    print_vk_struct(parsed_render_pass.create_info);
+    vk_print.print_struct(parsed_render_pass.create_info);
 }
 
 pub const ParsedGraphicsPipeline = struct {
@@ -2591,5 +2432,5 @@ test "parse_graphics_pipeline" {
     _ = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
     _ = try parse_graphics_pipeline(alloc, tmp_alloc, json2, &db);
     const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json3, &db);
-    print_vk_struct(parsed_graphics_pipeline.create_info);
+    vk_print.print_struct(parsed_graphics_pipeline.create_info);
 }
