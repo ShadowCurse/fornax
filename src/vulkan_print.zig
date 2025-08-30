@@ -604,7 +604,6 @@ pub fn print_chain(chain: anytype) void {
         }
     }
 }
-
 pub fn print_struct(@"struct": anytype) void {
     print_struct_offset("", @"struct", 0);
 }
@@ -732,4 +731,3 @@ fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) v
         log.output("    ", .{});
     log.output("}},\n", .{});
 }
-
