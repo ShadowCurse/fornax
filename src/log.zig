@@ -93,9 +93,9 @@ pub fn info(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+        output(WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format, t);
+        output("{s} " ++ format ++ "\n", t);
 }
 
 pub fn debug(
@@ -109,9 +109,9 @@ pub fn debug(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(HIGH_WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+        output(HIGH_WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format, t);
+        output("{s} " ++ format ++ "\n", t);
 }
 
 pub fn warn(
@@ -125,9 +125,9 @@ pub fn warn(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(YELLOW ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+        output(YELLOW ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format, t);
+        output("{s} " ++ format ++ "\n", t);
 }
 
 pub fn err(
@@ -141,12 +141,12 @@ pub fn err(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(RED ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+        output(RED ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format, t);
+        output("{s} " ++ format ++ "\n", t);
 }
 
-fn output(
+pub fn output(
     comptime format: []const u8,
     args: anytype,
 ) void {
@@ -157,7 +157,7 @@ fn output(
     std.debug.lockStdErr();
     defer std.debug.unlockStdErr();
     nosuspend {
-        writer.print(format ++ "\n", args) catch return;
+        writer.print(format, args) catch return;
         bw.flush() catch return;
     }
 }

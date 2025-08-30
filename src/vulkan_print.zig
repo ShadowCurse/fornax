@@ -598,26 +598,39 @@ pub fn print_chain(chain: anytype) void {
                 current = nn.pNext;
             },
             else => {
-                log.info(@src(), "unknown struct sType: {d}", .{base_struct.sType});
+                log.warn(@src(), "Unknown struct sType: {d}", .{base_struct.sType});
                 current = base_struct.pNext;
             },
         }
     }
 }
+
 pub fn print_struct(@"struct": anytype) void {
+    print_struct_offset("", @"struct", 0);
+}
+
+fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) void {
     const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
+    const type_name = @typeName(t)["cimport.struct_".len..];
+    log.output("{s}: {s} = .{{\n", .{ name, type_name });
     const fields = @typeInfo(t).@"struct".fields;
-    log.info(@src(), "Type: {s}", .{@typeName(t)});
+    const fields_base_offset = base_offset + 1;
     inline for (fields) |field| {
+        for (0..fields_base_offset) |_|
+            log.output("    ", .{});
         switch (field.type) {
-            u32, u64, vk.VkStructureType => {
-                log.info(@src(), "\t{s}: {d}", .{ field.name, @field(@"struct", field.name) });
+            i16, i32, u32, u64, usize, vk.VkStructureType => {
+                log.output("{s}: {s} = {d},\n", .{
+                    field.name,
+                    @typeName(field.type),
+                    @field(@"struct", field.name),
+                });
             },
             f32, f64 => {
-                log.info(@src(), "\t{s}: {d}", .{ field.name, @field(@"struct", field.name) });
+                log.output("{s}: {d},\n", .{ field.name, @field(@"struct", field.name) });
             },
             [*c]const u8 => {
-                log.info(@src(), "\t{s}: {s}", .{ field.name, @field(@"struct", field.name) });
+                log.output("{s}: {s},\n", .{ field.name, @field(@"struct", field.name) });
             },
             [*c]const u32 => {
                 if (@hasField(t, "codeSize")) {
@@ -625,11 +638,11 @@ pub fn print_struct(@"struct": anytype) void {
                     var code: []const u32 = undefined;
                     code.ptr = @field(@"struct", field.name);
                     code.len = len / @sizeOf(u32);
-                    log.info(@src(), "\t{s}: {any}", .{ field.name, code });
+                    log.output("{s}: {any},\n", .{ field.name, code });
                 }
             },
             ?*anyopaque, ?*const anyopaque => {
-                log.info(@src(), "\t{s}: {?}", .{ field.name, @field(@"struct", field.name) });
+                log.output("{s}: {?},\n", .{ field.name, @field(@"struct", field.name) });
             },
             [*c]const vk.VkDescriptorSetLayoutBinding => {
                 const len = @field(@"struct", "bindingCount");
@@ -637,14 +650,14 @@ pub fn print_struct(@"struct": anytype) void {
                 elements.ptr = @field(@"struct", field.name);
                 elements.len = len;
                 for (elements) |*binding|
-                    print_struct(binding);
+                    print_struct_offset(field.name, binding, fields_base_offset);
             },
             [*c]const vk.VkDescriptorSetLayout => {
                 const len = @field(@"struct", "setLayoutCount");
                 var elements: []const *anyopaque = undefined;
                 elements.ptr = @ptrCast(@field(@"struct", field.name));
                 elements.len = len;
-                log.info(@src(), "\t{s}: {any}", .{ field.name, elements });
+                log.output("{s}: {any},\n", .{ field.name, elements });
             },
             [*c]const vk.VkPushConstantRange => {
                 const len = @field(@"struct", "pushConstantRangeCount");
@@ -652,7 +665,7 @@ pub fn print_struct(@"struct": anytype) void {
                 elements.ptr = @field(@"struct", field.name);
                 elements.len = len;
                 for (elements) |*binding|
-                    print_struct(binding);
+                    print_struct_offset(field.name, binding, fields_base_offset);
             },
             [*c]const vk.VkAttachmentDescription => {
                 const len = @field(@"struct", "attachmentCount");
@@ -660,7 +673,7 @@ pub fn print_struct(@"struct": anytype) void {
                 elements.ptr = @field(@"struct", field.name);
                 elements.len = len;
                 for (elements) |*binding|
-                    print_struct(binding);
+                    print_struct_offset(field.name, binding, fields_base_offset);
             },
             [*c]const vk.VkSubpassDescription => {
                 const len = @field(@"struct", "subpassCount");
@@ -668,7 +681,7 @@ pub fn print_struct(@"struct": anytype) void {
                 elements.ptr = @field(@"struct", field.name);
                 elements.len = len;
                 for (elements) |*binding|
-                    print_struct(binding);
+                    print_struct_offset(field.name, binding, fields_base_offset);
             },
             [*c]const vk.VkAttachmentReference => {
                 const len = if (std.mem.eql(u8, field.name, "pInputAttachments"))
@@ -687,13 +700,12 @@ pub fn print_struct(@"struct": anytype) void {
                 else
                     @panic("Cannot find length for the VkAttachmentReference array");
 
-                log.info(@src(), "{s} {d}", .{ field.name, len });
                 if (len != 0) {
                     var elements: []const vk.VkAttachmentReference = undefined;
                     elements.ptr = @field(@"struct", field.name);
                     elements.len = len;
                     for (elements) |*binding|
-                        print_struct(binding);
+                        print_struct_offset(field.name, binding, fields_base_offset);
                 }
             },
             [*c]const vk.VkSubpassDependency => {
@@ -702,14 +714,22 @@ pub fn print_struct(@"struct": anytype) void {
                 elements.ptr = @field(@"struct", field.name);
                 elements.len = len;
                 for (elements) |*binding|
-                    print_struct(binding);
+                    print_struct_offset(field.name, binding, fields_base_offset);
             },
-            vk.VkPhysicalDeviceFeatures => print_struct(&@field(@"struct", field.name)),
-            else => log.info(
+            vk.VkPhysicalDeviceFeatures => print_struct_offset(
+                field.name,
+                &@field(@"struct", field.name),
+                fields_base_offset,
+            ),
+            else => log.warn(
                 @src(),
-                "\tCannot format field {s} of type {s}",
+                "Cannot format field {s} of type {s}",
                 .{ field.name, @typeName(field.type) },
             ),
         }
     }
+    for (0..base_offset) |_|
+        log.output("    ", .{});
+    log.output("}},\n", .{});
 }
+
