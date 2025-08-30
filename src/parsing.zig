@@ -244,7 +244,7 @@ pub fn parse_simple_type(
             if (!field_is_parsed[i] and std.mem.eql(u8, s, field.name)) {
                 field_is_parsed[i] = true;
                 switch (field.type) {
-                    i32, u32, c_uint => {
+                    i32, u32, u64, c_uint => {
                         const v = try scanner_next_number(scanner);
                         @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
                         consumed = true;
@@ -282,7 +282,7 @@ fn parse_number_array(
 
 fn parse_handle_array(
     comptime T: type,
-    comptime TAG: Database.Entry.Tag,
+    tag: Database.Entry.Tag,
     aa: Allocator,
     sa: Allocator,
     scanner: *std.json.Scanner,
@@ -292,9 +292,9 @@ fn parse_handle_array(
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_string(scanner)) |hash_str| {
         const hash = try std.fmt.parseInt(u64, hash_str, 16);
-        const entries = db.entries.getPtrConst(TAG);
-        const entry = entries.getPtr(hash).?;
-        try tmp.append(sa, @ptrCast(entry.handle));
+        if (hash == 0) continue;
+        const handle = try db.get_handle(tag, hash);
+        try tmp.append(sa, @ptrCast(handle));
     }
     return try aa.dupe(T, tmp.items);
 }
@@ -402,10 +402,32 @@ pub fn parse_physical_device_descriptor_buffer_features_ext(
     try parse_simple_type(scanner, obj);
 }
 
+pub fn parse_pipeline_rasterization_depth_clip_state_create_info_ext(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
+pub fn parse_pipeline_create_flags_2_create_info(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPipelineCreateFlags2CreateInfo,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
+pub fn parse_graphics_pipeline_library_create_info_ext(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
 pub fn parse_pnext_chain(
     alloc: Allocator,
     tmp_alloc: Allocator,
     scanner: *std.json.Scanner,
+    database: ?*const Database,
 ) !?*anyopaque {
     const Inner = struct {
         fn parse_next(
@@ -484,7 +506,88 @@ pub fn parse_pnext_chain(
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
                     try parse_physical_device_descriptor_buffer_features_ext(s, obj);
                 },
-                else => return error.InvalidJson,
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT => {
+                    const obj =
+                        try aa.create(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_pipeline_rasterization_depth_clip_state_create_info_ext(s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO => {
+                    const obj =
+                        try aa.create(vk.VkPipelineCreateFlags2CreateInfo);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_pipeline_create_flags_2_create_info(s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT => {
+                    const obj =
+                        try aa.create(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_graphics_pipeline_library_create_info_ext(s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR => {},
+                else => {
+                    log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
+                    return error.InvalidJson;
+                },
+            }
+        }
+
+        fn parse_libraries(
+            aa: Allocator,
+            sa: Allocator,
+            s: *std.json.Scanner,
+            first_in_chain: *?*anyopaque,
+            last_pnext_in_chain: *?**anyopaque,
+            db: *const Database,
+        ) !void {
+            const obj =
+                try aa.create(vk.VkPipelineLibraryCreateInfoKHR);
+            obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
+            if (first_in_chain.* == null)
+                first_in_chain.* = obj;
+            if (last_pnext_in_chain.*) |lpic| {
+                lpic.* = obj;
+            }
+            last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+            const libraries = try parse_handle_array(
+                vk.VkPipeline,
+                .GRAPHICS_PIPELINE,
+                aa,
+                sa,
+                s,
+                db,
+            );
+            obj.pLibraries = @ptrCast(libraries.ptr);
+            obj.libraryCount = @intCast(libraries.len);
+
+            while (try scanner_object_next_field(s)) |ss| {
+                if (std.mem.eql(u8, ss, "sType")) {
+                    const v = try scanner_next_number(s);
+                    const stype = try std.fmt.parseInt(u32, v, 10);
+                    if (stype != vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR)
+                        return error.InvalidsTypeForLibraries;
+                } else {
+                    const v = try scanner_next_number_or_string(s);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ ss, v });
+                }
             }
         }
     };
@@ -500,6 +603,15 @@ pub fn parse_pnext_chain(
                 scanner,
                 &first_in_chain,
                 &last_pnext_in_chain,
+            );
+        } else if (std.mem.eql(u8, s, "libraries")) {
+            try Inner.parse_libraries(
+                alloc,
+                tmp_alloc,
+                scanner,
+                &first_in_chain,
+                &last_pnext_in_chain,
+                database.?,
             );
         } else {
             const v = try scanner_next_number_or_string(scanner);
@@ -563,7 +675,7 @@ pub fn parse_application_info(
                     const v = try scanner_next_number(scanner);
                     item.features.robustBufferAccess = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(aa, sa, scanner);
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
                 } else {
                     const v = try scanner_next_number_or_string(scanner);
                     log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -759,7 +871,7 @@ pub fn parse_descriptor_set_layout(
                     item.bindingCount = @intCast(bindings.len);
                 } else if (std.mem.eql(u8, s, "pNext")) {
                     item.pNext =
-                        try parse_pnext_chain(aa, sa, scanner);
+                        try parse_pnext_chain(aa, sa, scanner, null);
                 } else {
                     const v = try scanner_next_number_or_string(scanner);
                     log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -1505,10 +1617,10 @@ pub fn parse_graphics_pipeline(
                     item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
                 } else if (std.mem.eql(u8, s, "layout")) {
                     const v = try scanner_next_string(scanner);
-                    const layout_hash = try std.fmt.parseInt(u64, v, 16);
-                    const layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT);
-                    const layout = layouts.getPtr(layout_hash).?;
-                    item.layout = @ptrCast(layout.handle);
+                    const hash = try std.fmt.parseInt(u64, v, 16);
+                    if (hash == 0) continue;
+                    const handle = try db.get_handle(.PIPELINE_LAYOUT, hash);
+                    item.layout = @ptrCast(handle);
                 } else if (std.mem.eql(u8, s, "renderPass")) {
                     const v = try scanner_next_string(scanner);
                     const render_pass_hash = try std.fmt.parseInt(u64, v, 16);
@@ -1526,7 +1638,7 @@ pub fn parse_graphics_pipeline(
                     item.pDynamicState = dynamic_state;
                 } else if (std.mem.eql(u8, s, "multisampleState")) {
                     const multisample_state =
-                        try parse_vk_pipeline_multisample_state_create_info(aa, scanner);
+                        try parse_vk_pipeline_multisample_state_create_info(aa, sa, scanner);
                     item.pMultisampleState = multisample_state;
                 } else if (std.mem.eql(u8, s, "vertexInputState")) {
                     const vertex_input_state =
@@ -1534,7 +1646,7 @@ pub fn parse_graphics_pipeline(
                     item.pVertexInputState = vertex_input_state;
                 } else if (std.mem.eql(u8, s, "rasterizationState")) {
                     const raseterization_state =
-                        try parse_vk_pipeline_rasterization_state_create_info(aa, scanner);
+                        try parse_vk_pipeline_rasterization_state_create_info(aa, sa, scanner);
                     item.pRasterizationState = raseterization_state;
                 } else if (std.mem.eql(u8, s, "inputAssemblyState")) {
                     const input_assembly_state =
@@ -1564,7 +1676,7 @@ pub fn parse_graphics_pipeline(
                     item.pStages = @ptrCast(stages.ptr);
                     item.stageCount = @intCast(stages.len);
                 } else if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(aa, sa, scanner);
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, db);
                 } else {
                     const v = try scanner_next_number_or_string(scanner);
                     log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -1597,11 +1709,38 @@ pub fn parse_graphics_pipeline(
 
         fn parse_vk_pipeline_multisample_state_create_info(
             aa: Allocator,
+            sa: Allocator,
             scanner: *std.json.Scanner,
         ) !*const vk.VkPipelineMultisampleStateCreateInfo {
             const item = try aa.create(vk.VkPipelineMultisampleStateCreateInfo);
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
-            try parse_simple_type(scanner, item);
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "rasterizationSamples")) {
+                    const v = try scanner_next_number(scanner);
+                    item.rasterizationSamples = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "sampleShadingEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.sampleShadingEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "minSampleShading")) {
+                    const v = try scanner_next_number(scanner);
+                    item.minSampleShading = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "sampleMask")) {
+                    const mask = try parse_number_array(u32, aa, sa, scanner);
+                    item.pSampleMask = @ptrCast(mask.ptr);
+                } else if (std.mem.eql(u8, s, "alphaToCoverageEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.alphaToCoverageEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "alphaToOneEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.alphaToOneEnable = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
             return item;
         }
 
@@ -1674,11 +1813,53 @@ pub fn parse_graphics_pipeline(
 
         fn parse_vk_pipeline_rasterization_state_create_info(
             aa: Allocator,
+            sa: Allocator,
             scanner: *std.json.Scanner,
         ) !*const vk.VkPipelineRasterizationStateCreateInfo {
             const item = try aa.create(vk.VkPipelineRasterizationStateCreateInfo);
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
-            try parse_simple_type(scanner, item);
+            // try parse_simple_type(scanner, item);
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthClampEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.depthClampEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "rasterizerDiscardEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.rasterizerDiscardEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "polygonMode")) {
+                    const v = try scanner_next_number(scanner);
+                    item.polygonMode = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "cullMode")) {
+                    const v = try scanner_next_number(scanner);
+                    item.cullMode = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "frontFace")) {
+                    const v = try scanner_next_number(scanner);
+                    item.frontFace = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthBiasEnable")) {
+                    const v = try scanner_next_number(scanner);
+                    item.depthBiasEnable = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "depthBiasConstantFactor")) {
+                    const v = try scanner_next_number(scanner);
+                    item.depthBiasConstantFactor = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "depthBiasClamp")) {
+                    const v = try scanner_next_number(scanner);
+                    item.depthBiasClamp = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "depthBiasSlopeFactor")) {
+                    const v = try scanner_next_number(scanner);
+                    item.depthBiasSlopeFactor = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "lineWidth")) {
+                    const v = try scanner_next_number(scanner);
+                    item.lineWidth = try std.fmt.parseFloat(f32, v);
+                } else if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
             return item;
         }
 
@@ -1821,6 +2002,123 @@ pub fn parse_graphics_pipeline(
             return item;
         }
 
+        fn decode_base64(aa: Allocator, data: []const u8) ![]const u8 {
+            const Inner = struct {
+                fn index(c: u8) u32 {
+                    if (c >= 'A' and c <= 'Z')
+                        return c - 'A'
+                    else if (c >= 'a' and c <= 'z')
+                        return @as(u32, @intCast(c - 'a')) + 26
+                    else if (c >= '0' and c <= '9')
+                        return @as(u32, @intCast(c - '0')) + 52
+                    else if (c == '+')
+                        return 62
+                    else if (c == '/')
+                        return 63
+                    else
+                        return 0;
+                }
+            };
+
+            const buf = try aa.alignedAlloc(u8, 16, data.len);
+
+            var data_idx: u32 = 0;
+            var buf_idx: u32 = 0;
+            var i: u32 = 0;
+
+            while (i < data.len) {
+                const c0 = data[data_idx];
+                data_idx += 1;
+                if (c0 == 0) break;
+
+                const c1 = data[data_idx];
+                data_idx += 1;
+                if (c1 == 0) break;
+
+                const c2 = data[data_idx];
+                data_idx += 1;
+                if (c2 == 0) break;
+
+                const c3 = data[data_idx];
+                data_idx += 1;
+                if (c3 == 0) break;
+
+                const values =
+                    (Inner.index(c0) << 18) |
+                    (Inner.index(c1) << 12) |
+                    (Inner.index(c2) << 6) |
+                    (Inner.index(c3) << 0);
+
+                if (c2 == '=' and c3 == '=') {
+                    buf[buf_idx] = @truncate(values >> 16);
+                    buf_idx += 1;
+                    i += 1;
+                } else if (c3 == '=') {
+                    buf[buf_idx] = @truncate(values >> 16);
+                    buf[buf_idx + 1] = @truncate(values >> 8);
+                    buf_idx += 2;
+                    i += 2;
+                } else {
+                    buf[buf_idx] = @truncate(values >> 16);
+                    buf[buf_idx + 1] = @truncate(values >> 8);
+                    buf[buf_idx + 2] = @truncate(values >> 0);
+                    buf_idx += 3;
+                    i += 3;
+                }
+            }
+
+            return buf;
+        }
+
+        fn parse_vk_specialization_map_entry(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkSpecializationMapEntry,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_simple_type(scanner, item);
+        }
+
+        fn parse_vk_specialization_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            item: *vk.VkSpecializationInfo,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "dataSize")) {
+                    const v = try scanner_next_number(scanner);
+                    item.dataSize = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "data")) {
+                    const data_str = try scanner_next_string(scanner);
+                    // const data = try decode_base64(aa, data_str);
+                    var decoder = std.base64.standard.Decoder;
+                    const data_size = try decoder.calcSizeForSlice(data_str);
+                    const data = try aa.alloc(u8, data_size);
+                    try decoder.decode(data, data_str);
+                    item.pData = @ptrCast(data.ptr);
+                } else if (std.mem.eql(u8, s, "mapEntries")) {
+                    const entries = try parse_object_array(
+                        vk.VkSpecializationMapEntry,
+                        parse_vk_specialization_map_entry,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pMapEntries = @ptrCast(entries.ptr);
+                    item.mapEntryCount = @intCast(entries.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
         fn parse_vk_pipeline_shader_stage_create_info(
             aa: Allocator,
             sa: Allocator,
@@ -1828,27 +2126,30 @@ pub fn parse_graphics_pipeline(
             db: ?*const Database,
             item: *vk.VkPipelineShaderStageCreateInfo,
         ) !void {
-            _ = sa;
-            item.* = .{
-                .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            };
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
             while (try scanner_object_next_field(scanner)) |s| {
                 if (std.mem.eql(u8, s, "flags")) {
                     const v = try scanner_next_number(scanner);
                     item.flags = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "name")) {
-                    const name_str = try scanner_next_string(scanner);
-                    const name = try aa.dupeZ(u8, name_str);
-                    item.pName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "stage")) {
+                    const v = try scanner_next_number(scanner);
+                    item.stage = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "module")) {
                     const hash_str = try scanner_next_string(scanner);
                     const hash = try std.fmt.parseInt(u64, hash_str, 16);
                     const shader_modules = db.?.entries.getPtrConst(.SHADER_MODULE);
                     const shader_module = shader_modules.getPtr(hash).?;
                     item.module = @ptrCast(shader_module.handle);
-                } else if (std.mem.eql(u8, s, "stage")) {
-                    const v = try scanner_next_number(scanner);
-                    item.stage = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "name")) {
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
+                    item.pName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "specializationInfo")) {
+                    const info = try aa.create(vk.VkSpecializationInfo);
+                    try parse_vk_specialization_info(aa, sa, scanner, info);
+                    item.pSpecializationInfo = info;
+                } else if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
                 } else {
                     const v = try scanner_next_number_or_string(scanner);
                     log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -2022,6 +2323,231 @@ test "parse_graphics_pipeline" {
         \\  }
         \\}
     ;
+    const json2 =
+        \\{
+        \\  "version": 6,
+        \\  "graphicsPipelines": {
+        \\    "b1aa504c3071b068": {
+        \\      "flags": 0,
+        \\      "basePipelineHandle": "0000000000000000",
+        \\      "basePipelineIndex": -1,
+        \\      "layout": "3dc5f23c21306af3",
+        \\      "renderPass": "0000000000000000",
+        \\      "subpass": 0,
+        \\      "dynamicState": {
+        \\        "flags": 0,
+        \\        "dynamicState": [
+        \\          1000267003,
+        \\          1000267004,
+        \\          3,
+        \\          1000377002,
+        \\          1000267000,
+        \\          1000267001,
+        \\          1000267005,
+        \\          5,
+        \\          1000267009,
+        \\          1000267006,
+        \\          1000267008,
+        \\          1000267007,
+        \\          1000267010,
+        \\          1000267011,
+        \\          6,
+        \\          8,
+        \\          7
+        \\        ]
+        \\      },
+        \\      "multisampleState": {
+        \\        "flags": 0,
+        \\        "rasterizationSamples": 1,
+        \\        "sampleShadingEnable": 0,
+        \\        "minSampleShading": 0,
+        \\        "alphaToOneEnable": 0,
+        \\        "alphaToCoverageEnable": 0,
+        \\        "sampleMask": [
+        \\          1
+        \\        ]
+        \\      },
+        \\      "vertexInputState": {
+        \\        "flags": 0,
+        \\        "attributes": [
+        \\          {
+        \\            "location": 0,
+        \\            "binding": 0,
+        \\            "offset": 0,
+        \\            "format": 106
+        \\          },
+        \\          {
+        \\            "location": 1,
+        \\            "binding": 0,
+        \\            "offset": 12,
+        \\            "format": 103
+        \\          }
+        \\        ],
+        \\        "bindings": [
+        \\          {
+        \\            "binding": 0,
+        \\            "stride": 0,
+        \\            "inputRate": 0
+        \\          }
+        \\        ]
+        \\      },
+        \\      "rasterizationState": {
+        \\        "flags": 0,
+        \\        "depthBiasConstantFactor": 0,
+        \\        "depthBiasSlopeFactor": 0,
+        \\        "depthBiasClamp": 0,
+        \\        "depthBiasEnable": 0,
+        \\        "depthClampEnable": 1,
+        \\        "polygonMode": 0,
+        \\        "rasterizerDiscardEnable": 0,
+        \\        "frontFace": 0,
+        \\        "lineWidth": 1,
+        \\        "cullMode": 0,
+        \\        "pNext": [
+        \\          {
+        \\            "sType": 1000102001,
+        \\            "flags": 0,
+        \\            "depthClipEnable": 1
+        \\          }
+        \\        ]
+        \\      },
+        \\      "inputAssemblyState": {
+        \\        "flags": 0,
+        \\        "topology": 3,
+        \\        "primitiveRestartEnable": 0
+        \\      },
+        \\      "colorBlendState": {
+        \\        "flags": 0,
+        \\        "logicOp": 5,
+        \\        "logicOpEnable": 0,
+        \\        "blendConstants": [
+        \\          0,
+        \\          0,
+        \\          0,
+        \\          0
+        \\        ],
+        \\        "attachments": [
+        \\          {
+        \\            "dstAlphaBlendFactor": 0,
+        \\            "srcAlphaBlendFactor": 0,
+        \\            "dstColorBlendFactor": 0,
+        \\            "srcColorBlendFactor": 0,
+        \\            "colorWriteMask": 15,
+        \\            "alphaBlendOp": 0,
+        \\            "colorBlendOp": 0,
+        \\            "blendEnable": 0
+        \\          }
+        \\        ]
+        \\      },
+        \\      "viewportState": {
+        \\        "flags": 0,
+        \\        "viewportCount": 0,
+        \\        "scissorCount": 0
+        \\      },
+        \\      "depthStencilState": {
+        \\        "flags": 0,
+        \\        "stencilTestEnable": 0,
+        \\        "maxDepthBounds": 0,
+        \\        "minDepthBounds": 0,
+        \\        "depthBoundsTestEnable": 0,
+        \\        "depthWriteEnable": 0,
+        \\        "depthTestEnable": 0,
+        \\        "depthCompareOp": 0,
+        \\        "front": {
+        \\          "compareOp": 0,
+        \\          "writeMask": 0,
+        \\          "reference": 0,
+        \\          "compareMask": 0,
+        \\          "passOp": 0,
+        \\          "failOp": 0,
+        \\          "depthFailOp": 0
+        \\        },
+        \\        "back": {
+        \\          "compareOp": 0,
+        \\          "writeMask": 0,
+        \\          "reference": 0,
+        \\          "compareMask": 0,
+        \\          "passOp": 0,
+        \\          "failOp": 0,
+        \\          "depthFailOp": 0
+        \\        }
+        \\      },
+        \\      "stages": [
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "main",
+        \\          "module": "959dfe0bd6073194",
+        \\          "stage": 1,
+        \\          "specializationInfo": {
+        \\            "dataSize": 0,
+        \\            "data": "",
+        \\            "mapEntries": []
+        \\          },
+        \\          "pNext": []
+        \\        },
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "main",
+        \\          "module": "0925def2d6ede3d9",
+        \\          "stage": 16,
+        \\          "specializationInfo": {
+        \\            "dataSize": 0,
+        \\            "data": "",
+        \\            "mapEntries": []
+        \\          },
+        \\          "pNext": []
+        \\        }
+        \\      ],
+        \\      "pNext": [
+        \\        {
+        \\          "sType": 1000470005,
+        \\          "flags": 536870912
+        \\        },
+        \\        {
+        \\          "sType": 1000044002,
+        \\          "depthAttachmentFormat": 130,
+        \\          "stencilAttachmentFormat": 130,
+        \\          "viewMask": 0,
+        \\          "colorAttachmentFormats": [
+        \\            44
+        \\          ]
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    const json3 =
+        \\{
+        \\  "version": 6,
+        \\  "graphicsPipelines": {
+        \\    "f788d44a6e5f90b4": {
+        \\      "flags": 0,
+        \\      "basePipelineHandle": "0000000000000000",
+        \\      "basePipelineIndex": -1,
+        \\      "layout": "3dc5f23c21306af3",
+        \\      "renderPass": "0000000000000000",
+        \\      "subpass": 0,
+        \\      "stages": [],
+        \\      "pNext": [
+        \\        {
+        \\          "libraries": [
+        \\            "e40eadc1c688bcd1",
+        \\            "7e6f6e93e12a347a",
+        \\            "783d1bfbdea0a5e5",
+        \\            "d9a809bf95365f4e"
+        \\          ],
+        \\          "sType": 1000290000
+        \\        },
+        \\        {
+        \\          "sType": 1000470005,
+        \\          "flags": 536870912
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
@@ -2049,7 +2575,21 @@ test "parse_graphics_pipeline" {
         .payload = undefined,
         .handle = @ptrFromInt(0x69),
     });
+    for ([_]u64{
+        0xe40eadc1c688bcd1,
+        0x7e6f6e93e12a347a,
+        0x783d1bfbdea0a5e5,
+        0xd9a809bf95365f4e,
+    }) |p| {
+        try db.entries.getPtr(.GRAPHICS_PIPELINE).put(alloc, p, .{
+            .entry_ptr = undefined,
+            .payload = undefined,
+            .handle = @ptrFromInt(0x69),
+        });
+    }
 
-    const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
+    _ = try parse_graphics_pipeline(alloc, tmp_alloc, json, &db);
+    _ = try parse_graphics_pipeline(alloc, tmp_alloc, json2, &db);
+    const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json3, &db);
     print_vk_struct(parsed_graphics_pipeline.create_info);
 }
