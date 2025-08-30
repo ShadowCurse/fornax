@@ -85,7 +85,7 @@ pub fn parse_simple_type(
             if (!field_is_parsed[i] and std.mem.eql(u8, s, field.name)) {
                 field_is_parsed[i] = true;
                 switch (field.type) {
-                    i32, u32, u64, c_uint => {
+                    i16, i32, u32, u64, usize, c_uint => {
                         const v = try scanner_next_number(scanner);
                         @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
                         consumed = true;
@@ -101,7 +101,11 @@ pub fn parse_simple_type(
         }
         if (!consumed) {
             const v = try scanner_next_number_or_string(scanner);
-            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+            log.warn(
+                @src(),
+                "{s}: Skipping unknown field {s} with value {s}",
+                .{ @typeName(output_type), s, v },
+            );
         }
     }
 }
