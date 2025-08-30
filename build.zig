@@ -4,13 +4,13 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const vulkan_features_gen = b.addExecutable(.{
-        .name = "physical_device_features_gen",
-        .root_source_file = b.path("gen/physical_device_features_gen.zig"),
+    const gen = b.addExecutable(.{
+        .name = "gen",
+        .root_source_file = b.path("gen/main.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const rc = b.addRunArtifact(vulkan_features_gen);
+    const rc = b.addRunArtifact(gen);
     const rs = b.step("gen", "Gen");
     rs.dependOn(&rc.step);
 
