@@ -56,6 +56,9 @@ pub fn build(b: *std.Build) !void {
 
     const exe_unit_tests = b.addTest(.{
         .root_module = exe_mod,
+        .target = target,
+        .optimize = optimize,
+        .filters = b.args orelse &.{},
     });
     exe_unit_tests.linkLibC();
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
