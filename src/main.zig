@@ -125,10 +125,41 @@ pub fn main() !void {
     try replay_descriptor_sets(&tmp_arena, &progress, &db, vk_device);
     try replay_pipeline_layouts(&tmp_arena, &progress, &db, vk_device);
     try replay_render_passes(&tmp_arena, &progress, &db, vk_device);
-    try replay_shader_modules(&tmp_arena, &progress, &db, vk_device);
-    try replay_graphics_pipelines(&tmp_arena, &progress, &db, vk_device);
 
-    log.info(@src(), "Total memory usage: {d}MB", .{gpa.total_requested_bytes / 1024 / 1024});
+    var wait_group: std.Thread.WaitGroup = .{};
+    var thread_pool: std.Thread.Pool = undefined;
+    try thread_pool.init(.{
+        .allocator = tmp_alloc,
+    });
+
+    const n_threads = std.Thread.getCpuCount() catch 1;
+    const thread_arenas = try arena_alloc.alloc(std.heap.ArenaAllocator, n_threads);
+    for (thread_arenas) |*ta|
+        ta.* = .init(std.heap.page_allocator);
+
+    try replay_shader_modules(
+        &wait_group,
+        &thread_pool,
+        thread_arenas,
+        &progress,
+        &db,
+        vk_device,
+    );
+    wait_group.reset();
+    try replay_graphics_pipelines(
+        &tmp_arena,
+        &wait_group,
+        &thread_pool,
+        thread_arenas,
+        &progress,
+        &db,
+        vk_device,
+    );
+
+    var total_used_bytes = gpa.total_requested_bytes;
+    for (thread_arenas) |*ta|
+        total_used_bytes += ta.queryCapacity();
+    log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -502,23 +533,14 @@ pub fn replay_pipeline_layouts(
     log.info(@src(), "Replayed {d} pipeline layouts", .{pipeline_layouts.len});
 }
 
-pub fn replay_shader_modules(
-    tmp_allocator: *std.heap.ArenaAllocator,
-    progress: *std.Progress.Node,
-    db: *const Database,
+pub fn replay_shader_modules_chunk(
+    thread_arena: *std.heap.ArenaAllocator,
+    chunk: []Database.EntryMeta,
     vk_device: vk.VkDevice,
-) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
-    const sub_progress = progress.start("replaying shader modules", 0);
-    defer sub_progress.end();
-
-    const tmp_alloc = tmp_allocator.allocator();
-    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
-    for (shader_modules) |*sm| {
-        defer sub_progress.completeOne();
-        defer _ = tmp_allocator.reset(.retain_capacity);
+) void {
+    const tmp_alloc = thread_arena.allocator();
+    for (chunk) |*sm| {
+        defer _ = thread_arena.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(sm.entry_ptr);
         log.debug(@src(), "Processing shader module entry: {any}", .{e});
@@ -535,16 +557,68 @@ pub fn replay_shader_modules(
             );
             continue;
         };
-        if (parsed_shader_module.version != 6)
-            return error.ShaderModuleVersionMissmatch;
-        if (parsed_shader_module.hash != try e.get_value())
-            return error.ShaderModuleHashMissmatch;
-        sm.handle = try create_shader_module(
+        if (parsed_shader_module.version != 6) {
+            log.err(
+                @src(),
+                "Shader module has invalid version: {d} != {d}",
+                .{ parsed_shader_module.version, @as(u32, 6) },
+            );
+            continue;
+        }
+        const hash: u64 = e.get_value() catch 0;
+        if (parsed_shader_module.hash != hash) {
+            log.err(
+                @src(),
+                "Shader module hash not equal to json version: 0x{x} != 0x{x}",
+                .{ parsed_shader_module.hash, hash },
+            );
+            continue;
+        }
+        sm.handle = create_shader_module(
             vk_device,
             parsed_shader_module.create_info,
-        );
+        ) catch |err| {
+            log.err(@src(), "Encountered error during shader module creation: {any}", .{err});
+            vulkan_print.print_struct(parsed_shader_module.create_info);
+            continue;
+        };
         log.debug(@src(), "Created handle: {?}", .{sm.handle});
     }
+}
+
+pub fn replay_shader_modules(
+    wait_group: *std.Thread.WaitGroup,
+    thread_pool: *std.Thread.Pool,
+    thread_arenas: []std.heap.ArenaAllocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
+    const sub_progress = progress.start("replaying shader modules", 0);
+    defer sub_progress.end();
+
+    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
+    const chunk_size = shader_modules.len / (thread_arenas.len - 1);
+    var remaining_shader_modules = shader_modules;
+    for (thread_arenas[1..]) |*ta| {
+        const chunk = remaining_shader_modules[0..chunk_size];
+        remaining_shader_modules = remaining_shader_modules[chunk_size..];
+        thread_pool.spawnWg(
+            wait_group,
+            replay_shader_modules_chunk,
+            .{ ta, chunk, vk_device },
+        );
+    }
+    thread_pool.spawnWg(
+        wait_group,
+        replay_shader_modules_chunk,
+        .{ &thread_arenas[0], remaining_shader_modules, vk_device },
+    );
+    wait_group.wait();
+
     log.info(@src(), "Replayed {d} shader modules", .{shader_modules.len});
 }
 
@@ -607,12 +681,14 @@ pub fn replay_graphics_pipeline(
         entry.payload,
         db,
     ) catch |err| {
-        log.err(
-            @src(),
-            "Encountered error {} while parsing graphics pipeline json: {s}",
-            .{ err, entry.payload },
-        );
-        return true;
+        if (err != error.NoHandleFound) {
+            log.err(
+                @src(),
+                "Encountered error {} while parsing graphics pipeline json: {s}",
+                .{ err, entry.payload },
+            );
+            return false;
+        } else return true;
     };
     if (parsed_graphics_pipeline.version != 6)
         return error.RenderPassVersionMissmatch;
@@ -629,8 +705,40 @@ pub fn replay_graphics_pipeline(
     return false;
 }
 
+pub fn replay_graphics_pipeline_chunk(
+    thread_arena: *std.heap.ArenaAllocator,
+    chunk: []Database.EntryMeta,
+    vk_device: vk.VkDevice,
+    db: *const Database,
+    deferred_queue: *std.ArrayListUnmanaged(*Database.EntryMeta),
+) void {
+    const thread_alloc = thread_arena.allocator();
+
+    const queue_buffer = thread_alloc.alloc(*Database.EntryMeta, chunk.len) catch unreachable;
+    deferred_queue.* = .initBuffer(queue_buffer);
+
+    var tmp_allocator = std.heap.ArenaAllocator.init(thread_alloc);
+    const tmp_alloc = tmp_allocator.allocator();
+    for (chunk) |*gp| {
+        defer _ = tmp_allocator.reset(.retain_capacity);
+        const deferred = replay_graphics_pipeline(tmp_alloc, gp, db, vk_device) catch |err| {
+            log.err(
+                @src(),
+                "Encountered error during graphics pipeline creation: {any}",
+                .{err},
+            );
+            continue;
+        };
+        if (deferred)
+            deferred_queue.appendAssumeCapacity(gp);
+    }
+}
+
 pub fn replay_graphics_pipelines(
-    allocator: *std.heap.ArenaAllocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
+    wait_group: *std.Thread.WaitGroup,
+    thread_pool: *std.Thread.Pool,
+    thread_arenas: []std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -641,24 +749,48 @@ pub fn replay_graphics_pipelines(
     const sub_progress = progress.start("replaying graphics pipelines", 0);
     defer sub_progress.end();
 
-    const alloc = allocator.allocator();
-    var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
     const tmp_alloc = tmp_allocator.allocator();
+    const thread_deferred_queues = try tmp_alloc.alloc(
+        std.ArrayListUnmanaged(*Database.EntryMeta),
+        thread_arenas.len,
+    );
 
     const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
-    var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
-    for (graphics_pipelines) |*gp| {
-        defer sub_progress.completeOne();
-        defer _ = tmp_allocator.reset(.retain_capacity);
-        if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
-            try deferred_queue.append(alloc, gp);
+    const chunk_size = graphics_pipelines.len / (thread_arenas.len - 1);
+    var remaining_graphics_pipelines = graphics_pipelines;
+    for (thread_arenas[1..], thread_deferred_queues[1..]) |*ta, *dq| {
+        const chunk = remaining_graphics_pipelines[0..chunk_size];
+        remaining_graphics_pipelines = remaining_graphics_pipelines[chunk_size..];
+        thread_pool.spawnWg(
+            wait_group,
+            replay_graphics_pipeline_chunk,
+            .{ ta, chunk, vk_device, db, dq },
+        );
     }
+    thread_pool.spawnWg(
+        wait_group,
+        replay_graphics_pipeline_chunk,
+        .{
+            &thread_arenas[0],
+            remaining_graphics_pipelines,
+            vk_device,
+            db,
+            &thread_deferred_queues[0],
+        },
+    );
+    wait_group.wait();
+
+    var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
+    for (thread_deferred_queues) |*tdq|
+        for (tdq.items) |i|
+            try deferred_queue.append(tmp_alloc, i);
+
     log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
     while (deferred_queue.pop()) |gp| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
         if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
-            try deferred_queue.append(alloc, gp);
+            try deferred_queue.append(tmp_alloc, gp);
     }
     log.info(@src(), "Replayed {d} graphics pipelines", .{graphics_pipelines.len});
 }
