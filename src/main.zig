@@ -112,205 +112,12 @@ pub fn main() !void {
         parsed_application_info.device_features2,
     );
 
-    {
-        const sub_progress = progress.start("replaying samplers", 0);
-        defer sub_progress.end();
-        const samplers = db.entries.getPtrConst(.SAMPLER).values();
-        for (samplers) |*sampler| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(sampler.entry_ptr);
-            log.debug(@src(), "Processing sampler entry: {any}", .{e});
-            const parsed_sampler = parsing.parse_sampler(
-                arena_alloc,
-                tmp_alloc,
-                sampler.payload,
-            ) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing sampler json: {s}",
-                    .{ err, sampler.payload },
-                );
-                return err;
-            };
-            if (parsed_sampler.version != 6)
-                return error.SamplerVersionMissmatch;
-            if (parsed_sampler.hash != try e.get_value())
-                return error.SamplerHashMissmatch;
-            sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
-            log.debug(@src(), "Created handle: {?}", .{sampler.handle});
-        }
-    }
-
-    {
-        const sub_progress = progress.start("replaying descripot set layouts", 0);
-        defer sub_progress.end();
-        const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
-        for (descriptor_set_layouts) |*dsl| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(dsl.entry_ptr);
-            log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
-            const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
-                arena_alloc,
-                tmp_alloc,
-                dsl.payload,
-                &db,
-            ) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing descriptor set layout json: {s}",
-                    .{ err, dsl.payload },
-                );
-                continue;
-            };
-            if (parsed_descriptro_set_layout.version != 6)
-                return error.DescriptorSetLayoutVersionMissmatch;
-            if (parsed_descriptro_set_layout.hash != try e.get_value())
-                return error.DescriptorSetLayoutHashMissmatch;
-            dsl.handle = try create_descriptor_set_layout(
-                vk_device,
-                parsed_descriptro_set_layout.create_info,
-            );
-            log.debug(@src(), "Created handle: {?}", .{dsl.handle});
-        }
-    }
-
-    {
-        const sub_progress = progress.start("replaying pipeline layouts", 0);
-        defer sub_progress.end();
-        const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
-        for (pipeline_layouts) |*pl| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(pl.entry_ptr);
-            log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
-            const parsed_pipeline_layout = parsing.parse_pipeline_layout(
-                arena_alloc,
-                tmp_alloc,
-                pl.payload,
-                &db,
-            ) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing pipeline layout json: {s}",
-                    .{ err, pl.payload },
-                );
-                continue;
-            };
-            if (parsed_pipeline_layout.version != 6)
-                return error.PipelineLayoutVersionMissmatch;
-            if (parsed_pipeline_layout.hash != try e.get_value())
-                return error.PipelineLayoutHashMissmatch;
-            pl.handle = try create_pipeline_layout(
-                vk_device,
-                parsed_pipeline_layout.create_info,
-            );
-            log.debug(@src(), "Created handle: {?}", .{pl.handle});
-        }
-    }
-
-    {
-        const sub_progress = progress.start("replaying shader modules", 0);
-        defer sub_progress.end();
-        const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
-        for (shader_modules) |*sm| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(sm.entry_ptr);
-            log.debug(@src(), "Processing shader module entry: {any}", .{e});
-            const parsed_shader_module = parsing.parse_shader_module(
-                arena_alloc,
-                tmp_alloc,
-                sm.payload,
-            ) catch |err| {
-                const json_str = std.mem.span(@as([*c]const u8, @ptrCast(sm.payload.ptr)));
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing shader module json: {s}",
-                    .{ err, json_str },
-                );
-                continue;
-            };
-            if (parsed_shader_module.version != 6)
-                return error.ShaderModuleVersionMissmatch;
-            if (parsed_shader_module.hash != try e.get_value())
-                return error.ShaderModuleHashMissmatch;
-            sm.handle = try create_shader_module(
-                vk_device,
-                parsed_shader_module.create_info,
-            );
-            log.debug(@src(), "Created handle: {?}", .{sm.handle});
-        }
-    }
-
-    {
-        const sub_progress = progress.start("replaying render passes", 0);
-        defer sub_progress.end();
-        const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
-        for (render_passes) |*rp| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(rp.entry_ptr);
-            log.debug(@src(), "Processing render pass entry: {any}", .{e});
-            const parsed_render_pass = parsing.parse_render_pass(
-                arena_alloc,
-                tmp_alloc,
-                rp.payload,
-            ) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing render pass json: {s}",
-                    .{ err, rp.payload },
-                );
-                continue;
-            };
-            if (parsed_render_pass.version != 6)
-                return error.RenderPassVersionMissmatch;
-            if (parsed_render_pass.hash != try e.get_value())
-                return error.RenderPassHashMissmatch;
-            rp.handle = try create_render_pass(
-                vk_device,
-                parsed_render_pass.create_info,
-            );
-            log.debug(@src(), "Created handle: {?}", .{rp.handle});
-        }
-    }
-
-    {
-        const sub_progress = progress.start("replaying graphics pipelines", 0);
-        defer sub_progress.end();
-        const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
-        for (graphics_pipelines) |*gp| {
-            defer sub_progress.completeOne();
-
-            const e = Database.Entry.from_ptr(gp.entry_ptr);
-            const parsed_graphics_pipeline = parsing.parse_graphics_pipeline(
-                arena_alloc,
-                tmp_alloc,
-                gp.payload,
-                &db,
-            ) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing graphics pipeline json: {s}",
-                    .{ err, gp.payload },
-                );
-                continue;
-            };
-            // log.info(@src(), "Parsed graphics pipeline create info:", .{});
-            // parsing.print_vk_struct(parsed_graphics_pipeline.create_info);
-            if (parsed_graphics_pipeline.version != 6)
-                return error.RenderPassVersionMissmatch;
-            if (parsed_graphics_pipeline.hash != try e.get_value())
-                return error.RenderPassHashMissmatch;
-            // gp.handle = try create_graphics_pipeline(
-            //     vk_device,
-            //     parsed_graphics_pipeline.create_info,
-            // );
-            // log.info(@src(), "Created object: {?}", .{gp.handle});
-        }
-    }
+    try replay_samplers(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_descriptor_sets(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_pipeline_layouts(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_render_passes(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_shader_modules(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_graphics_pipelines(arena_alloc, tmp_alloc, &progress, &db, vk_device);
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -542,6 +349,262 @@ pub fn open_database(
         .entries = final_entries,
         .arena = arena,
     };
+}
+
+pub fn replay_samplers(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying samplers", 0);
+    defer sub_progress.end();
+    const samplers = db.entries.getPtrConst(.SAMPLER).values();
+    for (samplers) |*sampler| {
+        defer sub_progress.completeOne();
+
+        const e = Database.Entry.from_ptr(sampler.entry_ptr);
+        log.debug(@src(), "Processing sampler entry: {any}", .{e});
+        const parsed_sampler = parsing.parse_sampler(
+            arena_alloc,
+            tmp_alloc,
+            sampler.payload,
+        ) catch |err| {
+            log.err(
+                @src(),
+                "Encountered error {} while parsing sampler json: {s}",
+                .{ err, sampler.payload },
+            );
+            return err;
+        };
+        if (parsed_sampler.version != 6)
+            return error.SamplerVersionMissmatch;
+        if (parsed_sampler.hash != try e.get_value())
+            return error.SamplerHashMissmatch;
+        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
+        log.debug(@src(), "Created handle: {?}", .{sampler.handle});
+    }
+}
+
+pub fn replay_descriptor_sets(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying descripot set layouts", 0);
+    defer sub_progress.end();
+    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
+    for (descriptor_set_layouts) |*dsl| {
+        defer sub_progress.completeOne();
+
+        const e = Database.Entry.from_ptr(dsl.entry_ptr);
+        log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
+        const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
+            arena_alloc,
+            tmp_alloc,
+            dsl.payload,
+            db,
+        ) catch |err| {
+            log.err(
+                @src(),
+                "Encountered error {} while parsing descriptor set layout json: {s}",
+                .{ err, dsl.payload },
+            );
+            continue;
+        };
+        if (parsed_descriptro_set_layout.version != 6)
+            return error.DescriptorSetLayoutVersionMissmatch;
+        if (parsed_descriptro_set_layout.hash != try e.get_value())
+            return error.DescriptorSetLayoutHashMissmatch;
+        dsl.handle = try create_descriptor_set_layout(
+            vk_device,
+            parsed_descriptro_set_layout.create_info,
+        );
+        log.debug(@src(), "Created handle: {?}", .{dsl.handle});
+    }
+}
+
+pub fn replay_pipeline_layouts(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying pipeline layouts", 0);
+    defer sub_progress.end();
+    const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
+    for (pipeline_layouts) |*pl| {
+        defer sub_progress.completeOne();
+
+        const e = Database.Entry.from_ptr(pl.entry_ptr);
+        log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
+        const parsed_pipeline_layout = parsing.parse_pipeline_layout(
+            arena_alloc,
+            tmp_alloc,
+            pl.payload,
+            db,
+        ) catch |err| {
+            log.err(
+                @src(),
+                "Encountered error {} while parsing pipeline layout json: {s}",
+                .{ err, pl.payload },
+            );
+            continue;
+        };
+        if (parsed_pipeline_layout.version != 6)
+            return error.PipelineLayoutVersionMissmatch;
+        if (parsed_pipeline_layout.hash != try e.get_value())
+            return error.PipelineLayoutHashMissmatch;
+        pl.handle = try create_pipeline_layout(
+            vk_device,
+            parsed_pipeline_layout.create_info,
+        );
+        log.debug(@src(), "Created handle: {?}", .{pl.handle});
+    }
+}
+
+pub fn replay_shader_modules(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying shader modules", 0);
+    defer sub_progress.end();
+    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
+    for (shader_modules) |*sm| {
+        defer sub_progress.completeOne();
+
+        const e = Database.Entry.from_ptr(sm.entry_ptr);
+        log.debug(@src(), "Processing shader module entry: {any}", .{e});
+        const parsed_shader_module = parsing.parse_shader_module(
+            arena_alloc,
+            tmp_alloc,
+            sm.payload,
+        ) catch |err| {
+            const json_str = std.mem.span(@as([*c]const u8, @ptrCast(sm.payload.ptr)));
+            log.err(
+                @src(),
+                "Encountered error {} while parsing shader module json: {s}",
+                .{ err, json_str },
+            );
+            continue;
+        };
+        if (parsed_shader_module.version != 6)
+            return error.ShaderModuleVersionMissmatch;
+        if (parsed_shader_module.hash != try e.get_value())
+            return error.ShaderModuleHashMissmatch;
+        sm.handle = try create_shader_module(
+            vk_device,
+            parsed_shader_module.create_info,
+        );
+        log.debug(@src(), "Created handle: {?}", .{sm.handle});
+    }
+}
+
+pub fn replay_render_passes(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying render passes", 0);
+    defer sub_progress.end();
+    const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
+    for (render_passes) |*rp| {
+        defer sub_progress.completeOne();
+
+        const e = Database.Entry.from_ptr(rp.entry_ptr);
+        log.debug(@src(), "Processing render pass entry: {any}", .{e});
+        const parsed_render_pass = parsing.parse_render_pass(
+            arena_alloc,
+            tmp_alloc,
+            rp.payload,
+        ) catch |err| {
+            log.err(
+                @src(),
+                "Encountered error {} while parsing render pass json: {s}",
+                .{ err, rp.payload },
+            );
+            continue;
+        };
+        if (parsed_render_pass.version != 6)
+            return error.RenderPassVersionMissmatch;
+        if (parsed_render_pass.hash != try e.get_value())
+            return error.RenderPassHashMissmatch;
+        rp.handle = try create_render_pass(
+            vk_device,
+            parsed_render_pass.create_info,
+        );
+        log.debug(@src(), "Created handle: {?}", .{rp.handle});
+    }
+}
+
+pub fn replay_graphics_pipeline(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    entry: *Database.EntryMeta,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !bool {
+    const e = Database.Entry.from_ptr(entry.entry_ptr);
+    log.debug(@src(), "Processing graphics pipeline entry: {any}", .{e});
+    const parsed_graphics_pipeline = parsing.parse_graphics_pipeline(
+        arena_alloc,
+        tmp_alloc,
+        entry.payload,
+        db,
+    ) catch |err| {
+        log.err(
+            @src(),
+            "Encountered error {} while parsing graphics pipeline json: {s}",
+            .{ err, entry.payload },
+        );
+        return true;
+    };
+    if (parsed_graphics_pipeline.version != 6)
+        return error.RenderPassVersionMissmatch;
+    if (parsed_graphics_pipeline.hash != try e.get_value())
+        return error.RenderPassHashMissmatch;
+    entry.handle = create_graphics_pipeline(
+        vk_device,
+        parsed_graphics_pipeline.create_info,
+    ) catch |err| {
+        vulkan_print.print_struct(parsed_graphics_pipeline.create_info);
+        return err;
+    };
+    log.debug(@src(), "Created handle: {?}", .{entry.handle});
+    return false;
+}
+
+pub fn replay_graphics_pipelines(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const sub_progress = progress.start("replaying graphics pipelines", 0);
+    defer sub_progress.end();
+    const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
+    var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
+    for (graphics_pipelines) |*gp| {
+        defer sub_progress.completeOne();
+        if (try replay_graphics_pipeline(arena_alloc, tmp_alloc, gp, db, vk_device))
+            try deferred_queue.append(tmp_alloc, gp);
+    }
+    log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
+    while (deferred_queue.pop()) |gp| {
+        defer sub_progress.completeOne();
+        if (try replay_graphics_pipeline(arena_alloc, tmp_alloc, gp, db, vk_device))
+            try deferred_queue.append(tmp_alloc, gp);
+    }
 }
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
