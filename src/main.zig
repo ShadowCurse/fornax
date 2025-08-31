@@ -101,16 +101,23 @@ pub fn main() !void {
     const instance = try create_vk_instance(
         tmp_alloc,
         parsed_application_info.application_info,
+        args.enable_validation,
     );
     vk.volkLoadInstance(instance.instance);
-    _ = try init_debug_callback(instance.instance);
+    if (args.enable_validation)
+        _ = try init_debug_callback(instance.instance);
 
-    const physical_device = try select_physical_device(tmp_alloc, instance.instance);
+    const physical_device = try select_physical_device(
+        tmp_alloc,
+        instance.instance,
+        args.enable_validation,
+    );
     const vk_device = try create_vk_device(
         tmp_alloc,
         &instance,
         &physical_device,
         parsed_application_info.device_features2,
+        args.enable_validation,
     );
 
     try replay_samplers(arena_alloc, tmp_alloc, &progress, &db, vk_device);
@@ -747,6 +754,7 @@ pub const Instance = struct {
 pub fn create_vk_instance(
     arena_alloc: Allocator,
     requested_app_info: ?*const vk.VkApplicationInfo,
+    enable_validation: bool,
 ) !Instance {
     const api_version = vk.volkGetInstanceVersion();
     log.info(
@@ -788,9 +796,12 @@ pub fn create_vk_instance(
     for (extensions, 0..) |*e, i|
         all_extension_names[i] = &e.extensionName;
 
-    const layers = try get_instance_layer_properties(arena_alloc);
-    if (!contains_all_layers("Instance", layers, &VK_VALIDATION_LAYERS_NAMES))
-        return error.InstanceValidationLayersNotFound;
+    const enabled_layers = if (enable_validation) blk: {
+        const layers = try get_instance_layer_properties(arena_alloc);
+        if (!contains_all_layers("Instance", layers, &VK_VALIDATION_LAYERS_NAMES))
+            return error.InstanceValidationLayersNotFound;
+        break :blk &VK_VALIDATION_LAYERS_NAMES;
+    } else &.{};
 
     const app_info = if (requested_app_info) |app_info|
         app_info
@@ -809,8 +820,8 @@ pub fn create_vk_instance(
         .pApplicationInfo = app_info,
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
-        .ppEnabledLayerNames = @ptrCast(&VK_VALIDATION_LAYERS_NAMES),
-        .enabledLayerCount = @as(u32, @intCast(VK_VALIDATION_LAYERS_NAMES.len)),
+        .ppEnabledLayerNames = @ptrCast(enabled_layers.ptr),
+        .enabledLayerCount = @as(u32, @intCast(enabled_layers.len)),
     };
 
     var vk_instance: vk.VkInstance = undefined;
@@ -943,6 +954,7 @@ pub const PhysicalDevice = struct {
 pub fn select_physical_device(
     arena_alloc: Allocator,
     vk_instance: vk.VkInstance,
+    enable_validation: bool,
 ) !PhysicalDevice {
     const physical_devices = try get_physical_devices(arena_alloc, vk_instance);
 
@@ -971,22 +983,22 @@ pub fn select_physical_device(
             properties.deviceType,
         });
 
-        const layers = try get_physical_device_layers(arena_alloc, physical_device);
-        if (!contains_all_layers(&properties.deviceName, layers, &VK_VALIDATION_LAYERS_NAMES))
-            return error.PhysicalDeviceValidationLayersNotFound;
+        const has_validation_cache = if (enable_validation) blk: {
+            const layers = try get_physical_device_layers(arena_alloc, physical_device);
+            if (!contains_all_layers(&properties.deviceName, layers, &VK_VALIDATION_LAYERS_NAMES))
+                return error.PhysicalDeviceValidationLayersNotFound;
 
-        // With validation layers being mandatory for now, check if caching of the
-        // validation layer is available.
-        const validation_extensions = try get_physical_device_exensions(
-            arena_alloc,
-            physical_device,
-            "VK_LAYER_KHRONOS_validation",
-        );
-        const has_validation_cache = contains_all_extensions(
-            null,
-            validation_extensions,
-            &.{vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME},
-        );
+            const validation_extensions = try get_physical_device_exensions(
+                arena_alloc,
+                physical_device,
+                "VK_LAYER_KHRONOS_validation",
+            );
+            break :blk contains_all_extensions(
+                null,
+                validation_extensions,
+                &.{vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME},
+            );
+        } else false;
 
         // Because the exact queue does not matter much,
         // select the first queue with graphics capability.
@@ -1089,6 +1101,7 @@ pub fn create_vk_device(
     instance: *const Instance,
     physical_device: *const PhysicalDevice,
     device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
+    enable_validation: bool,
 ) !vk.VkDevice {
     const queue_priority: f32 = 1.0;
     const queue_create_info = vk.VkDeviceQueueCreateInfo{
@@ -1144,12 +1157,14 @@ pub fn create_vk_device(
     // TODO filter feateres_2 and extension_names based on the device_features2
     _ = device_features2;
 
+    const enabled_layers = if (enable_validation) &VK_VALIDATION_LAYERS_NAMES else &.{};
+
     const create_info = vk.VkDeviceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pQueueCreateInfos = &queue_create_info,
         .queueCreateInfoCount = 1,
-        .ppEnabledLayerNames = @ptrCast(&VK_VALIDATION_LAYERS_NAMES),
-        .enabledLayerCount = @as(u32, @intCast(VK_VALIDATION_LAYERS_NAMES.len)),
+        .ppEnabledLayerNames = @ptrCast(enabled_layers.ptr),
+        .enabledLayerCount = @as(u32, @intCast(enabled_layers.len)),
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
         .pEnabledFeatures = if (instance.has_properties_2) null else &features_2.features,
