@@ -137,8 +137,11 @@ fn parse_handle_array(
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_string(scanner)) |hash_str| {
         const hash = try std.fmt.parseInt(u64, hash_str, 16);
-        if (hash == 0) continue;
-        const handle = try db.get_handle(tag, hash);
+        // Must preserve the index in the array for non 0 hashes
+        const handle: ?*anyopaque = if (hash == 0)
+            null
+        else
+            try db.get_handle(tag, hash);
         try tmp.append(sa, @ptrCast(handle));
     }
     return try aa.dupe(T, tmp.items);
