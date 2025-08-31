@@ -59,7 +59,7 @@ const Args = struct {
 };
 
 pub fn main() !void {
-    var gpa = std.heap.DebugAllocator(.{}).init;
+    var gpa = std.heap.DebugAllocator(.{ .enable_memory_limit = true }).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
@@ -76,14 +76,14 @@ pub fn main() !void {
     defer progress.end();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
-    const db = try open_database(gpa_alloc, arena_alloc, &progress, db_path);
+    const db = try open_database(gpa_alloc, tmp_alloc, &progress, db_path);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len == 0)
         return error.NoApplicationInfoInTheDatabase;
     const app_info_json = app_infos[0].payload;
     const parsed_application_info = parsing.parse_application_info(
-        arena_alloc,
+        tmp_alloc,
         tmp_alloc,
         app_info_json,
     ) catch |err| {
@@ -119,13 +119,16 @@ pub fn main() !void {
         parsed_application_info.device_features2,
         args.enable_validation,
     );
+    _ = tmp_arena.reset(.retain_capacity);
 
-    try replay_samplers(arena_alloc, tmp_alloc, &progress, &db, vk_device);
-    try replay_descriptor_sets(arena_alloc, tmp_alloc, &progress, &db, vk_device);
-    try replay_pipeline_layouts(arena_alloc, tmp_alloc, &progress, &db, vk_device);
-    try replay_render_passes(arena_alloc, tmp_alloc, &progress, &db, vk_device);
-    try replay_shader_modules(arena_alloc, tmp_alloc, &progress, &db, vk_device);
-    try replay_graphics_pipelines(arena_alloc, tmp_alloc, &progress, &db, vk_device);
+    try replay_samplers(&tmp_arena, &progress, &db, vk_device);
+    try replay_descriptor_sets(&tmp_arena, &progress, &db, vk_device);
+    try replay_pipeline_layouts(&tmp_arena, &progress, &db, vk_device);
+    try replay_render_passes(&tmp_arena, &progress, &db, vk_device);
+    try replay_shader_modules(&tmp_arena, &progress, &db, vk_device);
+    try replay_graphics_pipelines(&tmp_arena, &progress, &db, vk_device);
+
+    log.info(@src(), "Total memory usage: {d}MB", .{gpa.total_requested_bytes / 1024 / 1024});
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -366,8 +369,7 @@ pub fn print_dt(start: std.time.Instant) void {
 }
 
 pub fn replay_samplers(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -378,14 +380,16 @@ pub fn replay_samplers(
     const sub_progress = progress.start("replaying samplers", 0);
     defer sub_progress.end();
 
+    const tmp_alloc = tmp_allocator.allocator();
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
     for (samplers) |*sampler| {
         defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(sampler.entry_ptr);
         log.debug(@src(), "Processing sampler entry: {any}", .{e});
         const parsed_sampler = parsing.parse_sampler(
-            arena_alloc,
+            tmp_alloc,
             tmp_alloc,
             sampler.payload,
         ) catch |err| {
@@ -407,8 +411,7 @@ pub fn replay_samplers(
 }
 
 pub fn replay_descriptor_sets(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -419,14 +422,16 @@ pub fn replay_descriptor_sets(
     const sub_progress = progress.start("replaying descripot set layouts", 0);
     defer sub_progress.end();
 
+    const tmp_alloc = tmp_allocator.allocator();
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
     for (descriptor_set_layouts) |*dsl| {
         defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(dsl.entry_ptr);
         log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
-            arena_alloc,
+            tmp_alloc,
             tmp_alloc,
             dsl.payload,
             db,
@@ -452,8 +457,7 @@ pub fn replay_descriptor_sets(
 }
 
 pub fn replay_pipeline_layouts(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -464,14 +468,16 @@ pub fn replay_pipeline_layouts(
     const sub_progress = progress.start("replaying pipeline layouts", 0);
     defer sub_progress.end();
 
+    const tmp_alloc = tmp_allocator.allocator();
     const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
     for (pipeline_layouts) |*pl| {
         defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(pl.entry_ptr);
         log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
         const parsed_pipeline_layout = parsing.parse_pipeline_layout(
-            arena_alloc,
+            tmp_alloc,
             tmp_alloc,
             pl.payload,
             db,
@@ -497,8 +503,7 @@ pub fn replay_pipeline_layouts(
 }
 
 pub fn replay_shader_modules(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -509,14 +514,16 @@ pub fn replay_shader_modules(
     const sub_progress = progress.start("replaying shader modules", 0);
     defer sub_progress.end();
 
+    const tmp_alloc = tmp_allocator.allocator();
     const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
     for (shader_modules) |*sm| {
         defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(sm.entry_ptr);
         log.debug(@src(), "Processing shader module entry: {any}", .{e});
         const parsed_shader_module = parsing.parse_shader_module(
-            arena_alloc,
+            tmp_alloc,
             tmp_alloc,
             sm.payload,
         ) catch |err| {
@@ -542,8 +549,7 @@ pub fn replay_shader_modules(
 }
 
 pub fn replay_render_passes(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -554,14 +560,16 @@ pub fn replay_render_passes(
     const sub_progress = progress.start("replaying render passes", 0);
     defer sub_progress.end();
 
+    const tmp_alloc = tmp_allocator.allocator();
     const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
     for (render_passes) |*rp| {
         defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(rp.entry_ptr);
         log.debug(@src(), "Processing render pass entry: {any}", .{e});
         const parsed_render_pass = parsing.parse_render_pass(
-            arena_alloc,
+            tmp_alloc,
             tmp_alloc,
             rp.payload,
         ) catch |err| {
@@ -586,7 +594,6 @@ pub fn replay_render_passes(
 }
 
 pub fn replay_graphics_pipeline(
-    arena_alloc: Allocator,
     tmp_alloc: Allocator,
     entry: *Database.EntryMeta,
     db: *const Database,
@@ -595,7 +602,7 @@ pub fn replay_graphics_pipeline(
     const e = Database.Entry.from_ptr(entry.entry_ptr);
     log.debug(@src(), "Processing graphics pipeline entry: {any}", .{e});
     const parsed_graphics_pipeline = parsing.parse_graphics_pipeline(
-        arena_alloc,
+        tmp_alloc,
         tmp_alloc,
         entry.payload,
         db,
@@ -623,8 +630,7 @@ pub fn replay_graphics_pipeline(
 }
 
 pub fn replay_graphics_pipelines(
-    arena_alloc: Allocator,
-    tmp_alloc: Allocator,
+    allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -635,18 +641,24 @@ pub fn replay_graphics_pipelines(
     const sub_progress = progress.start("replaying graphics pipelines", 0);
     defer sub_progress.end();
 
+    const alloc = allocator.allocator();
+    var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
+    const tmp_alloc = tmp_allocator.allocator();
+
     const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
     var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
     for (graphics_pipelines) |*gp| {
         defer sub_progress.completeOne();
-        if (try replay_graphics_pipeline(arena_alloc, tmp_alloc, gp, db, vk_device))
-            try deferred_queue.append(tmp_alloc, gp);
+        defer _ = tmp_allocator.reset(.retain_capacity);
+        if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
+            try deferred_queue.append(alloc, gp);
     }
     log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
     while (deferred_queue.pop()) |gp| {
         defer sub_progress.completeOne();
-        if (try replay_graphics_pipeline(arena_alloc, tmp_alloc, gp, db, vk_device))
-            try deferred_queue.append(tmp_alloc, gp);
+        defer _ = tmp_allocator.reset(.retain_capacity);
+        if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
+            try deferred_queue.append(alloc, gp);
     }
     log.info(@src(), "Replayed {d} graphics pipelines", .{graphics_pipelines.len});
 }
