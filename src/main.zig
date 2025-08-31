@@ -102,6 +102,7 @@ pub fn main() !void {
         parsed_application_info.application_info,
     );
     vk.volkLoadInstance(instance.instance);
+    _ = try init_debug_callback(instance.instance);
 
     const physical_device = try select_physical_device(tmp_alloc, instance.instance);
     const vk_device = try create_vk_device(
@@ -738,17 +739,25 @@ pub fn create_vk_instance(
     };
 }
 
-pub fn init_debug_callback(instance: vk.VkInstance) void {
+pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT {
     const create_info = vk.VkDebugReportCallbackCreateInfoEXT{
         .sType = vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
         .pfnCallback = debug_callback,
-        .flags = vk.VK_DEBUG_REPORT_ERROR_BIT_EXT,
+        .flags = vk.VK_DEBUG_REPORT_ERROR_BIT_EXT |
+            vk.VK_DEBUG_REPORT_WARNING_BIT_EXT,
         .pUserData = null,
     };
 
+    var callback: vk.VkDebugReportCallbackEXT = undefined;
     try vk.check_result(
-        vk.vkCreateDebugReportCallbackEXT.?(instance, &create_info, null, &debug_callback),
+        vk.vkCreateDebugReportCallbackEXT.?(
+            instance,
+            &create_info,
+            null,
+            &callback,
+        ),
     );
+    return callback;
 }
 
 pub fn debug_callback(
@@ -759,8 +768,10 @@ pub fn debug_callback(
     _: i32,
     layer: [*c]const u8,
     message: [*c]const u8,
-    _: *anyopaque,
-) callconv(.c) vk.VkResult {
+    _: ?*anyopaque,
+) callconv(.c) vk.VkBool32 {
+    if (flags & vk.VK_DEBUG_REPORT_WARNING_BIT_EXT != 0)
+        log.warn(@src(), "Layer: {s} Message: {s}", .{ layer, message });
     if (flags & vk.VK_DEBUG_REPORT_ERROR_BIT_EXT != 0)
         log.err(@src(), "Layer: {s} Message: {s}", .{ layer, message });
 
