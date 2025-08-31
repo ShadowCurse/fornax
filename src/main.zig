@@ -55,22 +55,22 @@ const Args = struct {
     replayer_cache: ?[]const u8 = null,
     disable_signal_handler: bool = false,
     disable_rate_limiter: bool = false,
-    database_paths: args_parser.LastArgs = .{},
+    database_paths: args_parser.RemainingArgs = .{},
 };
 
 pub fn main() !void {
-    const args = try args_parser.parse(Args);
-    if (args.help) {
-        try args_parser.print_help(Args);
-        return;
-    }
-
     var gpa = std.heap.DebugAllocator(.{}).init;
     const gpa_alloc = gpa.allocator();
     var arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const arena_alloc = arena.allocator();
     var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
     const tmp_alloc = tmp_arena.allocator();
+
+    const args = try args_parser.parse(Args, arena_alloc);
+    if (args.help) {
+        try args_parser.print_help(Args);
+        return;
+    }
 
     var progress = std.Progress.start(.{});
     defer progress.end();
