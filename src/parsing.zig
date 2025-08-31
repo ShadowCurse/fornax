@@ -398,7 +398,7 @@ pub fn parse_pnext_chain(
             }
         }
 
-        fn parse_libraries(
+        fn parse_pipeline_library(
             aa: Allocator,
             sa: Allocator,
             s: *std.json.Scanner,
@@ -453,7 +453,7 @@ pub fn parse_pnext_chain(
                 &last_pnext_in_chain,
             );
         } else if (std.mem.eql(u8, s, "libraries")) {
-            try Inner.parse_libraries(
+            try Inner.parse_pipeline_library(
                 alloc,
                 tmp_alloc,
                 scanner,
