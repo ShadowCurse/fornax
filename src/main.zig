@@ -12,6 +12,7 @@ const miniz = @import("miniz.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const PDF = @import("physical_device_features.zig");
+const vulkan_print = @import("vulkan_print.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -351,6 +352,12 @@ pub fn open_database(
     };
 }
 
+pub fn print_dt(start: std.time.Instant) void {
+    const now = std.time.Instant.now() catch unreachable;
+    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
+    log.info(@src(), "dt: {d:.3}ms", .{dt});
+}
+
 pub fn replay_samplers(
     arena_alloc: Allocator,
     tmp_alloc: Allocator,
@@ -358,8 +365,12 @@ pub fn replay_samplers(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying samplers", 0);
     defer sub_progress.end();
+
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
     for (samplers) |*sampler| {
         defer sub_progress.completeOne();
@@ -385,6 +396,7 @@ pub fn replay_samplers(
         sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
         log.debug(@src(), "Created handle: {?}", .{sampler.handle});
     }
+    log.info(@src(), "Replayed {d} samplers", .{samplers.len});
 }
 
 pub fn replay_descriptor_sets(
@@ -394,8 +406,12 @@ pub fn replay_descriptor_sets(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying descripot set layouts", 0);
     defer sub_progress.end();
+
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
     for (descriptor_set_layouts) |*dsl| {
         defer sub_progress.completeOne();
@@ -425,6 +441,7 @@ pub fn replay_descriptor_sets(
         );
         log.debug(@src(), "Created handle: {?}", .{dsl.handle});
     }
+    log.info(@src(), "Replayed {d} descriptor sets", .{descriptor_set_layouts.len});
 }
 
 pub fn replay_pipeline_layouts(
@@ -434,8 +451,12 @@ pub fn replay_pipeline_layouts(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying pipeline layouts", 0);
     defer sub_progress.end();
+
     const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
     for (pipeline_layouts) |*pl| {
         defer sub_progress.completeOne();
@@ -465,6 +486,7 @@ pub fn replay_pipeline_layouts(
         );
         log.debug(@src(), "Created handle: {?}", .{pl.handle});
     }
+    log.info(@src(), "Replayed {d} pipeline layouts", .{pipeline_layouts.len});
 }
 
 pub fn replay_shader_modules(
@@ -474,8 +496,12 @@ pub fn replay_shader_modules(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying shader modules", 0);
     defer sub_progress.end();
+
     const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
     for (shader_modules) |*sm| {
         defer sub_progress.completeOne();
@@ -505,6 +531,7 @@ pub fn replay_shader_modules(
         );
         log.debug(@src(), "Created handle: {?}", .{sm.handle});
     }
+    log.info(@src(), "Replayed {d} shader modules", .{shader_modules.len});
 }
 
 pub fn replay_render_passes(
@@ -514,8 +541,12 @@ pub fn replay_render_passes(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying render passes", 0);
     defer sub_progress.end();
+
     const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
     for (render_passes) |*rp| {
         defer sub_progress.completeOne();
@@ -544,6 +575,7 @@ pub fn replay_render_passes(
         );
         log.debug(@src(), "Created handle: {?}", .{rp.handle});
     }
+    log.info(@src(), "Replayed {d} render passes", .{render_passes.len});
 }
 
 pub fn replay_graphics_pipeline(
@@ -590,8 +622,12 @@ pub fn replay_graphics_pipelines(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
     const sub_progress = progress.start("replaying graphics pipelines", 0);
     defer sub_progress.end();
+
     const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
     var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
     for (graphics_pipelines) |*gp| {
@@ -605,6 +641,7 @@ pub fn replay_graphics_pipelines(
         if (try replay_graphics_pipeline(arena_alloc, tmp_alloc, gp, db, vk_device))
             try deferred_queue.append(tmp_alloc, gp);
     }
+    log.info(@src(), "Replayed {d} graphics pipelines", .{graphics_pipelines.len});
 }
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
