@@ -120,7 +120,7 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(sampler.entry_ptr);
-            // log.info(@src(), "Processing sampler entry: {any}", .{e});
+            log.debug(@src(), "Processing sampler entry: {any}", .{e});
             const parsed_sampler = parsing.parse_sampler(
                 arena_alloc,
                 tmp_alloc,
@@ -133,14 +133,12 @@ pub fn main() !void {
                 );
                 return err;
             };
-            // log.info(@src(), "Parsed sampler create info:", .{});
-            // parsing.print_vk_struct(parsed_sampler.sampler_create_info);
             if (parsed_sampler.version != 6)
                 return error.SamplerVersionMissmatch;
             if (parsed_sampler.hash != try e.get_value())
                 return error.SamplerHashMissmatch;
             sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
-            // log.info(@src(), "Created object: {?}", .{sampler.object});
+            log.debug(@src(), "Created handle: {?}", .{sampler.handle});
         }
     }
 
@@ -152,7 +150,7 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(dsl.entry_ptr);
-            // log.info(@src(), "Processing descriptor set layout entry: {any}", .{e});
+            log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
             const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
                 arena_alloc,
                 tmp_alloc,
@@ -166,8 +164,6 @@ pub fn main() !void {
                 );
                 continue;
             };
-            // log.info(@src(), "Parsed descriptor set layout create info:", .{});
-            // parsing.print_vk_struct(parsed_descriptro_set_layout.descriptor_set_layout_create_info);
             if (parsed_descriptro_set_layout.version != 6)
                 return error.DescriptorSetLayoutVersionMissmatch;
             if (parsed_descriptro_set_layout.hash != try e.get_value())
@@ -176,7 +172,7 @@ pub fn main() !void {
                 vk_device,
                 parsed_descriptro_set_layout.create_info,
             );
-            // log.info(@src(), "Created object: {?}", .{dsl.object});
+            log.debug(@src(), "Created handle: {?}", .{dsl.handle});
         }
     }
 
@@ -188,6 +184,7 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(pl.entry_ptr);
+            log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
             const parsed_pipeline_layout = parsing.parse_pipeline_layout(
                 arena_alloc,
                 tmp_alloc,
@@ -201,8 +198,6 @@ pub fn main() !void {
                 );
                 continue;
             };
-            // log.info(@src(), "Parsed descriptor set layout create info:", .{});
-            // parsing.print_vk_struct(parsed_pipeline_layout.pipeline_layout_create_info);
             if (parsed_pipeline_layout.version != 6)
                 return error.PipelineLayoutVersionMissmatch;
             if (parsed_pipeline_layout.hash != try e.get_value())
@@ -211,7 +206,7 @@ pub fn main() !void {
                 vk_device,
                 parsed_pipeline_layout.create_info,
             );
-            // log.info(@src(), "Created object: {?}", .{pl.object});
+            log.debug(@src(), "Created handle: {?}", .{pl.handle});
         }
     }
 
@@ -223,6 +218,7 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(sm.entry_ptr);
+            log.debug(@src(), "Processing shader module entry: {any}", .{e});
             const parsed_shader_module = parsing.parse_shader_module(
                 arena_alloc,
                 tmp_alloc,
@@ -236,8 +232,6 @@ pub fn main() !void {
                 );
                 continue;
             };
-            // log.info(@src(), "Parsed shader module create info:", .{});
-            // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
             if (parsed_shader_module.version != 6)
                 return error.ShaderModuleVersionMissmatch;
             if (parsed_shader_module.hash != try e.get_value())
@@ -246,7 +240,7 @@ pub fn main() !void {
                 vk_device,
                 parsed_shader_module.create_info,
             );
-            // log.info(@src(), "Created object: {?}", .{sm.object});
+            log.debug(@src(), "Created handle: {?}", .{sm.handle});
         }
     }
 
@@ -258,6 +252,7 @@ pub fn main() !void {
             defer sub_progress.completeOne();
 
             const e = Database.Entry.from_ptr(rp.entry_ptr);
+            log.debug(@src(), "Processing render pass entry: {any}", .{e});
             const parsed_render_pass = parsing.parse_render_pass(
                 arena_alloc,
                 tmp_alloc,
@@ -270,8 +265,6 @@ pub fn main() !void {
                 );
                 continue;
             };
-            // log.info(@src(), "Parsed shader module create info:", .{});
-            // parsing.print_vk_struct(parsed_shader_module.shader_module_create_info);
             if (parsed_render_pass.version != 6)
                 return error.RenderPassVersionMissmatch;
             if (parsed_render_pass.hash != try e.get_value())
@@ -280,7 +273,7 @@ pub fn main() !void {
                 vk_device,
                 parsed_render_pass.create_info,
             );
-            // log.info(@src(), "Created object: {?}", .{rp.object});
+            log.debug(@src(), "Created handle: {?}", .{rp.handle});
         }
     }
 
