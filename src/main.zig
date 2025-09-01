@@ -290,7 +290,7 @@ pub const Database = struct {
         const entry = entries.getPtr(hash) orelse {
             log.warn(
                 @src(),
-                "Attempt to get handle for not existing object with tag: {s} hash: {d}",
+                "Attempt to get handle for not existing object with tag: {s} hash: 0x{x}",
                 .{ @tagName(tag), hash },
             );
             return error.NoObjectFound;
@@ -300,7 +300,7 @@ pub const Database = struct {
         else {
             log.warn(
                 @src(),
-                "Attempt to get handle for not yet build object with tag: {s} hash: {d}",
+                "Attempt to get handle for not yet build object with tag: {s} hash: 0x{x}",
                 .{ @tagName(tag), hash },
             );
             return error.NoHandleFound;
@@ -723,8 +723,12 @@ pub fn replay_graphics_pipeline_chunk(
     vk_device: vk.VkDevice,
     db: *const Database,
     deferred_queue: *std.ArrayListUnmanaged(*Database.EntryMeta),
+    progress: *std.Progress.Node,
 ) void {
     const thread_alloc = thread_arena.allocator();
+
+    var sub_progress = progress.start("replaying graphics pipelines", chunk.len);
+    defer sub_progress.end();
 
     const queue_buffer = thread_alloc.alloc(*Database.EntryMeta, chunk.len) catch unreachable;
     deferred_queue.* = .initBuffer(queue_buffer);
@@ -733,6 +737,8 @@ pub fn replay_graphics_pipeline_chunk(
     const tmp_alloc = tmp_allocator.allocator();
     for (chunk) |*gp| {
         defer _ = tmp_allocator.reset(.retain_capacity);
+        defer sub_progress.completeOne();
+
         const deferred = replay_graphics_pipeline(tmp_alloc, gp, db, vk_device) catch |err| {
             log.err(
                 @src(),
@@ -758,9 +764,6 @@ pub fn replay_graphics_pipelines(
     const t_start = try std.time.Instant.now();
     defer print_dt(t_start);
 
-    const sub_progress = progress.start("replaying graphics pipelines", 0);
-    defer sub_progress.end();
-
     const tmp_alloc = tmp_allocator.allocator();
     const thread_deferred_queues = try tmp_alloc.alloc(
         std.ArrayListUnmanaged(*Database.EntryMeta),
@@ -776,7 +779,7 @@ pub fn replay_graphics_pipelines(
         thread_pool.spawnWg(
             wait_group,
             replay_graphics_pipeline_chunk,
-            .{ ta, chunk, vk_device, db, dq },
+            .{ ta, chunk, vk_device, db, dq, progress },
         );
     }
     thread_pool.spawnWg(
@@ -788,6 +791,7 @@ pub fn replay_graphics_pipelines(
             vk_device,
             db,
             &thread_deferred_queues[0],
+            progress,
         },
     );
     wait_group.wait();
@@ -798,6 +802,11 @@ pub fn replay_graphics_pipelines(
             try deferred_queue.append(tmp_alloc, i);
 
     log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
+    var sub_progress = progress.start(
+        "replaying deferred graphics pipelines",
+        deferred_queue.items.len,
+    );
+    defer sub_progress.end();
     while (deferred_queue.pop()) |gp| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
