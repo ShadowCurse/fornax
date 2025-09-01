@@ -168,18 +168,16 @@ const PRINT_STRUCT =
     \\            f32, f64 => {
     \\                log.output("{s}: {d},\n", .{ field.name, @field(@"struct", field.name) });
     \\            },
-    \\            [*c]const u8 => {
-    \\                log.output("{s}: {s},\n", .{ field.name, @field(@"struct", field.name) });
-    \\            },
-    \\            [*c]const u32 => {
-    \\                if (@hasField(t, "codeSize")) {
-    \\                    const len = @field(@"struct", "codeSize");
-    \\                    var code: []const u32 = undefined;
-    \\                    code.ptr = @field(@"struct", field.name);
-    \\                    code.len = len / @sizeOf(u32);
-    \\                    log.output("{s}: {any},\n", .{ field.name, code });
-    \\                }
-    \\            },
+    \\            vk.VkOffset2D,
+    \\            vk.VkExtent2D,
+    \\            vk.VkOffset3D,
+    \\            vk.VkExtent3D,
+    \\            vk.VkPhysicalDeviceFeatures,
+    \\            => print_struct_offset(
+    \\                field.name,
+    \\                &@field(@"struct", field.name),
+    \\                fields_base_offset,
+    \\            ),
     \\            ?*anyopaque,
     \\            ?*const anyopaque,
     \\            vk.VkPipelineLayout,
@@ -187,6 +185,15 @@ const PRINT_STRUCT =
     \\            vk.VkPipeline,
     \\            => {
     \\                log.output("{s}: {?},\n", .{ field.name, @field(@"struct", field.name) });
+    \\            },
+    \\            [*c]const u8 => {
+    \\                log.output("{s}: {s},\n", .{ field.name, @field(@"struct", field.name) });
+    \\            },
+    \\            [*c]const u32 => {
+    \\                if (@hasField(t, "codeSize")) {
+    \\                    const len = @field(@"struct", "codeSize") / @sizeOf(u32);
+    \\                    log.output("{s}: {d} instructions,\n", .{ field.name, len });
+    \\                }
     \\            },
     \\            [*c]const vk.VkDescriptorSetLayoutBinding => {
     \\                const len = @field(@"struct", "bindingCount");
@@ -297,11 +304,6 @@ const PRINT_STRUCT =
     \\                else
     \\                    log.output("{s}: {?},\n", .{ field.name, element });
     \\            },
-    \\            vk.VkPhysicalDeviceFeatures => print_struct_offset(
-    \\                field.name,
-    \\                &@field(@"struct", field.name),
-    \\                fields_base_offset,
-    \\            ),
     \\            else => log.warn(
     \\                @src(),
     \\                "Cannot format field {s} of type {s}",
