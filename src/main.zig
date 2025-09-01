@@ -132,7 +132,19 @@ pub fn main() !void {
         .allocator = tmp_alloc,
     });
 
-    const n_threads = std.Thread.getCpuCount() catch 1;
+    const host_threads = std.Thread.getCpuCount() catch 1;
+    const n_threads = if (args.num_threads) |nt| blk: {
+        if (nt == 0) {
+            log.info(
+                @src(),
+                "Provided num_threads is 0. Setting to max host threads {d}",
+                .{host_threads},
+            );
+            break :blk host_threads;
+        } else {
+            break :blk nt;
+        }
+    } else host_threads;
     const thread_arenas = try arena_alloc.alloc(std.heap.ArenaAllocator, n_threads);
     for (thread_arenas) |*ta|
         ta.* = .init(std.heap.page_allocator);
