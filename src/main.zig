@@ -411,6 +411,27 @@ pub fn print_dt(start: std.time.Instant) void {
     log.info(@src(), "dt: {d:.3}ms", .{dt});
 }
 
+pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
+    const tag = entry.get_tag() catch unreachable;
+    const hash: u64 = entry.get_value() catch unreachable;
+    if (v.version != 6) {
+        log.err(
+            @src(),
+            "{s} has invalid version: {d} != {d}",
+            .{ @tagName(tag), v.version, @as(u32, 6) },
+        );
+        return error.InvalidVerson;
+    }
+    if (v.hash != hash) {
+        log.err(
+            @src(),
+            "{s} hash not equal to json version: 0x{x} != 0x{x}",
+            .{ @tagName(tag), v.hash, hash },
+        );
+        return error.InvalidHash;
+    }
+}
+
 pub fn replay_samplers(
     tmp_allocator: *std.heap.ArenaAllocator,
     progress: *std.Progress.Node,
@@ -425,30 +446,24 @@ pub fn replay_samplers(
 
     const tmp_alloc = tmp_allocator.allocator();
     const samplers = db.entries.getPtrConst(.SAMPLER).values();
-    for (samplers) |*sampler| {
+    for (samplers) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
-        const e = Database.Entry.from_ptr(sampler.entry_ptr);
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
         log.debug(@src(), "Processing sampler entry: {any}", .{e});
-        const parsed_sampler = parsing.parse_sampler(
+        const result = parsing.parse_sampler(
             tmp_alloc,
             tmp_alloc,
-            sampler.payload,
+            entry.payload,
         ) catch |err| {
-            log.err(
-                @src(),
-                "Encountered error {} while parsing sampler json: {s}",
-                .{ err, sampler.payload },
-            );
+            log.err(@src(), "Encountered error {} while parsing sampler", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
             return err;
         };
-        if (parsed_sampler.version != 6)
-            return error.SamplerVersionMissmatch;
-        if (parsed_sampler.hash != try e.get_value())
-            return error.SamplerHashMissmatch;
-        sampler.handle = try create_vk_sampler(vk_device, parsed_sampler.create_info);
-        log.debug(@src(), "Created handle: {?}", .{sampler.handle});
+        try check_version_and_hash(result, &e);
+        entry.handle = try create_vk_sampler(vk_device, result.create_info);
+        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} samplers", .{samplers.len});
 }
@@ -467,34 +482,28 @@ pub fn replay_descriptor_sets(
 
     const tmp_alloc = tmp_allocator.allocator();
     const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
-    for (descriptor_set_layouts) |*dsl| {
+    for (descriptor_set_layouts) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
-        const e = Database.Entry.from_ptr(dsl.entry_ptr);
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
         log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
-        const parsed_descriptro_set_layout = parsing.parse_descriptor_set_layout(
+        const result = parsing.parse_descriptor_set_layout(
             tmp_alloc,
             tmp_alloc,
-            dsl.payload,
+            entry.payload,
             db,
         ) catch |err| {
-            log.err(
-                @src(),
-                "Encountered error {} while parsing descriptor set layout json: {s}",
-                .{ err, dsl.payload },
-            );
+            log.err(@src(), "Encountered error {} while parsing descriptor set layout", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
             continue;
         };
-        if (parsed_descriptro_set_layout.version != 6)
-            return error.DescriptorSetLayoutVersionMissmatch;
-        if (parsed_descriptro_set_layout.hash != try e.get_value())
-            return error.DescriptorSetLayoutHashMissmatch;
-        dsl.handle = try create_descriptor_set_layout(
+        try check_version_and_hash(result, &e);
+        entry.handle = try create_descriptor_set_layout(
             vk_device,
-            parsed_descriptro_set_layout.create_info,
+            result.create_info,
         );
-        log.debug(@src(), "Created handle: {?}", .{dsl.handle});
+        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} descriptor sets", .{descriptor_set_layouts.len});
 }
@@ -513,34 +522,25 @@ pub fn replay_pipeline_layouts(
 
     const tmp_alloc = tmp_allocator.allocator();
     const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
-    for (pipeline_layouts) |*pl| {
+    for (pipeline_layouts) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
-        const e = Database.Entry.from_ptr(pl.entry_ptr);
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
         log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
-        const parsed_pipeline_layout = parsing.parse_pipeline_layout(
+        const result = parsing.parse_pipeline_layout(
             tmp_alloc,
             tmp_alloc,
-            pl.payload,
+            entry.payload,
             db,
         ) catch |err| {
-            log.err(
-                @src(),
-                "Encountered error {} while parsing pipeline layout json: {s}",
-                .{ err, pl.payload },
-            );
+            log.err(@src(), "Encountered error {} while parsing pipeline layout", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
             continue;
         };
-        if (parsed_pipeline_layout.version != 6)
-            return error.PipelineLayoutVersionMissmatch;
-        if (parsed_pipeline_layout.hash != try e.get_value())
-            return error.PipelineLayoutHashMissmatch;
-        pl.handle = try create_pipeline_layout(
-            vk_device,
-            parsed_pipeline_layout.create_info,
-        );
-        log.debug(@src(), "Created handle: {?}", .{pl.handle});
+        try check_version_and_hash(result, &e);
+        entry.handle = try create_pipeline_layout(vk_device, result.create_info);
+        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} pipeline layouts", .{pipeline_layouts.len});
 }
@@ -551,50 +551,28 @@ pub fn replay_shader_modules_chunk(
     vk_device: vk.VkDevice,
 ) void {
     const tmp_alloc = thread_arena.allocator();
-    for (chunk) |*sm| {
+    for (chunk) |*entry| {
         defer _ = thread_arena.reset(.retain_capacity);
 
-        const e = Database.Entry.from_ptr(sm.entry_ptr);
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
         log.debug(@src(), "Processing shader module entry: {any}", .{e});
-        const parsed_shader_module = parsing.parse_shader_module(
+        const result = parsing.parse_shader_module(
             tmp_alloc,
             tmp_alloc,
-            sm.payload,
+            entry.payload,
         ) catch |err| {
-            const json_str = std.mem.span(@as([*c]const u8, @ptrCast(sm.payload.ptr)));
-            log.err(
-                @src(),
-                "Encountered error {} while parsing shader module json: {s}",
-                .{ err, json_str },
-            );
-            continue;
+            const json_str = std.mem.span(@as([*c]const u8, @ptrCast(entry.payload.ptr)));
+            log.err(@src(), "Encountered error {} while parsing shader module", .{err});
+            log.debug(@src(), "json: {s}", .{json_str});
+            break;
         };
-        if (parsed_shader_module.version != 6) {
-            log.err(
-                @src(),
-                "Shader module has invalid version: {d} != {d}",
-                .{ parsed_shader_module.version, @as(u32, 6) },
-            );
-            continue;
-        }
-        const hash: u64 = e.get_value() catch 0;
-        if (parsed_shader_module.hash != hash) {
-            log.err(
-                @src(),
-                "Shader module hash not equal to json version: 0x{x} != 0x{x}",
-                .{ parsed_shader_module.hash, hash },
-            );
-            continue;
-        }
-        sm.handle = create_shader_module(
-            vk_device,
-            parsed_shader_module.create_info,
-        ) catch |err| {
+        check_version_and_hash(result, &e) catch break;
+        entry.handle = create_shader_module(vk_device, result.create_info) catch |err| {
             log.err(@src(), "Encountered error during shader module creation: {any}", .{err});
-            vulkan_print.print_struct(parsed_shader_module.create_info);
-            continue;
+            vulkan_print.print_struct(result.create_info);
+            break;
         };
-        log.debug(@src(), "Created handle: {?}", .{sm.handle});
+        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
 }
 
@@ -648,33 +626,24 @@ pub fn replay_render_passes(
 
     const tmp_alloc = tmp_allocator.allocator();
     const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
-    for (render_passes) |*rp| {
+    for (render_passes) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
-        const e = Database.Entry.from_ptr(rp.entry_ptr);
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
         log.debug(@src(), "Processing render pass entry: {any}", .{e});
-        const parsed_render_pass = parsing.parse_render_pass(
+        const result = parsing.parse_render_pass(
             tmp_alloc,
             tmp_alloc,
-            rp.payload,
+            entry.payload,
         ) catch |err| {
-            log.err(
-                @src(),
-                "Encountered error {} while parsing render pass json: {s}",
-                .{ err, rp.payload },
-            );
-            continue;
+            log.err(@src(), "Encountered error {} while parsing render pass", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
+            return err;
         };
-        if (parsed_render_pass.version != 6)
-            return error.RenderPassVersionMissmatch;
-        if (parsed_render_pass.hash != try e.get_value())
-            return error.RenderPassHashMissmatch;
-        rp.handle = try create_render_pass(
-            vk_device,
-            parsed_render_pass.create_info,
-        );
-        log.debug(@src(), "Created handle: {?}", .{rp.handle});
+        try check_version_and_hash(result, &e);
+        entry.handle = try create_render_pass(vk_device, result.create_info);
+        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} render passes", .{render_passes.len});
 }
@@ -687,30 +656,21 @@ pub fn replay_graphics_pipeline(
 ) !bool {
     const e = Database.Entry.from_ptr(entry.entry_ptr);
     log.debug(@src(), "Processing graphics pipeline entry: {any}", .{e});
-    const parsed_graphics_pipeline = parsing.parse_graphics_pipeline(
+    const result = parsing.parse_graphics_pipeline(
         tmp_alloc,
         tmp_alloc,
         entry.payload,
         db,
     ) catch |err| {
         if (err != error.NoHandleFound) {
-            log.err(
-                @src(),
-                "Encountered error {} while parsing graphics pipeline json: {s}",
-                .{ err, entry.payload },
-            );
-            return false;
+            log.err(@src(), "Encountered error {} while parsing graphics pipeline", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
+            return err;
         } else return true;
     };
-    if (parsed_graphics_pipeline.version != 6)
-        return error.RenderPassVersionMissmatch;
-    if (parsed_graphics_pipeline.hash != try e.get_value())
-        return error.RenderPassHashMissmatch;
-    entry.handle = create_graphics_pipeline(
-        vk_device,
-        parsed_graphics_pipeline.create_info,
-    ) catch |err| {
-        vulkan_print.print_struct(parsed_graphics_pipeline.create_info);
+    try check_version_and_hash(result, &e);
+    entry.handle = create_graphics_pipeline(vk_device, result.create_info) catch |err| {
+        vulkan_print.print_struct(result.create_info);
         return err;
     };
     log.debug(@src(), "Created handle: {?}", .{entry.handle});
@@ -745,7 +705,7 @@ pub fn replay_graphics_pipeline_chunk(
                 "Encountered error during graphics pipeline creation: {any}",
                 .{err},
             );
-            continue;
+            break;
         };
         if (deferred)
             deferred_queue.appendAssumeCapacity(gp);
