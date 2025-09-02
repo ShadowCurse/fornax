@@ -14,17 +14,122 @@ const vk_print = @import("vulkan_print.zig");
 const Allocator = std.mem.Allocator;
 const Database = root.Database;
 
+fn print_unexpected_token(token: std.json.Token) void {
+    switch (token) {
+        .object_begin => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+        .object_end => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+        .array_begin => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+        .array_end => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+
+        .true => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+        .false => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+        .null => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+
+        .number => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_number => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .allocated_number => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+
+        .string => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_string => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_string_escaped_1 => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_string_escaped_2 => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_string_escaped_3 => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .partial_string_escaped_4 => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+        .allocated_string => |v| log.err(
+            @src(),
+            "Got unexpected token type {s} with value: {s}",
+            .{ @tagName(std.meta.activeTag(token)), v },
+        ),
+
+        .end_of_document => log.err(
+            @src(),
+            "Got unexpected token type {s}",
+            .{@tagName(std.meta.activeTag(token))},
+        ),
+    }
+}
+
 fn scanner_next_number(scanner: *std.json.Scanner) ![]const u8 {
     switch (try scanner.next()) {
         .number => |v| return v,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
 fn scanner_next_string(scanner: *std.json.Scanner) ![]const u8 {
     switch (try scanner.next()) {
         .string => |s| return s,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -32,7 +137,10 @@ fn scanner_next_number_or_string(scanner: *std.json.Scanner) ![]const u8 {
     switch (try scanner.next()) {
         .string => |s| return s,
         .number => |v| return v,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -41,7 +149,10 @@ fn scanner_object_next_field(scanner: *std.json.Scanner) !?[]const u8 {
         .string => |s| return s,
         .object_begin => continue :loop try scanner.next(),
         .end_of_document, .object_end => return null,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -50,7 +161,10 @@ fn scanner_array_next_object(scanner: *std.json.Scanner) !bool {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return false,
         .object_begin => return true,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -59,7 +173,10 @@ fn scanner_array_next_number(scanner: *std.json.Scanner) !?[]const u8 {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
         .number => |v| return v,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -68,7 +185,30 @@ fn scanner_array_next_string(scanner: *std.json.Scanner) !?[]const u8 {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
         .string => |s| return s,
-        else => return error.InvalidJson,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
+    }
+}
+
+fn scanner_object_begin(scanner: *std.json.Scanner) !void {
+    switch (try scanner.next()) {
+        .object_begin => return,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
+    }
+}
+
+fn scanner_array_begin(scanner: *std.json.Scanner) !void {
+    switch (try scanner.next()) {
+        .array_begin => return,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
     }
 }
 
@@ -116,7 +256,7 @@ fn parse_number_array(
     sa: Allocator,
     scanner: *std.json.Scanner,
 ) ![]T {
-    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    try scanner_array_begin(scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_number(scanner)) |v| {
         const number = try std.fmt.parseInt(T, v, 10);
@@ -133,7 +273,7 @@ fn parse_handle_array(
     scanner: *std.json.Scanner,
     db: *const Database,
 ) ![]T {
-    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    try scanner_array_begin(scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_string(scanner)) |hash_str| {
         const hash = try std.fmt.parseInt(u64, hash_str, 16);
@@ -161,7 +301,7 @@ fn parse_object_array(
     scanner: *std.json.Scanner,
     db: ?*const Database,
 ) ![]T {
-    if (try scanner.next() != .array_begin) return error.InvalidJson;
+    try scanner_array_begin(scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_object(scanner)) {
         try tmp.append(sa, .{});
@@ -632,10 +772,9 @@ pub fn parse_sampler(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "samplers")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try parse_simple_type(&scanner, vk_sampler_create_info);
         } else {
             const v = try scanner_next_number_or_string(&scanner);
@@ -780,10 +919,9 @@ pub fn parse_descriptor_set_layout(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "setLayouts")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try Inner.parse_vk_descriptor_set_layout_create_info(
                 alloc,
                 tmp_alloc,
@@ -944,10 +1082,9 @@ pub fn parse_pipeline_layout(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "pipelineLayouts")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try Inner.parse_vk_pipeline_layout_create_info(
                 alloc,
                 tmp_alloc,
@@ -1105,10 +1242,9 @@ pub fn parse_shader_module(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "shaderModules")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try Inner.parse_vk_shader_module_create_info(
                 alloc,
                 &scanner,
@@ -1333,10 +1469,9 @@ pub fn parse_render_pass(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "renderPasses")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try Inner.parse_vk_render_pass_create_info(
                 alloc,
                 tmp_alloc,
@@ -1751,7 +1886,7 @@ pub fn parse_graphics_pipeline(
                     const v = try scanner_next_number(scanner);
                     item.logicOpEnable = try std.fmt.parseInt(u32, v, 10);
                 } else if (std.mem.eql(u8, s, "blendConstants")) {
-                    if (try scanner.next() != .array_begin) return error.InvalidJson;
+                    try scanner_array_begin(scanner);
                     var i: u32 = 0;
                     while (try scanner_array_next_number(scanner)) |v| {
                         item.blendConstants[i] = try std.fmt.parseFloat(f32, v);
@@ -2080,10 +2215,9 @@ pub fn parse_graphics_pipeline(
             const v = try scanner_next_number(&scanner);
             result.version = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "graphicsPipelines")) {
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
+            try scanner_object_begin(&scanner);
             const ss = try scanner_next_string(&scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            if (try scanner.next() != .object_begin) return error.InvalidJson;
             try Inner.parse_vk_graphics_pipeline_create_info(
                 alloc,
                 tmp_alloc,
