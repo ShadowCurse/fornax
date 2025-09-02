@@ -288,7 +288,7 @@ pub const Database = struct {
     pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) !*anyopaque {
         const entries = self.entries.getPtrConst(tag);
         const entry = entries.getPtr(hash) orelse {
-            log.warn(
+            log.debug(
                 @src(),
                 "Attempt to get handle for not existing object with tag: {s} hash: 0x{x}",
                 .{ @tagName(tag), hash },
@@ -298,7 +298,7 @@ pub const Database = struct {
         if (entry.handle) |handle|
             return handle
         else {
-            log.warn(
+            log.debug(
                 @src(),
                 "Attempt to get handle for not yet build object with tag: {s} hash: 0x{x}",
                 .{ @tagName(tag), hash },
