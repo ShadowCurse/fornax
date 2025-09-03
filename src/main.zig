@@ -67,7 +67,9 @@ pub fn main() !void {
     const tmp_alloc = tmp_arena.allocator();
 
     const args = try args_parser.parse(Args, arena_alloc);
-    if (args.help) {
+    if (args.help or
+        args.database_paths.values.len == 0)
+    {
         try args_parser.print_help(Args);
         return;
     }
@@ -348,15 +350,9 @@ pub fn open_database(
 
         remaining_file_mem = remaining_file_mem[total_entry_size..];
         const entry_tag = try entry.get_tag();
-        // if (!(entry_tag == .APPLICATION_INFO or
-        //     entry_tag == .SAMPLER or
-        //     entry_tag == .DESCRIPTOR_SET_LAYOUT or
-        //     entry_tag == .PIPELINE_LAYOUT or
-        //     entry_tag == .RENDER_PASS or
-        //     entry_tag == .SHADER_MODULE or
-        //     entry_tag == .GRAPHICS_PIPELINE))
-        //     continue;
-        // log.info(@src(), "Found entry: {}", .{entry});
+        // There is no used for these blobs, so skip them.
+        if (entry_tag == .APPLICATION_BLOB_LINK)
+            continue;
 
         const payload_start: [*]const u8 =
             @ptrFromInt(@as(usize, @intFromPtr(entry_ptr)) + @sizeOf(Database.Entry));
@@ -396,8 +392,11 @@ pub fn open_database(
 
     var final_entries: Database.EntriesType = undefined;
     var fe_iter = final_entries.iterator();
-    while (fe_iter.next()) |e|
-        e.value.* = try entries.getPtrConst(e.key).clone(arena_alloc);
+    while (fe_iter.next()) |e| {
+        const map = entries.getPtrConst(e.key);
+        log.info(@src(), "Found {d} entries for tag: {s}", .{ map.count(), @tagName(e.key) });
+        e.value.* = try map.clone(arena_alloc);
+    }
     return .{
         .file_mem = file_mem,
         .entries = final_entries,
@@ -451,7 +450,6 @@ pub fn replay_samplers(
         defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(entry.entry_ptr);
-        log.debug(@src(), "Processing sampler entry: {any}", .{e});
         const result = parsing.parse_sampler(
             tmp_alloc,
             tmp_alloc,
@@ -463,7 +461,6 @@ pub fn replay_samplers(
         };
         try check_version_and_hash(result, &e);
         entry.handle = try create_vk_sampler(vk_device, result.create_info);
-        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} samplers", .{samplers.len});
 }
@@ -487,7 +484,6 @@ pub fn replay_descriptor_sets(
         defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(entry.entry_ptr);
-        log.debug(@src(), "Processing descriptor set layout entry: {any}", .{e});
         const result = parsing.parse_descriptor_set_layout(
             tmp_alloc,
             tmp_alloc,
@@ -503,7 +499,6 @@ pub fn replay_descriptor_sets(
             vk_device,
             result.create_info,
         );
-        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} descriptor sets", .{descriptor_set_layouts.len});
 }
@@ -527,7 +522,6 @@ pub fn replay_pipeline_layouts(
         defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(entry.entry_ptr);
-        log.debug(@src(), "Processing pipeline layout entry: {any}", .{e});
         const result = parsing.parse_pipeline_layout(
             tmp_alloc,
             tmp_alloc,
@@ -540,7 +534,6 @@ pub fn replay_pipeline_layouts(
         };
         try check_version_and_hash(result, &e);
         entry.handle = try create_pipeline_layout(vk_device, result.create_info);
-        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} pipeline layouts", .{pipeline_layouts.len});
 }
@@ -555,7 +548,6 @@ pub fn replay_shader_modules_chunk(
         defer _ = thread_arena.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(entry.entry_ptr);
-        log.debug(@src(), "Processing shader module entry: {any}", .{e});
         const result = parsing.parse_shader_module(
             tmp_alloc,
             tmp_alloc,
@@ -572,7 +564,6 @@ pub fn replay_shader_modules_chunk(
             vulkan_print.print_struct(result.create_info);
             break;
         };
-        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
 }
 
@@ -631,7 +622,6 @@ pub fn replay_render_passes(
         defer _ = tmp_allocator.reset(.retain_capacity);
 
         const e = Database.Entry.from_ptr(entry.entry_ptr);
-        log.debug(@src(), "Processing render pass entry: {any}", .{e});
         const result = parsing.parse_render_pass(
             tmp_alloc,
             tmp_alloc,
@@ -643,7 +633,6 @@ pub fn replay_render_passes(
         };
         try check_version_and_hash(result, &e);
         entry.handle = try create_render_pass(vk_device, result.create_info);
-        log.debug(@src(), "Created handle: {?}", .{entry.handle});
     }
     log.info(@src(), "Replayed {d} render passes", .{render_passes.len});
 }
@@ -655,7 +644,6 @@ pub fn replay_graphics_pipeline(
     vk_device: vk.VkDevice,
 ) !bool {
     const e = Database.Entry.from_ptr(entry.entry_ptr);
-    log.debug(@src(), "Processing graphics pipeline entry: {any}", .{e});
     const result = parsing.parse_graphics_pipeline(
         tmp_alloc,
         tmp_alloc,
@@ -663,7 +651,10 @@ pub fn replay_graphics_pipeline(
         db,
     ) catch |err| {
         if (err != error.NoHandleFound) {
-            log.err(@src(), "Encountered error {} while parsing graphics pipeline", .{err});
+            if (err == error.InvalidJson)
+                log.err(@src(), "Encountered error {} while parsing graphics pipeline", .{err})
+            else
+                log.warn(@src(), "Encountered error {} while parsing graphics pipeline", .{err});
             log.debug(@src(), "json: {s}", .{entry.payload});
             return err;
         } else return true;
@@ -673,7 +664,6 @@ pub fn replay_graphics_pipeline(
         vulkan_print.print_struct(result.create_info);
         return err;
     };
-    log.debug(@src(), "Created handle: {?}", .{entry.handle});
     return false;
 }
 
@@ -699,14 +689,7 @@ pub fn replay_graphics_pipeline_chunk(
         defer _ = tmp_allocator.reset(.retain_capacity);
         defer sub_progress.completeOne();
 
-        const deferred = replay_graphics_pipeline(tmp_alloc, gp, db, vk_device) catch |err| {
-            log.err(
-                @src(),
-                "Encountered error during graphics pipeline creation: {any}",
-                .{err},
-            );
-            break;
-        };
+        const deferred = replay_graphics_pipeline(tmp_alloc, gp, db, vk_device) catch break;
         if (deferred)
             deferred_queue.appendAssumeCapacity(gp);
     }
