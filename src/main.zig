@@ -128,6 +128,7 @@ pub fn main() !void {
     try replay_pipeline_layouts(&tmp_arena, &progress, &db, vk_device);
     try replay_render_passes(&tmp_arena, &progress, &db, vk_device);
     try replay_compute_pipelines(&tmp_arena, &progress, &db, vk_device);
+    try replay_raytracing_pipelines(&tmp_arena, &progress, &db, vk_device);
 
     var wait_group: std.Thread.WaitGroup = .{};
     var thread_pool: std.Thread.Pool = undefined;
@@ -795,6 +796,41 @@ pub fn replay_compute_pipelines(
     log.info(@src(), "Replayed {d} compute pipelines", .{compute_pipelines.len});
 }
 
+pub fn replay_raytracing_pipelines(
+    tmp_allocator: *std.heap.ArenaAllocator,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) !void {
+    const t_start = try std.time.Instant.now();
+    defer print_dt(t_start);
+
+    const sub_progress = progress.start("replaying raytracing pipelines", 0);
+    defer sub_progress.end();
+
+    const tmp_alloc = tmp_allocator.allocator();
+    const raytracing_pipelines = db.entries.getPtrConst(.RAYTRACING_PIPELINE).values();
+    for (raytracing_pipelines) |*entry| {
+        defer sub_progress.completeOne();
+        defer _ = tmp_allocator.reset(.retain_capacity);
+
+        const e = Database.Entry.from_ptr(entry.entry_ptr);
+        const result = parsing.parse_raytracing_pipeline(
+            tmp_alloc,
+            tmp_alloc,
+            entry.payload,
+            db,
+        ) catch |err| {
+            log.err(@src(), "Encountered error {} while parsing compute pipeline", .{err});
+            log.debug(@src(), "json: {s}", .{entry.payload});
+            return err;
+        };
+        try check_version_and_hash(result, &e);
+        entry.handle = try create_raytracing_pipeline(vk_device, result.create_info);
+    }
+    log.info(@src(), "Replayed {d} compute pipelines", .{raytracing_pipelines.len});
+}
+
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
 const VK_ADDITIONAL_EXTENSIONS_NAMES = [_][*c]const u8{"VK_EXT_debug_utils"};
 
@@ -1418,6 +1454,23 @@ pub fn create_compute_pipeline(
     var pipeline: vk.VkPipeline = undefined;
     try vk.check_result(vk.vkCreateComputePipelines.?(
         vk_device,
+        null,
+        1,
+        create_info,
+        null,
+        &pipeline,
+    ));
+    return pipeline;
+}
+
+pub fn create_raytracing_pipeline(
+    vk_device: vk.VkDevice,
+    create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
+) !vk.VkPipeline {
+    var pipeline: vk.VkPipeline = undefined;
+    try vk.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
+        vk_device,
+        null,
         null,
         1,
         create_info,

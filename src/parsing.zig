@@ -3342,3 +3342,400 @@ test "parse_compute_pipeline" {
     const parsed_compute_pipeline = try parse_compute_pipeline(alloc, tmp_alloc, json, &db);
     vk_print.print_struct(parsed_compute_pipeline.create_info);
 }
+
+pub const ParsedRaytracingPipeline = struct {
+    version: u32,
+    hash: u64,
+    create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
+};
+pub fn parse_raytracing_pipeline(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    json_str: []const u8,
+    database: *const Database,
+) !ParsedRaytracingPipeline {
+    const Inner = struct {
+        fn parse_vk_raytracing_pipeline_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+            item: *vk.VkRayTracingPipelineCreateInfoKHR,
+        ) !void {
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, db);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stages")) {
+                    const stages = try parse_object_array(
+                        vk.VkPipelineShaderStageCreateInfo,
+                        parse_vk_pipeline_shader_stage_create_info,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
+                    item.pStages = @ptrCast(stages.ptr);
+                    item.stageCount = @intCast(stages.len);
+                } else if (std.mem.eql(u8, s, "groups")) {
+                    const groups = try parse_object_array(
+                        vk.VkRayTracingShaderGroupCreateInfoKHR,
+                        parse_vk_ray_tracing_shader_group_create_info,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
+                    item.pGroups = @ptrCast(groups.ptr);
+                    item.groupCount = @intCast(groups.len);
+                } else if (std.mem.eql(u8, s, "libraryInfo")) {
+                    const library =
+                        try parse_vk_pipeline_library_create_info(aa, sa, scanner, db);
+                    item.pLibraryInfo = library;
+                } else if (std.mem.eql(u8, s, "libraryInterface")) {
+                    const interface = try parse_vk_ray_tracing_pipeline_interface_create_info(
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
+                    item.pLibraryInterface = interface;
+                } else if (std.mem.eql(u8, s, "maxPipelineRayRecursionDepth")) {
+                    const v = try scanner_next_number(scanner);
+                    item.maxPipelineRayRecursionDepth = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "dynamicState")) {
+                    const dynamic_state =
+                        try parse_vk_pipeline_dynamic_state_create_info(aa, sa, scanner);
+                    item.pDynamicState = dynamic_state;
+                } else if (std.mem.eql(u8, s, "layout")) {
+                    const v = try scanner_next_string(scanner);
+                    const hash = try std.fmt.parseInt(u64, v, 16);
+                    if (hash != 0) {
+                        const handle = try db.get_handle(.PIPELINE_LAYOUT, hash);
+                        item.layout = @ptrCast(handle);
+                    }
+                } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
+                    const v = try scanner_next_string(scanner);
+                    const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
+                    if (base_pipeline_hash != 0)
+                        return error.BasePipelinesNotSupported;
+                } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
+                    const v = try scanner_next_number(scanner);
+                    item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
+        fn parse_vk_pipeline_shader_stage_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkPipelineShaderStageCreateInfo,
+        ) !void {
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stage")) {
+                    const v = try scanner_next_number(scanner);
+                    item.stage = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "module")) {
+                    const hash_str = try scanner_next_string(scanner);
+                    const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                    const handle = try db.?.get_handle(.SHADER_MODULE, hash);
+                    item.module = @ptrCast(handle);
+                } else if (std.mem.eql(u8, s, "name")) {
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
+                    item.pName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "specializationInfo")) {
+                    const info = try aa.create(vk.VkSpecializationInfo);
+                    try parse_vk_specialization_info(aa, sa, scanner, info);
+                    item.pSpecializationInfo = info;
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
+        fn parse_vk_ray_tracing_shader_group_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
+        ) !void {
+            _ = db;
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
+                } else if (std.mem.eql(u8, s, "type")) {
+                    const v = try scanner_next_number(scanner);
+                    item.type = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "generalShader")) {
+                    const v = try scanner_next_number(scanner);
+                    item.generalShader = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "closestHitShader")) {
+                    const v = try scanner_next_number(scanner);
+                    item.closestHitShader = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "anyHitShader")) {
+                    const v = try scanner_next_number(scanner);
+                    item.anyHitShader = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "intersectionShader")) {
+                    const v = try scanner_next_number(scanner);
+                    item.intersectionShader = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
+        fn parse_vk_pipeline_library_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+        ) !*const vk.VkPipelineLibraryCreateInfoKHR {
+            const item = try aa.create(vk.VkPipelineLibraryCreateInfoKHR);
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, db);
+                } else if (std.mem.eql(u8, s, "libraries")) {
+                    const libraries = try parse_handle_array(
+                        vk.VkPipeline,
+                        .RAYTRACING_PIPELINE,
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                    );
+                    item.pLibraries = @ptrCast(libraries.ptr);
+                    item.libraryCount = @intCast(libraries.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+            return item;
+        }
+
+        fn parse_vk_ray_tracing_pipeline_interface_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+        ) !*const vk.VkRayTracingPipelineInterfaceCreateInfoKHR {
+            const item = try aa.create(vk.VkRayTracingPipelineInterfaceCreateInfoKHR);
+            item.* = .{
+                .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
+            };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, db);
+                } else if (std.mem.eql(u8, s, "maxPipelineRayPayloadSize")) {
+                    const v = try scanner_next_number(scanner);
+                    item.maxPipelineRayPayloadSize = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "maxPipelineRayHitAttributeSize")) {
+                    const v = try scanner_next_number(scanner);
+                    item.maxPipelineRayHitAttributeSize = try std.fmt.parseInt(u32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+            return item;
+        }
+
+        fn parse_vk_pipeline_dynamic_state_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+        ) !*const vk.VkPipelineDynamicStateCreateInfo {
+            const item = try aa.create(vk.VkPipelineDynamicStateCreateInfo);
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "dynamicState")) {
+                    const states = try parse_number_array(u32, aa, sa, scanner);
+                    item.pDynamicStates = @ptrCast(states.ptr);
+                    item.dynamicStateCount = @intCast(states.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+            return item;
+        }
+
+        fn parse_vk_specialization_map_entry(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkSpecializationMapEntry,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_simple_type(scanner, item);
+        }
+
+        fn parse_vk_specialization_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            item: *vk.VkSpecializationInfo,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "dataSize")) {
+                    const v = try scanner_next_number(scanner);
+                    item.dataSize = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "data")) {
+                    const data_str = try scanner_next_string(scanner);
+                    var decoder = std.base64.standard.Decoder;
+                    const data_size = try decoder.calcSizeForSlice(data_str);
+                    const data = try aa.alloc(u8, data_size);
+                    try decoder.decode(data, data_str);
+                    item.pData = @ptrCast(data.ptr);
+                } else if (std.mem.eql(u8, s, "mapEntries")) {
+                    const entries = try parse_object_array(
+                        vk.VkSpecializationMapEntry,
+                        parse_vk_specialization_map_entry,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pMapEntries = @ptrCast(entries.ptr);
+                    item.mapEntryCount = @intCast(entries.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+    };
+
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const create_info = try alloc.create(vk.VkRayTracingPipelineCreateInfoKHR);
+
+    var result: ParsedRaytracingPipeline = .{
+        .version = 0,
+        .hash = 0,
+        .create_info = create_info,
+    };
+
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "raytracingPipelines")) {
+            try scanner_object_begin(&scanner);
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            try Inner.parse_vk_raytracing_pipeline_create_info(
+                alloc,
+                tmp_alloc,
+                &scanner,
+                database,
+                create_info,
+            );
+        }
+    }
+    return result;
+}
+
+test "parse_raytracing_pipeline" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "raytracingPipelines": {
+        \\    "1111111111111111": {
+        \\      "flags": 0,
+        \\      "layout": "2222222222222222",
+        \\      "basePipelineHandle": "0000000000000000",
+        \\      "basePipelineIndex": -1,
+        \\      "maxPipelineRayRecursionDepth": 1,
+        \\      "stages": [
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "RayGen",
+        \\          "module": "3333333333333333",
+        \\          "stage": 256
+        \\        },
+        \\        {
+        \\          "flags": 0,
+        \\          "name": "AnyHit1",
+        \\          "module": "4444444444444444",
+        \\          "stage": 512
+        \\        }
+        \\      ],
+        \\      "groups": [
+        \\        {
+        \\          "anyHitShader": 4294967295,
+        \\          "intersectionShader": 4294967295,
+        \\          "generalShader": 0,
+        \\          "closestHitShader": 4294967295,
+        \\          "type": 0
+        \\        },
+        \\        {
+        \\          "anyHitShader": 6,
+        \\          "intersectionShader": 4294967295,
+        \\          "generalShader": 4294967295,
+        \\          "closestHitShader": 4294967295,
+        \\          "type": 1
+        \\        }
+        \\      ]
+        \\    }
+        \\  }
+        \\}
+    ;
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
+
+    var db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x3333333333333333, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x4444444444444444, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+
+    const parsed_raytracing_pipeline = try parse_raytracing_pipeline(alloc, tmp_alloc, json, &db);
+    vk_print.print_struct(parsed_raytracing_pipeline.create_info);
+}
