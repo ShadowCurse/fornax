@@ -454,6 +454,13 @@ pub fn parse_pipeline_vertex_input_divisor_state_create_info(
     }
 }
 
+pub fn parse_pipeline_shader_stage_required_subgroup_size_create_info(
+    scanner: *std.json.Scanner,
+    obj: *vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
+) !void {
+    try parse_simple_type(scanner, obj);
+}
+
 pub fn parse_pnext_chain(
     alloc: Allocator,
     tmp_alloc: Allocator,
@@ -584,6 +591,18 @@ pub fn parse_pnext_chain(
                     }
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
                     try parse_pipeline_vertex_input_divisor_state_create_info(aa, sa, s, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO => {
+                    const obj =
+                        try aa.create(vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo);
+                    obj.* = .{ .sType = stype };
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_pipeline_shader_stage_required_subgroup_size_create_info(s, obj);
                 },
                 else => {
                     log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
@@ -3098,4 +3117,228 @@ test "parse_graphics_pipeline" {
     _ = try parse_graphics_pipeline(alloc, tmp_alloc, json4, &db);
     const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, json5, &db);
     vk_print.print_struct(parsed_graphics_pipeline.create_info);
+}
+
+pub const ParsedComputePipeline = struct {
+    version: u32,
+    hash: u64,
+    create_info: *const vk.VkComputePipelineCreateInfo,
+};
+pub fn parse_compute_pipeline(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    json_str: []const u8,
+    database: *const Database,
+) !ParsedComputePipeline {
+    const Inner = struct {
+        fn parse_vk_compute_pipeline_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: *const Database,
+            item: *vk.VkComputePipelineCreateInfo,
+        ) !void {
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, db);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stage")) {
+                    try parse_vk_pipeline_shader_stage_create_info(
+                        aa,
+                        sa,
+                        scanner,
+                        db,
+                        &item.stage,
+                    );
+                } else if (std.mem.eql(u8, s, "layout")) {
+                    const v = try scanner_next_string(scanner);
+                    const hash = try std.fmt.parseInt(u64, v, 16);
+                    if (hash != 0) {
+                        const handle = try db.get_handle(.PIPELINE_LAYOUT, hash);
+                        item.layout = @ptrCast(handle);
+                    }
+                } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
+                    const v = try scanner_next_string(scanner);
+                    const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
+                    if (base_pipeline_hash != 0)
+                        return error.BasePipelinesNotSupported;
+                } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
+                    const v = try scanner_next_number(scanner);
+                    item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
+        fn parse_vk_pipeline_shader_stage_create_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkPipelineShaderStageCreateInfo,
+        ) !void {
+            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "pNext")) {
+                    item.pNext = try parse_pnext_chain(aa, sa, scanner, null);
+                } else if (std.mem.eql(u8, s, "flags")) {
+                    const v = try scanner_next_number(scanner);
+                    item.flags = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "stage")) {
+                    const v = try scanner_next_number(scanner);
+                    item.stage = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "module")) {
+                    const hash_str = try scanner_next_string(scanner);
+                    const hash = try std.fmt.parseInt(u64, hash_str, 16);
+                    const handle = try db.?.get_handle(.SHADER_MODULE, hash);
+                    item.module = @ptrCast(handle);
+                } else if (std.mem.eql(u8, s, "name")) {
+                    const name_str = try scanner_next_string(scanner);
+                    const name = try aa.dupeZ(u8, name_str);
+                    item.pName = @ptrCast(name.ptr);
+                } else if (std.mem.eql(u8, s, "specializationInfo")) {
+                    const info = try aa.create(vk.VkSpecializationInfo);
+                    try parse_vk_specialization_info(aa, sa, scanner, info);
+                    item.pSpecializationInfo = info;
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+
+        fn parse_vk_specialization_map_entry(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            db: ?*const Database,
+            item: *vk.VkSpecializationMapEntry,
+        ) !void {
+            _ = aa;
+            _ = sa;
+            _ = db;
+            try parse_simple_type(scanner, item);
+        }
+
+        fn parse_vk_specialization_info(
+            aa: Allocator,
+            sa: Allocator,
+            scanner: *std.json.Scanner,
+            item: *vk.VkSpecializationInfo,
+        ) !void {
+            while (try scanner_object_next_field(scanner)) |s| {
+                if (std.mem.eql(u8, s, "dataSize")) {
+                    const v = try scanner_next_number(scanner);
+                    item.dataSize = try std.fmt.parseInt(u32, v, 10);
+                } else if (std.mem.eql(u8, s, "data")) {
+                    const data_str = try scanner_next_string(scanner);
+                    var decoder = std.base64.standard.Decoder;
+                    const data_size = try decoder.calcSizeForSlice(data_str);
+                    const data = try aa.alloc(u8, data_size);
+                    try decoder.decode(data, data_str);
+                    item.pData = @ptrCast(data.ptr);
+                } else if (std.mem.eql(u8, s, "mapEntries")) {
+                    const entries = try parse_object_array(
+                        vk.VkSpecializationMapEntry,
+                        parse_vk_specialization_map_entry,
+                        aa,
+                        sa,
+                        scanner,
+                        null,
+                    );
+                    item.pMapEntries = @ptrCast(entries.ptr);
+                    item.mapEntryCount = @intCast(entries.len);
+                } else {
+                    const v = try scanner_next_number_or_string(scanner);
+                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+                }
+            }
+        }
+    };
+
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const create_info = try alloc.create(vk.VkComputePipelineCreateInfo);
+
+    var result: ParsedComputePipeline = .{
+        .version = 0,
+        .hash = 0,
+        .create_info = create_info,
+    };
+
+    while (try scanner_object_next_field(&scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(&scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "computePipelines")) {
+            try scanner_object_begin(&scanner);
+            const ss = try scanner_next_string(&scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            try Inner.parse_vk_compute_pipeline_create_info(
+                alloc,
+                tmp_alloc,
+                &scanner,
+                database,
+                create_info,
+            );
+        }
+    }
+    return result;
+}
+
+test "parse_compute_pipeline" {
+    const json =
+        \\{
+        \\  "version": 6,
+        \\  "computePipelines": {
+        \\    "1111111111111111": {
+        \\      "flags": 0,
+        \\      "layout": "2222222222222222",
+        \\      "basePipelineHandle": "0000000000000000",
+        \\      "basePipelineIndex": -1,
+        \\      "stage": {
+        \\        "flags": 0,
+        \\        "stage": 32,
+        \\        "module": "3333333333333333",
+        \\        "name": "MainCs",
+        \\        "pNext": [
+        \\          {
+        \\            "sType": 1000225001,
+        \\            "requiredSubgroupSize": 32
+        \\          }
+        \\        ]
+        \\      }
+        \\    }
+        \\  }
+        \\}
+    ;
+    var gpa = std.heap.DebugAllocator(.{}).init;
+    const gpa_alloc = gpa.allocator();
+    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const alloc = arena.allocator();
+    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    const tmp_alloc = tmp_arena.allocator();
+
+    var db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x3333333333333333, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+
+    const parsed_compute_pipeline = try parse_compute_pipeline(alloc, tmp_alloc, json, &db);
+    vk_print.print_struct(parsed_compute_pipeline.create_info);
 }
