@@ -396,7 +396,7 @@ pub fn open_database(
     var fe_iter = final_entries.iterator();
     while (fe_iter.next()) |e| {
         const map = entries.getPtrConst(e.key);
-        log.info(@src(), "Found {d} entries for tag: {s}", .{ map.count(), @tagName(e.key) });
+        log.info(@src(), "Found {s:<21} {d:>5}", .{ @tagName(e.key), map.count() });
         e.value.* = try map.clone(arena_alloc);
     }
     return .{
@@ -406,10 +406,10 @@ pub fn open_database(
     };
 }
 
-pub fn print_dt(start: std.time.Instant) void {
+pub fn print_replay_time(start: std.time.Instant, tag: Database.Entry.Tag, n: usize) void {
     const now = std.time.Instant.now() catch unreachable;
     const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    log.info(@src(), "dt: {d:.3}ms", .{dt});
+    log.info(@src(), "Replayed {d:>5} {s:<21} in {d:.3}ms", .{ n, @tagName(tag), dt });
 }
 
 pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
@@ -439,15 +439,15 @@ pub fn replay_samplers(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying samplers", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const samplers = db.entries.getPtrConst(.SAMPLER).values();
-    for (samplers) |*entry| {
+    const entries = db.entries.getPtrConst(.SAMPLER).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .SAMPLER, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -464,7 +464,6 @@ pub fn replay_samplers(
         try check_version_and_hash(result, &e);
         entry.handle = try create_vk_sampler(vk_device, result.create_info);
     }
-    log.info(@src(), "Replayed {d} samplers", .{samplers.len});
 }
 
 pub fn replay_descriptor_sets(
@@ -473,15 +472,15 @@ pub fn replay_descriptor_sets(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying descripot set layouts", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const descriptor_set_layouts = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
-    for (descriptor_set_layouts) |*entry| {
+    const entries = db.entries.getPtrConst(.DESCRIPTOR_SET_LAYOUT).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .DESCRIPTOR_SET_LAYOUT, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -502,7 +501,6 @@ pub fn replay_descriptor_sets(
             result.create_info,
         );
     }
-    log.info(@src(), "Replayed {d} descriptor sets", .{descriptor_set_layouts.len});
 }
 
 pub fn replay_pipeline_layouts(
@@ -511,15 +509,15 @@ pub fn replay_pipeline_layouts(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying pipeline layouts", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const pipeline_layouts = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
-    for (pipeline_layouts) |*entry| {
+    const entries = db.entries.getPtrConst(.PIPELINE_LAYOUT).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .PIPELINE_LAYOUT, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -537,7 +535,6 @@ pub fn replay_pipeline_layouts(
         try check_version_and_hash(result, &e);
         entry.handle = try create_pipeline_layout(vk_device, result.create_info);
     }
-    log.info(@src(), "Replayed {d} pipeline layouts", .{pipeline_layouts.len});
 }
 
 pub fn replay_shader_modules_chunk(
@@ -577,15 +574,15 @@ pub fn replay_shader_modules(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying shader modules", 0);
     defer sub_progress.end();
 
-    const shader_modules = db.entries.getPtrConst(.SHADER_MODULE).values();
-    const chunk_size = shader_modules.len / (thread_arenas.len - 1);
-    var remaining_shader_modules = shader_modules;
+    const entries = db.entries.getPtrConst(.SHADER_MODULE).values();
+    const chunk_size = entries.len / (thread_arenas.len - 1);
+    var remaining_shader_modules = entries;
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .SHADER_MODULE, entries.len);
     for (thread_arenas[1..]) |*ta| {
         const chunk = remaining_shader_modules[0..chunk_size];
         remaining_shader_modules = remaining_shader_modules[chunk_size..];
@@ -601,8 +598,6 @@ pub fn replay_shader_modules(
         .{ &thread_arenas[0], remaining_shader_modules, vk_device },
     );
     wait_group.wait();
-
-    log.info(@src(), "Replayed {d} shader modules", .{shader_modules.len});
 }
 
 pub fn replay_render_passes(
@@ -611,15 +606,15 @@ pub fn replay_render_passes(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying render passes", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const render_passes = db.entries.getPtrConst(.RENDER_PASS).values();
-    for (render_passes) |*entry| {
+    const entries = db.entries.getPtrConst(.RENDER_PASS).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .RENDER_PASS, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -636,7 +631,6 @@ pub fn replay_render_passes(
         try check_version_and_hash(result, &e);
         entry.handle = try create_render_pass(vk_device, result.create_info);
     }
-    log.info(@src(), "Replayed {d} render passes", .{render_passes.len});
 }
 
 pub fn replay_graphics_pipeline(
@@ -706,59 +700,66 @@ pub fn replay_graphics_pipelines(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const tmp_alloc = tmp_allocator.allocator();
     const thread_deferred_queues = try tmp_alloc.alloc(
         std.ArrayListUnmanaged(*Database.EntryMeta),
         thread_arenas.len,
     );
 
-    const graphics_pipelines = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
-    const chunk_size = graphics_pipelines.len / (thread_arenas.len - 1);
-    var remaining_graphics_pipelines = graphics_pipelines;
-    for (thread_arenas[1..], thread_deferred_queues[1..]) |*ta, *dq| {
-        const chunk = remaining_graphics_pipelines[0..chunk_size];
-        remaining_graphics_pipelines = remaining_graphics_pipelines[chunk_size..];
+    const entries = db.entries.getPtrConst(.GRAPHICS_PIPELINE).values();
+    const chunk_size = entries.len / (thread_arenas.len - 1);
+    var remaining_graphics_pipelines = entries;
+
+    {
+        const t_start = try std.time.Instant.now();
+        defer print_replay_time(t_start, .GRAPHICS_PIPELINE, entries.len);
+        for (thread_arenas[1..], thread_deferred_queues[1..]) |*ta, *dq| {
+            const chunk = remaining_graphics_pipelines[0..chunk_size];
+            remaining_graphics_pipelines = remaining_graphics_pipelines[chunk_size..];
+            thread_pool.spawnWg(
+                wait_group,
+                replay_graphics_pipeline_chunk,
+                .{ ta, chunk, vk_device, db, dq, progress },
+            );
+        }
         thread_pool.spawnWg(
             wait_group,
             replay_graphics_pipeline_chunk,
-            .{ ta, chunk, vk_device, db, dq, progress },
+            .{
+                &thread_arenas[0],
+                remaining_graphics_pipelines,
+                vk_device,
+                db,
+                &thread_deferred_queues[0],
+                progress,
+            },
         );
+        wait_group.wait();
     }
-    thread_pool.spawnWg(
-        wait_group,
-        replay_graphics_pipeline_chunk,
-        .{
-            &thread_arenas[0],
-            remaining_graphics_pipelines,
-            vk_device,
-            db,
-            &thread_deferred_queues[0],
-            progress,
-        },
-    );
-    wait_group.wait();
 
     var deferred_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
     for (thread_deferred_queues) |*tdq|
         for (tdq.items) |i|
             try deferred_queue.append(tmp_alloc, i);
 
-    log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
-    var sub_progress = progress.start(
-        "replaying deferred graphics pipelines",
-        deferred_queue.items.len,
-    );
-    defer sub_progress.end();
-    while (deferred_queue.pop()) |gp| {
-        defer sub_progress.completeOne();
-        defer _ = tmp_allocator.reset(.retain_capacity);
-        if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
-            try deferred_queue.append(tmp_alloc, gp);
+    {
+        const t_start = try std.time.Instant.now();
+        const queue_len = deferred_queue.items.len;
+        defer print_replay_time(t_start, .GRAPHICS_PIPELINE, queue_len);
+
+        log.info(@src(), "Processing deferred pipelines: {d}", .{deferred_queue.items.len});
+        var sub_progress = progress.start(
+            "replaying deferred graphics pipelines",
+            deferred_queue.items.len,
+        );
+        defer sub_progress.end();
+        while (deferred_queue.pop()) |gp| {
+            defer sub_progress.completeOne();
+            defer _ = tmp_allocator.reset(.retain_capacity);
+            if (try replay_graphics_pipeline(tmp_alloc, gp, db, vk_device))
+                try deferred_queue.append(tmp_alloc, gp);
+        }
     }
-    log.info(@src(), "Replayed {d} graphics pipelines", .{graphics_pipelines.len});
 }
 
 pub fn replay_compute_pipelines(
@@ -767,15 +768,15 @@ pub fn replay_compute_pipelines(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying compute pipelines", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const compute_pipelines = db.entries.getPtrConst(.COMPUTE_PIPELINE).values();
-    for (compute_pipelines) |*entry| {
+    const entries = db.entries.getPtrConst(.COMPUTE_PIPELINE).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .GRAPHICS_PIPELINE, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -793,7 +794,6 @@ pub fn replay_compute_pipelines(
         try check_version_and_hash(result, &e);
         entry.handle = try create_compute_pipeline(vk_device, result.create_info);
     }
-    log.info(@src(), "Replayed {d} compute pipelines", .{compute_pipelines.len});
 }
 
 pub fn replay_raytracing_pipelines(
@@ -802,15 +802,15 @@ pub fn replay_raytracing_pipelines(
     db: *const Database,
     vk_device: vk.VkDevice,
 ) !void {
-    const t_start = try std.time.Instant.now();
-    defer print_dt(t_start);
-
     const sub_progress = progress.start("replaying raytracing pipelines", 0);
     defer sub_progress.end();
 
     const tmp_alloc = tmp_allocator.allocator();
-    const raytracing_pipelines = db.entries.getPtrConst(.RAYTRACING_PIPELINE).values();
-    for (raytracing_pipelines) |*entry| {
+    const entries = db.entries.getPtrConst(.RAYTRACING_PIPELINE).values();
+
+    const t_start = try std.time.Instant.now();
+    defer print_replay_time(t_start, .RAYTRACING_PIPELINE, entries.len);
+    for (entries) |*entry| {
         defer sub_progress.completeOne();
         defer _ = tmp_allocator.reset(.retain_capacity);
 
@@ -828,7 +828,6 @@ pub fn replay_raytracing_pipelines(
         try check_version_and_hash(result, &e);
         entry.handle = try create_raytracing_pipeline(vk_device, result.create_info);
     }
-    log.info(@src(), "Replayed {d} compute pipelines", .{raytracing_pipelines.len});
 }
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
@@ -995,6 +994,13 @@ pub fn create_vk_instance(
             .apiVersion = api_version,
             .pNext = null,
         };
+    log.info(@src(), "Creating instance with application name: {s} engine name: {s} api version: {d}.{d}.{d}", .{
+        app_info.pApplicationName,
+        app_info.pEngineName,
+        vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
+        vk.VK_API_VERSION_MINOR(app_info.apiVersion),
+        vk.VK_API_VERSION_PATCH(app_info.apiVersion),
+    });
     const instance_create_info = vk.VkInstanceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = app_info,
