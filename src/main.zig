@@ -87,6 +87,7 @@ pub fn main() !void {
     const parsed_application_info = parsing.parse_application_info(
         tmp_alloc,
         tmp_alloc,
+        &db,
         app_info_json,
     ) catch |err| {
         log.err(
@@ -455,6 +456,7 @@ pub fn replay_samplers(
         const result = parsing.parse_sampler(
             tmp_alloc,
             tmp_alloc,
+            db,
             entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing sampler", .{err});
@@ -488,8 +490,8 @@ pub fn replay_descriptor_sets(
         const result = parsing.parse_descriptor_set_layout(
             tmp_alloc,
             tmp_alloc,
-            entry.payload,
             db,
+            entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing descriptor set layout", .{err});
             log.debug(@src(), "json: {s}", .{entry.payload});
@@ -525,8 +527,8 @@ pub fn replay_pipeline_layouts(
         const result = parsing.parse_pipeline_layout(
             tmp_alloc,
             tmp_alloc,
-            entry.payload,
             db,
+            entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing pipeline layout", .{err});
             log.debug(@src(), "json: {s}", .{entry.payload});
@@ -540,6 +542,7 @@ pub fn replay_pipeline_layouts(
 pub fn replay_shader_modules_chunk(
     thread_arena: *std.heap.ArenaAllocator,
     chunk: []Database.EntryMeta,
+    db: *const Database,
     vk_device: vk.VkDevice,
 ) void {
     const tmp_alloc = thread_arena.allocator();
@@ -550,6 +553,7 @@ pub fn replay_shader_modules_chunk(
         const result = parsing.parse_shader_module(
             tmp_alloc,
             tmp_alloc,
+            db,
             entry.payload,
         ) catch |err| {
             const json_str = std.mem.span(@as([*c]const u8, @ptrCast(entry.payload.ptr)));
@@ -589,13 +593,13 @@ pub fn replay_shader_modules(
         thread_pool.spawnWg(
             wait_group,
             replay_shader_modules_chunk,
-            .{ ta, chunk, vk_device },
+            .{ ta, chunk, db, vk_device },
         );
     }
     thread_pool.spawnWg(
         wait_group,
         replay_shader_modules_chunk,
-        .{ &thread_arenas[0], remaining_shader_modules, vk_device },
+        .{ &thread_arenas[0], remaining_shader_modules, db, vk_device },
     );
     wait_group.wait();
 }
@@ -622,6 +626,7 @@ pub fn replay_render_passes(
         const result = parsing.parse_render_pass(
             tmp_alloc,
             tmp_alloc,
+            db,
             entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing render pass", .{err});
@@ -643,8 +648,8 @@ pub fn replay_graphics_pipeline(
     const result = parsing.parse_graphics_pipeline(
         tmp_alloc,
         tmp_alloc,
-        entry.payload,
         db,
+        entry.payload,
     ) catch |err| {
         if (err != error.NoHandleFound) {
             if (err == error.InvalidJson)
@@ -666,8 +671,8 @@ pub fn replay_graphics_pipeline(
 pub fn replay_graphics_pipeline_chunk(
     thread_arena: *std.heap.ArenaAllocator,
     chunk: []Database.EntryMeta,
-    vk_device: vk.VkDevice,
     db: *const Database,
+    vk_device: vk.VkDevice,
     deferred_queue: *std.ArrayListUnmanaged(*Database.EntryMeta),
     progress: *std.Progress.Node,
 ) void {
@@ -719,7 +724,7 @@ pub fn replay_graphics_pipelines(
             thread_pool.spawnWg(
                 wait_group,
                 replay_graphics_pipeline_chunk,
-                .{ ta, chunk, vk_device, db, dq, progress },
+                .{ ta, chunk, db, vk_device, dq, progress },
             );
         }
         thread_pool.spawnWg(
@@ -728,8 +733,8 @@ pub fn replay_graphics_pipelines(
             .{
                 &thread_arenas[0],
                 remaining_graphics_pipelines,
-                vk_device,
                 db,
+                vk_device,
                 &thread_deferred_queues[0],
                 progress,
             },
@@ -784,8 +789,8 @@ pub fn replay_compute_pipelines(
         const result = parsing.parse_compute_pipeline(
             tmp_alloc,
             tmp_alloc,
-            entry.payload,
             db,
+            entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing compute pipeline", .{err});
             log.debug(@src(), "json: {s}", .{entry.payload});
@@ -818,8 +823,8 @@ pub fn replay_raytracing_pipelines(
         const result = parsing.parse_raytracing_pipeline(
             tmp_alloc,
             tmp_alloc,
-            entry.payload,
             db,
+            entry.payload,
         ) catch |err| {
             log.err(@src(), "Encountered error {} while parsing compute pipeline", .{err});
             log.debug(@src(), "json: {s}", .{entry.payload});
