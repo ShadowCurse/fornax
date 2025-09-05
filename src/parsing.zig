@@ -239,9 +239,14 @@ pub fn parse_simple_type(context: *const Context, output: anytype) anyerror!void
                         @field(output, field.name) = try std.fmt.parseFloat(field.type, v);
                         consumed = true;
                     },
-                    ?*anyopaque => {
-                        if (std.mem.eql(u8, "pNext", field.name))
+                    ?*anyopaque,
+                    ?*const anyopaque,
+                    => {
+                        log.info(@src(), "{s}", .{field.name});
+                        if (std.mem.eql(u8, "pNext", field.name)) {
                             @field(output, field.name) = try parse_pnext_chain(context);
+                            consumed = true;
+                        }
                     },
                     else => {},
                 }
@@ -312,6 +317,7 @@ pub fn parse_physical_device_mesh_shader_features_ext(
     context: *const Context,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
     return parse_simple_type(context, obj);
 }
 
@@ -319,6 +325,7 @@ pub fn parse_physical_device_fragment_shading_rate_features_khr(
     context: *const Context,
     obj: *vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR };
     return parse_simple_type(context, obj);
 }
 
@@ -326,6 +333,9 @@ pub fn parse_descriptor_set_layout_binding_flags_create_info_ext(
     context: *const Context,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
 ) !void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
+    };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "bindingFlags")) {
             const flags = try parse_number_array(u32, context);
@@ -342,6 +352,7 @@ pub fn parse_pipeline_rendering_create_info_khr(
     context: *const Context,
     obj: *vk.VkPipelineRenderingCreateInfo,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
             const v = try scanner_next_number(context.scanner);
@@ -373,6 +384,7 @@ pub fn parse_physical_device_robustness_2_features_khr(
     context: *const Context,
     obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR };
     try parse_simple_type(context, obj);
 }
 
@@ -380,6 +392,7 @@ pub fn parse_physical_device_descriptor_buffer_features_ext(
     context: *const Context,
     obj: *vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
     try parse_simple_type(context, obj);
 }
 
@@ -387,6 +400,9 @@ pub fn parse_pipeline_rasterization_depth_clip_state_create_info_ext(
     context: *const Context,
     obj: *vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT,
 ) !void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+    };
     try parse_simple_type(context, obj);
 }
 
@@ -394,6 +410,7 @@ pub fn parse_pipeline_create_flags_2_create_info(
     context: *const Context,
     obj: *vk.VkPipelineCreateFlags2CreateInfo,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
     try parse_simple_type(context, obj);
 }
 
@@ -401,6 +418,7 @@ pub fn parse_graphics_pipeline_library_create_info_ext(
     context: *const Context,
     obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT };
     try parse_simple_type(context, obj);
 }
 
@@ -408,6 +426,7 @@ pub fn parse_pipeline_vertex_input_divisor_state_create_info(
     context: *const Context,
     obj: *vk.VkPipelineVertexInputDivisorStateCreateInfo,
 ) !void {
+    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO };
     const Inner = struct {
         fn parse_vk_vertex_input_binding_divisor_description(
             c: *const Context,
@@ -440,6 +459,9 @@ pub fn parse_pipeline_shader_stage_required_subgroup_size_create_info(
     context: *const Context,
     obj: *vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
 ) !void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+    };
     try parse_simple_type(context, obj);
 }
 
@@ -455,7 +477,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
             switch (stype) {
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
                     const obj = try c.alloc.create(vk.VkPhysicalDeviceMeshShaderFeaturesEXT);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -465,8 +486,8 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                     try parse_physical_device_mesh_shader_features_ext(c, obj);
                 },
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                    const obj = try c.alloc.create(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
-                    obj.* = .{ .sType = stype };
+                    const obj =
+                        try c.alloc.create(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -476,8 +497,8 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                     try parse_physical_device_fragment_shading_rate_features_khr(c, obj);
                 },
                 vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT => {
-                    const obj = try c.alloc.create(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
-                    obj.* = .{ .sType = stype };
+                    const obj =
+                        try c.alloc.create(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -488,7 +509,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                 },
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR => {
                     const obj = try c.alloc.create(vk.VkPipelineRenderingCreateInfo);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -499,7 +519,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                 },
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR => {
                     const obj = try c.alloc.create(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -509,8 +528,8 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                     try parse_physical_device_robustness_2_features_khr(c, obj);
                 },
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                    const obj = try c.alloc.create(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
-                    obj.* = .{ .sType = stype };
+                    const obj =
+                        try c.alloc.create(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -522,7 +541,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT => {
                     const obj =
                         try c.alloc.create(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -532,9 +550,7 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                     try parse_pipeline_rasterization_depth_clip_state_create_info_ext(c, obj);
                 },
                 vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO => {
-                    const obj =
-                        try c.alloc.create(vk.VkPipelineCreateFlags2CreateInfo);
-                    obj.* = .{ .sType = stype };
+                    const obj = try c.alloc.create(vk.VkPipelineCreateFlags2CreateInfo);
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -546,7 +562,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                 vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT => {
                     const obj =
                         try c.alloc.create(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -558,7 +573,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                 vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO => {
                     const obj =
                         try c.alloc.create(vk.VkPipelineVertexInputDivisorStateCreateInfo);
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -571,7 +585,6 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
                     const obj = try c.alloc.create(
                         vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
                     );
-                    obj.* = .{ .sType = stype };
                     if (first_in_chain.* == null)
                         first_in_chain.* = obj;
                     if (last_pnext_in_chain.*) |lpic| {
@@ -685,17 +698,7 @@ pub fn parse_application_info(
             item: *vk.VkPhysicalDeviceFeatures2,
         ) !void {
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "robustBufferAccess")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.features.robustBufferAccess = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
         }
     };
 
@@ -1744,23 +1747,7 @@ pub fn parse_graphics_pipeline(
         ) !*const vk.VkPipelineInputAssemblyStateCreateInfo {
             const item = try context.alloc.create(vk.VkPipelineInputAssemblyStateCreateInfo);
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else if (std.mem.eql(u8, s, "flags")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.flags = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "topology")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.topology = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "primitiveRestartEnable")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.primitiveRestartEnable = try std.fmt.parseInt(u32, v, 10);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
             return item;
         }
 
@@ -1769,20 +1756,7 @@ pub fn parse_graphics_pipeline(
         ) !*const vk.VkPipelineTessellationStateCreateInfo {
             const item = try context.alloc.create(vk.VkPipelineTessellationStateCreateInfo);
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else if (std.mem.eql(u8, s, "flags")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.flags = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "patchControlPoints")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.patchControlPoints = try std.fmt.parseInt(u32, v, 10);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
             return item;
         }
 
@@ -1832,47 +1806,7 @@ pub fn parse_graphics_pipeline(
         ) !*const vk.VkPipelineRasterizationStateCreateInfo {
             const item = try context.alloc.create(vk.VkPipelineRasterizationStateCreateInfo);
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else if (std.mem.eql(u8, s, "flags")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.flags = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "depthClampEnable")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.depthClampEnable = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "rasterizerDiscardEnable")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.rasterizerDiscardEnable = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "polygonMode")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.polygonMode = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "cullMode")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.cullMode = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "frontFace")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.frontFace = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "depthBiasEnable")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.depthBiasEnable = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "depthBiasConstantFactor")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.depthBiasConstantFactor = try std.fmt.parseFloat(f32, v);
-                } else if (std.mem.eql(u8, s, "depthBiasClamp")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.depthBiasClamp = try std.fmt.parseFloat(f32, v);
-                } else if (std.mem.eql(u8, s, "depthBiasSlopeFactor")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.depthBiasSlopeFactor = try std.fmt.parseFloat(f32, v);
-                } else if (std.mem.eql(u8, s, "lineWidth")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.lineWidth = try std.fmt.parseFloat(f32, v);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
             return item;
         }
 
@@ -3295,29 +3229,7 @@ pub fn parse_raytracing_pipeline(
             item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
         ) !void {
             item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else if (std.mem.eql(u8, s, "type")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.type = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "generalShader")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.generalShader = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "closestHitShader")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.closestHitShader = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "anyHitShader")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.anyHitShader = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "intersectionShader")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.intersectionShader = try std.fmt.parseInt(u32, v, 10);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
         }
 
         fn parse_vk_pipeline_library_create_info(
@@ -3351,20 +3263,7 @@ pub fn parse_raytracing_pipeline(
             item.* = .{
                 .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
             };
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "pNext")) {
-                    item.pNext = try parse_pnext_chain(context);
-                } else if (std.mem.eql(u8, s, "maxPipelineRayPayloadSize")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.maxPipelineRayPayloadSize = try std.fmt.parseInt(u32, v, 10);
-                } else if (std.mem.eql(u8, s, "maxPipelineRayHitAttributeSize")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.maxPipelineRayHitAttributeSize = try std.fmt.parseInt(u32, v, 10);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
+            try parse_simple_type(context, item);
             return item;
         }
 
