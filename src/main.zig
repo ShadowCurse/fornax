@@ -77,8 +77,11 @@ pub fn main() !void {
     var progress = std.Progress.start(.{});
     defer progress.end();
 
+    var progress_root = progress.start("glacier", 0);
+    defer progress_root.end();
+
     const db_path = std.mem.span(args.database_paths.values[0]);
-    const db = try open_database(gpa_alloc, tmp_alloc, &progress, db_path);
+    const db = try open_database(gpa_alloc, tmp_alloc, &progress_root, db_path);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len == 0)
@@ -124,12 +127,12 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    try replay_samplers(&tmp_arena, &progress, &db, vk_device);
-    try replay_descriptor_sets(&tmp_arena, &progress, &db, vk_device);
-    try replay_pipeline_layouts(&tmp_arena, &progress, &db, vk_device);
-    try replay_render_passes(&tmp_arena, &progress, &db, vk_device);
-    try replay_compute_pipelines(&tmp_arena, &progress, &db, vk_device);
-    try replay_raytracing_pipelines(&tmp_arena, &progress, &db, vk_device);
+    try replay_samplers(&tmp_arena, &progress_root, &db, vk_device);
+    try replay_descriptor_sets(&tmp_arena, &progress_root, &db, vk_device);
+    try replay_pipeline_layouts(&tmp_arena, &progress_root, &db, vk_device);
+    try replay_render_passes(&tmp_arena, &progress_root, &db, vk_device);
+    try replay_compute_pipelines(&tmp_arena, &progress_root, &db, vk_device);
+    try replay_raytracing_pipelines(&tmp_arena, &progress_root, &db, vk_device);
 
     var wait_group: std.Thread.WaitGroup = .{};
     var thread_pool: std.Thread.Pool = undefined;
@@ -158,7 +161,7 @@ pub fn main() !void {
         &wait_group,
         &thread_pool,
         thread_arenas,
-        &progress,
+        &progress_root,
         &db,
         vk_device,
     );
@@ -168,7 +171,7 @@ pub fn main() !void {
         &wait_group,
         &thread_pool,
         thread_arenas,
-        &progress,
+        &progress_root,
         &db,
         vk_device,
     );
