@@ -1567,7 +1567,17 @@ fn parse_vk_physical_device_features2(
     item: *vk.VkPhysicalDeviceFeatures2,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-    try parse_simple_type(context, item);
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "robustBufferAccess")) {
+            const v = try scanner_next_number(context.scanner);
+            item.features.robustBufferAccess = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "pNext")) {
+            item.pNext = try parse_pnext_chain(context);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
 }
 
 fn parse_vk_descriptor_set_layout_create_info(
