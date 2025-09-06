@@ -68,51 +68,18 @@ pub fn parse_application_info(
 test "parse_application_info" {
     const json =
         \\{
-        \\  "version": 6,
-        \\  "applicationInfo": {
-        \\    "applicationName": "citadel",
-        \\    "engineName": "Source2",
-        \\    "applicationVersion": 1,
-        \\    "engineVersion": 1,
-        \\    "apiVersion": 4202496
-        \\  },
-        \\  "physicalDeviceFeatures": {
-        \\    "robustBufferAccess": 0,
-        \\    "pNext": [
-        \\      {
-        \\        "sType": 1000328000,
-        \\        "taskShader": 1,
-        \\        "meshShader": 1,
-        \\        "multiviewMeshShader": 1,
-        \\        "primitiveFragmentShadingRateMeshShader": 0,
-        \\        "meshShaderQueries": 1
-        \\      },
-        \\      {
-        \\        "sType": 1000226003,
-        \\        "pipelineFragmentShadingRate": 1,
-        \\        "primitiveFragmentShadingRate": 1,
-        \\        "attachmentFragmentShadingRate": 1
-        \\      }
-        \\    ]
-        \\  }
+        \\  "version": 69,
+        \\  "applicationInfo": {},
+        \\  "physicalDeviceFeatures": {}
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var scratch_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = scratch_arena.allocator();
 
-    const db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_application_info = try parse_application_info(alloc, tmp_alloc, &db, json);
-    vk_print.print_chain(parsed_application_info.application_info);
-    vk_print.print_chain(parsed_application_info.device_features2);
+    const result = try parse_application_info(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
 }
 
 pub const ParsedSampler = struct {
@@ -163,44 +130,20 @@ pub fn parse_sampler(
 test "parse_sampler" {
     const json =
         \\ {
-        \\   "version": 6,
+        \\   "version": 69,
         \\   "samplers": {
-        \\     "88201fb960ff6465": {
-        \\       "flags": 0,
-        \\       "minFilter": 0,
-        \\       "magFilter": 0,
-        \\       "maxAnisotropy": 0,
-        \\       "compareOp": 0,
-        \\       "anisotropyEnable": 0,
-        \\       "mipmapMode": 0,
-        \\       "addressModeU": 0,
-        \\       "addressModeV": 0,
-        \\       "addressModeW": 0,
-        \\       "borderColor": 0,
-        \\       "unnormalizedCoordinates": 0,
-        \\       "compareEnable": 0,
-        \\       "mipLodBias": 0,
-        \\       "minLod": 0,
-        \\       "maxLod": 0
-        \\     }
+        \\     "1111111111111111": {}
         \\   }
         \\ }
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    const db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_sampler = try parse_sampler(alloc, tmp_alloc, &db, json);
-    vk_print.print_struct(parsed_sampler.create_info);
+    const result = try parse_sampler(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedDescriptorSetLayout = struct {
@@ -254,65 +197,20 @@ pub fn parse_descriptor_set_layout(
 test "parse_descriptor_set_layout" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "setLayouts": {
-        \\    "01fe45398ef51d72": {
-        \\      "flags": 2,
-        \\      "bindings": [
-        \\        {
-        \\          "descriptorType": 0,
-        \\          "descriptorCount": 2048,
-        \\          "stageFlags": 16185,
-        \\          "binding": 29
-        \\        },
-        \\        {
-        \\          "descriptorType": 2,
-        \\          "descriptorCount": 65536,
-        \\          "stageFlags": 16185,
-        \\          "binding": 46,
-        \\          "immutableSamplers": [
-        \\            "8c0a0c8a78e29f7c"
-        \\          ]
-        \\        }
-        \\      ],
-        \\      "pNext": [
-        \\        {
-        \\          "sType": 1000161000,
-        \\          "bindingFlags": [
-        \\            5,
-        \\            5
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    var db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
-    try db.entries.getPtr(.SAMPLER).put(alloc, 0x8c0a0c8a78e29f7c, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_descriptro_set_layout = try parse_descriptor_set_layout(
-        alloc,
-        tmp_alloc,
-        &db,
-        json,
-    );
-    vk_print.print_chain(parsed_descriptro_set_layout.create_info);
+    const result = try parse_descriptor_set_layout(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedPipelineLayout = struct {
@@ -365,49 +263,20 @@ pub fn parse_pipeline_layout(
 test "parse_pipeline_layout" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "pipelineLayouts": {
-        \\    "3dc5f23c21306af3": {
-        \\      "flags": 0,
-        \\      "pushConstantRanges": [
-        \\        {
-        \\          "stageFlags": 17,
-        \\          "size": 16,
-        \\          "offset": 0
-        \\        }
-        \\      ],
-        \\      "setLayouts": [
-        \\        "cb32b2cfac4b21ee"
-        \\      ]
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    var db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
-    try db.entries.getPtr(.DESCRIPTOR_SET_LAYOUT).put(alloc, 0xcb32b2cfac4b21ee, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_pipeline_layout = try parse_pipeline_layout(
-        alloc,
-        tmp_alloc,
-        &db,
-        json,
-    );
-    vk_print.print_chain(parsed_pipeline_layout.create_info);
+    const result = try parse_pipeline_layout(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedShaderModule = struct {
@@ -421,67 +290,6 @@ pub fn parse_shader_module(
     database: *const Database,
     payload: []const u8,
 ) !ParsedShaderModule {
-    const Inner = struct {
-        fn parse_vk_shader_module_create_info(
-            context: *const Context,
-            item: *vk.VkShaderModuleCreateInfo,
-            shader_code_payload: []const u8,
-        ) !void {
-            item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-            // NOTE: there is a possibility that the json object does not have
-            // `varintOffset` and `variantSize` fields. In such case the shader code
-            // is inlined in the `code` string. Skip this case for now.
-            var variant_offset: u64 = 0;
-            var variant_size: u64 = 0;
-            while (try scanner_object_next_field(context.scanner)) |s| {
-                if (std.mem.eql(u8, s, "varintOffset")) {
-                    const v = try scanner_next_number(context.scanner);
-                    variant_offset = try std.fmt.parseInt(u64, v, 10);
-                } else if (std.mem.eql(u8, s, "varintSize")) {
-                    const v = try scanner_next_number(context.scanner);
-                    variant_size = try std.fmt.parseInt(u64, v, 10);
-                } else if (std.mem.eql(u8, s, "codeSize")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.codeSize = try std.fmt.parseInt(u64, v, 10);
-                } else if (std.mem.eql(u8, s, "flags")) {
-                    const v = try scanner_next_number(context.scanner);
-                    item.flags = try std.fmt.parseInt(u32, v, 10);
-                } else {
-                    const v = try scanner_next_number_or_string(context.scanner);
-                    log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-                }
-            }
-            if (shader_code_payload.len < variant_offset + variant_size)
-                return error.InvalidShaderPayload;
-            const code = try context.alloc.alignedAlloc(u32, 64, item.codeSize / @sizeOf(u32));
-            if (!decode_shader_payload(
-                shader_code_payload[variant_offset..][0..variant_size],
-                code,
-            ))
-                return error.InvalidShaderPayloadEncoding;
-            item.pCode = @ptrCast(code.ptr);
-        }
-
-        fn decode_shader_payload(input: []const u8, output: []u32) bool {
-            var offset: u64 = 0;
-            for (output) |*out| {
-                out.* = 0;
-                var shift: u32 = 0;
-                while (true) : ({
-                    offset += 1;
-                    shift += 7;
-                }) {
-                    if (input.len < offset or 32 < shift)
-                        return false;
-                    out.* |= @as(u32, @intCast(input[offset] & 0x7f)) << @truncate(shift);
-                    if (input[offset] & 0x80 == 0)
-                        break;
-                }
-                offset += 1;
-            }
-            return offset == input.len;
-        }
-    };
     // For shader modules the payload is divided in to 2 parts: json and code.
     // json part is 0 teriminated.
     const json_str = std.mem.span(@as([*c]const u8, @ptrCast(payload.ptr)));
@@ -514,7 +322,7 @@ pub fn parse_shader_module(
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            try Inner.parse_vk_shader_module_create_info(
+            try parse_vk_shader_module_create_info(
                 &context,
                 vk_shader_module_create_info,
                 shader_code_payload,
@@ -530,32 +338,20 @@ pub fn parse_shader_module(
 test "parse_shader_module" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "shaderModules": {
-        \\    "959dfe0bd6073194": {
-        \\      "varintOffset": 0,
-        \\      "varintSize": 4,
-        \\      "codeSize": 4,
-        \\      "flags": 0
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ++ "\x00\x81\x82\x83\x00";
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    const db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_shader_module = try parse_shader_module(alloc, tmp_alloc, &db, json);
-    vk_print.print_struct(parsed_shader_module.create_info);
+    const result = try parse_shader_module(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedRenderPass = struct {
@@ -605,87 +401,20 @@ pub fn parse_render_pass(
 test "parse_render_pass" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "renderPasses": {
-        \\    "016fdf9b69978eb6": {
-        \\      "flags": 0,
-        \\      "dependencies": [
-        \\        {
-        \\          "dependencyFlags": 0,
-        \\          "dstAccessMask": 384,
-        \\          "srcAccessMask": 0,
-        \\          "dstStageMask": 1024,
-        \\          "srcStageMask": 1024,
-        \\          "dstSubpass": 0,
-        \\          "srcSubpass": 4294967295
-        \\        }
-        \\      ],
-        \\      "attachments": [
-        \\        {
-        \\          "flags": 0,
-        \\          "format": 43,
-        \\          "finalLayout": 1000001002,
-        \\          "initialLayout": 1000001002,
-        \\          "loadOp": 0,
-        \\          "storeOp": 0,
-        \\          "samples": 1,
-        \\          "stencilLoadOp": 0,
-        \\          "stencilStoreOp": 0
-        \\        }
-        \\      ],
-        \\      "subpasses": [
-        \\        {
-        \\          "flags": 0,
-        \\          "pipelineBindPoint": 0,
-        \\          "inputAttachments": [
-        \\            {
-        \\              "attachment": 0,
-        \\              "layout": 2
-        \\            }
-        \\          ],
-        \\          "colorAttachments": [
-        \\            {
-        \\              "attachment": 0,
-        \\              "layout": 2
-        \\            }
-        \\          ],
-        \\          "resolveAttachments": [
-        \\            {
-        \\              "attachment": 0,
-        \\              "layout": 2
-        \\            }
-        \\          ],
-        \\          "depthStencilAttachment": {
-        \\            "attachment": 0,
-        \\            "layout": 2
-        \\          },
-        \\          "preserveAttachments": [
-        \\            {
-        \\              "attachment": 0,
-        \\              "layout": 2
-        \\            }
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    const db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
-    };
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
-    const parsed_render_pass = try parse_render_pass(alloc, tmp_alloc, &db, json);
-    vk_print.print_struct(parsed_render_pass.create_info);
+    const result = try parse_render_pass(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedComputePipeline = struct {
@@ -735,35 +464,14 @@ pub fn parse_compute_pipeline(
 test "parse_compute_pipeline" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "computePipelines": {
-        \\    "1111111111111111": {
-        \\      "flags": 0,
-        \\      "layout": "2222222222222222",
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "stage": {
-        \\        "flags": 0,
-        \\        "stage": 32,
-        \\        "module": "3333333333333333",
-        \\        "name": "MainCs",
-        \\        "pNext": [
-        \\          {
-        \\            "sType": 1000225001,
-        \\            "requiredSubgroupSize": 32
-        \\          }
-        \\        ]
-        \\      }
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
     var db: Database = .{
         .file_mem = &.{},
@@ -775,14 +483,10 @@ test "parse_compute_pipeline" {
         .payload = undefined,
         .handle = @ptrFromInt(0x69),
     });
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x3333333333333333, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
 
-    const parsed_compute_pipeline = try parse_compute_pipeline(alloc, tmp_alloc, &db, json);
-    vk_print.print_struct(parsed_compute_pipeline.create_info);
+    const result = try parse_compute_pipeline(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 pub const ParsedRaytracingPipeline = struct {
@@ -829,54 +533,14 @@ pub fn parse_raytracing_pipeline(
 test "parse_raytracing_pipeline" {
     const json =
         \\{
-        \\  "version": 6,
+        \\  "version": 69,
         \\  "raytracingPipelines": {
-        \\    "1111111111111111": {
-        \\      "flags": 0,
-        \\      "layout": "2222222222222222",
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "maxPipelineRayRecursionDepth": 1,
-        \\      "stages": [
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "RayGen",
-        \\          "module": "3333333333333333",
-        \\          "stage": 256
-        \\        },
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "AnyHit1",
-        \\          "module": "4444444444444444",
-        \\          "stage": 512
-        \\        }
-        \\      ],
-        \\      "groups": [
-        \\        {
-        \\          "anyHitShader": 4294967295,
-        \\          "intersectionShader": 4294967295,
-        \\          "generalShader": 0,
-        \\          "closestHitShader": 4294967295,
-        \\          "type": 0
-        \\        },
-        \\        {
-        \\          "anyHitShader": 6,
-        \\          "intersectionShader": 4294967295,
-        \\          "generalShader": 4294967295,
-        \\          "closestHitShader": 4294967295,
-        \\          "type": 1
-        \\        }
-        \\      ]
-        \\    }
+        \\    "1111111111111111": {}
         \\  }
         \\}
     ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
     var db: Database = .{
         .file_mem = &.{},
@@ -888,19 +552,77 @@ test "parse_raytracing_pipeline" {
         .payload = undefined,
         .handle = @ptrFromInt(0x69),
     });
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x3333333333333333, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x4444444444444444, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
 
-    const parsed_raytracing_pipeline = try parse_raytracing_pipeline(alloc, tmp_alloc, &db, json);
-    vk_print.print_struct(parsed_raytracing_pipeline.create_info);
+    const result = try parse_raytracing_pipeline(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+}
+
+pub const ParsedGraphicsPipeline = struct {
+    version: u32,
+    hash: u64,
+    create_info: *const vk.VkGraphicsPipelineCreateInfo,
+};
+pub fn parse_graphics_pipeline(
+    alloc: Allocator,
+    tmp_alloc: Allocator,
+    database: *const Database,
+    json_str: []const u8,
+) !ParsedGraphicsPipeline {
+    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
+
+    var result: ParsedGraphicsPipeline = .{
+        .version = 0,
+        .hash = 0,
+        .create_info = vk_graphics_pipeline_create_info,
+    };
+
+    const context: Context = .{
+        .alloc = alloc,
+        .tmp_alloc = tmp_alloc,
+        .scanner = &scanner,
+        .db = database,
+    };
+
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "version")) {
+            const v = try scanner_next_number(context.scanner);
+            result.version = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "graphicsPipelines")) {
+            try scanner_object_begin(context.scanner);
+            const ss = try scanner_next_string(context.scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            try parse_vk_graphics_pipeline_create_info(
+                &context,
+                vk_graphics_pipeline_create_info,
+            );
+        }
+    }
+    return result;
+}
+
+test "parse_graphics_pipeline" {
+    const json =
+        \\{
+        \\  "version": 69,
+        \\  "graphicsPipelines": {
+        \\    "1111111111111111": {}
+        \\  }
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{
+        .file_mem = &.{},
+        .entries = .initFill(.empty),
+        .arena = arena,
+    };
+
+    const result = try parse_graphics_pipeline(alloc, alloc, &db, json);
+    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
 fn print_unexpected_token(token: std.json.Token) void {
@@ -1144,10 +866,7 @@ pub fn parse_simple_type(context: *const Context, output: anytype) anyerror!void
     }
 }
 
-fn parse_number_array(
-    comptime T: type,
-    context: *const Context,
-) ![]T {
+fn parse_number_array(comptime T: type, context: *const Context) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_number(context.scanner)) |v| {
@@ -1157,11 +876,7 @@ fn parse_number_array(
     return try context.alloc.dupe(T, tmp.items);
 }
 
-fn parse_handle_array(
-    comptime T: type,
-    tag: Database.Entry.Tag,
-    context: *const Context,
-) ![]T {
+fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *const Context) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_string(context.scanner)) |hash_str| {
@@ -1562,6 +1277,40 @@ fn parse_vk_application_info(
     }
 }
 
+test "test_parse_vk_application_info" {
+    const json =
+        \\{
+        \\  "applicationName": "APP_NAME",
+        \\  "engineName": "ENGINE_NAME",
+        \\  "applicationVersion": 69,
+        \\  "engineVersion": 69,
+        \\  "apiVersion": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkApplicationInfo = undefined;
+    try parse_vk_application_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_APPLICATION_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqualSlices(u8, std.mem.span(item.pApplicationName), "APP_NAME");
+    try std.testing.expectEqual(item.applicationVersion, 69);
+    try std.testing.expectEqualSlices(u8, std.mem.span(item.pEngineName), "ENGINE_NAME");
+    try std.testing.expectEqual(item.engineVersion, 69);
+    try std.testing.expectEqual(item.apiVersion, 69);
+}
+
 fn parse_vk_physical_device_features2(
     context: *const Context,
     item: *vk.VkPhysicalDeviceFeatures2,
@@ -1578,6 +1327,98 @@ fn parse_vk_physical_device_features2(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+}
+
+test "test_parse_vk_physical_device_features2" {
+    const json =
+        \\{
+        \\  "robustBufferAccess": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPhysicalDeviceFeatures2 = undefined;
+    try parse_vk_physical_device_features2(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.features, vk.VkPhysicalDeviceFeatures{
+        .robustBufferAccess = 69,
+    });
+}
+
+fn parse_vk_sampler_create_info(
+    context: *const Context,
+    item: *vk.VkSamplerCreateInfo,
+) !void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+    try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_sampler_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "minFilter": 69,
+        \\  "magFilter": 69,
+        \\  "maxAnisotropy": 69,
+        \\  "compareOp": 69,
+        \\  "anisotropyEnable": 69,
+        \\  "mipmapMode": 69,
+        \\  "addressModeU": 69,
+        \\  "addressModeV": 69,
+        \\  "addressModeW": 69,
+        \\  "borderColor": 69,
+        \\  "unnormalizedCoordinates": 69,
+        \\  "compareEnable": 69,
+        \\  "mipLodBias": 69,
+        \\  "minLod": 69,
+        \\  "maxLod": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSamplerCreateInfo = undefined;
+    try parse_vk_sampler_create_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.magFilter, 69);
+    try std.testing.expectEqual(item.minFilter, 69);
+    try std.testing.expectEqual(item.mipmapMode, 69);
+    try std.testing.expectEqual(item.addressModeU, 69);
+    try std.testing.expectEqual(item.addressModeV, 69);
+    try std.testing.expectEqual(item.addressModeW, 69);
+    try std.testing.expectEqual(item.mipLodBias, 69);
+    try std.testing.expectEqual(item.anisotropyEnable, 69);
+    try std.testing.expectEqual(item.maxAnisotropy, 69);
+    try std.testing.expectEqual(item.compareEnable, 69);
+    try std.testing.expectEqual(item.compareOp, 69);
+    try std.testing.expectEqual(item.minLod, 69);
+    try std.testing.expectEqual(item.maxLod, 69);
+    try std.testing.expectEqual(item.borderColor, 69);
+    try std.testing.expectEqual(item.unnormalizedCoordinates, 69);
 }
 
 fn parse_vk_descriptor_set_layout_create_info(
@@ -1604,6 +1445,38 @@ fn parse_vk_descriptor_set_layout_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+}
+
+test "test_parse_vk_descriptor_set_layout_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "bindings": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkDescriptorSetLayoutCreateInfo = undefined;
+    try parse_vk_descriptor_set_layout_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.bindingCount, 1);
+    try std.testing.expect(item.pBindings != null);
 }
 
 fn parse_vk_descriptor_set_layout_binding(
@@ -1635,6 +1508,46 @@ fn parse_vk_descriptor_set_layout_binding(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+}
+
+test "test_parse_vk_descriptor_set_layout_binding" {
+    const json =
+        \\{
+        \\  "descriptorType": 69,
+        \\  "descriptorCount": 69,
+        \\  "stageFlags": 69,
+        \\  "binding": 69,
+        \\  "immutableSamplers": [
+        \\    "1111111111111111"
+        \\  ]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.SAMPLER).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkDescriptorSetLayoutBinding = undefined;
+    try parse_vk_descriptor_set_layout_binding(&context, &item);
+
+    try std.testing.expectEqual(item.binding, 69);
+    try std.testing.expectEqual(item.descriptorType, 69);
+    try std.testing.expectEqual(item.descriptorCount, 69);
+    try std.testing.expectEqual(item.stageFlags, 69);
+    try std.testing.expect(item.pImmutableSamplers != null);
 }
 
 fn parse_vk_pipeline_layout_create_info(
@@ -1669,11 +1582,174 @@ fn parse_vk_pipeline_layout_create_info(
     }
 }
 
+test "test_parse_vk_pipeline_layout_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "setLayouts": [
+        \\    "1111111111111111"
+        \\  ],
+        \\  "pushConstantRanges": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.DESCRIPTOR_SET_LAYOUT).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineLayoutCreateInfo = undefined;
+    try parse_vk_pipeline_layout_create_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.setLayoutCount, 1);
+    try std.testing.expect(item.pSetLayouts != null);
+    try std.testing.expectEqual(item.pushConstantRangeCount, 1);
+    try std.testing.expect(item.pPushConstantRanges != null);
+}
+
 fn parse_vk_push_constant_range(
     context: *const Context,
     item: *vk.VkPushConstantRange,
 ) !void {
     try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_push_constant_range" {
+    const json =
+        \\{
+        \\  "stageFlags": 69,
+        \\  "size": 69,
+        \\  "offset": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPushConstantRange = undefined;
+    try parse_vk_push_constant_range(&context, &item);
+
+    try std.testing.expectEqual(item.stageFlags, 69);
+    try std.testing.expectEqual(item.offset, 69);
+    try std.testing.expectEqual(item.size, 69);
+}
+
+fn parse_vk_shader_module_create_info(
+    context: *const Context,
+    item: *vk.VkShaderModuleCreateInfo,
+    shader_code_payload: []const u8,
+) !void {
+    const Inner = struct {
+        fn decode_shader_payload(input: []const u8, output: []u32) bool {
+            var offset: u64 = 0;
+            for (output) |*out| {
+                out.* = 0;
+                var shift: u32 = 0;
+                while (true) : ({
+                    offset += 1;
+                    shift += 7;
+                }) {
+                    if (input.len < offset or 32 < shift)
+                        return false;
+                    out.* |= @as(u32, @intCast(input[offset] & 0x7f)) << @truncate(shift);
+                    if (input[offset] & 0x80 == 0)
+                        break;
+                }
+                offset += 1;
+            }
+            return offset == input.len;
+        }
+    };
+
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+    // NOTE: there is a possibility that the json object does not have
+    // `varintOffset` and `variantSize` fields. In such case the shader code
+    // is inlined in the `code` string. Skip this case for now.
+    var variant_offset: u64 = 0;
+    var variant_size: u64 = 0;
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "varintOffset")) {
+            const v = try scanner_next_number(context.scanner);
+            variant_offset = try std.fmt.parseInt(u64, v, 10);
+        } else if (std.mem.eql(u8, s, "varintSize")) {
+            const v = try scanner_next_number(context.scanner);
+            variant_size = try std.fmt.parseInt(u64, v, 10);
+        } else if (std.mem.eql(u8, s, "codeSize")) {
+            const v = try scanner_next_number(context.scanner);
+            item.codeSize = try std.fmt.parseInt(u64, v, 10);
+        } else if (std.mem.eql(u8, s, "flags")) {
+            const v = try scanner_next_number(context.scanner);
+            item.flags = try std.fmt.parseInt(u32, v, 10);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+    if (shader_code_payload.len < variant_offset + variant_size)
+        return error.InvalidShaderPayload;
+    const code = try context.alloc.alignedAlloc(u32, 64, item.codeSize / @sizeOf(u32));
+    if (!Inner.decode_shader_payload(
+        shader_code_payload[variant_offset..][0..variant_size],
+        code,
+    ))
+        return error.InvalidShaderPayloadEncoding;
+    item.pCode = @ptrCast(code.ptr);
+}
+
+test "test_parse_vk_shader_module_create_info" {
+    const json =
+        \\{
+        \\  "varintOffset": 0,
+        \\  "varintSize": 0,
+        \\  "codeSize": 1,
+        \\  "flags": 69
+        \\}
+    ;
+    const code = "\x00\x81\x82\x83\x00";
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkShaderModuleCreateInfo = undefined;
+    try parse_vk_shader_module_create_info(&context, &item, code);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.codeSize, 1);
+    try std.testing.expect(item.pCode != null);
 }
 
 fn parse_vk_render_pass_create_info(
@@ -1716,6 +1792,41 @@ fn parse_vk_render_pass_create_info(
     }
 }
 
+test "test_parse_vk_render_pass_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "dependencies": [{}],
+        \\  "attachments": [{}],
+        \\  "subpasses": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRenderPassCreateInfo = undefined;
+    try parse_vk_render_pass_create_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.attachmentCount, 1);
+    try std.testing.expect(item.pAttachments != null);
+    try std.testing.expectEqual(item.subpassCount, 1);
+    try std.testing.expect(item.pSubpasses != null);
+    try std.testing.expectEqual(item.dependencyCount, 1);
+    try std.testing.expect(item.pDependencies != null);
+}
+
 fn parse_vk_subpass_dependency(
     context: *const Context,
     item: *vk.VkSubpassDependency,
@@ -1723,11 +1834,87 @@ fn parse_vk_subpass_dependency(
     try parse_simple_type(context, item);
 }
 
+test "test_parse_vk_subpass_dependency" {
+    const json =
+        \\{
+        \\  "dependencyFlags": 69,
+        \\  "dstAccessMask": 69,
+        \\  "srcAccessMask": 69,
+        \\  "dstStageMask": 69,
+        \\  "srcStageMask": 69,
+        \\  "dstSubpass": 69,
+        \\  "srcSubpass": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSubpassDependency = undefined;
+    try parse_vk_subpass_dependency(&context, &item);
+
+    try std.testing.expectEqual(item.srcSubpass, 69);
+    try std.testing.expectEqual(item.dstSubpass, 69);
+    try std.testing.expectEqual(item.srcStageMask, 69);
+    try std.testing.expectEqual(item.dstStageMask, 69);
+    try std.testing.expectEqual(item.srcAccessMask, 69);
+    try std.testing.expectEqual(item.dstAccessMask, 69);
+    try std.testing.expectEqual(item.dependencyFlags, 69);
+}
+
 fn parse_vk_attachment_description(
     context: *const Context,
     item: *vk.VkAttachmentDescription,
 ) !void {
     try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_attachment_description" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "format": 69,
+        \\  "finalLayout": 69,
+        \\  "initialLayout": 69,
+        \\  "loadOp": 69,
+        \\  "storeOp": 69,
+        \\  "samples": 69,
+        \\  "stencilLoadOp": 69,
+        \\  "stencilStoreOp": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkAttachmentDescription = undefined;
+    try parse_vk_attachment_description(&context, &item);
+
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.format, 69);
+    try std.testing.expectEqual(item.samples, 69);
+    try std.testing.expectEqual(item.loadOp, 69);
+    try std.testing.expectEqual(item.storeOp, 69);
+    try std.testing.expectEqual(item.stencilLoadOp, 69);
+    try std.testing.expectEqual(item.stencilStoreOp, 69);
+    try std.testing.expectEqual(item.initialLayout, 69);
+    try std.testing.expectEqual(item.finalLayout, 69);
 }
 
 fn parse_vk_subpass_description(
@@ -1783,6 +1970,45 @@ fn parse_vk_subpass_description(
     }
 }
 
+test "test_parse_vk_subpass_description" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "pipelineBindPoint": 69,
+        \\  "inputAttachments": [{}],
+        \\  "colorAttachments": [{}],
+        \\  "resolveAttachments": [{}],
+        \\  "depthStencilAttachment": {},
+        \\  "preserveAttachments": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSubpassDescription = undefined;
+    try parse_vk_subpass_description(&context, &item);
+
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.pipelineBindPoint, 69);
+    try std.testing.expectEqual(item.inputAttachmentCount, 1);
+    try std.testing.expect(item.pInputAttachments != null);
+    try std.testing.expectEqual(item.colorAttachmentCount, 1);
+    try std.testing.expect(item.pColorAttachments != null);
+    try std.testing.expect(item.pResolveAttachments != null);
+    try std.testing.expect(item.pDepthStencilAttachment != null);
+    try std.testing.expectEqual(item.preserveAttachmentCount, 1);
+    try std.testing.expect(item.pPreserveAttachments != null);
+}
+
 fn parse_vk_attachment_reference(
     context: *const Context,
     item: *vk.VkAttachmentReference,
@@ -1790,877 +2016,30 @@ fn parse_vk_attachment_reference(
     try parse_simple_type(context, item);
 }
 
-pub const ParsedGraphicsPipeline = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkGraphicsPipelineCreateInfo,
-};
-pub fn parse_graphics_pipeline(
-    alloc: Allocator,
-    tmp_alloc: Allocator,
-    database: *const Database,
-    json_str: []const u8,
-) !ParsedGraphicsPipeline {
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
-
-    var result: ParsedGraphicsPipeline = .{
-        .version = 0,
-        .hash = 0,
-        .create_info = vk_graphics_pipeline_create_info,
-    };
-
-    const context: Context = .{
-        .alloc = alloc,
-        .tmp_alloc = tmp_alloc,
-        .scanner = &scanner,
-        .db = database,
-    };
-
-    while (try scanner_object_next_field(context.scanner)) |s| {
-        if (std.mem.eql(u8, s, "version")) {
-            const v = try scanner_next_number(context.scanner);
-            result.version = try std.fmt.parseInt(u32, v, 10);
-        } else if (std.mem.eql(u8, s, "graphicsPipelines")) {
-            try scanner_object_begin(context.scanner);
-            const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
-            try parse_vk_graphics_pipeline_create_info(
-                &context,
-                vk_graphics_pipeline_create_info,
-            );
-        }
-    }
-    return result;
-}
-
-test "parse_graphics_pipeline" {
+test "test_parse_vk_attachment_reference" {
     const json =
         \\{
-        \\  "version": 6,
-        \\  "graphicsPipelines": {
-        \\    "ef491d980afbddf7": {
-        \\      "flags": 0,
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "layout": "3dc5f23c21306af3",
-        \\      "renderPass": "0000000000000000",
-        \\      "subpass": 0,
-        \\      "dynamicState": {
-        \\        "flags": 0,
-        \\        "dynamicState": [
-        \\          0,
-        \\          1
-        \\        ]
-        \\      },
-        \\      "multisampleState": {
-        \\        "flags": 0,
-        \\        "rasterizationSamples": 1,
-        \\        "sampleShadingEnable": 0,
-        \\        "minSampleShading": 1,
-        \\        "alphaToOneEnable": 0,
-        \\        "alphaToCoverageEnable": 0
-        \\      },
-        \\      "vertexInputState": {
-        \\        "flags": 0,
-        \\        "attributes": [],
-        \\        "bindings": []
-        \\      },
-        \\      "rasterizationState": {
-        \\        "flags": 0,
-        \\        "depthBiasConstantFactor": 0,
-        \\        "depthBiasSlopeFactor": 0,
-        \\        "depthBiasClamp": 0,
-        \\        "depthBiasEnable": 0,
-        \\        "depthClampEnable": 0,
-        \\        "polygonMode": 0,
-        \\        "rasterizerDiscardEnable": 0,
-        \\        "frontFace": 1,
-        \\        "lineWidth": 1,
-        \\        "cullMode": 0
-        \\      },
-        \\      "inputAssemblyState": {
-        \\        "flags": 0,
-        \\        "topology": 3,
-        \\        "primitiveRestartEnable": 0
-        \\      },
-        \\      "colorBlendState": {
-        \\        "flags": 0,
-        \\        "logicOp": 3,
-        \\        "logicOpEnable": 0,
-        \\        "blendConstants": [
-        \\          0,
-        \\          0,
-        \\          0,
-        \\          0
-        \\        ],
-        \\        "attachments": [
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 1,
-        \\            "dstColorBlendFactor": 7,
-        \\            "srcColorBlendFactor": 6,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 1
-        \\          }
-        \\        ]
-        \\      },
-        \\      "viewportState": {
-        \\        "flags": 0,
-        \\        "viewportCount": 1,
-        \\        "scissorCount": 1
-        \\      },
-        \\      "depthStencilState": {
-        \\        "flags": 0,
-        \\        "stencilTestEnable": 0,
-        \\        "maxDepthBounds": 1,
-        \\        "minDepthBounds": 0,
-        \\        "depthBoundsTestEnable": 0,
-        \\        "depthWriteEnable": 1,
-        \\        "depthTestEnable": 1,
-        \\        "depthCompareOp": 6,
-        \\        "front": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        },
-        \\        "back": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        }
-        \\      },
-        \\      "stages": [
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "959dfe0bd6073194",
-        \\          "stage": 1
-        \\        },
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "0925def2d6ede3d9",
-        \\          "stage": 16
-        \\        }
-        \\      ],
-        \\      "pNext": [
-        \\        {
-        \\          "sType": 1000044002,
-        \\          "depthAttachmentFormat": 126,
-        \\          "stencilAttachmentFormat": 0,
-        \\          "viewMask": 0,
-        \\          "colorAttachmentFormats": [
-        \\            44
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
+        \\  "attachment": 69,
+        \\  "layout": 69
         \\}
     ;
-    const json2 =
-        \\{
-        \\  "version": 6,
-        \\  "graphicsPipelines": {
-        \\    "b1aa504c3071b068": {
-        \\      "flags": 0,
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "layout": "3dc5f23c21306af3",
-        \\      "renderPass": "0000000000000000",
-        \\      "subpass": 0,
-        \\      "dynamicState": {
-        \\        "flags": 0,
-        \\        "dynamicState": [
-        \\          1000267003,
-        \\          1000267004,
-        \\          3,
-        \\          1000377002,
-        \\          1000267000,
-        \\          1000267001,
-        \\          1000267005,
-        \\          5,
-        \\          1000267009,
-        \\          1000267006,
-        \\          1000267008,
-        \\          1000267007,
-        \\          1000267010,
-        \\          1000267011,
-        \\          6,
-        \\          8,
-        \\          7
-        \\        ]
-        \\      },
-        \\      "multisampleState": {
-        \\        "flags": 0,
-        \\        "rasterizationSamples": 1,
-        \\        "sampleShadingEnable": 0,
-        \\        "minSampleShading": 0,
-        \\        "alphaToOneEnable": 0,
-        \\        "alphaToCoverageEnable": 0,
-        \\        "sampleMask": [
-        \\          1
-        \\        ]
-        \\      },
-        \\      "vertexInputState": {
-        \\        "flags": 0,
-        \\        "attributes": [
-        \\          {
-        \\            "location": 0,
-        \\            "binding": 0,
-        \\            "offset": 0,
-        \\            "format": 106
-        \\          },
-        \\          {
-        \\            "location": 1,
-        \\            "binding": 0,
-        \\            "offset": 12,
-        \\            "format": 103
-        \\          }
-        \\        ],
-        \\        "bindings": [
-        \\          {
-        \\            "binding": 0,
-        \\            "stride": 0,
-        \\            "inputRate": 0
-        \\          }
-        \\        ]
-        \\      },
-        \\      "rasterizationState": {
-        \\        "flags": 0,
-        \\        "depthBiasConstantFactor": 0,
-        \\        "depthBiasSlopeFactor": 0,
-        \\        "depthBiasClamp": 0,
-        \\        "depthBiasEnable": 0,
-        \\        "depthClampEnable": 1,
-        \\        "polygonMode": 0,
-        \\        "rasterizerDiscardEnable": 0,
-        \\        "frontFace": 0,
-        \\        "lineWidth": 1,
-        \\        "cullMode": 0,
-        \\        "pNext": [
-        \\          {
-        \\            "sType": 1000102001,
-        \\            "flags": 0,
-        \\            "depthClipEnable": 1
-        \\          }
-        \\        ]
-        \\      },
-        \\      "inputAssemblyState": {
-        \\        "flags": 0,
-        \\        "topology": 3,
-        \\        "primitiveRestartEnable": 0
-        \\      },
-        \\      "colorBlendState": {
-        \\        "flags": 0,
-        \\        "logicOp": 5,
-        \\        "logicOpEnable": 0,
-        \\        "blendConstants": [
-        \\          0,
-        \\          0,
-        \\          0,
-        \\          0
-        \\        ],
-        \\        "attachments": [
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 0,
-        \\            "dstColorBlendFactor": 0,
-        \\            "srcColorBlendFactor": 0,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 0
-        \\          }
-        \\        ]
-        \\      },
-        \\      "viewportState": {
-        \\        "flags": 0,
-        \\        "viewportCount": 0,
-        \\        "scissorCount": 0
-        \\      },
-        \\      "depthStencilState": {
-        \\        "flags": 0,
-        \\        "stencilTestEnable": 0,
-        \\        "maxDepthBounds": 0,
-        \\        "minDepthBounds": 0,
-        \\        "depthBoundsTestEnable": 0,
-        \\        "depthWriteEnable": 0,
-        \\        "depthTestEnable": 0,
-        \\        "depthCompareOp": 0,
-        \\        "front": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        },
-        \\        "back": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        }
-        \\      },
-        \\      "stages": [
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "959dfe0bd6073194",
-        \\          "stage": 1,
-        \\          "specializationInfo": {
-        \\            "dataSize": 0,
-        \\            "data": "",
-        \\            "mapEntries": []
-        \\          },
-        \\          "pNext": []
-        \\        },
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "0925def2d6ede3d9",
-        \\          "stage": 16,
-        \\          "specializationInfo": {
-        \\            "dataSize": 0,
-        \\            "data": "",
-        \\            "mapEntries": []
-        \\          },
-        \\          "pNext": []
-        \\        }
-        \\      ],
-        \\      "pNext": [
-        \\        {
-        \\          "sType": 1000470005,
-        \\          "flags": 536870912
-        \\        },
-        \\        {
-        \\          "sType": 1000044002,
-        \\          "depthAttachmentFormat": 130,
-        \\          "stencilAttachmentFormat": 130,
-        \\          "viewMask": 0,
-        \\          "colorAttachmentFormats": [
-        \\            44
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
-        \\}
-    ;
-    const json3 =
-        \\{
-        \\  "version": 6,
-        \\  "graphicsPipelines": {
-        \\    "f788d44a6e5f90b4": {
-        \\      "flags": 0,
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "layout": "3dc5f23c21306af3",
-        \\      "renderPass": "0000000000000000",
-        \\      "subpass": 0,
-        \\      "stages": [],
-        \\      "pNext": [
-        \\        {
-        \\          "libraries": [
-        \\            "e40eadc1c688bcd1",
-        \\            "7e6f6e93e12a347a",
-        \\            "783d1bfbdea0a5e5",
-        \\            "d9a809bf95365f4e"
-        \\          ],
-        \\          "sType": 1000290000
-        \\        },
-        \\        {
-        \\          "sType": 1000470005,
-        \\          "flags": 536870912
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
-        \\}
-    ;
-    const json4 =
-        \\{
-        \\  "version": 6,
-        \\  "graphicsPipelines": {
-        \\    "4c9ce69365646b90": {
-        \\      "flags": 0,
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "layout": "3dc5f23c21306af3",
-        \\      "renderPass": "3729eda857eaa8ec",
-        \\      "subpass": 0,
-        \\      "multisampleState": {
-        \\        "flags": 0,
-        \\        "rasterizationSamples": 1,
-        \\        "sampleShadingEnable": 0,
-        \\        "minSampleShading": 0,
-        \\        "alphaToOneEnable": 0,
-        \\        "alphaToCoverageEnable": 0
-        \\      },
-        \\      "vertexInputState": {
-        \\        "flags": 0,
-        \\        "attributes": [
-        \\          {
-        \\            "location": 0,
-        \\            "binding": 0,
-        \\            "offset": 0,
-        \\            "format": 106
-        \\          },
-        \\          {
-        \\            "location": 1,
-        \\            "binding": 0,
-        \\            "offset": 12,
-        \\            "format": 103
-        \\          },
-        \\          {
-        \\            "location": 2,
-        \\            "binding": 0,
-        \\            "offset": 20,
-        \\            "format": 109
-        \\          }
-        \\        ],
-        \\        "bindings": [
-        \\          {
-        \\            "binding": 0,
-        \\            "stride": 36,
-        \\            "inputRate": 0
-        \\          }
-        \\        ]
-        \\      },
-        \\      "rasterizationState": {
-        \\        "flags": 0,
-        \\        "depthBiasConstantFactor": 0,
-        \\        "depthBiasSlopeFactor": 0,
-        \\        "depthBiasClamp": 0,
-        \\        "depthBiasEnable": 0,
-        \\        "depthClampEnable": 0,
-        \\        "polygonMode": 0,
-        \\        "rasterizerDiscardEnable": 0,
-        \\        "frontFace": 0,
-        \\        "lineWidth": 1,
-        \\        "cullMode": 0
-        \\      },
-        \\      "inputAssemblyState": {
-        \\        "flags": 0,
-        \\        "topology": 3,
-        \\        "primitiveRestartEnable": 0
-        \\      },
-        \\      "colorBlendState": {
-        \\        "flags": 0,
-        \\        "logicOp": 0,
-        \\        "logicOpEnable": 0,
-        \\        "blendConstants": [
-        \\          0,
-        \\          0,
-        \\          0,
-        \\          0
-        \\        ],
-        \\        "attachments": [
-        \\          {
-        \\            "dstAlphaBlendFactor": 1,
-        \\            "srcAlphaBlendFactor": 1,
-        \\            "dstColorBlendFactor": 7,
-        \\            "srcColorBlendFactor": 6,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 1
-        \\          }
-        \\        ]
-        \\      },
-        \\      "viewportState": {
-        \\        "flags": 0,
-        \\        "viewportCount": 1,
-        \\        "scissorCount": 1,
-        \\        "viewports": [
-        \\          {
-        \\            "x": 0,
-        \\            "y": 0,
-        \\            "width": 1834,
-        \\            "height": 786,
-        \\            "minDepth": 0,
-        \\            "maxDepth": 1
-        \\          }
-        \\        ],
-        \\        "scissors": [
-        \\          {
-        \\            "x": 0,
-        \\            "y": 0,
-        \\            "width": 1834,
-        \\            "height": 786
-        \\          }
-        \\        ]
-        \\      },
-        \\      "stages": [
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "959dfe0bd6073194",
-        \\          "stage": 1
-        \\        },
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "0925def2d6ede3d9",
-        \\          "stage": 16
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
-        \\}
-    ;
-    const json5 =
-        \\{
-        \\  "version": 6,
-        \\  "graphicsPipelines": {
-        \\    "f79b7f77abaeb668": {
-        \\      "flags": 0,
-        \\      "basePipelineHandle": "0000000000000000",
-        \\      "basePipelineIndex": -1,
-        \\      "layout": "3dc5f23c21306af3",
-        \\      "renderPass": "0000000000000000",
-        \\      "subpass": 0,
-        \\      "dynamicState": {
-        \\        "flags": 0,
-        \\        "dynamicState": [
-        \\          1000267003,
-        \\          1000267004,
-        \\          3,
-        \\          1000377002,
-        \\          1000267000,
-        \\          1000267001,
-        \\          1000267005,
-        \\          5,
-        \\          1000267009,
-        \\          1000267006,
-        \\          1000267008,
-        \\          1000267007
-        \\        ]
-        \\      },
-        \\      "multisampleState": {
-        \\        "flags": 0,
-        \\        "rasterizationSamples": 1,
-        \\        "sampleShadingEnable": 0,
-        \\        "minSampleShading": 0,
-        \\        "alphaToOneEnable": 0,
-        \\        "alphaToCoverageEnable": 0,
-        \\        "sampleMask": [
-        \\          1
-        \\        ]
-        \\      },
-        \\      "vertexInputState": {
-        \\        "flags": 0,
-        \\        "attributes": [
-        \\          {
-        \\            "location": 0,
-        \\            "binding": 0,
-        \\            "offset": 0,
-        \\            "format": 106
-        \\          },
-        \\          {
-        \\            "location": 1,
-        \\            "binding": 1,
-        \\            "offset": 0,
-        \\            "format": 78
-        \\          },
-        \\          {
-        \\            "location": 2,
-        \\            "binding": 1,
-        \\            "offset": 4,
-        \\            "format": 78
-        \\          },
-        \\          {
-        \\            "location": 3,
-        \\            "binding": 1,
-        \\            "offset": 8,
-        \\            "format": 98
-        \\          },
-        \\          {
-        \\            "location": 4,
-        \\            "binding": 1,
-        \\            "offset": 12,
-        \\            "format": 37
-        \\          },
-        \\          {
-        \\            "location": 7,
-        \\            "binding": 2,
-        \\            "offset": 0,
-        \\            "format": 98
-        \\          },
-        \\          {
-        \\            "location": 5,
-        \\            "binding": 3,
-        \\            "offset": 0,
-        \\            "format": 109
-        \\          },
-        \\          {
-        \\            "location": 6,
-        \\            "binding": 3,
-        \\            "offset": 16,
-        \\            "format": 107
-        \\          }
-        \\        ],
-        \\        "bindings": [
-        \\          {
-        \\            "binding": 0,
-        \\            "stride": 0,
-        \\            "inputRate": 0
-        \\          },
-        \\          {
-        \\            "binding": 1,
-        \\            "stride": 0,
-        \\            "inputRate": 0
-        \\          },
-        \\          {
-        \\            "binding": 2,
-        \\            "stride": 0,
-        \\            "inputRate": 1
-        \\          },
-        \\          {
-        \\            "binding": 3,
-        \\            "stride": 0,
-        \\            "inputRate": 1
-        \\          }
-        \\        ],
-        \\        "pNext": [
-        \\          {
-        \\            "sType": 1000190001,
-        \\            "vertexBindingDivisorCount": 1,
-        \\            "vertexBindingDivisors": [
-        \\              {
-        \\                "binding": 3,
-        \\                "divisor": 0
-        \\              }
-        \\            ]
-        \\          }
-        \\        ]
-        \\      },
-        \\      "rasterizationState": {
-        \\        "flags": 0,
-        \\        "depthBiasConstantFactor": 0,
-        \\        "depthBiasSlopeFactor": 0,
-        \\        "depthBiasClamp": 0,
-        \\        "depthBiasEnable": 0,
-        \\        "depthClampEnable": 1,
-        \\        "polygonMode": 0,
-        \\        "rasterizerDiscardEnable": 0,
-        \\        "frontFace": 0,
-        \\        "lineWidth": 1,
-        \\        "cullMode": 0,
-        \\        "pNext": [
-        \\          {
-        \\            "sType": 1000102001,
-        \\            "flags": 0,
-        \\            "depthClipEnable": 1
-        \\          }
-        \\        ]
-        \\      },
-        \\      "inputAssemblyState": {
-        \\        "flags": 0,
-        \\        "topology": 3,
-        \\        "primitiveRestartEnable": 0
-        \\      },
-        \\      "colorBlendState": {
-        \\        "flags": 0,
-        \\        "logicOp": 5,
-        \\        "logicOpEnable": 0,
-        \\        "blendConstants": [
-        \\          0,
-        \\          0,
-        \\          0,
-        \\          0
-        \\        ],
-        \\        "attachments": [
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 0,
-        \\            "dstColorBlendFactor": 0,
-        \\            "srcColorBlendFactor": 0,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 0
-        \\          },
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 0,
-        \\            "dstColorBlendFactor": 0,
-        \\            "srcColorBlendFactor": 0,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 0
-        \\          },
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 0,
-        \\            "dstColorBlendFactor": 0,
-        \\            "srcColorBlendFactor": 0,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 0
-        \\          },
-        \\          {
-        \\            "dstAlphaBlendFactor": 0,
-        \\            "srcAlphaBlendFactor": 0,
-        \\            "dstColorBlendFactor": 0,
-        \\            "srcColorBlendFactor": 0,
-        \\            "colorWriteMask": 15,
-        \\            "alphaBlendOp": 0,
-        \\            "colorBlendOp": 0,
-        \\            "blendEnable": 0
-        \\          }
-        \\        ]
-        \\      },
-        \\      "viewportState": {
-        \\        "flags": 0,
-        \\        "viewportCount": 0,
-        \\        "scissorCount": 0
-        \\      },
-        \\      "depthStencilState": {
-        \\        "flags": 0,
-        \\        "stencilTestEnable": 0,
-        \\        "maxDepthBounds": 0,
-        \\        "minDepthBounds": 0,
-        \\        "depthBoundsTestEnable": 0,
-        \\        "depthWriteEnable": 0,
-        \\        "depthTestEnable": 0,
-        \\        "depthCompareOp": 0,
-        \\        "front": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        },
-        \\        "back": {
-        \\          "compareOp": 0,
-        \\          "writeMask": 0,
-        \\          "reference": 0,
-        \\          "compareMask": 0,
-        \\          "passOp": 0,
-        \\          "failOp": 0,
-        \\          "depthFailOp": 0
-        \\        }
-        \\      },
-        \\      "stages": [
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "0925def2d6ede3d9",
-        \\          "stage": 1,
-        \\          "specializationInfo": {
-        \\            "dataSize": 0,
-        \\            "data": "",
-        \\            "mapEntries": []
-        \\          },
-        \\          "pNext": []
-        \\        },
-        \\        {
-        \\          "flags": 0,
-        \\          "name": "main",
-        \\          "module": "959dfe0bd6073194",
-        \\          "stage": 16,
-        \\          "specializationInfo": {
-        \\            "dataSize": 0,
-        \\            "data": "",
-        \\            "mapEntries": []
-        \\          },
-        \\          "pNext": []
-        \\        }
-        \\      ],
-        \\      "pNext": [
-        \\        {
-        \\          "sType": 1000470005,
-        \\          "flags": 0
-        \\        },
-        \\        {
-        \\          "sType": 1000044002,
-        \\          "depthAttachmentFormat": 126,
-        \\          "stencilAttachmentFormat": 0,
-        \\          "viewMask": 0,
-        \\          "colorAttachmentFormats": [
-        \\            64,
-        \\            43,
-        \\            37,
-        \\            97
-        \\          ]
-        \\        }
-        \\      ]
-        \\    }
-        \\  }
-        \\}
-    ;
-    var gpa = std.heap.DebugAllocator(.{}).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
-    const tmp_alloc = tmp_arena.allocator();
 
-    var db: Database = .{
-        .file_mem = &.{},
-        .entries = .initFill(.empty),
-        .arena = arena,
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
     };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x3dc5f23c21306af3, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x959dfe0bd6073194, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x0925def2d6ede3d9, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
-    try db.entries.getPtr(.RENDER_PASS).put(alloc, 0x3729eda857eaa8ec, .{
-        .entry_ptr = undefined,
-        .payload = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
-    for ([_]u64{
-        0xe40eadc1c688bcd1,
-        0x7e6f6e93e12a347a,
-        0x783d1bfbdea0a5e5,
-        0xd9a809bf95365f4e,
-    }) |p| {
-        try db.entries.getPtr(.GRAPHICS_PIPELINE).put(alloc, p, .{
-            .entry_ptr = undefined,
-            .payload = undefined,
-            .handle = @ptrFromInt(0x69),
-        });
-    }
 
-    _ = try parse_graphics_pipeline(alloc, tmp_alloc, &db, json);
-    _ = try parse_graphics_pipeline(alloc, tmp_alloc, &db, json2);
-    _ = try parse_graphics_pipeline(alloc, tmp_alloc, &db, json3);
-    _ = try parse_graphics_pipeline(alloc, tmp_alloc, &db, json4);
-    const parsed_graphics_pipeline = try parse_graphics_pipeline(alloc, tmp_alloc, &db, json5);
-    vk_print.print_struct(parsed_graphics_pipeline.create_info);
+    var item: vk.VkAttachmentReference = undefined;
+    try parse_vk_attachment_reference(&context, &item);
+
+    try std.testing.expectEqual(item.attachment, 69);
+    try std.testing.expectEqual(item.layout, 69);
 }
 
 fn parse_vk_graphics_pipeline_create_info(
@@ -2684,39 +2063,50 @@ fn parse_vk_graphics_pipeline_create_info(
             item.stageCount = @intCast(stages.len);
         } else if (std.mem.eql(u8, s, "vertexInputState")) {
             const vertex_input_state =
-                try parse_vk_pipeline_vertex_input_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineVertexInputStateCreateInfo);
+            try parse_vk_pipeline_vertex_input_state_create_info(context, vertex_input_state);
             item.pVertexInputState = vertex_input_state;
         } else if (std.mem.eql(u8, s, "inputAssemblyState")) {
             const input_assembly_state =
-                try parse_vk_pipeline_input_assembly_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineInputAssemblyStateCreateInfo);
+            try parse_vk_pipeline_input_assembly_state_create_info(
+                context,
+                input_assembly_state,
+            );
             item.pInputAssemblyState = input_assembly_state;
         } else if (std.mem.eql(u8, s, "tessellationState")) {
             const tesselation_state =
-                try parse_vk_pipeline_tessellation_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineTessellationStateCreateInfo);
+            try parse_vk_pipeline_tessellation_state_create_info(context, tesselation_state);
             item.pTessellationState = tesselation_state;
         } else if (std.mem.eql(u8, s, "viewportState")) {
             const viewport_state =
-                try parse_vk_pipeline_viewport_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineViewportStateCreateInfo);
+            try parse_vk_pipeline_viewport_state_create_info(context, viewport_state);
             item.pViewportState = viewport_state;
         } else if (std.mem.eql(u8, s, "rasterizationState")) {
             const raseterization_state =
-                try parse_vk_pipeline_rasterization_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineRasterizationStateCreateInfo);
+            try parse_vk_pipeline_rasterization_state_create_info(context, raseterization_state);
             item.pRasterizationState = raseterization_state;
         } else if (std.mem.eql(u8, s, "multisampleState")) {
             const multisample_state =
-                try parse_vk_pipeline_multisample_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineMultisampleStateCreateInfo);
+            try parse_vk_pipeline_multisample_state_create_info(context, multisample_state);
             item.pMultisampleState = multisample_state;
         } else if (std.mem.eql(u8, s, "depthStencilState")) {
             const depth_stencil_state =
-                try parse_vk_pipeline_depth_stencil_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineDepthStencilStateCreateInfo);
+            try parse_vk_pipeline_depth_stencil_state_create_info(context, depth_stencil_state);
             item.pDepthStencilState = depth_stencil_state;
         } else if (std.mem.eql(u8, s, "colorBlendState")) {
             const color_blend_state =
-                try parse_vk_pipeline_color_blend_state_create_info(context);
+                try context.alloc.create(vk.VkPipelineColorBlendStateCreateInfo);
+            try parse_vk_pipeline_color_blend_state_create_info(context, color_blend_state);
             item.pColorBlendState = color_blend_state;
         } else if (std.mem.eql(u8, s, "dynamicState")) {
-            const dynamic_state =
-                try parse_vk_pipeline_dynamic_state_create_info(context);
+            const dynamic_state = try context.alloc.create(vk.VkPipelineDynamicStateCreateInfo);
+            try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
             const v = try scanner_next_string(context.scanner);
@@ -2748,6 +2138,73 @@ fn parse_vk_graphics_pipeline_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+}
+
+test "test_parse_vk_graphics_pipeline_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "stages": [{}],
+        \\  "vertexInputState": {},
+        \\  "inputAssemblyState": {},
+        \\  "tessellationState": {},
+        \\  "viewportState": {},
+        \\  "rasterizationState": {},
+        \\  "multisampleState": {},
+        \\  "depthStencilState": {},
+        \\  "colorBlendState": {},
+        \\  "dynamicState": {},
+        \\  "layout": "2222222222222222",
+        \\  "renderPass": "3333333333333333",
+        \\  "subpass": 69,
+        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineIndex": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    try db.entries.getPtr(.RENDER_PASS).put(alloc, 0x3333333333333333, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkGraphicsPipelineCreateInfo = undefined;
+    try parse_vk_graphics_pipeline_create_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.stageCount, 1);
+    try std.testing.expect(item.pStages != null);
+    try std.testing.expect(item.pVertexInputState != null);
+    try std.testing.expect(item.pInputAssemblyState != null);
+    try std.testing.expect(item.pTessellationState != null);
+    try std.testing.expect(item.pViewportState != null);
+    try std.testing.expect(item.pRasterizationState != null);
+    try std.testing.expect(item.pMultisampleState != null);
+    try std.testing.expect(item.pDepthStencilState != null);
+    try std.testing.expect(item.pColorBlendState != null);
+    try std.testing.expect(item.pDynamicState != null);
+    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
+    try std.testing.expectEqual(@intFromPtr(item.renderPass), 0x69);
+    try std.testing.expectEqual(item.subpass, 69);
+    try std.testing.expectEqual(item.basePipelineHandle, null);
+    try std.testing.expectEqual(item.basePipelineIndex, 69);
 }
 
 fn parse_vk_pipeline_shader_stage_create_info(
@@ -2784,10 +2241,52 @@ fn parse_vk_pipeline_shader_stage_create_info(
     }
 }
 
+test "test_parse_vk_pipeline_shader_stage_create_info" {
+    const json =
+        \\{
+        \\   "flags": 69,
+        \\   "stage": 69,
+        \\   "module": "1111111111111111",
+        \\   "name": "NAME",
+        \\   "specializationInfo": {}
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineShaderStageCreateInfo = undefined;
+    try parse_vk_pipeline_shader_stage_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.stage, 69);
+    try std.testing.expectEqual(@intFromPtr(item.module), 0x69);
+    try std.testing.expectEqualSlices(u8, std.mem.span(item.pName), "NAME");
+    try std.testing.expect(item.pSpecializationInfo != null);
+}
+
 fn parse_vk_pipeline_vertex_input_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineVertexInputStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineVertexInputStateCreateInfo);
+    item: *vk.VkPipelineVertexInputStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2816,31 +2315,127 @@ fn parse_vk_pipeline_vertex_input_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_vertex_input_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "attributes": [{}],
+        \\  "bindings": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineVertexInputStateCreateInfo = undefined;
+    try parse_vk_pipeline_vertex_input_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.vertexBindingDescriptionCount, 1);
+    try std.testing.expect(item.pVertexBindingDescriptions != null);
+    try std.testing.expectEqual(item.vertexAttributeDescriptionCount, 1);
+    try std.testing.expect(item.pVertexAttributeDescriptions != null);
 }
 
 fn parse_vk_pipeline_input_assembly_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineInputAssemblyStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineInputAssemblyStateCreateInfo);
+    item: *vk.VkPipelineInputAssemblyStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
-    return item;
+}
+
+test "test_parse_vk_pipeline_input_assembly_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "topology": 69,
+        \\  "primitiveRestartEnable": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineInputAssemblyStateCreateInfo = undefined;
+    try parse_vk_pipeline_input_assembly_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.topology, 69);
+    try std.testing.expectEqual(item.primitiveRestartEnable, 69);
 }
 
 fn parse_vk_pipeline_tessellation_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineTessellationStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineTessellationStateCreateInfo);
+    item: *vk.VkPipelineTessellationStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
-    return item;
+}
+
+test "test_parse_vk_pipeline_tessellation_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "patchControlPoints": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineTessellationStateCreateInfo = undefined;
+    try parse_vk_pipeline_tessellation_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.patchControlPoints, 69);
 }
 
 fn parse_vk_pipeline_viewport_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineViewportStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineViewportStateCreateInfo);
+    item: *vk.VkPipelineViewportStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2875,22 +2470,106 @@ fn parse_vk_pipeline_viewport_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_viewport_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "viewportCount": 1,
+        \\  "scissorCount": 1,
+        \\  "viewports": [{}],
+        \\  "scissors": [{}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineViewportStateCreateInfo = undefined;
+    try parse_vk_pipeline_viewport_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.viewportCount, 1);
+    try std.testing.expect(item.pViewports != null);
+    try std.testing.expectEqual(item.scissorCount, 1);
+    try std.testing.expect(item.pScissors != null);
 }
 
 fn parse_vk_pipeline_rasterization_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineRasterizationStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineRasterizationStateCreateInfo);
+    item: *vk.VkPipelineRasterizationStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
-    return item;
+}
+
+test "test_parse_vk_pipeline_rasterization_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "depthClampEnable": 69,
+        \\  "rasterizerDiscardEnable": 69,
+        \\  "polygonMode": 69,
+        \\  "cullMode": 69,
+        \\  "frontFace": 69,
+        \\  "depthBiasEnable": 69,
+        \\  "depthBiasConstantFactor": 69,
+        \\  "depthBiasClamp": 69,
+        \\  "depthBiasSlopeFactor": 69,
+        \\  "lineWidth": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineRasterizationStateCreateInfo = undefined;
+    try parse_vk_pipeline_rasterization_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.depthClampEnable, 69);
+    try std.testing.expectEqual(item.rasterizerDiscardEnable, 69);
+    try std.testing.expectEqual(item.polygonMode, 69);
+    try std.testing.expectEqual(item.cullMode, 69);
+    try std.testing.expectEqual(item.frontFace, 69);
+    try std.testing.expectEqual(item.depthBiasEnable, 69);
+    try std.testing.expectEqual(item.depthBiasConstantFactor, 69);
+    try std.testing.expectEqual(item.depthBiasClamp, 69);
+    try std.testing.expectEqual(item.depthBiasSlopeFactor, 69);
+    try std.testing.expectEqual(item.lineWidth, 69);
 }
 
 fn parse_vk_pipeline_multisample_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineMultisampleStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineMultisampleStateCreateInfo);
+    item: *vk.VkPipelineMultisampleStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2921,13 +2600,98 @@ fn parse_vk_pipeline_multisample_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_multisample_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "rasterizationSamples": 69,
+        \\  "sampleShadingEnable": 69,
+        \\  "minSampleShading": 69,
+        \\  "sampleMask": [
+        \\    69
+        \\  ],
+        \\  "alphaToCoverageEnable": 69,
+        \\  "alphaToOneEnable": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineMultisampleStateCreateInfo = undefined;
+    try parse_vk_pipeline_multisample_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.rasterizationSamples, 69);
+    try std.testing.expectEqual(item.sampleShadingEnable, 69);
+    try std.testing.expectEqual(item.minSampleShading, 69);
+    try std.testing.expect(item.pSampleMask != null);
+    try std.testing.expectEqual(item.alphaToCoverageEnable, 69);
+    try std.testing.expectEqual(item.alphaToOneEnable, 69);
+}
+
+fn parse_vk_stencil_op_state(
+    context: *const Context,
+    item: *vk.VkStencilOpState,
+) !void {
+    try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_stencil_op_state" {
+    const json =
+        \\{
+        \\  "failOp": 69,
+        \\  "passOp": 69,
+        \\  "depthFailOp": 69,
+        \\  "compareOp": 69,
+        \\  "compareMask": 69,
+        \\  "writeMask": 69,
+        \\  "reference": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkStencilOpState = undefined;
+    try parse_vk_stencil_op_state(&context, &item);
+
+    try std.testing.expectEqual(item.failOp, 69);
+    try std.testing.expectEqual(item.passOp, 69);
+    try std.testing.expectEqual(item.depthFailOp, 69);
+    try std.testing.expectEqual(item.compareOp, 69);
+    try std.testing.expectEqual(item.compareMask, 69);
+    try std.testing.expectEqual(item.writeMask, 69);
+    try std.testing.expectEqual(item.reference, 69);
 }
 
 fn parse_vk_pipeline_depth_stencil_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineDepthStencilStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineDepthStencilStateCreateInfo);
+    item: *vk.VkPipelineDepthStencilStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2951,9 +2715,9 @@ fn parse_vk_pipeline_depth_stencil_state_create_info(
             const v = try scanner_next_number(context.scanner);
             item.stencilTestEnable = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "front")) {
-            try parse_simple_type(context, &item.front);
+            try parse_vk_stencil_op_state(context, &item.front);
         } else if (std.mem.eql(u8, s, "back")) {
-            try parse_simple_type(context, &item.back);
+            try parse_vk_stencil_op_state(context, &item.back);
         } else if (std.mem.eql(u8, s, "minDepthBounds")) {
             const v = try scanner_next_number(context.scanner);
             item.minDepthBounds = try std.fmt.parseFloat(f32, v);
@@ -2965,13 +2729,59 @@ fn parse_vk_pipeline_depth_stencil_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "depthTestEnable": 69,
+        \\  "depthWriteEnable": 69,
+        \\  "depthCompareOp": 69,
+        \\  "depthBoundsTestEnable": 69,
+        \\  "stencilTestEnable": 69,
+        \\  "front": {},
+        \\  "back": {},
+        \\  "minDepthBounds": 69,
+        \\  "maxDepthBounds": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineDepthStencilStateCreateInfo = undefined;
+    try parse_vk_pipeline_depth_stencil_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.depthTestEnable, 69);
+    try std.testing.expectEqual(item.depthWriteEnable, 69);
+    try std.testing.expectEqual(item.depthCompareOp, 69);
+    try std.testing.expectEqual(item.depthBoundsTestEnable, 69);
+    try std.testing.expectEqual(item.stencilTestEnable, 69);
+    try std.testing.expectEqual(item.front, vk.VkStencilOpState{});
+    try std.testing.expectEqual(item.back, vk.VkStencilOpState{});
+    try std.testing.expectEqual(item.minDepthBounds, 69);
+    try std.testing.expectEqual(item.maxDepthBounds, 69);
 }
 
 fn parse_vk_pipeline_color_blend_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineColorBlendStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineColorBlendStateCreateInfo);
+    item: *vk.VkPipelineColorBlendStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3005,13 +2815,55 @@ fn parse_vk_pipeline_color_blend_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_color_blend_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "logicOpEnable": 69,
+        \\  "logicOp": 69,
+        \\  "attachments": [{}],
+        \\  "blendConstants": [
+        \\    69.69,
+        \\    69.69,
+        \\    69.69,
+        \\    69.69
+        \\  ]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineColorBlendStateCreateInfo = undefined;
+    try parse_vk_pipeline_color_blend_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.logicOpEnable, 69);
+    try std.testing.expectEqual(item.logicOp, 69);
+    try std.testing.expectEqual(item.attachmentCount, 1);
+    try std.testing.expect(item.pAttachments != null);
+    try std.testing.expectEqual(item.blendConstants, [4]f32{ 69.69, 69.69, 69.69, 69.69 });
 }
 
 fn parse_vk_pipeline_dynamic_state_create_info(
     context: *const Context,
-) !*const vk.VkPipelineDynamicStateCreateInfo {
-    const item = try context.alloc.create(vk.VkPipelineDynamicStateCreateInfo);
+    item: *vk.VkPipelineDynamicStateCreateInfo,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3028,7 +2880,40 @@ fn parse_vk_pipeline_dynamic_state_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_dynamic_state_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "dynamicState": [
+        \\    69
+        \\  ]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineDynamicStateCreateInfo = undefined;
+    try parse_vk_pipeline_dynamic_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.dynamicStateCount, 1);
+    try std.testing.expect(item.pDynamicStates != null);
 }
 
 fn parse_vk_vertex_input_attribute_description(
@@ -3038,11 +2923,69 @@ fn parse_vk_vertex_input_attribute_description(
     try parse_simple_type(context, item);
 }
 
+test "test_parse_vk_vertex_input_attribute_description" {
+    const json =
+        \\{
+        \\  "location": 69,
+        \\  "binding": 69,
+        \\  "format": 69,
+        \\  "offset": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkVertexInputAttributeDescription = undefined;
+    try parse_vk_vertex_input_attribute_description(&context, &item);
+
+    try std.testing.expectEqual(item.location, 69);
+    try std.testing.expectEqual(item.binding, 69);
+    try std.testing.expectEqual(item.format, 69);
+    try std.testing.expectEqual(item.offset, 69);
+}
+
 fn parse_vk_vertex_input_binding_description(
     context: *const Context,
     item: *vk.VkVertexInputBindingDescription,
 ) !void {
     try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_vertex_input_binding_description" {
+    const json =
+        \\{
+        \\  "binding": 69,
+        \\  "stride": 69,
+        \\  "inputRate": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkVertexInputBindingDescription = undefined;
+    try parse_vk_vertex_input_binding_description(&context, &item);
+
+    try std.testing.expectEqual(item.binding, 69);
+    try std.testing.expectEqual(item.stride, 69);
+    try std.testing.expectEqual(item.inputRate, 69);
 }
 
 fn parse_vk_pipeline_color_blend_attachment_state(
@@ -3052,11 +2995,83 @@ fn parse_vk_pipeline_color_blend_attachment_state(
     try parse_simple_type(context, item);
 }
 
+test "test_parse_vk_pipeline_color_blend_attachment_state" {
+    const json =
+        \\{
+        \\  "blendEnable": 69,
+        \\  "srcColorBlendFactor": 69,
+        \\  "dstColorBlendFactor": 69,
+        \\  "colorBlendOp": 69,
+        \\  "srcAlphaBlendFactor": 69,
+        \\  "dstAlphaBlendFactor": 69,
+        \\  "alphaBlendOp": 69,
+        \\  "colorWriteMask": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineColorBlendAttachmentState = undefined;
+    try parse_vk_pipeline_color_blend_attachment_state(&context, &item);
+
+    try std.testing.expectEqual(item.blendEnable, 69);
+    try std.testing.expectEqual(item.srcColorBlendFactor, 69);
+    try std.testing.expectEqual(item.dstColorBlendFactor, 69);
+    try std.testing.expectEqual(item.colorBlendOp, 69);
+    try std.testing.expectEqual(item.srcAlphaBlendFactor, 69);
+    try std.testing.expectEqual(item.dstAlphaBlendFactor, 69);
+    try std.testing.expectEqual(item.alphaBlendOp, 69);
+    try std.testing.expectEqual(item.colorWriteMask, 69);
+}
+
 fn parse_vk_viewport(
     context: *const Context,
     item: *vk.VkViewport,
 ) !void {
     try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_viewport" {
+    const json =
+        \\{
+        \\  "x": 69.69,
+        \\  "y": 69.69,
+        \\  "width": 69.69,
+        \\  "height": 69.69,
+        \\  "minDepth": 69.69,
+        \\  "maxDepth": 69.69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkViewport = undefined;
+    try parse_vk_viewport(&context, &item);
+
+    try std.testing.expectEqual(item.x, 69.69);
+    try std.testing.expectEqual(item.y, 69.69);
+    try std.testing.expectEqual(item.width, 69.69);
+    try std.testing.expectEqual(item.height, 69.69);
+    try std.testing.expectEqual(item.minDepth, 69.69);
+    try std.testing.expectEqual(item.maxDepth, 69.69);
 }
 
 fn parse_vk_rect_2d(
@@ -3083,11 +3098,69 @@ fn parse_vk_rect_2d(
     }
 }
 
+test "test_parse_vk_rect_2d" {
+    const json =
+        \\{
+        \\  "x": 69,
+        \\  "y": 69,
+        \\  "width": 69,
+        \\  "height": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRect2D = undefined;
+    try parse_vk_rect_2d(&context, &item);
+
+    try std.testing.expectEqual(item.offset.x, 69);
+    try std.testing.expectEqual(item.offset.y, 69);
+    try std.testing.expectEqual(item.extent.width, 69);
+    try std.testing.expectEqual(item.extent.height, 69);
+}
+
 fn parse_vk_specialization_map_entry(
     context: *const Context,
     item: *vk.VkSpecializationMapEntry,
 ) !void {
     try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_specialization_map_entry" {
+    const json =
+        \\{
+        \\  "constantID": 69,
+        \\  "offset": 69,
+        \\  "size": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSpecializationMapEntry = undefined;
+    try parse_vk_specialization_map_entry(&context, &item);
+
+    try std.testing.expectEqual(item.constantID, 69);
+    try std.testing.expectEqual(item.offset, 69);
+    try std.testing.expectEqual(item.size, 69);
 }
 
 fn parse_vk_specialization_info(
@@ -3118,6 +3191,35 @@ fn parse_vk_specialization_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+}
+
+test "test_parse_vk_specialization_info" {
+    const json =
+        \\{
+        \\  "mapEntries": [{}],
+        \\  "dataSize": 69,
+        \\  "data": ""
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSpecializationInfo = undefined;
+    try parse_vk_specialization_info(&context, &item);
+
+    try std.testing.expectEqual(item.mapEntryCount, 1);
+    try std.testing.expect(item.pMapEntries != null);
+    try std.testing.expectEqual(item.dataSize, 69);
+    try std.testing.expect(item.pData != null);
 }
 
 fn parse_vk_compute_pipeline_create_info(
@@ -3158,6 +3260,48 @@ fn parse_vk_compute_pipeline_create_info(
     }
 }
 
+test "test_parse_vk_compute_pipeline_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "stage": {},
+        \\  "layout": "1111111111111111",
+        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineIndex": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkComputePipelineCreateInfo = undefined;
+    try parse_vk_compute_pipeline_create_info(&context, &item);
+
+    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO);
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.stage, vk.VkPipelineShaderStageCreateInfo{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+    });
+    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
+    try std.testing.expectEqual(item.basePipelineHandle, null);
+    try std.testing.expectEqual(item.basePipelineIndex, 69);
+}
+
 fn parse_vk_raytracing_pipeline_create_info(
     context: *const Context,
     item: *vk.VkRayTracingPipelineCreateInfoKHR,
@@ -3186,19 +3330,21 @@ fn parse_vk_raytracing_pipeline_create_info(
             item.pGroups = @ptrCast(groups.ptr);
             item.groupCount = @intCast(groups.len);
         } else if (std.mem.eql(u8, s, "libraryInfo")) {
-            const library = try parse_vk_pipeline_library_create_info(context);
+            const library =
+                try context.alloc.create(vk.VkPipelineLibraryCreateInfoKHR);
+            try parse_vk_pipeline_library_create_info(context, library);
             item.pLibraryInfo = library;
         } else if (std.mem.eql(u8, s, "libraryInterface")) {
-            const interface = try parse_vk_ray_tracing_pipeline_interface_create_info(
-                context,
-            );
+            const interface =
+                try context.alloc.create(vk.VkRayTracingPipelineInterfaceCreateInfoKHR);
+            try parse_vk_ray_tracing_pipeline_interface_create_info(context, interface);
             item.pLibraryInterface = interface;
         } else if (std.mem.eql(u8, s, "maxPipelineRayRecursionDepth")) {
             const v = try scanner_next_number(context.scanner);
             item.maxPipelineRayRecursionDepth = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "dynamicState")) {
-            const dynamic_state =
-                try parse_vk_pipeline_dynamic_state_create_info(context);
+            const dynamic_state = try context.alloc.create(vk.VkPipelineDynamicStateCreateInfo);
+            try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
             const v = try scanner_next_string(context.scanner);
@@ -3222,6 +3368,60 @@ fn parse_vk_raytracing_pipeline_create_info(
     }
 }
 
+test "test_parse_vk_raytracing_pipeline_create_info" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "stages": [{}],
+        \\  "groups": [{}],
+        \\  "maxPipelineRayRecursionDepth": 69,
+        \\  "libraryInfo": {},
+        \\  "libraryInterface": {},
+        \\  "dynamicState": {},
+        \\  "layout": "1111111111111111",
+        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineIndex": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRayTracingPipelineCreateInfoKHR = undefined;
+    try parse_vk_raytracing_pipeline_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.flags, 69);
+    try std.testing.expectEqual(item.stageCount, 1);
+    try std.testing.expect(item.pStages != null);
+    try std.testing.expectEqual(item.groupCount, 1);
+    try std.testing.expect(item.pGroups != null);
+    try std.testing.expectEqual(item.maxPipelineRayRecursionDepth, 69);
+    try std.testing.expect(item.pLibraryInfo != null);
+    try std.testing.expect(item.pLibraryInterface != null);
+    try std.testing.expect(item.pDynamicState != null);
+    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
+    try std.testing.expectEqual(item.basePipelineHandle, null);
+    try std.testing.expectEqual(item.basePipelineIndex, 69);
+}
+
 fn parse_vk_ray_tracing_shader_group_create_info(
     context: *const Context,
     item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
@@ -3230,10 +3430,48 @@ fn parse_vk_ray_tracing_shader_group_create_info(
     try parse_simple_type(context, item);
 }
 
+test "test_parse_vk_ray_tracing_shader_group_create_info" {
+    const json =
+        \\{
+        \\  "type": 69,
+        \\  "generalShader": 69,
+        \\  "closestHitShader": 69,
+        \\  "anyHitShader": 69,
+        \\  "intersectionShader": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRayTracingShaderGroupCreateInfoKHR = undefined;
+    try parse_vk_ray_tracing_shader_group_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.type, 69);
+    try std.testing.expectEqual(item.generalShader, 69);
+    try std.testing.expectEqual(item.closestHitShader, 69);
+    try std.testing.expectEqual(item.anyHitShader, 69);
+    try std.testing.expectEqual(item.intersectionShader, 69);
+    try std.testing.expectEqual(item.pShaderGroupCaptureReplayHandle, null);
+}
+
 fn parse_vk_pipeline_library_create_info(
     context: *const Context,
-) !*const vk.VkPipelineLibraryCreateInfoKHR {
-    const item = try context.alloc.create(vk.VkPipelineLibraryCreateInfoKHR);
+    item: *vk.VkPipelineLibraryCreateInfoKHR,
+) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3251,16 +3489,78 @@ fn parse_vk_pipeline_library_create_info(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    return item;
+}
+
+test "test_parse_vk_pipeline_library_create_info" {
+    const json =
+        \\{
+        \\  "libraries": ["1111111111111111"]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.RAYTRACING_PIPELINE).put(alloc, 0x1111111111111111, .{
+        .entry_ptr = undefined,
+        .payload = undefined,
+        .handle = @ptrFromInt(0x69),
+    });
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineLibraryCreateInfoKHR = undefined;
+    try parse_vk_pipeline_library_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.libraryCount, 1);
+    try std.testing.expect(item.pLibraries != null);
 }
 
 fn parse_vk_ray_tracing_pipeline_interface_create_info(
     context: *const Context,
-) !*const vk.VkRayTracingPipelineInterfaceCreateInfoKHR {
-    const item = try context.alloc.create(vk.VkRayTracingPipelineInterfaceCreateInfoKHR);
-    item.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
-    };
+    item: *vk.VkRayTracingPipelineInterfaceCreateInfoKHR,
+) !void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR };
     try parse_simple_type(context, item);
-    return item;
+}
+
+test "test_parse_vk_ray_tracing_pipeline_interface_create_info" {
+    const json =
+        \\{
+        \\  "maxPipelineRayPayloadSize": 69,
+        \\  "maxPipelineRayHitAttributeSize": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    const context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRayTracingPipelineInterfaceCreateInfoKHR = undefined;
+    try parse_vk_ray_tracing_pipeline_interface_create_info(&context, &item);
+
+    try std.testing.expectEqual(
+        item.sType,
+        vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
+    );
+    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(item.maxPipelineRayPayloadSize, 69);
+    try std.testing.expectEqual(item.maxPipelineRayHitAttributeSize, 69);
 }
