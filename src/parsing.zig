@@ -1124,7 +1124,6 @@ pub fn parse_simple_type(context: *const Context, output: anytype) anyerror!void
                     ?*anyopaque,
                     ?*const anyopaque,
                     => {
-                        log.info(@src(), "{s}", .{field.name});
                         if (std.mem.eql(u8, "pNext", field.name)) {
                             @field(output, field.name) = try parse_pnext_chain(context);
                             consumed = true;
