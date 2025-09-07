@@ -1494,6 +1494,6 @@ pub fn create_raytracing_pipeline(
     return pipeline;
 }
 
-test "all" {
+comptime {
     _ = @import("parsing.zig");
 }
