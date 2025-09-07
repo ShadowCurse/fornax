@@ -59,11 +59,9 @@ const Args = struct {
 };
 
 pub fn main() !void {
-    var gpa = std.heap.DebugAllocator(.{ .enable_memory_limit = true }).init;
-    const gpa_alloc = gpa.allocator();
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const arena_alloc = arena.allocator();
-    var tmp_arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
 
     const args = try args_parser.parse(Args, arena_alloc);
@@ -81,7 +79,8 @@ pub fn main() !void {
     defer progress_root.end();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
-    const db = try open_database(gpa_alloc, tmp_alloc, &progress_root, db_path);
+    const db = try open_database(tmp_alloc, &progress_root, db_path);
+    _ = tmp_arena.reset(.retain_capacity);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len == 0)
@@ -203,9 +202,8 @@ pub fn main() !void {
         &replay_raytracing_pipeline,
     );
 
-    var total_used_bytes = gpa.total_requested_bytes;
-    for (threads_context.arenas) |*ta|
-        total_used_bytes += ta.queryCapacity();
+    const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
+        threads_context.memory_usage();
     log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
 
@@ -344,8 +342,7 @@ pub const Database = struct {
 };
 
 pub fn open_database(
-    gpa_alloc: Allocator,
-    scratch_alloc: Allocator,
+    tmp_alloc: Allocator,
     progress: *std.Progress.Node,
     path: []const u8,
 ) !Database {
@@ -359,7 +356,7 @@ pub fn open_database(
     log.info(@src(), "Stored header version: {d}", .{header.version});
 
     // All database related allocations will be in this arena.
-    var arena = std.heap.ArenaAllocator.init(gpa_alloc);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const arena_alloc = arena.allocator();
 
     var entries: Database.EntriesType = .initFill(.empty);
@@ -417,7 +414,7 @@ pub fn open_database(
                 break :blk decompressed_payload;
             },
         };
-        try entries.getPtr(entry_tag).put(scratch_alloc, try entry.get_value(), .{
+        try entries.getPtr(entry_tag).put(tmp_alloc, try entry.get_value(), .{
             .entry_ptr = entry_ptr,
             .payload = payload,
         });
@@ -518,6 +515,14 @@ pub const ThreadsContext = struct {
     pool: std.Thread.Pool,
     arenas: []std.heap.ArenaAllocator,
     deferred_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
+
+    pub fn memory_usage(self: *const ThreadsContext) u64 {
+        var total: u64 = 0;
+        for (self.arenas) |a| {
+            total += a.queryCapacity();
+        }
+        return total;
+    }
 };
 pub fn init_thread_pool_context(
     context: *ThreadsContext,
@@ -601,6 +606,7 @@ pub fn replay_chunk(
     tag: Database.Entry.Tag,
     replay_fn: *const REPLAY_FN,
 ) void {
+    _ = arena.reset(.retain_capacity);
     const alloc = arena.allocator();
 
     const name = std.fmt.allocPrint(alloc, "replaying {s}", .{@tagName(tag)}) catch unreachable;
