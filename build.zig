@@ -23,6 +23,7 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
     exe_mod.addIncludePath(miniz_config_header.getOutput());
     exe_mod.addIncludePath(b.path("thirdparty/volk"));
@@ -43,7 +44,6 @@ pub fn build(b: *std.Build) !void {
         .name = "glacier",
         .root_module = exe_mod,
     });
-    exe.linkLibC();
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
@@ -57,7 +57,6 @@ pub fn build(b: *std.Build) !void {
         .root_module = exe_mod,
         .filters = b.args orelse &.{},
     });
-    exe_unit_tests.linkLibC();
     b.installArtifact(exe_unit_tests);
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
     run_exe_unit_tests.step.dependOn(b.getInstallStep());
