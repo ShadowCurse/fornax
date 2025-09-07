@@ -127,39 +127,12 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    var wait_group: std.Thread.WaitGroup = .{};
-    var thread_pool: std.Thread.Pool = undefined;
-    try thread_pool.init(.{
-        .allocator = tmp_alloc,
-    });
-
-    const host_threads = std.Thread.getCpuCount() catch 1;
-    const n_threads = if (args.num_threads) |nt| blk: {
-        if (nt == 0) {
-            log.info(
-                @src(),
-                "Provided num_threads is 0. Setting to max host threads {d}",
-                .{host_threads},
-            );
-            break :blk host_threads;
-        } else {
-            break :blk nt;
-        }
-    } else host_threads;
-    const thread_arenas = try arena_alloc.alloc(std.heap.ArenaAllocator, n_threads);
-    for (thread_arenas) |*ta|
-        ta.* = .init(std.heap.page_allocator);
-    const thread_deferred_entries = try arena_alloc.alloc(
-        std.ArrayListUnmanaged(Database.EntryMeta),
-        thread_arenas.len,
-    );
+    var threads_context: ThreadsContext = undefined;
+    try init_thread_pool_context(&threads_context, arena_alloc, args.num_threads);
 
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -168,10 +141,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -180,10 +150,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -192,10 +159,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -204,10 +168,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -216,10 +177,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -228,10 +186,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -240,10 +195,7 @@ pub fn main() !void {
     );
     try replay(
         &tmp_arena,
-        &wait_group,
-        &thread_pool,
-        thread_arenas,
-        thread_deferred_entries,
+        &threads_context,
         &progress_root,
         &db,
         vk_device,
@@ -252,7 +204,7 @@ pub fn main() !void {
     );
 
     var total_used_bytes = gpa.total_requested_bytes;
-    for (thread_arenas) |*ta|
+    for (threads_context.arenas) |*ta|
         total_used_bytes += ta.queryCapacity();
     log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
@@ -561,6 +513,36 @@ pub fn create_replay_fn(
     return Inner.replay;
 }
 
+pub const ThreadsContext = struct {
+    wait_group: std.Thread.WaitGroup,
+    pool: std.Thread.Pool,
+    arenas: []std.heap.ArenaAllocator,
+    deferred_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
+};
+pub fn init_thread_pool_context(
+    context: *ThreadsContext,
+    alloc: Allocator,
+    num_threads: ?u32,
+) !void {
+    const host_threads = std.Thread.getCpuCount() catch 1;
+    const n_threads = if (num_threads) |nt| blk: {
+        if (nt == 0) break :blk host_threads else break :blk nt;
+    } else host_threads;
+    log.info(@src(), "Using {d} threads", .{n_threads});
+
+    context.wait_group = .{};
+    try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
+
+    context.arenas = try alloc.alloc(std.heap.ArenaAllocator, n_threads);
+    for (context.arenas) |*ta|
+        ta.* = .init(std.heap.page_allocator);
+
+    context.deferred_entries = try alloc.alloc(
+        std.ArrayListUnmanaged(Database.EntryMeta),
+        n_threads,
+    );
+}
+
 pub const replay_sampler = create_replay_fn(
     .SAMPLER,
     parsing.parse_sampler,
@@ -610,23 +592,25 @@ pub const replay_raytracing_pipeline = create_replay_fn(
 );
 
 pub fn replay_chunk(
-    thread_arena: *std.heap.ArenaAllocator,
+    arena: *std.heap.ArenaAllocator,
+    deferred_entries: *std.ArrayListUnmanaged(Database.EntryMeta),
     chunk: []Database.EntryMeta,
     db: *const Database,
     vk_device: vk.VkDevice,
-    deferred_pipelines: *std.ArrayListUnmanaged(Database.EntryMeta),
     progress: *std.Progress.Node,
+    tag: Database.Entry.Tag,
     replay_fn: *const REPLAY_FN,
 ) void {
-    const thread_alloc = thread_arena.allocator();
+    const alloc = arena.allocator();
 
-    var sub_progress = progress.start("replaying pipelines", chunk.len);
+    const name = std.fmt.allocPrint(alloc, "replaying {s}", .{@tagName(tag)}) catch unreachable;
+    var sub_progress = progress.start(name, chunk.len);
     defer sub_progress.end();
 
-    const queue_buffer = thread_alloc.alloc(Database.EntryMeta, chunk.len) catch unreachable;
-    deferred_pipelines.* = .initBuffer(queue_buffer);
+    const queue_buffer = alloc.alloc(Database.EntryMeta, chunk.len) catch unreachable;
+    deferred_entries.* = .initBuffer(queue_buffer);
 
-    var tmp_allocator = std.heap.ArenaAllocator.init(thread_alloc);
+    var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
     const tmp_alloc = tmp_allocator.allocator();
     for (chunk) |*gp| {
         defer _ = tmp_allocator.reset(.retain_capacity);
@@ -634,16 +618,13 @@ pub fn replay_chunk(
 
         const deferred = replay_fn(tmp_alloc, gp, db, vk_device) catch break;
         if (deferred)
-            deferred_pipelines.appendAssumeCapacity(gp.*);
+            deferred_entries.appendAssumeCapacity(gp.*);
     }
 }
 
 pub fn replay(
     tmp_allocator: *std.heap.ArenaAllocator,
-    wait_group: *std.Thread.WaitGroup,
-    thread_pool: *std.Thread.Pool,
-    thread_arenas: []std.heap.ArenaAllocator,
-    thread_deferred_pipelines: []std.ArrayListUnmanaged(Database.EntryMeta),
+    threads_context: *ThreadsContext,
     progress: *std.Progress.Node,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -659,36 +640,37 @@ pub fn replay(
 
     var remaining_entries = entries;
     while (remaining_entries.len != 0) {
-        const chunk_size = remaining_entries.len / (thread_arenas.len - 1);
-        for (thread_arenas[1..], thread_deferred_pipelines[1..]) |*ta, *dq| {
+        const chunk_size = remaining_entries.len / (threads_context.arenas.len - 1);
+        for (threads_context.arenas[1..], threads_context.deferred_entries[1..]) |*ta, *dq| {
             const chunk = remaining_entries[0..chunk_size];
             remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.spawnWg(
-                wait_group,
+            threads_context.pool.spawnWg(
+                &threads_context.wait_group,
                 replay_chunk,
-                .{ ta, chunk, db, vk_device, dq, progress, replay_fn },
+                .{ ta, dq, chunk, db, vk_device, progress, tag, replay_fn },
             );
         }
-        thread_pool.spawnWg(
-            wait_group,
+        threads_context.pool.spawnWg(
+            &threads_context.wait_group,
             replay_chunk,
             .{
-                &thread_arenas[0],
+                &threads_context.arenas[0],
+                &threads_context.deferred_entries[0],
                 remaining_entries,
                 db,
                 vk_device,
-                &thread_deferred_pipelines[0],
                 progress,
+                tag,
                 replay_fn,
             },
         );
-        wait_group.wait();
-        wait_group.reset();
+        threads_context.wait_group.wait();
+        threads_context.wait_group.reset();
 
         _ = tmp_allocator.reset(.retain_capacity);
         var deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta) = .empty;
-        for (thread_deferred_pipelines) |*tdq|
-            try deferred_entries.appendSlice(tmp_alloc, tdq.items);
+        for (threads_context.deferred_entries) |*de|
+            try deferred_entries.appendSlice(tmp_alloc, de.items);
         remaining_entries = deferred_entries.items;
     }
 }
