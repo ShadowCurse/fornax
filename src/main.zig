@@ -79,7 +79,7 @@ pub fn main() !void {
     defer progress_root.end();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
-    const db = try open_database(tmp_alloc, &progress_root, db_path);
+    var db = try open_database(tmp_alloc, &progress_root, db_path);
     _ = tmp_arena.reset(.retain_capacity);
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
@@ -328,8 +328,9 @@ pub const Database = struct {
             );
             return error.NoObjectFound;
         };
-        if (entry.handle) |handle|
-            return handle
+        const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
+        if (handle) |h|
+            return h
         else {
             log.debug(
                 @src(),
@@ -437,7 +438,7 @@ pub fn open_database(
 pub fn print_replay_time(start: std.time.Instant, tag: Database.Entry.Tag, n: usize) void {
     const now = std.time.Instant.now() catch unreachable;
     const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    log.info(@src(), "Replayed {d:>5} {s:<21} in {d:.3}ms", .{ n, @tagName(tag), dt });
+    log.info(@src(), "Replayed {d:>6} {s:<21} in {d:.3}ms", .{ n, @tagName(tag), dt });
 }
 
 pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
@@ -461,8 +462,13 @@ pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
     }
 }
 
+pub const Action = enum {
+    Pass,
+    Defer,
+    Remove,
+};
 pub const REPLAY_FN =
-    fn (Allocator, *Database.EntryMeta, *const Database, vk.VkDevice) anyerror!bool;
+    fn (Allocator, *Database.EntryMeta, *const Database, vk.VkDevice) anyerror!Action;
 pub fn create_replay_fn(
     comptime TAG: Database.Entry.Tag,
     comptime PARSE_FN: anytype,
@@ -474,37 +480,31 @@ pub fn create_replay_fn(
             entry: *Database.EntryMeta,
             db: *const Database,
             vk_device: vk.VkDevice,
-        ) anyerror!bool {
+        ) anyerror!Action {
             const e = Database.Entry.from_ptr(entry.entry_ptr);
             const result = PARSE_FN(tmp_alloc, tmp_alloc, db, entry.payload) catch |err| {
-                if (err != error.NoHandleFound) {
-                    if (err == error.InvalidJson)
-                        log.err(
-                            @src(),
-                            "Encountered error {} while parsing {s}",
-                            .{ err, @tagName(TAG) },
-                        )
-                    else
-                        log.warn(
-                            @src(),
-                            "Encountered error {} while parsing {s}",
-                            .{ err, @tagName(TAG) },
-                        );
-                    log.debug(@src(), "json: {s}", .{entry.payload});
-                    return err;
-                } else return true;
+                if (err == error.NoHandleFound) return .Defer;
+                if (err == error.NoObjectFound) return .Remove;
+                log.err(
+                    @src(),
+                    "Encountered error {} while parsing {s}",
+                    .{ err, @tagName(TAG) },
+                );
+                log.debug(@src(), "json: {s}", .{entry.payload});
+                return err;
             };
             try check_version_and_hash(result, &e);
-            entry.handle = CREATE_FN(vk_device, result.create_info) catch |err| {
+            const handle = CREATE_FN(vk_device, result.create_info) catch |err| {
                 log.err(
                     @src(),
                     "Encountered error {} while creating {s}",
                     .{ err, @tagName(TAG) },
                 );
                 vulkan_print.print_struct(result.create_info);
-                return err;
+                return .Remove;
             };
-            return false;
+            @atomicStore(?*anyopaque, &entry.handle, handle, .seq_cst);
+            return .Pass;
         }
     };
     return Inner.replay;
@@ -515,6 +515,7 @@ pub const ThreadsContext = struct {
     pool: std.Thread.Pool,
     arenas: []std.heap.ArenaAllocator,
     deferred_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
+    removed_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
 
     pub fn memory_usage(self: *const ThreadsContext) u64 {
         var total: u64 = 0;
@@ -543,6 +544,10 @@ pub fn init_thread_pool_context(
         ta.* = .init(std.heap.page_allocator);
 
     context.deferred_entries = try alloc.alloc(
+        std.ArrayListUnmanaged(Database.EntryMeta),
+        n_threads,
+    );
+    context.removed_entries = try alloc.alloc(
         std.ArrayListUnmanaged(Database.EntryMeta),
         n_threads,
     );
@@ -599,6 +604,7 @@ pub const replay_raytracing_pipeline = create_replay_fn(
 pub fn replay_chunk(
     arena: *std.heap.ArenaAllocator,
     deferred_entries: *std.ArrayListUnmanaged(Database.EntryMeta),
+    removed_entries: *std.ArrayListUnmanaged(Database.EntryMeta),
     chunk: []Database.EntryMeta,
     db: *const Database,
     vk_device: vk.VkDevice,
@@ -607,14 +613,14 @@ pub fn replay_chunk(
     replay_fn: *const REPLAY_FN,
 ) void {
     _ = arena.reset(.retain_capacity);
+    deferred_entries.* = .empty;
+    removed_entries.* = .empty;
+
     const alloc = arena.allocator();
 
     const name = std.fmt.allocPrint(alloc, "replaying {s}", .{@tagName(tag)}) catch unreachable;
     var sub_progress = progress.start(name, chunk.len);
     defer sub_progress.end();
-
-    const queue_buffer = alloc.alloc(Database.EntryMeta, chunk.len) catch unreachable;
-    deferred_entries.* = .initBuffer(queue_buffer);
 
     var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
     const tmp_alloc = tmp_allocator.allocator();
@@ -622,9 +628,12 @@ pub fn replay_chunk(
         defer _ = tmp_allocator.reset(.retain_capacity);
         defer sub_progress.completeOne();
 
-        const deferred = replay_fn(tmp_alloc, gp, db, vk_device) catch break;
-        if (deferred)
-            deferred_entries.appendAssumeCapacity(gp.*);
+        const action = replay_fn(tmp_alloc, gp, db, vk_device) catch break;
+        switch (action) {
+            .Pass => {},
+            .Defer => deferred_entries.append(alloc, gp.*) catch unreachable,
+            .Remove => removed_entries.append(alloc, gp.*) catch unreachable,
+        }
     }
 }
 
@@ -632,7 +641,7 @@ pub fn replay(
     tmp_allocator: *std.heap.ArenaAllocator,
     threads_context: *ThreadsContext,
     progress: *std.Progress.Node,
-    db: *const Database,
+    db: *Database,
     vk_device: vk.VkDevice,
     tag: Database.Entry.Tag,
     replay_fn: *const REPLAY_FN,
@@ -647,13 +656,17 @@ pub fn replay(
     var remaining_entries = entries;
     while (remaining_entries.len != 0) {
         const chunk_size = remaining_entries.len / (threads_context.arenas.len - 1);
-        for (threads_context.arenas[1..], threads_context.deferred_entries[1..]) |*ta, *dq| {
+        for (
+            threads_context.arenas[1..],
+            threads_context.deferred_entries[1..],
+            threads_context.removed_entries[1..],
+        ) |*a, *de, *re| {
             const chunk = remaining_entries[0..chunk_size];
             remaining_entries = remaining_entries[chunk_size..];
             threads_context.pool.spawnWg(
                 &threads_context.wait_group,
                 replay_chunk,
-                .{ ta, dq, chunk, db, vk_device, progress, tag, replay_fn },
+                .{ a, de, re, chunk, db, vk_device, progress, tag, replay_fn },
             );
         }
         threads_context.pool.spawnWg(
@@ -662,6 +675,7 @@ pub fn replay(
             .{
                 &threads_context.arenas[0],
                 &threads_context.deferred_entries[0],
+                &threads_context.removed_entries[0],
                 remaining_entries,
                 db,
                 vk_device,
@@ -677,6 +691,12 @@ pub fn replay(
         var deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta) = .empty;
         for (threads_context.deferred_entries) |*de|
             try deferred_entries.appendSlice(tmp_alloc, de.items);
+        for (threads_context.removed_entries) |*re| {
+            for (re.items) |removed| {
+                const e = Database.Entry.from_ptr(removed.entry_ptr);
+                _ = db.entries.getPtr(tag).swapRemove(try e.get_value());
+            }
+        }
         remaining_entries = deferred_entries.items;
     }
 }
