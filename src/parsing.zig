@@ -9,7 +9,7 @@ const std = @import("std");
 const vk = @import("volk");
 const log = @import("log.zig");
 const root = @import("main.zig");
-const vk_print = @import("vulkan_print.zig");
+const vu = @import("vulkan_utils.zig");
 
 const Allocator = std.mem.Allocator;
 const Database = root.Database;

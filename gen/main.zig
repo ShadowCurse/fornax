@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const physical_device_features = @import("physical_device_features_gen.zig");
-const vulkan_print = @import("vulkan_print_gen.zig");
+const vulkan_utils = @import("vulkan_utils_gen.zig");
 
 pub const NOTE =
     \\// Copyright (c) 2025 Egor Lazarchuk
@@ -148,5 +148,5 @@ pub fn get_stype(alloc: Allocator, name: []const u8) ![]const u8 {
 
 pub fn main() !void {
     try physical_device_features.gen();
-    try vulkan_print.gen();
+    try vulkan_utils.gen();
 }
