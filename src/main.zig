@@ -6,12 +6,13 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const vk = @import("volk.zig");
+const vk = @import("volk");
+const miniz = @import("miniz");
 const log = @import("log.zig");
-const miniz = @import("miniz.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const PDF = @import("physical_device_features.zig");
+const vulkan_check = @import("vulkan_check.zig");
 const vulkan_print = @import("vulkan_print.zig");
 
 const Allocator = std.mem.Allocator;
@@ -102,7 +103,7 @@ pub fn main() !void {
     if (parsed_application_info.version != 6)
         return error.ApllicationInfoVersionMissmatch;
 
-    try vk.check_result(vk.volkInitialize());
+    try vulkan_check.check_result(vk.volkInitialize());
     const instance = try create_vk_instance(
         tmp_alloc,
         parsed_application_info.application_info,
@@ -771,13 +772,13 @@ pub fn contains_all_layers(
 
 pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionProperties {
     var extensions_count: u32 = 0;
-    try vk.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         null,
     ));
     const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vk.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         extensions.ptr,
@@ -787,9 +788,9 @@ pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionPr
 
 pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayerProperties {
     var layer_property_count: u32 = 0;
-    try vk.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
+    try vulkan_check.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
     const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vk.check_result(vk.vkEnumerateInstanceLayerProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateInstanceLayerProperties.?(
         &layer_property_count,
         layers.ptr,
     ));
@@ -882,7 +883,7 @@ pub fn create_vk_instance(
     };
 
     var vk_instance: vk.VkInstance = undefined;
-    try vk.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
+    try vulkan_check.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
     log.debug(
         @src(),
         "Created instance api version: {}.{}.{} has_properties_2: {}",
@@ -910,7 +911,7 @@ pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT
     };
 
     var callback: vk.VkDebugReportCallbackEXT = undefined;
-    try vk.check_result(
+    try vulkan_check.check_result(
         vk.vkCreateDebugReportCallbackEXT.?(
             instance,
             &create_info,
@@ -944,7 +945,7 @@ pub fn get_physical_devices(
     vk_instance: vk.VkInstance,
 ) ![]const vk.VkPhysicalDevice {
     var physical_device_count: u32 = 0;
-    try vk.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vulkan_check.check_result(vk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         null,
@@ -953,7 +954,7 @@ pub fn get_physical_devices(
         vk.VkPhysicalDevice,
         physical_device_count,
     );
-    try vk.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vulkan_check.check_result(vk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         physical_devices.ptr,
@@ -967,14 +968,14 @@ pub fn get_physical_device_exensions(
     extension_name: [*c]const u8,
 ) ![]const vk.VkExtensionProperties {
     var extensions_count: u32 = 0;
-    try vk.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
         null,
     ));
     const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vk.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
@@ -988,13 +989,13 @@ pub fn get_physical_device_layers(
     physical_device: vk.VkPhysicalDevice,
 ) ![]const vk.VkLayerProperties {
     var layer_property_count: u32 = 0;
-    try vk.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         null,
     ));
     const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vk.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    try vulkan_check.check_result(vk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         layers.ptr,
@@ -1229,7 +1230,7 @@ pub fn create_vk_device(
     };
 
     var vk_device: vk.VkDevice = undefined;
-    try vk.check_result(vk.vkCreateDevice.?(
+    try vulkan_check.check_result(vk.vkCreateDevice.?(
         physical_device.device,
         &create_info,
         null,
@@ -1243,7 +1244,7 @@ pub fn create_vk_sampler(
     create_info: *const vk.VkSamplerCreateInfo,
 ) !vk.VkSampler {
     var sampler: vk.VkSampler = undefined;
-    try vk.check_result(vk.vkCreateSampler.?(
+    try vulkan_check.check_result(vk.vkCreateSampler.?(
         vk_device,
         create_info,
         null,
@@ -1257,7 +1258,7 @@ pub fn create_descriptor_set_layout(
     create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 ) !vk.VkDescriptorSetLayout {
     var descriptor_set_layout: vk.VkDescriptorSetLayout = undefined;
-    try vk.check_result(vk.vkCreateDescriptorSetLayout.?(
+    try vulkan_check.check_result(vk.vkCreateDescriptorSetLayout.?(
         vk_device,
         create_info,
         null,
@@ -1271,7 +1272,7 @@ pub fn create_pipeline_layout(
     create_info: *const vk.VkPipelineLayoutCreateInfo,
 ) !vk.VkPipelineLayout {
     var pipeline_layout: vk.VkPipelineLayout = undefined;
-    try vk.check_result(vk.vkCreatePipelineLayout.?(
+    try vulkan_check.check_result(vk.vkCreatePipelineLayout.?(
         vk_device,
         create_info,
         null,
@@ -1285,7 +1286,7 @@ pub fn create_shader_module(
     create_info: *const vk.VkShaderModuleCreateInfo,
 ) !vk.VkShaderModule {
     var shader_module: vk.VkShaderModule = undefined;
-    try vk.check_result(vk.vkCreateShaderModule.?(
+    try vulkan_check.check_result(vk.vkCreateShaderModule.?(
         vk_device,
         create_info,
         null,
@@ -1299,7 +1300,7 @@ pub fn create_render_pass(
     create_info: *const vk.VkRenderPassCreateInfo,
 ) !vk.VkRenderPass {
     var render_pass: vk.VkRenderPass = undefined;
-    try vk.check_result(vk.vkCreateRenderPass.?(
+    try vulkan_check.check_result(vk.vkCreateRenderPass.?(
         vk_device,
         create_info,
         null,
@@ -1313,7 +1314,7 @@ pub fn create_graphics_pipeline(
     create_info: *const vk.VkGraphicsPipelineCreateInfo,
 ) !vk.VkPipeline {
     var pipeline: vk.VkPipeline = undefined;
-    try vk.check_result(vk.vkCreateGraphicsPipelines.?(
+    try vulkan_check.check_result(vk.vkCreateGraphicsPipelines.?(
         vk_device,
         null,
         1,
@@ -1329,7 +1330,7 @@ pub fn create_compute_pipeline(
     create_info: *const vk.VkComputePipelineCreateInfo,
 ) !vk.VkPipeline {
     var pipeline: vk.VkPipeline = undefined;
-    try vk.check_result(vk.vkCreateComputePipelines.?(
+    try vulkan_check.check_result(vk.vkCreateComputePipelines.?(
         vk_device,
         null,
         1,
@@ -1345,7 +1346,7 @@ pub fn create_raytracing_pipeline(
     create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
 ) !vk.VkPipeline {
     var pipeline: vk.VkPipeline = undefined;
-    try vk.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
+    try vulkan_check.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
         vk_device,
         null,
         null,

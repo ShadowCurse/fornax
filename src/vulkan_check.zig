@@ -1,12 +1,8 @@
 // Copyright (c) 2025 Egor Lazarchuk
 // SPDX-License-Identifier: MIT
 
-const vk = @cImport({
-    @cInclude("volk.h");
-});
+const vk = @import("volk");
 const log = @import("log.zig");
-
-pub usingnamespace vk;
 
 pub fn check_result(result: vk.VkResult) !void {
     switch (result) {

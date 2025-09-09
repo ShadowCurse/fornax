@@ -76,8 +76,10 @@ fn find_arg(comptime field: std.builtin.Type.StructField) ?struct { u32, []const
 pub fn print_help(comptime T: type) !void {
     const type_fields = comptime @typeInfo(T).@"struct".fields;
 
-    const stdout = std.io.getStdOut();
-    const writer = stdout.writer();
+    var buffer: [1024]u8 = undefined;
+    var stdout_writer = std.fs.File.stdout().writer(&buffer);
+    const writer = &stdout_writer.interface;
+    defer writer.flush() catch unreachable;
     try writer.print("Usage:\n", .{});
 
     inline for (type_fields) |field| {

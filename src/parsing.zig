@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const vk = @import("volk.zig");
+const vk = @import("volk");
 const log = @import("log.zig");
 const root = @import("main.zig");
 const vk_print = @import("vulkan_print.zig");
@@ -1710,7 +1710,7 @@ fn parse_vk_shader_module_create_info(
     }
     if (shader_code_payload.len < variant_offset + variant_size)
         return error.InvalidShaderPayload;
-    const code = try context.alloc.alignedAlloc(u32, 64, item.codeSize / @sizeOf(u32));
+    const code = try context.alloc.alignedAlloc(u32, .@"64", item.codeSize / @sizeOf(u32));
     if (!Inner.decode_shader_payload(
         shader_code_payload[variant_offset..][0..variant_size],
         code,

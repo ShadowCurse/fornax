@@ -5,7 +5,7 @@
 
 const std = @import("std");
 const log = @import("log.zig");
-const vk = @import("volk.zig");
+const vk = @import("volk");
 
 pub fn print_chain(chain: anytype) void {
     var current: ?*const anyopaque = chain;

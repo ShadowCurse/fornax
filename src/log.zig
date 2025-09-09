@@ -19,6 +19,7 @@ pub const Options = struct {
     colors: bool = true,
     level: LogLevel = .Info,
     asserts: bool = true,
+    buffer_size: u32 = 256,
 
     const Self = @This();
     pub fn log_enabled(self: Self, level: LogLevel) bool {
@@ -33,6 +34,8 @@ pub const options: Options = if (@hasDecl(root, "log_options"))
     root.log_options
 else
     .{};
+
+var buffer: [options.buffer_size]u8 = undefined;
 
 pub fn comptime_err(
     comptime src: std.builtin.SourceLocation,
@@ -150,15 +153,11 @@ pub fn output(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    const stderr = std.io.getStdErr().writer();
-    var bw = std.io.bufferedWriter(stderr);
-    const writer = bw.writer();
-
-    std.debug.lockStdErr();
+    const writer = std.debug.lockStderrWriter(&buffer);
     defer std.debug.unlockStdErr();
     nosuspend {
         writer.print(format, args) catch return;
-        bw.flush() catch return;
+        writer.flush() catch return;
     }
 }
 

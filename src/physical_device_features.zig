@@ -5,7 +5,7 @@
 
 const std = @import("std");
 const log = @import("log.zig");
-const vk = @import("volk.zig");
+const vk = @import("volk");
 
 vk_physical_device_16bit_storage_features: vk.VkPhysicalDevice16BitStorageFeatures =
     .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES },
