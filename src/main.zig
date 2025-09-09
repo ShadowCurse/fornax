@@ -126,84 +126,26 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    var threads_context: ThreadsContext = undefined;
-    try init_thread_pool_context(&threads_context, arena_alloc, args.num_threads);
-
-    try replay(
-        &tmp_arena,
-        &threads_context,
+    var tp: ThreadPool = undefined;
+    try init_thread_pool_context(&tp, args.num_threads);
+    const tc = try init_thread_contexts(
+        arena_alloc,
+        args.num_threads,
         &progress_root,
         &db,
         vk_device,
-        .SAMPLER,
-        &replay_sampler,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .DESCRIPTOR_SET_LAYOUT,
-        &replay_descriptor_set,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .PIPELINE_LAYOUT,
-        &replay_pipeline_layout,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .RENDER_PASS,
-        &replay_render_pass,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .SHADER_MODULE,
-        &replay_shader_module,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .GRAPHICS_PIPELINE,
-        &replay_graphics_pipeline,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .COMPUTE_PIPELINE,
-        &replay_compute_pipeline,
-    );
-    try replay(
-        &tmp_arena,
-        &threads_context,
-        &progress_root,
-        &db,
-        vk_device,
-        .RAYTRACING_PIPELINE,
-        &replay_raytracing_pipeline,
     );
 
-    const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
-        threads_context.memory_usage();
+    try replay(&tmp_arena, &tp, tc, &db, .SAMPLER, &replay_sampler);
+    try replay(&tmp_arena, &tp, tc, &db, .DESCRIPTOR_SET_LAYOUT, &replay_descriptor_set);
+    try replay(&tmp_arena, &tp, tc, &db, .PIPELINE_LAYOUT, &replay_pipeline_layout);
+    try replay(&tmp_arena, &tp, tc, &db, .RENDER_PASS, &replay_render_pass);
+    try replay(&tmp_arena, &tp, tc, &db, .SHADER_MODULE, &replay_shader_module);
+    try replay(&tmp_arena, &tp, tc, &db, .GRAPHICS_PIPELINE, &replay_graphics_pipeline);
+    try replay(&tmp_arena, &tp, tc, &db, .COMPUTE_PIPELINE, &replay_compute_pipeline);
+    try replay(&tmp_arena, &tp, tc, &db, .RAYTRACING_PIPELINE, &replay_raytracing_pipeline);
+
+    const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
     log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
 
@@ -435,12 +377,6 @@ pub fn open_database(
     };
 }
 
-pub fn print_replay_time(start: std.time.Instant, tag: Database.Entry.Tag, n: usize) void {
-    const now = std.time.Instant.now() catch unreachable;
-    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    log.info(@src(), "Replayed {d:>6} {s:<21} in {d:.3}ms", .{ n, @tagName(tag), dt });
-}
-
 pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
     const tag = entry.get_tag() catch unreachable;
     const hash: u64 = entry.get_value() catch unreachable;
@@ -462,8 +398,8 @@ pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
     }
 }
 
-pub const Action = enum {
-    Pass,
+pub const Action = union(enum) {
+    Pass: struct { u64, u64 },
     Defer,
     Remove,
 };
@@ -482,6 +418,7 @@ pub fn create_replay_fn(
             vk_device: vk.VkDevice,
         ) anyerror!Action {
             const e = Database.Entry.from_ptr(entry.entry_ptr);
+            const parse_start = try std.time.Instant.now();
             const result = PARSE_FN(tmp_alloc, tmp_alloc, db, entry.payload) catch |err| {
                 if (err == error.NoHandleFound) return .Defer;
                 if (err == error.NoObjectFound) return .Remove;
@@ -493,7 +430,9 @@ pub fn create_replay_fn(
                 log.debug(@src(), "json: {s}", .{entry.payload});
                 return err;
             };
+            const parse_end = try std.time.Instant.now();
             try check_version_and_hash(result, &e);
+            const create_start = try std.time.Instant.now();
             const handle = CREATE_FN(vk_device, result.create_info) catch |err| {
                 log.err(
                     @src(),
@@ -503,31 +442,68 @@ pub fn create_replay_fn(
                 vu.print_struct(result.create_info);
                 return .Remove;
             };
+            const create_end = try std.time.Instant.now();
             @atomicStore(?*anyopaque, &entry.handle, handle, .seq_cst);
-            return .Pass;
+            return .{ .Pass = .{ parse_end.since(parse_start), create_end.since(create_start) } };
         }
     };
     return Inner.replay;
 }
 
-pub const ThreadsContext = struct {
-    wait_group: std.Thread.WaitGroup,
-    pool: std.Thread.Pool,
-    arenas: []std.heap.ArenaAllocator,
-    deferred_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
-    removed_entries: []std.ArrayListUnmanaged(Database.EntryMeta),
+pub const ThreadContext = struct {
+    arena: std.heap.ArenaAllocator,
+    deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta),
+    removed_entries: std.ArrayListUnmanaged(Database.EntryMeta),
+    parse_time_acc: u64,
+    create_time_acc: u64,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
 
-    pub fn memory_usage(self: *const ThreadsContext) u64 {
-        var total: u64 = 0;
-        for (self.arenas) |a| {
-            total += a.queryCapacity();
-        }
-        return total;
+    pub fn reset(self: *ThreadContext) void {
+        _ = self.arena.reset(.retain_capacity);
+        self.deferred_entries = .empty;
+        self.removed_entries = .empty;
+        self.parse_time_acc = 0;
+        self.create_time_acc = 0;
     }
 };
-pub fn init_thread_pool_context(
-    context: *ThreadsContext,
+
+pub fn init_thread_contexts(
     alloc: Allocator,
+    num_threads: ?u32,
+    progress: *std.Progress.Node,
+    db: *const Database,
+    vk_device: vk.VkDevice,
+) ![]align(64) ThreadContext {
+    const host_threads = std.Thread.getCpuCount() catch 1;
+    const n_threads = if (num_threads) |nt| blk: {
+        if (nt == 0) break :blk host_threads else break :blk nt;
+    } else host_threads;
+
+    const contexts = try alloc.alignedAlloc(ThreadContext, .@"64", n_threads);
+
+    for (contexts) |*c| {
+        c.* = .{
+            .arena = .init(std.heap.page_allocator),
+            .deferred_entries = .empty,
+            .removed_entries = .empty,
+            .parse_time_acc = 0,
+            .create_time_acc = 0,
+            .progress = progress,
+            .db = db,
+            .vk_device = vk_device,
+        };
+    }
+    return contexts;
+}
+
+pub const ThreadPool = struct {
+    wait_group: std.Thread.WaitGroup,
+    pool: std.Thread.Pool,
+};
+pub fn init_thread_pool_context(
+    context: *ThreadPool,
     num_threads: ?u32,
 ) !void {
     const host_threads = std.Thread.getCpuCount() catch 1;
@@ -538,19 +514,6 @@ pub fn init_thread_pool_context(
 
     context.wait_group = .{};
     try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
-
-    context.arenas = try alloc.alloc(std.heap.ArenaAllocator, n_threads);
-    for (context.arenas) |*ta|
-        ta.* = .init(std.heap.page_allocator);
-
-    context.deferred_entries = try alloc.alloc(
-        std.ArrayListUnmanaged(Database.EntryMeta),
-        n_threads,
-    );
-    context.removed_entries = try alloc.alloc(
-        std.ArrayListUnmanaged(Database.EntryMeta),
-        n_threads,
-    );
 }
 
 pub const replay_sampler = create_replay_fn(
@@ -602,24 +565,15 @@ pub const replay_raytracing_pipeline = create_replay_fn(
 );
 
 pub fn replay_chunk(
-    arena: *std.heap.ArenaAllocator,
-    deferred_entries: *std.ArrayListUnmanaged(Database.EntryMeta),
-    removed_entries: *std.ArrayListUnmanaged(Database.EntryMeta),
+    context: *ThreadContext,
     chunk: []Database.EntryMeta,
-    db: *const Database,
-    vk_device: vk.VkDevice,
-    progress: *std.Progress.Node,
     tag: Database.Entry.Tag,
     replay_fn: *const REPLAY_FN,
 ) void {
-    _ = arena.reset(.retain_capacity);
-    deferred_entries.* = .empty;
-    removed_entries.* = .empty;
-
-    const alloc = arena.allocator();
+    const alloc = context.arena.allocator();
 
     const name = std.fmt.allocPrint(alloc, "replaying {s}", .{@tagName(tag)}) catch unreachable;
-    var sub_progress = progress.start(name, chunk.len);
+    var sub_progress = context.progress.start(name, chunk.len);
     defer sub_progress.end();
 
     var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
@@ -628,74 +582,98 @@ pub fn replay_chunk(
         defer _ = tmp_allocator.reset(.retain_capacity);
         defer sub_progress.completeOne();
 
-        const action = replay_fn(tmp_alloc, gp, db, vk_device) catch break;
+        const action = replay_fn(tmp_alloc, gp, context.db, context.vk_device) catch break;
         switch (action) {
-            .Pass => {},
-            .Defer => deferred_entries.append(alloc, gp.*) catch unreachable,
-            .Remove => removed_entries.append(alloc, gp.*) catch unreachable,
+            .Pass => |times| {
+                const parse_time_ns, const create_time_ns = times;
+                context.parse_time_acc += parse_time_ns;
+                context.create_time_acc += create_time_ns;
+            },
+            .Defer => context.deferred_entries.append(alloc, gp.*) catch unreachable,
+            .Remove => context.removed_entries.append(alloc, gp.*) catch unreachable,
         }
     }
 }
 
+pub fn print_replay_time(
+    start: std.time.Instant,
+    tag: Database.Entry.Tag,
+    processed: usize,
+    removed: usize,
+    total_parse_ns: u64,
+    total_create_ns: u64,
+) void {
+    const now = std.time.Instant.now() catch unreachable;
+    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
+    const avg_parse = if (processed == 0) 0 else total_parse_ns / processed;
+    const avg_create = if (processed == 0) 0 else total_create_ns / processed;
+    log.info(
+        @src(),
+        "Replayed {d:>6} {s:<21} in {d:>9.3}ms Skipped {d:>6} Avg parse time: {d:>8}ns Avg create time: {d:>8}ns",
+        .{
+            processed,
+            @tagName(tag),
+            dt,
+            removed,
+            avg_parse,
+            avg_create,
+        },
+    );
+}
 pub fn replay(
     tmp_allocator: *std.heap.ArenaAllocator,
-    threads_context: *ThreadsContext,
-    progress: *std.Progress.Node,
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
     db: *Database,
-    vk_device: vk.VkDevice,
     tag: Database.Entry.Tag,
     replay_fn: *const REPLAY_FN,
 ) !void {
     const entries = db.entries.getPtrConst(tag).values();
+
+    var processed = entries.len;
+    var removed: usize = 0;
+    var total_parse_ns: u64 = 0;
+    var total_create_ns: u64 = 0;
     const t_start = try std.time.Instant.now();
-    defer print_replay_time(t_start, tag, entries.len);
+    defer print_replay_time(t_start, tag, processed, removed, total_parse_ns, total_create_ns);
 
     const tmp_alloc = tmp_allocator.allocator();
     defer _ = tmp_allocator.reset(.retain_capacity);
 
     var remaining_entries = entries;
     while (remaining_entries.len != 0) {
-        const chunk_size = remaining_entries.len / (threads_context.arenas.len - 1);
-        for (
-            threads_context.arenas[1..],
-            threads_context.deferred_entries[1..],
-            threads_context.removed_entries[1..],
-        ) |*a, *de, *re| {
+        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
             remaining_entries = remaining_entries[chunk_size..];
-            threads_context.pool.spawnWg(
-                &threads_context.wait_group,
+            thread_pool.pool.spawnWg(
+                &thread_pool.wait_group,
                 replay_chunk,
-                .{ a, de, re, chunk, db, vk_device, progress, tag, replay_fn },
+                .{ tc, chunk, tag, replay_fn },
             );
         }
-        threads_context.pool.spawnWg(
-            &threads_context.wait_group,
+        thread_pool.pool.spawnWg(
+            &thread_pool.wait_group,
             replay_chunk,
-            .{
-                &threads_context.arenas[0],
-                &threads_context.deferred_entries[0],
-                &threads_context.removed_entries[0],
-                remaining_entries,
-                db,
-                vk_device,
-                progress,
-                tag,
-                replay_fn,
-            },
+            .{ &thread_contexts[0], remaining_entries, tag, replay_fn },
         );
-        threads_context.wait_group.wait();
-        threads_context.wait_group.reset();
+        thread_pool.wait_group.wait();
+        thread_pool.wait_group.reset();
 
         _ = tmp_allocator.reset(.retain_capacity);
         var deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta) = .empty;
-        for (threads_context.deferred_entries) |*de|
-            try deferred_entries.appendSlice(tmp_alloc, de.items);
-        for (threads_context.removed_entries) |*re| {
-            for (re.items) |removed| {
-                const e = Database.Entry.from_ptr(removed.entry_ptr);
+        for (thread_contexts) |*context| {
+            total_parse_ns += context.parse_time_acc;
+            total_create_ns += context.create_time_acc;
+            processed -= context.removed_entries.items.len;
+            removed += context.removed_entries.items.len;
+
+            try deferred_entries.appendSlice(tmp_alloc, context.deferred_entries.items);
+            for (context.removed_entries.items) |r| {
+                const e = Database.Entry.from_ptr(r.entry_ptr);
                 _ = db.entries.getPtr(tag).swapRemove(try e.get_value());
             }
+            context.reset();
         }
         remaining_entries = deferred_entries.items;
     }
