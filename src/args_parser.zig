@@ -36,6 +36,11 @@ pub fn parse(comptime T: type, alloc: Allocator) !T {
                     consumed_args |= @as(u64, 1) << @truncate(i);
                     @field(t, field.name) = true;
                 },
+                ?i32 => {
+                    consumed_args |= @as(u64, 1) << @truncate(i);
+                    consumed_args |= @as(u64, 1) << @truncate(i + 1);
+                    @field(t, field.name) = try std.fmt.parseInt(i32, arg, 10);
+                },
                 ?u32 => {
                     consumed_args |= @as(u64, 1) << @truncate(i);
                     consumed_args |= @as(u64, 1) << @truncate(i + 1);
