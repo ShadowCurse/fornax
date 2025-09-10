@@ -35,6 +35,7 @@ pub const options: Options = if (@hasDecl(root, "log_options"))
 else
     .{};
 
+pub var output_fd: i32 = std.posix.STDERR_FILENO;
 var buffer: [options.buffer_size]u8 = undefined;
 
 pub fn comptime_err(
@@ -153,8 +154,15 @@ pub fn output(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    const writer = std.debug.lockStderrWriter(&buffer);
-    defer std.debug.unlockStdErr();
+    var output_writer: std.fs.File.Writer = .{
+        .interface = std.fs.File.Writer.initInterface(&.{}),
+        .file = .{
+            .handle = output_fd,
+        },
+        .mode = .streaming,
+    };
+    const writer = &output_writer.interface; 
+
     nosuspend {
         writer.print(format, args) catch return;
         writer.flush() catch return;
