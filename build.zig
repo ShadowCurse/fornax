@@ -21,7 +21,6 @@ pub fn build(b: *std.Build) !void {
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
-        .link_libc = true,
         .imports = &.{
             .{ .name = "miniz", .module = miniz_mod },
             .{ .name = "volk", .module = volk_mod },
@@ -103,6 +102,7 @@ pub fn create_miniz_module(
         .root_source_file = miniz_translate.getOutput(),
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
     miniz_mod.addConfigHeader(miniz_config_header);
     miniz_mod.addIncludePath(b.path("thirdparty/miniz"));
