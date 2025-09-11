@@ -43,8 +43,8 @@ const Args = struct {
     master_process: bool = false,
     slave_process: bool = false,
     progress: bool = false,
-    shmem_fd: ?u32 = null,
-    control_fd: ?u32 = null,
+    shmem_fd: ?i32 = null,
+    control_fd: ?i32 = null,
     shader_cache_size: ?u32 = null,
     // Deprecated
     ignore_derived_pipelines: void = {},
@@ -57,6 +57,45 @@ const Args = struct {
     disable_rate_limiter: bool = false,
     database_paths: args_parser.RemainingArgs = .{},
 };
+
+pub fn log_args(args: *const Args) void {
+    log.info(@src(), "Args:", .{});
+    log.info(@src(), "help: {}", .{args.help});
+    log.info(@src(), "device_index: {?}", .{args.device_index});
+    log.info(@src(), "enable_validation: {}", .{args.enable_validation});
+    log.info(@src(), "spirv_val: {}", .{args.spirv_val});
+    log.info(@src(), "on_disk_pipeline_cache: {?s}", .{args.on_disk_pipeline_cache});
+    log.info(@src(), "on_disk_validation_cache: {?s}", .{args.on_disk_validation_cache});
+    log.info(@src(), "on_disk_validation_blacklist: {?s}", .{args.on_disk_validation_blacklist});
+    log.info(@src(), "on_disk_validation_whitelist: {?s}", .{args.on_disk_validation_whitelist});
+    log.info(@src(), "on_disk_replay_whitelist: {?s}", .{args.on_disk_replay_whitelist});
+    log.info(@src(), "on_disk_replay_whitelist_mask: {?s}", .{args.on_disk_replay_whitelist_mask});
+    log.info(@src(), "num_threads: {?}", .{args.num_threads});
+    log.info(@src(), "loop: {?}", .{args.loop});
+    log.info(@src(), "pipeline_hash: {?}", .{args.pipeline_hash});
+    log.info(@src(), "graphics_pipeline_range: {?}", .{args.graphics_pipeline_range});
+    log.info(@src(), "compute_pipeline_range: {?}", .{args.compute_pipeline_range});
+    log.info(@src(), "raytracing_pipeline_range: {?}", .{args.raytracing_pipeline_range});
+    log.info(@src(), "enable_pipeline_stats: {?s}", .{args.enable_pipeline_stats});
+    log.info(@src(), "on_disk_module_identifier: {?s}", .{args.on_disk_module_identifier});
+    log.info(@src(), "quiet_slave: {}", .{args.quiet_slave});
+    log.info(@src(), "master_process: {}", .{args.master_process});
+    log.info(@src(), "slave_process: {}", .{args.slave_process});
+    log.info(@src(), "progress: {}", .{args.progress});
+    log.info(@src(), "shmem_fd: {?}", .{args.shmem_fd});
+    log.info(@src(), "control_fd: {?}", .{args.control_fd});
+    log.info(@src(), "shader_cache_size: {?}", .{args.shader_cache_size});
+    log.info(@src(), "log_memory: {}", .{args.log_memory});
+    log.info(@src(), "null_device: {}", .{args.null_device});
+    log.info(@src(), "timeout_seconds: {?}", .{args.timeout_seconds});
+    log.info(@src(), "implicit_whitelist: {?}", .{args.implicit_whitelist});
+    log.info(@src(), "replayer_cache: {?s}", .{args.replayer_cache});
+    log.info(@src(), "disable_signal_handler: {}", .{args.disable_signal_handler});
+    log.info(@src(), "disable_rate_limiter: {}", .{args.disable_rate_limiter});
+    log.info(@src(), "databases:", .{});
+    for (args.database_paths.values) |p|
+        log.info(@src(), "{s}", .{p});
+}
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -77,6 +116,9 @@ pub fn main() !void {
         return;
     }
 
+    if (args.shmem_fd) |shmem_fd|
+        try open_control_block(shmem_fd);
+
     var progress = std.Progress.start(.{});
     defer progress.end();
 
@@ -86,6 +128,23 @@ pub fn main() !void {
     const db_path = std.mem.span(args.database_paths.values[0]);
     var db = try open_database(tmp_alloc, &progress_root, db_path);
     _ = tmp_arena.reset(.retain_capacity);
+
+    if (control_block) |cb| {
+        const graphics: u32 =
+            @intCast(db.entries.getPtrConst(.GRAPHICS_PIPELINE).values().len);
+        cb.static_total_count_graphics.store(graphics, .release);
+        const compute: u32 =
+            @intCast(db.entries.getPtrConst(.COMPUTE_PIPELINE).values().len);
+        cb.static_total_count_compute.store(compute, .release);
+        const raytracing: u32 =
+            @intCast(db.entries.getPtrConst(.RAYTRACING_PIPELINE).values().len);
+        cb.static_total_count_raytracing.store(raytracing, .release);
+
+        cb.num_running_processes.store(args.num_threads.? + 1, .release);
+        cb.num_processes_memory_stats.store(args.num_threads.? + 1, .release);
+
+        cb.progress_started.store(1, .release);
+    }
 
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len == 0)
@@ -150,8 +209,89 @@ pub fn main() !void {
     try replay(&tmp_arena, &tp, tc, &db, .COMPUTE_PIPELINE, &replay_compute_pipeline);
     try replay(&tmp_arena, &tp, tc, &db, .RAYTRACING_PIPELINE, &replay_raytracing_pipeline);
 
+    // Don't set the completion because otherwise Steam will remember that everything
+    // is replayed and will not try to replay shaders again.
+    // if (control_block) |cb|
+    //     cb.progress_complete.store(1, .release);
+
     const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
     log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
+}
+
+pub const MAX_PROCESS_STATS = 256;
+pub const CONTROL_BLOCK_MAGIC = 0x19bcde1d;
+pub const SharedControlBlock = struct {
+    version_cookie: u32,
+    futex_lock: u32,
+
+    successful_modules: std.atomic.Value(u32),
+    successful_graphics: std.atomic.Value(u32),
+    successful_compute: std.atomic.Value(u32),
+    successful_raytracing: std.atomic.Value(u32),
+    skipped_graphics: std.atomic.Value(u32),
+    skipped_compute: std.atomic.Value(u32),
+    skipped_raytracing: std.atomic.Value(u32),
+    cached_graphics: std.atomic.Value(u32),
+    cached_compute: std.atomic.Value(u32),
+    cached_raytracing: std.atomic.Value(u32),
+    clean_process_deaths: std.atomic.Value(u32),
+    dirty_process_deaths: std.atomic.Value(u32),
+    parsed_graphics: std.atomic.Value(u32),
+    parsed_compute: std.atomic.Value(u32),
+    parsed_raytracing: std.atomic.Value(u32),
+    parsed_graphics_failures: std.atomic.Value(u32),
+    parsed_compute_failures: std.atomic.Value(u32),
+    parsed_raytracing_failures: std.atomic.Value(u32),
+    parsed_module_failures: std.atomic.Value(u32),
+    total_graphics: std.atomic.Value(u32),
+    total_compute: std.atomic.Value(u32),
+    total_raytracing: std.atomic.Value(u32),
+    total_modules: std.atomic.Value(u32),
+    banned_modules: std.atomic.Value(u32),
+    module_validation_failures: std.atomic.Value(u32),
+    progress_started: std.atomic.Value(u32),
+    progress_complete: std.atomic.Value(u32),
+
+    // Need to set before `progress_started` is set
+    // This is a total number of pipelines
+    static_total_count_graphics: std.atomic.Value(u32),
+    static_total_count_compute: std.atomic.Value(u32),
+    static_total_count_raytracing: std.atomic.Value(u32),
+
+    num_running_processes: std.atomic.Value(u32),
+    num_processes_memory_stats: std.atomic.Value(u32),
+    metadata_shared_size_mib: std.atomic.Value(u32),
+    process_reserved_memory_mib: [MAX_PROCESS_STATS]std.atomic.Value(u32),
+    process_shared_memory_mib: [MAX_PROCESS_STATS]std.atomic.Value(u32),
+    process_heartbeats: [MAX_PROCESS_STATS]std.atomic.Value(u32),
+
+    dirty_pages_mib: std.atomic.Value(i32),
+    io_stall_percentage: std.atomic.Value(i32),
+
+    write_count: u32,
+    read_count: u32,
+    read_offset: u32,
+    write_offset: u32,
+    ring_buffer_offset: u32,
+    ring_buffer_size: u32,
+};
+
+var control_block: ?*SharedControlBlock = null;
+pub fn open_control_block(shmem_fd: i32) !void {
+    const fstat = try std.posix.fstat(shmem_fd);
+    if (fstat.size < @as(i64, @intCast(@sizeOf(SharedControlBlock))))
+        return error.SharedMemoryIsSmallerThanControlBlock;
+    const mem = try std.posix.mmap(
+        null,
+        @intCast(fstat.size),
+        std.posix.PROT.READ | std.posix.PROT.WRITE,
+        .{ .TYPE = .SHARED },
+        shmem_fd,
+        0,
+    );
+    control_block = @ptrCast(@alignCast(mem.ptr));
+    if (control_block.?.version_cookie != CONTROL_BLOCK_MAGIC)
+        return error.InvalidControlBlockMagic;
 }
 
 pub fn mmap_file(path: []const u8) ![]const u8 {
@@ -684,6 +824,35 @@ pub fn replay(
             context.reset();
         }
         remaining_entries = deferred_entries.items;
+    }
+
+    if (control_block) |cb| {
+        switch (tag) {
+            .SHADER_MODULE => {
+                cb.total_modules.store(@intCast(processed), .release);
+                cb.successful_modules.store(@intCast(processed), .release);
+                cb.parsed_module_failures.store(@intCast(removed), .release);
+            },
+            .GRAPHICS_PIPELINE => {
+                cb.total_graphics.store(@intCast(processed), .release);
+                cb.parsed_graphics.store(@intCast(processed), .release);
+                cb.successful_graphics.store(@intCast(processed), .release);
+                cb.parsed_graphics_failures.store(@intCast(removed), .release);
+            },
+            .COMPUTE_PIPELINE => {
+                cb.total_compute.store(@intCast(processed), .release);
+                cb.parsed_compute.store(@intCast(processed), .release);
+                cb.successful_compute.store(@intCast(processed), .release);
+                cb.parsed_compute_failures.store(@intCast(removed), .release);
+            },
+            .RAYTRACING_PIPELINE => {
+                cb.total_raytracing.store(@intCast(processed), .release);
+                cb.parsed_raytracing.store(@intCast(processed), .release);
+                cb.successful_raytracing.store(@intCast(processed), .release);
+                cb.parsed_raytracing_failures.store(@intCast(removed), .release);
+            },
+            else => {},
+        }
     }
 }
 
