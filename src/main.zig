@@ -65,9 +65,14 @@ pub fn main() !void {
     const tmp_alloc = tmp_arena.allocator();
 
     const args = try args_parser.parse(Args, arena_alloc);
-    if (args.help or
-        args.database_paths.values.len == 0)
-    {
+
+    if (std.posix.getenv("GLACIER_LOG_PATH")) |log_path| {
+        const log_file = try std.fs.createFileAbsolute(log_path, .{});
+        log.output_fd = log_file.handle;
+        log_args(&args);
+    }
+
+    if (args.help or args.database_paths.values.len == 0) {
         try args_parser.print_help(Args);
         return;
     }
