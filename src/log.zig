@@ -36,6 +36,7 @@ else
     .{};
 
 pub var output_fd: i32 = std.posix.STDERR_FILENO;
+var output_mutex: std.Thread.Mutex.Recursive = .init;
 var buffer: [options.buffer_size]u8 = undefined;
 
 pub fn comptime_err(
@@ -50,6 +51,16 @@ pub fn comptime_err(
         @compileError(std.fmt.comptimePrint(RED ++ "{s} " ++ format ++ DEFAULT_COLOR, t))
     else
         @compileError(std.fmt.comptimePrint("{s} " ++ format, t));
+}
+
+pub fn comptime_assert(
+    comptime src: std.builtin.SourceLocation,
+    comptime ok: bool,
+    comptime format: []const u8,
+    comptime args: anytype,
+) void {
+    if (comptime !options.asserts) return;
+    if (!ok) comptime_err(src, format, args);
 }
 
 pub fn panic(
@@ -150,10 +161,7 @@ pub fn err(
         output("{s} " ++ format ++ "\n", t);
 }
 
-pub fn output(
-    comptime format: []const u8,
-    args: anytype,
-) void {
+pub fn output(comptime format: []const u8, args: anytype) void {
     var output_writer: std.fs.File.Writer = .{
         .interface = std.fs.File.Writer.initInterface(&.{}),
         .file = .{
@@ -161,9 +169,12 @@ pub fn output(
         },
         .mode = .streaming,
     };
-    const writer = &output_writer.interface; 
+    const writer = &output_writer.interface;
 
     nosuspend {
+        output_mutex.lock();
+        defer output_mutex.unlock();
+
         writer.print(format, args) catch return;
         writer.flush() catch return;
     }
