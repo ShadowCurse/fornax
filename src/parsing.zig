@@ -10,9 +10,9 @@ const vk = @import("volk");
 const log = @import("log.zig");
 const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
+const Database = @import("database.zig");
 
 const Allocator = std.mem.Allocator;
-const Database = root.Database;
 
 pub const Context = struct {
     alloc: Allocator,
