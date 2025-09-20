@@ -34,6 +34,12 @@ pub const EntryMeta = struct {
     entry_ptr: [*]const u8,
     payload: []const u8,
     handle: ?*anyopaque = null,
+
+    pub const Dependency = struct {
+        tag: Entry.Tag,
+        hash: u64,
+        ptr_to_handle: ?*anyopaque,
+    };
 };
 pub const Entry = extern struct {
     // 8 bytes: ???
@@ -107,7 +113,11 @@ pub const Entry = extern struct {
     }
 };
 
-pub fn get_handle(self: *const Self, tag: Entry.Tag, hash: u64) !*anyopaque {
+pub const GetHandleResult = union(enum) {
+    handle: *anyopaque,
+    dependency: EntryMeta.Dependency,
+};
+pub fn get_handle(self: *const Self, tag: Entry.Tag, hash: u64) !GetHandleResult {
     const entries = self.entries.getPtrConst(tag);
     const entry = entries.getPtr(hash) orelse {
         log.debug(
@@ -119,14 +129,15 @@ pub fn get_handle(self: *const Self, tag: Entry.Tag, hash: u64) !*anyopaque {
     };
     const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
     if (handle) |h|
-        return h
+        return .{ .handle = h }
     else {
-        log.debug(
-            @src(),
-            "Attempt to get handle for not yet build object with tag: {s} hash: 0x{x}",
-            .{ @tagName(tag), hash },
-        );
-        return error.NoHandleFound;
+        return .{
+            .dependency = .{
+                .tag = tag,
+                .hash = hash,
+                .ptr_to_handle = null,
+            },
+        };
     }
 }
 

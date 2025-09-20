@@ -11,12 +11,14 @@ const log = @import("log.zig");
 const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
 const Database = @import("database.zig");
+const Dependency = Database.EntryMeta.Dependency;
 
 const Allocator = std.mem.Allocator;
 
 pub const Context = struct {
     alloc: Allocator,
     tmp_alloc: Allocator,
+    dependencies: std.ArrayListUnmanaged(Dependency) = .empty,
     scanner: *std.json.Scanner,
     db: *const Database,
 };
@@ -42,7 +44,7 @@ pub fn parse_application_info(
         .device_features2 = vk_physical_device_features2,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -103,7 +105,7 @@ pub fn parse_sampler(
         .create_info = vk_sampler_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -150,6 +152,7 @@ pub const ParsedDescriptorSetLayout = struct {
     version: u32,
     hash: u64,
     create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
+    dependencies: []const Dependency = &.{},
 };
 pub fn parse_descriptor_set_layout(
     alloc: Allocator,
@@ -167,7 +170,7 @@ pub fn parse_descriptor_set_layout(
         .create_info = vk_descriptor_set_layout_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -191,6 +194,7 @@ pub fn parse_descriptor_set_layout(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
     return result;
 }
 
@@ -217,6 +221,7 @@ pub const ParsedPipelineLayout = struct {
     version: u32,
     hash: u64,
     create_info: *const vk.VkPipelineLayoutCreateInfo,
+    dependencies: []const Dependency = &.{},
 };
 pub fn parse_pipeline_layout(
     alloc: Allocator,
@@ -233,7 +238,7 @@ pub fn parse_pipeline_layout(
         .create_info = vk_pipeline_layout_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -257,6 +262,7 @@ pub fn parse_pipeline_layout(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
     return result;
 }
 
@@ -307,7 +313,7 @@ pub fn parse_shader_module(
         .create_info = vk_shader_module_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -374,7 +380,7 @@ pub fn parse_render_pass(
         .create_info = vk_render_pass_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -421,6 +427,7 @@ pub const ParsedComputePipeline = struct {
     version: u32,
     hash: u64,
     create_info: *const vk.VkComputePipelineCreateInfo,
+    dependencies: []const Dependency = &.{},
 };
 pub fn parse_compute_pipeline(
     alloc: Allocator,
@@ -437,7 +444,7 @@ pub fn parse_compute_pipeline(
         .create_info = create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -458,6 +465,7 @@ pub fn parse_compute_pipeline(
             );
         }
     }
+    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
     return result;
 }
 
@@ -493,6 +501,7 @@ pub const ParsedRaytracingPipeline = struct {
     version: u32,
     hash: u64,
     create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
+    dependencies: []const Dependency = &.{},
 };
 pub fn parse_raytracing_pipeline(
     alloc: Allocator,
@@ -509,7 +518,7 @@ pub fn parse_raytracing_pipeline(
         .create_info = create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -527,6 +536,7 @@ pub fn parse_raytracing_pipeline(
             try parse_vk_raytracing_pipeline_create_info(&context, create_info);
         }
     }
+    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
     return result;
 }
 
@@ -562,6 +572,7 @@ pub const ParsedGraphicsPipeline = struct {
     version: u32,
     hash: u64,
     create_info: *const vk.VkGraphicsPipelineCreateInfo,
+    dependencies: []const Dependency = &.{},
 };
 pub fn parse_graphics_pipeline(
     alloc: Allocator,
@@ -578,7 +589,7 @@ pub fn parse_graphics_pipeline(
         .create_info = vk_graphics_pipeline_create_info,
     };
 
-    const context: Context = .{
+    var context: Context = .{
         .alloc = alloc,
         .tmp_alloc = tmp_alloc,
         .scanner = &scanner,
@@ -599,6 +610,7 @@ pub fn parse_graphics_pipeline(
             );
         }
     }
+    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
     return result;
 }
 
@@ -823,7 +835,7 @@ fn scanner_array_begin(scanner: *std.json.Scanner) !void {
     }
 }
 
-pub fn parse_simple_type(context: *const Context, output: anytype) anyerror!void {
+pub fn parse_simple_type(context: *Context, output: anytype) anyerror!void {
     const output_type = @typeInfo(@TypeOf(output)).pointer.child;
     const output_fields = @typeInfo(output_type).@"struct".fields;
     var field_is_parsed: [output_fields.len]bool = .{false} ** output_fields.len;
@@ -866,7 +878,7 @@ pub fn parse_simple_type(context: *const Context, output: anytype) anyerror!void
     }
 }
 
-fn parse_number_array(comptime T: type, context: *const Context) ![]T {
+fn parse_number_array(comptime T: type, context: *Context) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_number(context.scanner)) |v| {
@@ -876,28 +888,64 @@ fn parse_number_array(comptime T: type, context: *const Context) ![]T {
     return try context.alloc.dupe(T, tmp.items);
 }
 
-fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *const Context) ![]T {
+fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) !void {
+    const v = try scanner_next_string(context.scanner);
+    const hash = try std.fmt.parseInt(u64, v, 16);
+    if (hash == 0)
+        location.* = null
+    else {
+        switch (try context.db.get_handle(tag, hash)) {
+            .handle => |h| location.* = h,
+            .dependency => |d| {
+                var dep = d;
+                dep.ptr_to_handle = @ptrCast(location);
+                try context.dependencies.append(context.tmp_alloc, dep);
+            },
+        }
+    }
+}
+
+fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Context) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
+    var denpendencies_found: u32 = 0;
     while (try scanner_array_next_string(context.scanner)) |hash_str| {
         const hash = try std.fmt.parseInt(u64, hash_str, 16);
         // Must preserve the index in the array for non 0 hashes
-        const handle: ?*anyopaque = if (hash == 0)
-            null
-        else
-            try context.db.get_handle(tag, hash);
-        try tmp.append(context.tmp_alloc, @ptrCast(handle));
+        if (hash == 0) {
+            try tmp.append(context.tmp_alloc, null);
+        } else {
+            switch (try context.db.get_handle(tag, hash)) {
+                .handle => |h| try tmp.append(context.tmp_alloc, @ptrCast(h)),
+                .dependency => |d| {
+                    denpendencies_found += 1;
+                    var dep = d;
+                    // Initially store the offset into the tmp array for the
+                    // handle we need
+                    dep.ptr_to_handle = @ptrFromInt(tmp.items.len);
+                    try tmp.append(context.tmp_alloc, null);
+                    try context.dependencies.append(context.tmp_alloc, dep);
+                },
+            }
+        }
     }
-    return try context.alloc.dupe(T, tmp.items);
+    const final_array = try context.alloc.dupe(T, tmp.items);
+    // Patch already present dependencies with proper pointers to handles since the
+    // handle array now is in the final allocation
+    for (0..denpendencies_found) |i| {
+        const dep = &context.dependencies.items[context.dependencies.items.len - 1 - i];
+        dep.ptr_to_handle = @ptrCast(final_array.ptr + @intFromPtr(dep.ptr_to_handle));
+    }
+    return final_array;
 }
 
 fn parse_object_array(
     comptime T: type,
     comptime PARSE_FN: fn (
-        *const Context,
+        *Context,
         *T,
     ) anyerror!void,
-    context: *const Context,
+    context: *Context,
 ) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
@@ -910,7 +958,7 @@ fn parse_object_array(
 }
 
 pub fn parse_vk_physical_device_mesh_shader_features_ext(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
@@ -918,7 +966,7 @@ pub fn parse_vk_physical_device_mesh_shader_features_ext(
 }
 
 pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR };
@@ -926,7 +974,7 @@ pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
 }
 
 pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
 ) !void {
     obj.* = .{
@@ -945,7 +993,7 @@ pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
 }
 
 pub fn parse_vk_pipeline_rendering_create_info_khr(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPipelineRenderingCreateInfo,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR };
@@ -977,7 +1025,7 @@ pub fn parse_vk_pipeline_rendering_create_info_khr(
 }
 
 pub fn parse_vk_physical_device_robustness_2_features_khr(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR };
@@ -985,7 +1033,7 @@ pub fn parse_vk_physical_device_robustness_2_features_khr(
 }
 
 pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
@@ -993,7 +1041,7 @@ pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
 }
 
 pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT,
 ) !void {
     obj.* = .{
@@ -1003,7 +1051,7 @@ pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
 }
 
 pub fn parse_vk_pipeline_create_flags_2_create_info(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPipelineCreateFlags2CreateInfo,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
@@ -1011,7 +1059,7 @@ pub fn parse_vk_pipeline_create_flags_2_create_info(
 }
 
 pub fn parse_vk_graphics_pipeline_library_create_info_ext(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT };
@@ -1019,13 +1067,13 @@ pub fn parse_vk_graphics_pipeline_library_create_info_ext(
 }
 
 pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPipelineVertexInputDivisorStateCreateInfo,
 ) !void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO };
     const Inner = struct {
         fn parse_vk_vertex_input_binding_divisor_description(
-            c: *const Context,
+            c: *Context,
             item: *vk.VkVertexInputBindingDivisorDescription,
         ) !void {
             try parse_simple_type(c, item);
@@ -1052,7 +1100,7 @@ pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
 }
 
 pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
-    context: *const Context,
+    context: *Context,
     obj: *vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
 ) !void {
     obj.* = .{
@@ -1061,10 +1109,10 @@ pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
     try parse_simple_type(context, obj);
 }
 
-pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
+pub fn parse_pnext_chain(context: *Context) !?*anyopaque {
     const Inner = struct {
         fn parse_next(
-            c: *const Context,
+            c: *Context,
             first_in_chain: *?*anyopaque,
             last_pnext_in_chain: *?**anyopaque,
         ) !void {
@@ -1197,7 +1245,7 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
         }
 
         fn parse_pipeline_library(
-            c: *const Context,
+            c: *Context,
             first_in_chain: *?*anyopaque,
             last_pnext_in_chain: *?**anyopaque,
         ) !void {
@@ -1248,7 +1296,7 @@ pub fn parse_pnext_chain(context: *const Context) !?*anyopaque {
 }
 
 fn parse_vk_application_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkApplicationInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
@@ -1292,7 +1340,7 @@ test "test_parse_vk_application_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1312,7 +1360,7 @@ test "test_parse_vk_application_info" {
 }
 
 fn parse_vk_physical_device_features2(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPhysicalDeviceFeatures2,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
@@ -1340,7 +1388,7 @@ test "test_parse_vk_physical_device_features2" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1358,7 +1406,7 @@ test "test_parse_vk_physical_device_features2" {
 }
 
 fn parse_vk_sampler_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkSamplerCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
@@ -1391,7 +1439,7 @@ test "test_parse_vk_sampler_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1422,7 +1470,7 @@ test "test_parse_vk_sampler_create_info" {
 }
 
 fn parse_vk_descriptor_set_layout_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkDescriptorSetLayoutCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
@@ -1459,7 +1507,7 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1480,7 +1528,7 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
 }
 
 fn parse_vk_descriptor_set_layout_binding(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkDescriptorSetLayoutBinding,
 ) !void {
     while (try scanner_object_next_field(context.scanner)) |s| {
@@ -1533,7 +1581,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1551,7 +1599,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
 }
 
 fn parse_vk_pipeline_layout_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineLayoutCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
@@ -1603,7 +1651,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1623,7 +1671,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
 }
 
 fn parse_vk_push_constant_range(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPushConstantRange,
 ) !void {
     try parse_simple_type(context, item);
@@ -1642,7 +1690,7 @@ test "test_parse_vk_push_constant_range" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1658,7 +1706,7 @@ test "test_parse_vk_push_constant_range" {
 }
 
 fn parse_vk_shader_module_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkShaderModuleCreateInfo,
     shader_code_payload: []const u8,
 ) !void {
@@ -1735,7 +1783,7 @@ test "test_parse_vk_shader_module_create_info" {
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1753,7 +1801,7 @@ test "test_parse_vk_shader_module_create_info" {
 }
 
 fn parse_vk_render_pass_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkRenderPassCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
@@ -1806,7 +1854,7 @@ test "test_parse_vk_render_pass_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1828,7 +1876,7 @@ test "test_parse_vk_render_pass_create_info" {
 }
 
 fn parse_vk_subpass_dependency(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkSubpassDependency,
 ) !void {
     try parse_simple_type(context, item);
@@ -1851,7 +1899,7 @@ test "test_parse_vk_subpass_dependency" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1871,7 +1919,7 @@ test "test_parse_vk_subpass_dependency" {
 }
 
 fn parse_vk_attachment_description(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkAttachmentDescription,
 ) !void {
     try parse_simple_type(context, item);
@@ -1896,7 +1944,7 @@ test "test_parse_vk_attachment_description" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -1918,7 +1966,7 @@ test "test_parse_vk_attachment_description" {
 }
 
 fn parse_vk_subpass_description(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkSubpassDescription,
 ) !void {
     while (try scanner_object_next_field(context.scanner)) |s| {
@@ -1987,7 +2035,7 @@ test "test_parse_vk_subpass_description" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2010,7 +2058,7 @@ test "test_parse_vk_subpass_description" {
 }
 
 fn parse_vk_attachment_reference(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkAttachmentReference,
 ) !void {
     try parse_simple_type(context, item);
@@ -2028,7 +2076,7 @@ test "test_parse_vk_attachment_reference" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2043,7 +2091,7 @@ test "test_parse_vk_attachment_reference" {
 }
 
 fn parse_vk_graphics_pipeline_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkGraphicsPipelineCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
@@ -2109,19 +2157,9 @@ fn parse_vk_graphics_pipeline_create_info(
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            const v = try scanner_next_string(context.scanner);
-            const hash = try std.fmt.parseInt(u64, v, 16);
-            if (hash != 0) {
-                const handle = try context.db.get_handle(.PIPELINE_LAYOUT, hash);
-                item.layout = @ptrCast(handle);
-            }
+            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
         } else if (std.mem.eql(u8, s, "renderPass")) {
-            const v = try scanner_next_string(context.scanner);
-            const render_pass_hash = try std.fmt.parseInt(u64, v, 16);
-            if (render_pass_hash != 0) {
-                const handle = try context.db.get_handle(.RENDER_PASS, render_pass_hash);
-                item.renderPass = @ptrCast(handle);
-            }
+            try parse_single_handle(context, .RENDER_PASS, &item.renderPass);
         } else if (std.mem.eql(u8, s, "subpass")) {
             const v = try scanner_next_number(context.scanner);
             item.subpass = try std.fmt.parseInt(u32, v, 10);
@@ -2176,7 +2214,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2208,7 +2246,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
 }
 
 fn parse_vk_pipeline_shader_stage_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineShaderStageCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
@@ -2222,10 +2260,7 @@ fn parse_vk_pipeline_shader_stage_create_info(
             const v = try scanner_next_number(context.scanner);
             item.stage = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "module")) {
-            const hash_str = try scanner_next_string(context.scanner);
-            const hash = try std.fmt.parseInt(u64, hash_str, 16);
-            const handle = try context.db.get_handle(.SHADER_MODULE, hash);
-            item.module = @ptrCast(handle);
+            try parse_single_handle(context, .SHADER_MODULE, &item.module);
         } else if (std.mem.eql(u8, s, "name")) {
             const name_str = try scanner_next_string(context.scanner);
             const name = try context.alloc.dupeZ(u8, name_str);
@@ -2261,7 +2296,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2284,7 +2319,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
 }
 
 fn parse_vk_pipeline_vertex_input_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineVertexInputStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
@@ -2330,7 +2365,7 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2353,7 +2388,7 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
 }
 
 fn parse_vk_pipeline_input_assembly_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineInputAssemblyStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
@@ -2373,7 +2408,7 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2394,7 +2429,7 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
 }
 
 fn parse_vk_pipeline_tessellation_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineTessellationStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
@@ -2413,7 +2448,7 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2433,7 +2468,7 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
 }
 
 fn parse_vk_pipeline_viewport_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineViewportStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
@@ -2487,7 +2522,7 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2510,7 +2545,7 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
 }
 
 fn parse_vk_pipeline_rasterization_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineRasterizationStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
@@ -2538,7 +2573,7 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2567,7 +2602,7 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
 }
 
 fn parse_vk_pipeline_multisample_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineMultisampleStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
@@ -2621,7 +2656,7 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2646,7 +2681,7 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
 }
 
 fn parse_vk_stencil_op_state(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkStencilOpState,
 ) !void {
     try parse_simple_type(context, item);
@@ -2669,7 +2704,7 @@ test "test_parse_vk_stencil_op_state" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2689,7 +2724,7 @@ test "test_parse_vk_stencil_op_state" {
 }
 
 fn parse_vk_pipeline_depth_stencil_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineDepthStencilStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
@@ -2751,7 +2786,7 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2779,7 +2814,7 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
 }
 
 fn parse_vk_pipeline_color_blend_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineColorBlendStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
@@ -2837,7 +2872,7 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2861,7 +2896,7 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
 }
 
 fn parse_vk_pipeline_dynamic_state_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineDynamicStateCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
@@ -2896,7 +2931,7 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2917,7 +2952,7 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
 }
 
 fn parse_vk_vertex_input_attribute_description(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkVertexInputAttributeDescription,
 ) !void {
     try parse_simple_type(context, item);
@@ -2937,7 +2972,7 @@ test "test_parse_vk_vertex_input_attribute_description" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2954,7 +2989,7 @@ test "test_parse_vk_vertex_input_attribute_description" {
 }
 
 fn parse_vk_vertex_input_binding_description(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkVertexInputBindingDescription,
 ) !void {
     try parse_simple_type(context, item);
@@ -2973,7 +3008,7 @@ test "test_parse_vk_vertex_input_binding_description" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -2989,7 +3024,7 @@ test "test_parse_vk_vertex_input_binding_description" {
 }
 
 fn parse_vk_pipeline_color_blend_attachment_state(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineColorBlendAttachmentState,
 ) !void {
     try parse_simple_type(context, item);
@@ -3013,7 +3048,7 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3034,7 +3069,7 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
 }
 
 fn parse_vk_viewport(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkViewport,
 ) !void {
     try parse_simple_type(context, item);
@@ -3056,7 +3091,7 @@ test "test_parse_vk_viewport" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3075,7 +3110,7 @@ test "test_parse_vk_viewport" {
 }
 
 fn parse_vk_rect_2d(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkRect2D,
 ) !void {
     while (try scanner_object_next_field(context.scanner)) |s| {
@@ -3112,7 +3147,7 @@ test "test_parse_vk_rect_2d" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3129,7 +3164,7 @@ test "test_parse_vk_rect_2d" {
 }
 
 fn parse_vk_specialization_map_entry(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkSpecializationMapEntry,
 ) !void {
     try parse_simple_type(context, item);
@@ -3148,7 +3183,7 @@ test "test_parse_vk_specialization_map_entry" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3164,7 +3199,7 @@ test "test_parse_vk_specialization_map_entry" {
 }
 
 fn parse_vk_specialization_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkSpecializationInfo,
 ) !void {
     while (try scanner_object_next_field(context.scanner)) |s| {
@@ -3206,7 +3241,7 @@ test "test_parse_vk_specialization_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3223,7 +3258,7 @@ test "test_parse_vk_specialization_info" {
 }
 
 fn parse_vk_compute_pipeline_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkComputePipelineCreateInfo,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
@@ -3239,12 +3274,7 @@ fn parse_vk_compute_pipeline_create_info(
                 &item.stage,
             );
         } else if (std.mem.eql(u8, s, "layout")) {
-            const v = try scanner_next_string(context.scanner);
-            const hash = try std.fmt.parseInt(u64, v, 16);
-            if (hash != 0) {
-                const handle = try context.db.get_handle(.PIPELINE_LAYOUT, hash);
-                item.layout = @ptrCast(handle);
-            }
+            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
@@ -3281,7 +3311,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3303,7 +3333,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
 }
 
 fn parse_vk_raytracing_pipeline_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkRayTracingPipelineCreateInfoKHR,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
@@ -3347,12 +3377,7 @@ fn parse_vk_raytracing_pipeline_create_info(
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            const v = try scanner_next_string(context.scanner);
-            const hash = try std.fmt.parseInt(u64, v, 16);
-            if (hash != 0) {
-                const handle = try context.db.get_handle(.PIPELINE_LAYOUT, hash);
-                item.layout = @ptrCast(handle);
-            }
+            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
@@ -3393,7 +3418,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3423,7 +3448,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
 }
 
 fn parse_vk_ray_tracing_shader_group_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
@@ -3445,7 +3470,7 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3469,7 +3494,7 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
 }
 
 fn parse_vk_pipeline_library_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkPipelineLibraryCreateInfoKHR,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
@@ -3507,7 +3532,7 @@ test "test_parse_vk_pipeline_library_create_info" {
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
@@ -3527,7 +3552,7 @@ test "test_parse_vk_pipeline_library_create_info" {
 }
 
 fn parse_vk_ray_tracing_pipeline_interface_create_info(
-    context: *const Context,
+    context: *Context,
     item: *vk.VkRayTracingPipelineInterfaceCreateInfoKHR,
 ) !void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR };
@@ -3546,7 +3571,7 @@ test "test_parse_vk_ray_tracing_pipeline_interface_create_info" {
 
     const db: Database = .{ .file_mem = &.{}, .entries = .initFill(.empty), .arena = arena };
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
-    const context = Context{
+    var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
         .scanner = &scanner,
