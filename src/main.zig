@@ -126,6 +126,10 @@ pub fn main() !void {
     defer progress_root.end();
 
     const db_path = std.mem.span(args.database_paths.values[0]);
+
+    // var db: Database = try .init(tmp_alloc, &progress_root, db_path);
+    // _ = tmp_arena.reset(.retain_capacity);
+
     var db: Database = try .init(tmp_alloc, &progress_root, db_path);
     _ = tmp_arena.reset(.retain_capacity);
 
@@ -149,20 +153,14 @@ pub fn main() !void {
     const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
     if (app_infos.len == 0)
         return error.NoApplicationInfoInTheDatabase;
-    const app_info_json = app_infos[0].payload;
-    const parsed_application_info = parsing.parse_application_info(
-        tmp_alloc,
+    const app_info_entry = &app_infos[0];
+    const app_info_payload = try app_info_entry.get_payload(arena_alloc, tmp_alloc, &db);
+    const parsed_application_info = try parsing.parse_application_info(
+        arena_alloc,
         tmp_alloc,
         &db,
-        app_info_json,
-    ) catch |err| {
-        log.err(
-            @src(),
-            "Encountered error {} while parsing application info json: {s}",
-            .{ err, app_info_json },
-        );
-        return err;
-    };
+        app_info_payload,
+    );
     if (parsed_application_info.version != 6)
         return error.ApllicationInfoVersionMissmatch;
 
@@ -190,32 +188,88 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    var tp: ThreadPool = undefined;
-    try init_thread_pool_context(&tp, args.num_threads);
-    const tc = try init_thread_contexts(
-        arena_alloc,
-        args.num_threads,
-        &progress_root,
-        &db,
-        vk_device,
-    );
+    var work_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
+    {
+        var sub_progress = progress_root.start(
+            "graphics_pipeline",
+            db.entries.getPtr(.GRAPHICS_PIPELINE).values().len,
+        );
+        defer sub_progress.end();
+        for (db.entries.getPtr(.GRAPHICS_PIPELINE).values()) |*e| {
+            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
+            try work_queue.append(arena_alloc, e);
+            sub_progress.completeOne();
+        }
+    }
+    {
+        var sub_progress = progress_root.start(
+            "compute_pipeline",
+            db.entries.getPtr(.COMPUTE_PIPELINE).values().len,
+        );
+        defer sub_progress.end();
+        for (db.entries.getPtr(.COMPUTE_PIPELINE).values()) |*e| {
+            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
+            try work_queue.append(tmp_alloc, e);
+            sub_progress.completeOne();
+        }
+    }
+    {
+        var sub_progress = progress_root.start(
+            "raytracing_pipeline",
+            db.entries.getPtr(.RAYTRACING_PIPELINE).values().len,
+        );
+        defer sub_progress.end();
+        for (db.entries.getPtr(.RAYTRACING_PIPELINE).values()) |*e| {
+            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
+            try work_queue.append(tmp_alloc, e);
+            sub_progress.completeOne();
+        }
+    }
+    {
+        var sub_progress = progress_root.start("object_creation", 0);
+        defer sub_progress.end();
+        while (work_queue.pop()) |entry| {
+            if (try entry.create(vk_device, &db)) {
+                entry.destroy_dependencies(vk_device, &db);
+            } else {
+                try work_queue.append(tmp_alloc, entry);
+                for (entry.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    const d_status =
+                        @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
+                    if (d_status != .created) try work_queue.append(tmp_alloc, dep_entry);
+                }
+            }
+            sub_progress.completeOne();
+        }
+    }
 
-    try replay(&tmp_arena, &tp, tc, &db, .SAMPLER, &replay_sampler);
-    try replay(&tmp_arena, &tp, tc, &db, .DESCRIPTOR_SET_LAYOUT, &replay_descriptor_set);
-    try replay(&tmp_arena, &tp, tc, &db, .PIPELINE_LAYOUT, &replay_pipeline_layout);
-    try replay(&tmp_arena, &tp, tc, &db, .RENDER_PASS, &replay_render_pass);
-    try replay(&tmp_arena, &tp, tc, &db, .SHADER_MODULE, &replay_shader_module);
-    try replay(&tmp_arena, &tp, tc, &db, .GRAPHICS_PIPELINE, &replay_graphics_pipeline);
-    try replay(&tmp_arena, &tp, tc, &db, .COMPUTE_PIPELINE, &replay_compute_pipeline);
-    try replay(&tmp_arena, &tp, tc, &db, .RAYTRACING_PIPELINE, &replay_raytracing_pipeline);
-
-    // Don't set the completion because otherwise Steam will remember that everything
-    // is replayed and will not try to replay shaders again.
-    // if (control_block) |cb|
-    //     cb.progress_complete.store(1, .release);
-
-    const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
-    log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
+    // var tp: ThreadPool = undefined;
+    // try init_thread_pool_context(&tp, args.num_threads);
+    // const tc = try init_thread_contexts(
+    //     arena_alloc,
+    //     args.num_threads,
+    //     &progress_root,
+    //     &db,
+    //     vk_device,
+    // );
+    //
+    // try replay(&tmp_arena, &tp, tc, &db, .SAMPLER, &replay_sampler);
+    // try replay(&tmp_arena, &tp, tc, &db, .DESCRIPTOR_SET_LAYOUT, &replay_descriptor_set);
+    // try replay(&tmp_arena, &tp, tc, &db, .PIPELINE_LAYOUT, &replay_pipeline_layout);
+    // try replay(&tmp_arena, &tp, tc, &db, .RENDER_PASS, &replay_render_pass);
+    // try replay(&tmp_arena, &tp, tc, &db, .SHADER_MODULE, &replay_shader_module);
+    // try replay(&tmp_arena, &tp, tc, &db, .GRAPHICS_PIPELINE, &replay_graphics_pipeline);
+    // try replay(&tmp_arena, &tp, tc, &db, .COMPUTE_PIPELINE, &replay_compute_pipeline);
+    // try replay(&tmp_arena, &tp, tc, &db, .RAYTRACING_PIPELINE, &replay_raytracing_pipeline);
+    //
+    // // Don't set the completion because otherwise Steam will remember that everything
+    // // is replayed and will not try to replay shaders again.
+    // // if (control_block) |cb|
+    // //     cb.progress_complete.store(1, .release);
+    //
+    // const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
+    // log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
 
 pub const MAX_PROCESS_STATS = 256;
@@ -812,7 +866,7 @@ pub fn create_vk_instance(
     try vu.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
     log.debug(
         @src(),
-        "Created instance api version: {}.{}.{} has_properties_2: {}",
+        "Created instance api version: {d}.{d}.{d} has_properties_2: {}",
         .{
             vk.VK_API_VERSION_MAJOR(api_version),
             vk.VK_API_VERSION_MINOR(api_version),
@@ -1179,6 +1233,13 @@ pub fn create_vk_sampler(
     return sampler;
 }
 
+pub fn destroy_vk_sampler(
+    vk_device: vk.VkDevice,
+    sampler: vk.VkSampler,
+) void {
+    vk.vkDestroySampler.?(vk_device, sampler, null);
+}
+
 pub fn create_descriptor_set_layout(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
@@ -1191,6 +1252,13 @@ pub fn create_descriptor_set_layout(
         &descriptor_set_layout,
     ));
     return descriptor_set_layout;
+}
+
+pub fn destroy_descriptor_set_layout(
+    vk_device: vk.VkDevice,
+    layout: vk.VkDescriptorSetLayout,
+) void {
+    vk.vkDestroyDescriptorSetLayout.?(vk_device, layout, null);
 }
 
 pub fn create_pipeline_layout(
@@ -1207,6 +1275,13 @@ pub fn create_pipeline_layout(
     return pipeline_layout;
 }
 
+pub fn destroy_pipeline_layout(
+    vk_device: vk.VkDevice,
+    layout: vk.VkPipelineLayout,
+) void {
+    vk.vkDestroyPipelineLayout.?(vk_device, layout, null);
+}
+
 pub fn create_shader_module(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkShaderModuleCreateInfo,
@@ -1219,6 +1294,13 @@ pub fn create_shader_module(
         &shader_module,
     ));
     return shader_module;
+}
+
+pub fn destroy_shader_module(
+    vk_device: vk.VkDevice,
+    shader_module: vk.VkShaderModule,
+) void {
+    vk.vkDestroyShaderModule.?(vk_device, shader_module, null);
 }
 
 pub fn create_render_pass(
@@ -1235,10 +1317,18 @@ pub fn create_render_pass(
     return render_pass;
 }
 
+pub fn destroy_render_pass(
+    vk_device: vk.VkDevice,
+    render_pass: vk.VkRenderPass,
+) void {
+    vk.vkDestroyRenderPass.?(vk_device, render_pass, null);
+}
+
 pub fn create_graphics_pipeline(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkGraphicsPipelineCreateInfo,
 ) !vk.VkPipeline {
+    // vu.print_chain(create_info);
     var pipeline: vk.VkPipeline = undefined;
     try vu.check_result(vk.vkCreateGraphicsPipelines.?(
         vk_device,
@@ -1282,6 +1372,13 @@ pub fn create_raytracing_pipeline(
         &pipeline,
     ));
     return pipeline;
+}
+
+pub fn destroy_pipeline(
+    vk_device: vk.VkDevice,
+    pipeline: vk.VkPipeline,
+) void {
+    vk.vkDestroyPipeline.?(vk_device, pipeline, null);
 }
 
 comptime {

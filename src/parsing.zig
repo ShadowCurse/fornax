@@ -898,7 +898,7 @@ fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*
             .handle => |h| location.* = h,
             .dependency => |d| {
                 var dep = d;
-                dep.ptr_to_handle = @ptrCast(location);
+                dep.ptr_to_handle = location;
                 try context.dependencies.append(context.tmp_alloc, dep);
             },
         }
@@ -921,8 +921,10 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
                     denpendencies_found += 1;
                     var dep = d;
                     // Initially store the offset into the tmp array for the
-                    // handle we need
-                    dep.ptr_to_handle = @ptrFromInt(tmp.items.len);
+                    // handle we need. Need to do this type hack to allow any
+                    // number to be stored in the "8 byte" aligned pointer
+                    const ptr_as_number: *usize = @ptrCast(&dep.ptr_to_handle);
+                    ptr_as_number.* = tmp.items.len;
                     try tmp.append(context.tmp_alloc, null);
                     try context.dependencies.append(context.tmp_alloc, dep);
                 },
@@ -949,12 +951,30 @@ fn parse_object_array(
 ) ![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
+    const current_dep_number = context.dependencies.items.len;
     while (try scanner_array_next_object(context.scanner)) {
         try tmp.append(context.tmp_alloc, .{});
         const item = &tmp.items[tmp.items.len - 1];
         try PARSE_FN(context, item);
     }
-    return try context.alloc.dupe(T, tmp.items);
+    const final_array = try context.alloc.dupe(T, tmp.items);
+
+    // Check if any newly added dependencies point into the tmp array and
+    // update them by calculating the offset into the tmp array and 
+    // storing same offset into final array
+    const added_dependencies = context.dependencies.items.len - current_dep_number;
+    const tmp_ptr_begin: usize = @intFromPtr(tmp.items.ptr);
+    const tmp_ptr_end: usize = @intFromPtr(tmp.items.ptr + tmp.items.len);
+    for (0..added_dependencies) |i| {
+        const dep = &context.dependencies.items[context.dependencies.items.len - 1 - i];
+        const ptr_to_handle: usize = @intFromPtr(dep.ptr_to_handle.?);
+        if (tmp_ptr_begin <= ptr_to_handle and ptr_to_handle < tmp_ptr_end) {
+            const byte_offset = ptr_to_handle - tmp_ptr_begin;
+            const final_array_ptr: [*]u8 = @ptrCast(final_array.ptr);
+            dep.ptr_to_handle = @ptrCast(@alignCast(final_array_ptr + byte_offset));
+        }
+    }
+    return final_array;
 }
 
 pub fn parse_vk_physical_device_mesh_shader_features_ext(

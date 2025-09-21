@@ -1,21 +1,21 @@
 // Copyright (c) 2025 Egor Lazarchuk
-//
-// Based in part on Fossilize project which is:
-// Copyright (c) 2025 Hans-Kristian Arntzen
-//
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
+const vk = @import("volk");
 const miniz = @import("miniz");
 const log = @import("log.zig");
+const vu = @import("vulkan_utils.zig");
+const parsing = @import("parsing.zig");
+const root = @import("root");
 
 const Allocator = std.mem.Allocator;
 
-file_mem: []const u8,
+file: std.fs.File,
 entries: EntriesType,
 arena: std.heap.ArenaAllocator,
 
-const Self = @This();
+const Database = @This();
 
 pub const MAGIC = "\x81FOSSILIZEDB";
 pub const Header = extern struct {
@@ -31,15 +31,329 @@ pub const EntriesType = std.EnumArray(
     std.AutoArrayHashMapUnmanaged(u64, EntryMeta),
 );
 pub const EntryMeta = struct {
-    entry_ptr: [*]const u8,
-    payload: []const u8,
+    entry: Entry,
+    payload_file_offset: u32,
+
+    dependent_by: u32 = 0,
+    status: Status = .not_parsed,
+    dependencies: []const Dependency = &.{},
+
+    create_info: ?*const anyopaque = null,
     handle: ?*anyopaque = null,
+
+    pub const Status = enum(u8) {
+        not_parsed,
+        parsing,
+        parsed,
+        creating,
+        created,
+    };
 
     pub const Dependency = struct {
         tag: Entry.Tag,
         hash: u64,
-        ptr_to_handle: ?*anyopaque,
+        ptr_to_handle: ?*?*anyopaque = null,
     };
+
+    pub fn get_payload(
+        self: *const EntryMeta,
+        alloc: Allocator,
+        tmp_alloc: Allocator,
+        db: *const Database,
+    ) ![]const u8 {
+        switch (self.entry.flags) {
+            .NOT_COMPRESSED => {
+                const payload = try alloc.alloc(u8, self.entry.stored_size);
+                log.assert(
+                    @src(),
+                    try db.file.pread(payload, self.payload_file_offset) == payload.len,
+                    "",
+                    .{},
+                );
+                if (self.entry.crc != 0) {
+                    const calculated_crc = miniz.mz_crc32(
+                        miniz.MZ_CRC32_INIT,
+                        payload.ptr,
+                        payload.len,
+                    );
+                    if (calculated_crc != self.entry.crc)
+                        return error.crc_missmatch;
+                }
+                return payload;
+            },
+            .COMPRESSED => {
+                const payload = try tmp_alloc.alloc(u8, self.entry.stored_size);
+                log.assert(
+                    @src(),
+                    try db.file.pread(payload, self.payload_file_offset) == payload.len,
+                    "",
+                    .{},
+                );
+                if (self.entry.crc != 0) {
+                    const calculated_crc = miniz.mz_crc32(
+                        miniz.MZ_CRC32_INIT,
+                        payload.ptr,
+                        payload.len,
+                    );
+                    if (calculated_crc != self.entry.crc)
+                        return error.crc_missmatch;
+                }
+
+                const decompressed_payload = try alloc.alloc(u8, self.entry.decompressed_size);
+                var decompressed_len: u64 = self.entry.decompressed_size;
+                if (miniz.mz_uncompress(
+                    decompressed_payload.ptr,
+                    &decompressed_len,
+                    payload.ptr,
+                    payload.len,
+                ) != miniz.MZ_OK)
+                    return error.cannot_uncompress_payload;
+                if (decompressed_len != self.entry.decompressed_size)
+                    return error.decompressed_size_missmatch;
+                return decompressed_payload;
+            },
+        }
+    }
+
+    pub fn parse(
+        self: *EntryMeta,
+        alloc: Allocator,
+        tmp_arena: *std.heap.ArenaAllocator,
+        db: *Database,
+    ) !void {
+        _ = tmp_arena.reset(.retain_capacity);
+        const tmp_alloc = tmp_arena.allocator();
+
+        const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
+        const tag = try self.entry.get_tag();
+        switch (tag) {
+            .APPLICATION_INFO => {},
+            .SAMPLER => {
+                self.status = .parsing;
+                const result = try parsing.parse_sampler(alloc, tmp_alloc, db, payload);
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+            },
+            .DESCRIPTOR_SET_LAYOUT => {
+                self.status = .parsing;
+                const result = try parsing.parse_descriptor_set_layout(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+                self.dependencies = result.dependencies;
+                for (result.dependencies) |dep| {
+                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    d.dependent_by += 1;
+                    try d.parse(alloc, tmp_arena, db);
+                }
+            },
+            .PIPELINE_LAYOUT => {
+                self.status = .parsing;
+                const result = try parsing.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+                self.dependencies = result.dependencies;
+                for (result.dependencies) |dep| {
+                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    d.dependent_by += 1;
+                    try d.parse(alloc, tmp_arena, db);
+                }
+            },
+            .SHADER_MODULE => {
+                self.status = .parsing;
+                const result = try parsing.parse_shader_module(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+            },
+            .RENDER_PASS => {
+                self.status = .parsing;
+                const result = try parsing.parse_render_pass(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+            },
+            .GRAPHICS_PIPELINE => {
+                self.status = .parsing;
+                const result = try parsing.parse_graphics_pipeline(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                // log.info(@src(), "hash: 0x{x}", .{try self.entry.get_value()});
+                // vu.print_chain(self.create_info);
+                self.status = .parsed;
+                self.dependencies = result.dependencies;
+                for (result.dependencies) |dep| {
+                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    d.dependent_by += 1;
+                    try d.parse(alloc, tmp_arena, db);
+                }
+            },
+            .COMPUTE_PIPELINE => {
+                self.status = .parsing;
+                const result = try parsing.parse_compute_pipeline(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+                self.dependencies = result.dependencies;
+                for (result.dependencies) |dep| {
+                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    d.dependent_by += 1;
+                    try d.parse(alloc, tmp_arena, db);
+                }
+            },
+            .RAYTRACING_PIPELINE => {
+                self.status = .parsing;
+                const result = try parsing.parse_raytracing_pipeline(
+                    alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                self.create_info = @ptrCast(result.create_info);
+                self.status = .parsed;
+                self.dependencies = result.dependencies;
+                for (result.dependencies) |dep| {
+                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    d.dependent_by += 1;
+                    try d.parse(alloc, tmp_arena, db);
+                }
+            },
+            .APPLICATION_BLOB_LINK => {},
+        }
+    }
+
+    pub fn print_graph(self: *const EntryMeta, db: *const Database) !void {
+        const G = struct {
+            var padding: u32 = 0;
+        };
+        const tag = try self.entry.get_tag();
+        const hash = try self.entry.get_value();
+        for (0..G.padding) |_|
+            log.output("    ", .{});
+        log.output("{t} hash: 0x{x} depended_by: {d}\n", .{ tag, hash, self.dependent_by });
+        for (self.dependencies) |dep| {
+            const d = db.entries.getPtrConst(dep.tag).getPtr(dep.hash).?;
+            G.padding += 1;
+            try d.print_graph(db);
+            G.padding -= 1;
+        }
+    }
+
+    pub fn create(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) !bool {
+        const status = @atomicLoad(Status, &self.status, .seq_cst);
+        if (status == .created) return true;
+
+        for (self.dependencies) |dep| {
+            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            const d_status = @atomicLoad(Status, &dep_entry.status, .seq_cst);
+            if (d_status != .created) return false;
+            dep.ptr_to_handle.?.* = dep_entry.handle;
+        }
+
+        if (@cmpxchgWeak(Status, &self.status, .parsed, .creating, .seq_cst, .seq_cst)) |old| {
+            log.assert(
+                @src(),
+                old == .creating or old == .created,
+                "Encountered strange entry state: {t}",
+                .{old},
+            );
+            return false;
+        }
+
+        const tag = try self.entry.get_tag();
+        switch (tag) {
+            .APPLICATION_INFO => {},
+            .SAMPLER => self.handle = try root.create_vk_sampler(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .DESCRIPTOR_SET_LAYOUT => self.handle = try root.create_descriptor_set_layout(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .PIPELINE_LAYOUT => self.handle = try root.create_pipeline_layout(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .SHADER_MODULE => self.handle = try root.create_shader_module(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .RENDER_PASS => self.handle = try root.create_render_pass(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .GRAPHICS_PIPELINE => self.handle = try root.create_graphics_pipeline(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .COMPUTE_PIPELINE => self.handle = try root.create_compute_pipeline(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .RAYTRACING_PIPELINE => self.handle = try root.create_raytracing_pipeline(
+                vk_device,
+                @ptrCast(@alignCast(self.create_info)),
+            ),
+            .APPLICATION_BLOB_LINK => {},
+        }
+        @atomicStore(Status, &self.status, .created, .seq_cst);
+        return true;
+    }
+
+    pub fn destroy_dependencies(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) void {
+        for (self.dependencies) |dep| {
+            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
+            log.assert(
+                @src(),
+                old_value != 0,
+                "Attempt to destroy object {t} hash: 0x{x} second time",
+                .{ dep.tag, dep.hash },
+            );
+            if (old_value == 1) {
+                switch (dep.tag) {
+                    .APPLICATION_INFO => {},
+                    .SAMPLER => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
+                    .DESCRIPTOR_SET_LAYOUT => root.destroy_descriptor_set_layout(
+                        vk_device,
+                        @ptrCast(d.handle),
+                    ),
+                    .PIPELINE_LAYOUT => root.destroy_pipeline_layout(
+                        vk_device,
+                        @ptrCast(d.handle),
+                    ),
+                    .SHADER_MODULE => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
+                    .RENDER_PASS => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
+                    .GRAPHICS_PIPELINE,
+                    .COMPUTE_PIPELINE,
+                    .RAYTRACING_PIPELINE,
+                    => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
+                    .APPLICATION_BLOB_LINK => {},
+                }
+            }
+        }
+    }
 };
 pub const Entry = extern struct {
     // 8 bytes: ???
@@ -117,7 +431,7 @@ pub const GetHandleResult = union(enum) {
     handle: *anyopaque,
     dependency: EntryMeta.Dependency,
 };
-pub fn get_handle(self: *const Self, tag: Entry.Tag, hash: u64) !GetHandleResult {
+pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) !GetHandleResult {
     const entries = self.entries.getPtrConst(tag);
     const entry = entries.getPtr(hash) orelse {
         log.debug(
@@ -135,37 +449,19 @@ pub fn get_handle(self: *const Self, tag: Entry.Tag, hash: u64) !GetHandleResult
             .dependency = .{
                 .tag = tag,
                 .hash = hash,
-                .ptr_to_handle = null,
             },
         };
     }
 }
 
-fn mmap_file(path: []const u8) ![]const u8 {
-    const fd = try std.posix.open(path, .{ .ACCMODE = .RDONLY }, 0);
-    defer std.posix.close(fd);
-
-    const stat = try std.posix.fstat(fd);
-    const mem = try std.posix.mmap(
-        null,
-        @intCast(stat.size),
-        std.posix.PROT.READ,
-        .{ .TYPE = .PRIVATE },
-        fd,
-        0,
-    );
-    return mem;
-}
-
-pub fn init(
-    tmp_alloc: Allocator,
-    progress: *std.Progress.Node,
-    path: []const u8,
-) !Self {
+pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8) !Database {
     log.info(@src(), "Openning database as path: {s}", .{path});
-    const file_mem = try mmap_file(path);
+    // const file = try std.fs.openFileAbsolute(path, .{});
+    const file = try std.fs.cwd().openFile(path, .{});
+    const file_stat = try file.stat();
 
-    const header: *const Header = @ptrCast(file_mem.ptr);
+    var header: Header = undefined;
+    log.assert(@src(), try file.read(@ptrCast(&header)) == @sizeOf(Header), "", .{});
     if (!std.mem.eql(u8, &header.magic, MAGIC))
         return error.InvalidMagicValue;
 
@@ -176,63 +472,33 @@ pub fn init(
     const arena_alloc = arena.allocator();
 
     var entries: EntriesType = .initFill(.empty);
-    var remaining_file_mem = file_mem[@sizeOf(Header)..];
+    var remaining_file_mem = file_stat.size - @sizeOf(Header);
 
     const progress_node = progress.start("reading database", 0);
     defer progress_node.end();
-    while (0 < remaining_file_mem.len) {
+    while (0 < remaining_file_mem) {
         progress_node.completeOne();
         // If entry is incomplete, stop
-        if (remaining_file_mem.len < @sizeOf(Entry))
-            break;
+        if (remaining_file_mem < @sizeOf(Entry)) break;
 
-        const entry_ptr = remaining_file_mem.ptr;
-        const entry: Entry = .from_ptr(entry_ptr);
-        const total_entry_size = @sizeOf(Entry) + entry.stored_size;
+        var entry: Entry = undefined;
+        log.assert(@src(), try file.read(@ptrCast(&entry)) == @sizeOf(Entry), "", .{});
+        remaining_file_mem -= @sizeOf(Entry);
 
         // If payload for the entry is incomplete, stop
-        if (remaining_file_mem.len < total_entry_size)
-            break;
+        if (remaining_file_mem < entry.stored_size) break;
+        try file.seekBy(entry.stored_size);
 
-        remaining_file_mem = remaining_file_mem[total_entry_size..];
+        const payload_file_offset: u64 = file_stat.size - remaining_file_mem;
+        remaining_file_mem -= entry.stored_size;
         const entry_tag = try entry.get_tag();
         // There is no used for these blobs, so skip them.
         if (entry_tag == .APPLICATION_BLOB_LINK)
             continue;
 
-        const payload_start: [*]const u8 =
-            @ptrFromInt(@as(usize, @intFromPtr(entry_ptr)) + @sizeOf(Entry));
-        // CRC validation
-        if (entry.crc != 0) {
-            const calculated_crc = miniz.mz_crc32(miniz.MZ_CRC32_INIT, payload_start, entry.stored_size);
-            if (calculated_crc != entry.crc)
-                return error.crc_missmatch;
-        }
-        const payload = switch (entry.flags) {
-            .NOT_COMPRESSED => blk: {
-                var payload: []const u8 = undefined;
-                payload.ptr = payload_start;
-                payload.len = entry.stored_size;
-                break :blk payload;
-            },
-            .COMPRESSED => blk: {
-                const decompressed_payload = try arena_alloc.alloc(u8, entry.decompressed_size);
-                var decompressed_len: u64 = entry.decompressed_size;
-                if (miniz.mz_uncompress(
-                    decompressed_payload.ptr,
-                    &decompressed_len,
-                    payload_start,
-                    entry.stored_size,
-                ) != miniz.MZ_OK)
-                    return error.cannot_uncompress_payload;
-                if (decompressed_len != entry.decompressed_size)
-                    return error.decompressed_size_missmatch;
-                break :blk decompressed_payload;
-            },
-        };
         try entries.getPtr(entry_tag).put(tmp_alloc, try entry.get_value(), .{
-            .entry_ptr = entry_ptr,
-            .payload = payload,
+            .entry = entry,
+            .payload_file_offset = @intCast(payload_file_offset),
         });
     }
 
@@ -244,7 +510,7 @@ pub fn init(
         e.value.* = try map.clone(arena_alloc);
     }
     return .{
-        .file_mem = file_mem,
+        .file = file,
         .entries = final_entries,
         .arena = arena,
     };
