@@ -37,6 +37,7 @@ pub const EntryMeta = struct {
     dependent_by: u32 = 0,
     status: Status = .not_parsed,
     dependencies: []const Dependency = &.{},
+    dependencies_destroyed: u32 = 0,
 
     create_info: ?*const anyopaque = null,
     handle: ?*anyopaque = null,
@@ -54,6 +55,23 @@ pub const EntryMeta = struct {
         hash: u64,
         ptr_to_handle: ?*?*anyopaque = null,
     };
+
+    pub fn print_graph(self: *const EntryMeta, db: *const Database) !void {
+        const G = struct {
+            var padding: u32 = 0;
+        };
+        const tag = try self.entry.get_tag();
+        const hash = try self.entry.get_value();
+        for (0..G.padding) |_|
+            log.output("    ", .{});
+        log.output("{t} hash: 0x{x} depended_by: {d}\n", .{ tag, hash, self.dependent_by });
+        for (self.dependencies) |dep| {
+            const d = db.entries.getPtrConst(dep.tag).getPtr(dep.hash).?;
+            G.padding += 1;
+            try d.print_graph(db);
+            G.padding -= 1;
+        }
+    }
 
     pub fn get_payload(
         self: *const EntryMeta,
@@ -118,24 +136,31 @@ pub const EntryMeta = struct {
     pub fn parse(
         self: *EntryMeta,
         alloc: Allocator,
-        tmp_arena: *std.heap.ArenaAllocator,
+        tmp_alloc: Allocator,
         db: *Database,
-    ) !void {
-        _ = tmp_arena.reset(.retain_capacity);
-        const tmp_alloc = tmp_arena.allocator();
+    ) !bool {
+        if (@cmpxchgWeak(Status, &self.status, .not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
+            log.assert(
+                @src(),
+                old == .parsing or old == .parsed,
+                "Encountered strange entry state: {t}",
+                .{old},
+            );
+            const parsed = old == .parsed;
+            return parsed;
+        }
+        // TODO figure out what to do on parsing failure
+        defer @atomicStore(Status, &self.status, .parsed, .seq_cst);
 
         const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
         const tag = try self.entry.get_tag();
         switch (tag) {
             .APPLICATION_INFO => {},
             .SAMPLER => {
-                self.status = .parsing;
                 const result = try parsing.parse_sampler(alloc, tmp_alloc, db, payload);
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
             },
             .DESCRIPTOR_SET_LAYOUT => {
-                self.status = .parsing;
                 const result = try parsing.parse_descriptor_set_layout(
                     alloc,
                     tmp_alloc,
@@ -143,28 +168,22 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
                 self.dependencies = result.dependencies;
-                for (result.dependencies) |dep| {
-                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    d.dependent_by += 1;
-                    try d.parse(alloc, tmp_arena, db);
+                for (self.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
                 }
             },
             .PIPELINE_LAYOUT => {
-                self.status = .parsing;
                 const result = try parsing.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
                 self.dependencies = result.dependencies;
-                for (result.dependencies) |dep| {
-                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    d.dependent_by += 1;
-                    try d.parse(alloc, tmp_arena, db);
+                for (self.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
                 }
             },
             .SHADER_MODULE => {
-                self.status = .parsing;
                 const result = try parsing.parse_shader_module(
                     alloc,
                     tmp_alloc,
@@ -172,10 +191,8 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
             },
             .RENDER_PASS => {
-                self.status = .parsing;
                 const result = try parsing.parse_render_pass(
                     alloc,
                     tmp_alloc,
@@ -183,10 +200,8 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
             },
             .GRAPHICS_PIPELINE => {
-                self.status = .parsing;
                 const result = try parsing.parse_graphics_pipeline(
                     alloc,
                     tmp_alloc,
@@ -194,18 +209,13 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                // log.info(@src(), "hash: 0x{x}", .{try self.entry.get_value()});
-                // vu.print_chain(self.create_info);
-                self.status = .parsed;
                 self.dependencies = result.dependencies;
-                for (result.dependencies) |dep| {
-                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    d.dependent_by += 1;
-                    try d.parse(alloc, tmp_arena, db);
+                for (self.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
                 }
             },
             .COMPUTE_PIPELINE => {
-                self.status = .parsing;
                 const result = try parsing.parse_compute_pipeline(
                     alloc,
                     tmp_alloc,
@@ -213,16 +223,13 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
                 self.dependencies = result.dependencies;
-                for (result.dependencies) |dep| {
-                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    d.dependent_by += 1;
-                    try d.parse(alloc, tmp_arena, db);
+                for (self.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
                 }
             },
             .RAYTRACING_PIPELINE => {
-                self.status = .parsing;
                 const result = try parsing.parse_raytracing_pipeline(
                     alloc,
                     tmp_alloc,
@@ -230,44 +237,27 @@ pub const EntryMeta = struct {
                     payload,
                 );
                 self.create_info = @ptrCast(result.create_info);
-                self.status = .parsed;
                 self.dependencies = result.dependencies;
-                for (result.dependencies) |dep| {
-                    const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    d.dependent_by += 1;
-                    try d.parse(alloc, tmp_arena, db);
+                for (self.dependencies) |dep| {
+                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
                 }
             },
             .APPLICATION_BLOB_LINK => {},
         }
+        return true;
     }
 
-    pub fn print_graph(self: *const EntryMeta, db: *const Database) !void {
-        const G = struct {
-            var padding: u32 = 0;
-        };
-        const tag = try self.entry.get_tag();
-        const hash = try self.entry.get_value();
-        for (0..G.padding) |_|
-            log.output("    ", .{});
-        log.output("{t} hash: 0x{x} depended_by: {d}\n", .{ tag, hash, self.dependent_by });
-        for (self.dependencies) |dep| {
-            const d = db.entries.getPtrConst(dep.tag).getPtr(dep.hash).?;
-            G.padding += 1;
-            try d.print_graph(db);
-            G.padding -= 1;
-        }
-    }
-
-    pub fn create(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) !bool {
-        const status = @atomicLoad(Status, &self.status, .seq_cst);
-        if (status == .created) return true;
-
+    pub const CreateResult = enum {
+        dependencies,
+        creating,
+        created,
+    };
+    pub fn create(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) !CreateResult {
         for (self.dependencies) |dep| {
             const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
             const d_status = @atomicLoad(Status, &dep_entry.status, .seq_cst);
-            if (d_status != .created) return false;
-            dep.ptr_to_handle.?.* = dep_entry.handle;
+            if (d_status != .created) return .dependencies;
         }
 
         if (@cmpxchgWeak(Status, &self.status, .parsed, .creating, .seq_cst, .seq_cst)) |old| {
@@ -277,7 +267,16 @@ pub const EntryMeta = struct {
                 "Encountered strange entry state: {t}",
                 .{old},
             );
-            return false;
+            if (old == .created)
+                return .created
+            else
+                return .creating;
+        }
+        defer @atomicStore(Status, &self.status, .created, .seq_cst);
+
+        for (self.dependencies) |dep| {
+            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            dep.ptr_to_handle.?.* = dep_entry.handle;
         }
 
         const tag = try self.entry.get_tag();
@@ -317,41 +316,43 @@ pub const EntryMeta = struct {
             ),
             .APPLICATION_BLOB_LINK => {},
         }
-        @atomicStore(Status, &self.status, .created, .seq_cst);
-        return true;
+        return .created;
     }
 
     pub fn destroy_dependencies(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) void {
-        for (self.dependencies) |dep| {
-            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-            const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
-            log.assert(
-                @src(),
-                old_value != 0,
-                "Attempt to destroy object {t} hash: 0x{x} second time",
-                .{ dep.tag, dep.hash },
-            );
-            if (old_value == 1) {
-                switch (dep.tag) {
-                    .APPLICATION_INFO => {},
-                    .SAMPLER => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
-                    .DESCRIPTOR_SET_LAYOUT => root.destroy_descriptor_set_layout(
-                        vk_device,
-                        @ptrCast(d.handle),
-                    ),
-                    .PIPELINE_LAYOUT => root.destroy_pipeline_layout(
-                        vk_device,
-                        @ptrCast(d.handle),
-                    ),
-                    .SHADER_MODULE => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
-                    .RENDER_PASS => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
-                    .GRAPHICS_PIPELINE,
-                    .COMPUTE_PIPELINE,
-                    .RAYTRACING_PIPELINE,
-                    => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
-                    .APPLICATION_BLOB_LINK => {},
+        if (@cmpxchgWeak(u32, &self.dependencies_destroyed, 0, 1, .seq_cst, .seq_cst)) |_| {
+            for (self.dependencies) |dep| {
+                const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
+                log.assert(
+                    @src(),
+                    old_value != 0,
+                    "Attempt to destroy object {t} hash: 0x{x} second time",
+                    .{ dep.tag, dep.hash },
+                );
+                if (old_value == 1) {
+                    switch (dep.tag) {
+                        .APPLICATION_INFO => {},
+                        .SAMPLER => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
+                        .DESCRIPTOR_SET_LAYOUT => root.destroy_descriptor_set_layout(
+                            vk_device,
+                            @ptrCast(d.handle),
+                        ),
+                        .PIPELINE_LAYOUT => root.destroy_pipeline_layout(
+                            vk_device,
+                            @ptrCast(d.handle),
+                        ),
+                        .SHADER_MODULE => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
+                        .RENDER_PASS => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
+                        .GRAPHICS_PIPELINE,
+                        .COMPUTE_PIPELINE,
+                        .RAYTRACING_PIPELINE,
+                        => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
+                        .APPLICATION_BLOB_LINK => {},
+                    }
                 }
             }
+            @atomicStore(u32, &self.dependencies_destroyed, 1, .seq_cst);
         }
     }
 };

@@ -188,61 +188,18 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    var work_queue: std.ArrayListUnmanaged(*Database.EntryMeta) = .empty;
-    {
-        var sub_progress = progress_root.start(
-            "graphics_pipeline",
-            db.entries.getPtr(.GRAPHICS_PIPELINE).values().len,
-        );
-        defer sub_progress.end();
-        for (db.entries.getPtr(.GRAPHICS_PIPELINE).values()) |*e| {
-            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
-            try work_queue.append(arena_alloc, e);
-            sub_progress.completeOne();
-        }
-    }
-    {
-        var sub_progress = progress_root.start(
-            "compute_pipeline",
-            db.entries.getPtr(.COMPUTE_PIPELINE).values().len,
-        );
-        defer sub_progress.end();
-        for (db.entries.getPtr(.COMPUTE_PIPELINE).values()) |*e| {
-            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
-            try work_queue.append(tmp_alloc, e);
-            sub_progress.completeOne();
-        }
-    }
-    {
-        var sub_progress = progress_root.start(
-            "raytracing_pipeline",
-            db.entries.getPtr(.RAYTRACING_PIPELINE).values().len,
-        );
-        defer sub_progress.end();
-        for (db.entries.getPtr(.RAYTRACING_PIPELINE).values()) |*e| {
-            e.parse(arena_alloc, &tmp_arena, &db) catch continue;
-            try work_queue.append(tmp_alloc, e);
-            sub_progress.completeOne();
-        }
-    }
-    {
-        var sub_progress = progress_root.start("object_creation", 0);
-        defer sub_progress.end();
-        while (work_queue.pop()) |entry| {
-            if (try entry.create(vk_device, &db)) {
-                entry.destroy_dependencies(vk_device, &db);
-            } else {
-                try work_queue.append(tmp_alloc, entry);
-                for (entry.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    const d_status =
-                        @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
-                    if (d_status != .created) try work_queue.append(tmp_alloc, dep_entry);
-                }
-            }
-            sub_progress.completeOne();
-        }
-    }
+    var tp: ThreadPool = undefined;
+    try init_thread_pool_context(&tp, args.num_threads);
+    const tc = try init_thread_contexts(
+        arena_alloc,
+        args.num_threads,
+        &progress_root,
+        &db,
+        vk_device,
+    );
+
+    try parse_threaded(&tp, tc, &db);
+    try create_threaded(&tp, tc, &db, vk_device);
 
     // var tp: ThreadPool = undefined;
     // try init_thread_pool_context(&tp, args.num_threads);
@@ -423,18 +380,18 @@ pub fn create_replay_fn(
 
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
-    deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta),
-    removed_entries: std.ArrayListUnmanaged(Database.EntryMeta),
+    tmp_arena: std.heap.ArenaAllocator,
+    work_queue: std.ArrayListUnmanaged(*Database.EntryMeta),
     parse_time_acc: u64,
     create_time_acc: u64,
     progress: *std.Progress.Node,
-    db: *const Database,
+    db: *Database,
     vk_device: vk.VkDevice,
 
     pub fn reset(self: *ThreadContext) void {
         _ = self.arena.reset(.retain_capacity);
-        self.deferred_entries = .empty;
-        self.removed_entries = .empty;
+        _ = self.tmp_arena.reset(.retain_capacity);
+        self.work_queue = .empty;
         self.parse_time_acc = 0;
         self.create_time_acc = 0;
     }
@@ -444,7 +401,7 @@ pub fn init_thread_contexts(
     alloc: Allocator,
     num_threads: ?u32,
     progress: *std.Progress.Node,
-    db: *const Database,
+    db: *Database,
     vk_device: vk.VkDevice,
 ) ![]align(64) ThreadContext {
     const host_threads = std.Thread.getCpuCount() catch 1;
@@ -457,8 +414,8 @@ pub fn init_thread_contexts(
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
-            .deferred_entries = .empty,
-            .removed_entries = .empty,
+            .tmp_arena = .init(std.heap.page_allocator),
+            .work_queue = .empty,
             .parse_time_acc = 0,
             .create_time_acc = 0,
             .progress = progress,
@@ -680,6 +637,106 @@ pub fn replay(
             else => {},
         }
     }
+}
+
+pub fn parse(context: *ThreadContext) void {
+    parse_inner(context) catch unreachable;
+}
+pub fn parse_inner(context: *ThreadContext) !void {
+    const alloc = context.arena.allocator();
+    const tmp_alloc = context.tmp_arena.allocator();
+
+    while (context.work_queue.pop()) |entry| {
+        defer _ = context.tmp_arena.reset(.retain_capacity);
+
+        if (!try entry.parse(alloc, tmp_alloc, context.db)) {
+            try context.work_queue.append(alloc, entry);
+            continue;
+        }
+        for (entry.dependencies) |dep| {
+            const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            const d_status =
+                @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
+            if (d_status != .parsed) try context.work_queue.append(alloc, dep_entry);
+        }
+    }
+}
+
+pub fn parse_threaded(
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
+    db: *Database,
+) !void {
+    var remaining_entries = db.entries.getPtr(.GRAPHICS_PIPELINE).values();
+    if (thread_contexts.len != 1) {
+        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        for (thread_contexts[1..]) |*tc| {
+            const chunk = remaining_entries[0..chunk_size];
+            for (chunk) |*e| try tc.work_queue.append(tc.arena.allocator(), e);
+            remaining_entries = remaining_entries[chunk_size..];
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{tc});
+        }
+    }
+    for (remaining_entries) |*e| try thread_contexts[0].work_queue.append(
+        thread_contexts[0].arena.allocator(),
+        e,
+    );
+    thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{&thread_contexts[0]});
+    thread_pool.wait_group.wait();
+    thread_pool.wait_group.reset();
+}
+
+pub fn create(context: *ThreadContext, vk_device: vk.VkDevice) void {
+    create_inner(context, vk_device) catch unreachable;
+}
+pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
+    const alloc = context.arena.allocator();
+    while (context.work_queue.pop()) |entry| {
+        switch (try entry.create(vk_device, context.db)) {
+            .dependencies => {
+                try context.work_queue.append(alloc, entry);
+                for (entry.dependencies) |dep| {
+                    const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                    const d_status =
+                        @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
+                    if (d_status != .created) try context.work_queue.append(alloc, dep_entry);
+                }
+            },
+            .creating => try context.work_queue.append(alloc, entry),
+            .created => {
+                if (try entry.entry.get_value() == 0x596639c53367d8a6)
+                    entry.destroy_dependencies(vk_device, context.db);
+            },
+        }
+    }
+}
+pub fn create_threaded(
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
+    db: *Database,
+    vk_device: vk.VkDevice,
+) !void {
+    var remaining_entries = db.entries.getPtr(.GRAPHICS_PIPELINE).values();
+    if (thread_contexts.len != 1) {
+        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        for (thread_contexts[1..]) |*tc| {
+            const chunk = remaining_entries[0..chunk_size];
+            for (chunk) |*e| try tc.work_queue.append(tc.arena.allocator(), e);
+            remaining_entries = remaining_entries[chunk_size..];
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{ tc, vk_device });
+        }
+    }
+    for (remaining_entries) |*e| try thread_contexts[0].work_queue.append(
+        thread_contexts[0].arena.allocator(),
+        e,
+    );
+    thread_pool.pool.spawnWg(
+        &thread_pool.wait_group,
+        create,
+        .{ &thread_contexts[0], vk_device },
+    );
+    thread_pool.wait_group.wait();
+    thread_pool.wait_group.reset();
 }
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
