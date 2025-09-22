@@ -31,8 +31,8 @@ pub const EntriesType = std.EnumArray(
     std.AutoArrayHashMapUnmanaged(u64, EntryMeta),
 );
 pub const EntryMeta = struct {
-    entry: Entry,
-    payload_file_offset: u32,
+    entry: Entry = undefined,
+    payload_file_offset: u32 = undefined,
 
     dependent_by: u32 = 0,
     status: Status = .not_parsed,
