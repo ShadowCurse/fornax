@@ -133,6 +133,26 @@ pub const EntryMeta = struct {
         }
     }
 
+    pub fn check_version_and_hash(v: anytype, entry: *const Entry) !void {
+        const tag = entry.get_tag() catch unreachable;
+        const hash: u64 = entry.get_value() catch unreachable;
+        if (v.version != 6) {
+            log.err(
+                @src(),
+                "{s} has invalid version: {d} != {d}",
+                .{ @tagName(tag), v.version, @as(u32, 6) },
+            );
+            return error.InvalidVerson;
+        }
+        if (v.hash != hash) {
+            log.err(
+                @src(),
+                "{s} hash not equal to json version: 0x{x} != 0x{x}",
+                .{ @tagName(tag), v.hash, hash },
+            );
+            return error.InvalidHash;
+        }
+    }
     pub fn parse(
         self: *EntryMeta,
         alloc: Allocator,
@@ -158,6 +178,7 @@ pub const EntryMeta = struct {
             .APPLICATION_INFO => {},
             .SAMPLER => {
                 const result = try parsing.parse_sampler(alloc, tmp_alloc, db, payload);
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
             },
             .DESCRIPTOR_SET_LAYOUT => {
@@ -167,6 +188,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
                 for (self.dependencies) |dep| {
@@ -176,6 +198,7 @@ pub const EntryMeta = struct {
             },
             .PIPELINE_LAYOUT => {
                 const result = try parsing.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
                 for (self.dependencies) |dep| {
@@ -190,6 +213,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
             },
             .RENDER_PASS => {
@@ -199,6 +223,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
             },
             .GRAPHICS_PIPELINE => {
@@ -208,6 +233,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
                 for (self.dependencies) |dep| {
@@ -222,6 +248,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
                 for (self.dependencies) |dep| {
@@ -236,6 +263,7 @@ pub const EntryMeta = struct {
                     db,
                     payload,
                 );
+                try check_version_and_hash(result, &self.entry);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
                 for (self.dependencies) |dep| {
