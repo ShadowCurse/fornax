@@ -188,9 +188,9 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.retain_capacity);
 
-    var tp: ThreadPool = undefined;
-    try init_thread_pool_context(&tp, args.num_threads);
-    const tc = try init_thread_contexts(
+    var thread_pool: ThreadPool = undefined;
+    try init_thread_pool_context(&thread_pool, args.num_threads);
+    const tread_contexts = try init_thread_contexts(
         arena_alloc,
         args.num_threads,
         &progress_root,
@@ -198,35 +198,20 @@ pub fn main() !void {
         vk_device,
     );
 
-    try parse_threaded(&tp, tc, &db);
-    try create_threaded(&tp, tc, &db, vk_device);
+    try parse_threaded(&thread_pool, tread_contexts, &db);
+    try create_threaded(&thread_pool, tread_contexts, &db, vk_device);
 
-    // var tp: ThreadPool = undefined;
-    // try init_thread_pool_context(&tp, args.num_threads);
-    // const tc = try init_thread_contexts(
-    //     arena_alloc,
-    //     args.num_threads,
-    //     &progress_root,
-    //     &db,
-    //     vk_device,
-    // );
-    //
-    // try replay(&tmp_arena, &tp, tc, &db, .SAMPLER, &replay_sampler);
-    // try replay(&tmp_arena, &tp, tc, &db, .DESCRIPTOR_SET_LAYOUT, &replay_descriptor_set);
-    // try replay(&tmp_arena, &tp, tc, &db, .PIPELINE_LAYOUT, &replay_pipeline_layout);
-    // try replay(&tmp_arena, &tp, tc, &db, .RENDER_PASS, &replay_render_pass);
-    // try replay(&tmp_arena, &tp, tc, &db, .SHADER_MODULE, &replay_shader_module);
-    // try replay(&tmp_arena, &tp, tc, &db, .GRAPHICS_PIPELINE, &replay_graphics_pipeline);
-    // try replay(&tmp_arena, &tp, tc, &db, .COMPUTE_PIPELINE, &replay_compute_pipeline);
-    // try replay(&tmp_arena, &tp, tc, &db, .RAYTRACING_PIPELINE, &replay_raytracing_pipeline);
-    //
-    // // Don't set the completion because otherwise Steam will remember that everything
-    // // is replayed and will not try to replay shaders again.
-    // // if (control_block) |cb|
-    // //     cb.progress_complete.store(1, .release);
-    //
-    // const total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
-    // log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
+    // Don't set the completion because otherwise Steam will remember that everything
+    // is replayed and will not try to replay shaders again.
+    // if (control_block) |cb|
+    //     cb.progress_complete.store(1, .release);
+
+    var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
+    for (tread_contexts) |*context| {
+        total_used_bytes += context.arena.queryCapacity();
+        total_used_bytes += context.tmp_arena.queryCapacity();
+    }
+    log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
 }
 
 pub const MAX_PROCESS_STATS = 256;
