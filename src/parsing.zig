@@ -11,7 +11,7 @@ const log = @import("log.zig");
 const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
 const Database = @import("database.zig");
-const Dependency = Database.EntryMeta.Dependency;
+const Dependency = Database.Entry.Dependency;
 
 const Allocator = std.mem.Allocator;
 
@@ -486,7 +486,7 @@ test "parse_compute_pipeline" {
         .entries = .initFill(.empty),
         .arena = arena,
     };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
         .handle = @ptrFromInt(0x69),
     });
 
@@ -555,7 +555,7 @@ test "parse_raytracing_pipeline" {
         .entries = .initFill(.empty),
         .arena = arena,
     };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
         .handle = @ptrFromInt(0x69),
     });
 
@@ -956,7 +956,7 @@ fn parse_object_array(
     const final_array = try context.alloc.dupe(T, tmp.items);
 
     // Check if any newly added dependencies point into the tmp array and
-    // update them by calculating the offset into the tmp array and 
+    // update them by calculating the offset into the tmp array and
     // storing same offset into final array
     const added_dependencies = context.dependencies.items.len - current_dep_number;
     const tmp_ptr_begin: usize = @intFromPtr(tmp.items.ptr);
@@ -1275,7 +1275,7 @@ pub fn parse_pnext_chain(context: *Context) !?*anyopaque {
             last_pnext_in_chain.* = @ptrCast(&obj.pNext);
             const libraries = try parse_handle_array(
                 vk.VkPipeline,
-                .GRAPHICS_PIPELINE,
+                .graphics_pipeline,
                 c,
             );
             obj.pLibraries = @ptrCast(libraries.ptr);
@@ -1563,7 +1563,7 @@ fn parse_vk_descriptor_set_layout_binding(
         } else if (std.mem.eql(u8, s, "immutableSamplers")) {
             const samplers = try parse_handle_array(
                 vk.VkSampler,
-                .SAMPLER,
+                .sampler,
                 context,
             );
             item.pImmutableSamplers = @ptrCast(samplers.ptr);
@@ -1590,7 +1590,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.SAMPLER).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.sampler).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
 
@@ -1632,7 +1632,7 @@ fn parse_vk_pipeline_layout_create_info(
         } else if (std.mem.eql(u8, s, "setLayouts")) {
             const set_layouts = try parse_handle_array(
                 vk.VkDescriptorSetLayout,
-                .DESCRIPTOR_SET_LAYOUT,
+                .descriptor_set_layout,
                 context,
             );
             item.pSetLayouts = @ptrCast(set_layouts.ptr);
@@ -1658,7 +1658,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.DESCRIPTOR_SET_LAYOUT).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.descriptor_set_layout).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
 
@@ -2169,9 +2169,9 @@ fn parse_vk_graphics_pipeline_create_info(
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, &item.layout);
         } else if (std.mem.eql(u8, s, "renderPass")) {
-            try parse_single_handle(context, .RENDER_PASS, &item.renderPass);
+            try parse_single_handle(context, .render_pass, &item.renderPass);
         } else if (std.mem.eql(u8, s, "subpass")) {
             const v = try scanner_next_number(context.scanner);
             item.subpass = try std.fmt.parseInt(u32, v, 10);
@@ -2215,10 +2215,10 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x2222222222222222, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
         .handle = @ptrFromInt(0x69),
     });
-    try db.entries.getPtr(.RENDER_PASS).put(alloc, 0x3333333333333333, .{
+    try db.entries.getPtr(.render_pass).put(alloc, 0x3333333333333333, .{
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -2268,7 +2268,7 @@ fn parse_vk_pipeline_shader_stage_create_info(
             const v = try scanner_next_number(context.scanner);
             item.stage = try std.fmt.parseInt(u32, v, 10);
         } else if (std.mem.eql(u8, s, "module")) {
-            try parse_single_handle(context, .SHADER_MODULE, &item.module);
+            try parse_single_handle(context, .shader_module, &item.module);
         } else if (std.mem.eql(u8, s, "name")) {
             const name_str = try scanner_next_string(context.scanner);
             const name = try context.alloc.dupeZ(u8, name_str);
@@ -2298,7 +2298,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.SHADER_MODULE).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.shader_module).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -3280,7 +3280,7 @@ fn parse_vk_compute_pipeline_create_info(
                 &item.stage,
             );
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, &item.layout);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
@@ -3310,7 +3310,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
 
@@ -3381,7 +3381,7 @@ fn parse_vk_raytracing_pipeline_create_info(
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .PIPELINE_LAYOUT, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, &item.layout);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
@@ -3416,7 +3416,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.PIPELINE_LAYOUT).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -3506,7 +3506,7 @@ fn parse_vk_pipeline_library_create_info(
         } else if (std.mem.eql(u8, s, "libraries")) {
             const libraries = try parse_handle_array(
                 vk.VkPipeline,
-                .RAYTRACING_PIPELINE,
+                .raytracing_pipeline,
                 context,
             );
             item.pLibraries = @ptrCast(libraries.ptr);
@@ -3528,7 +3528,7 @@ test "test_parse_vk_pipeline_library_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.RAYTRACING_PIPELINE).put(alloc, 0x1111111111111111, .{
+    try db.entries.getPtr(.raytracing_pipeline).put(alloc, 0x1111111111111111, .{
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);

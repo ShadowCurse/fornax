@@ -135,13 +135,13 @@ pub fn main() !void {
 
     if (control_block) |cb| {
         const graphics: u32 =
-            @intCast(db.entries.getPtrConst(.GRAPHICS_PIPELINE).values().len);
+            @intCast(db.entries.getPtrConst(.graphics_pipeline).values().len);
         cb.static_total_count_graphics.store(graphics, .release);
         const compute: u32 =
-            @intCast(db.entries.getPtrConst(.COMPUTE_PIPELINE).values().len);
+            @intCast(db.entries.getPtrConst(.compute_pipeline).values().len);
         cb.static_total_count_compute.store(compute, .release);
         const raytracing: u32 =
-            @intCast(db.entries.getPtrConst(.RAYTRACING_PIPELINE).values().len);
+            @intCast(db.entries.getPtrConst(.raytracing_pipeline).values().len);
         cb.static_total_count_raytracing.store(raytracing, .release);
 
         cb.num_running_processes.store(args.num_threads.? + 1, .release);
@@ -150,7 +150,7 @@ pub fn main() !void {
         cb.progress_started.store(1, .release);
     }
 
-    const app_infos = db.entries.getPtrConst(.APPLICATION_INFO).values();
+    const app_infos = db.entries.getPtrConst(.application_info).values();
     if (app_infos.len == 0)
         return error.NoApplicationInfoInTheDatabase;
     const app_info_entry = &app_infos[0];
@@ -293,7 +293,7 @@ pub fn open_control_block(shmem_fd: i32) !void {
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
     tmp_arena: std.heap.ArenaAllocator,
-    work_queue: std.ArrayListUnmanaged(*Database.EntryMeta),
+    work_queue: std.ArrayListUnmanaged(*Database.Entry),
     progress: *std.Progress.Node,
     db: *Database,
     vk_device: vk.VkDevice,
@@ -364,22 +364,22 @@ pub fn print_time(
         .{
             thread_id,
             WORK,
-            Database.Entry.Tag.SAMPLER,
-            counters.get(.SAMPLER),
-            Database.Entry.Tag.DESCRIPTOR_SET_LAYOUT,
-            counters.get(.DESCRIPTOR_SET_LAYOUT),
-            Database.Entry.Tag.PIPELINE_LAYOUT,
-            counters.get(.PIPELINE_LAYOUT),
-            Database.Entry.Tag.SHADER_MODULE,
-            counters.get(.SHADER_MODULE),
-            Database.Entry.Tag.RENDER_PASS,
-            counters.get(.RENDER_PASS),
-            Database.Entry.Tag.GRAPHICS_PIPELINE,
-            counters.get(.GRAPHICS_PIPELINE),
-            Database.Entry.Tag.COMPUTE_PIPELINE,
-            counters.get(.COMPUTE_PIPELINE),
-            Database.Entry.Tag.RAYTRACING_PIPELINE,
-            counters.get(.RAYTRACING_PIPELINE),
+            Database.Entry.Tag.sampler,
+            counters.get(.sampler),
+            Database.Entry.Tag.descriptor_set_layout,
+            counters.get(.descriptor_set_layout),
+            Database.Entry.Tag.pipeline_layout,
+            counters.get(.pipeline_layout),
+            Database.Entry.Tag.shader_module,
+            counters.get(.shader_module),
+            Database.Entry.Tag.render_pass,
+            counters.get(.render_pass),
+            Database.Entry.Tag.graphics_pipeline,
+            counters.get(.graphics_pipeline),
+            Database.Entry.Tag.compute_pipeline,
+            counters.get(.compute_pipeline),
+            Database.Entry.Tag.raytracing_pipeline,
+            counters.get(.raytracing_pipeline),
             dt,
         },
     );
@@ -406,22 +406,21 @@ pub fn parse_inner(context: *ThreadContext) !void {
         for (entry.dependencies) |dep| {
             const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
             const d_status =
-                @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
+                @atomicLoad(Database.Entry.Status, &dep_entry.status, .seq_cst);
             if (d_status != .parsed) try context.work_queue.append(alloc, dep_entry);
         }
-        const tag = try entry.entry.get_tag();
-        counters.getPtr(tag).* += 1;
+        counters.getPtr(entry.tag).* += 1;
         if (control_block) |cb| {
-            switch (tag) {
-                .GRAPHICS_PIPELINE => {
+            switch (entry.tag) {
+                .graphics_pipeline => {
                     _ = cb.total_graphics.fetchAdd(1, .release);
                     _ = cb.parsed_graphics.fetchAdd(1, .release);
                 },
-                .COMPUTE_PIPELINE => {
+                .compute_pipeline => {
                     _ = cb.total_compute.fetchAdd(1, .release);
                     _ = cb.parsed_compute.fetchAdd(1, .release);
                 },
-                .RAYTRACING_PIPELINE => {
+                .raytracing_pipeline => {
                     _ = cb.total_raytracing.fetchAdd(1, .release);
                     _ = cb.parsed_raytracing.fetchAdd(1, .release);
                 },
@@ -436,7 +435,7 @@ pub fn parse_threaded(
     thread_contexts: []align(64) ThreadContext,
     db: *Database,
 ) !void {
-    var remaining_entries = db.entries.getPtr(.GRAPHICS_PIPELINE).values();
+    var remaining_entries = db.entries.getPtr(.graphics_pipeline).values();
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
         for (thread_contexts[1..]) |*tc| {
@@ -472,7 +471,7 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
                 for (entry.dependencies) |dep| {
                     const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
                     const d_status =
-                        @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
+                        @atomicLoad(Database.Entry.Status, &dep_entry.status, .seq_cst);
                     if (d_status != .created) try context.work_queue.append(alloc, dep_entry);
                 }
             },
@@ -480,19 +479,18 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
             .created => {
                 entry.destroy_dependencies(vk_device, context.db);
 
-                const tag = try entry.entry.get_tag();
-                counters.getPtr(tag).* += 1;
+                counters.getPtr(entry.tag).* += 1;
                 if (control_block) |cb| {
-                    switch (tag) {
-                        .GRAPHICS_PIPELINE => {
+                    switch (entry.tag) {
+                        .graphics_pipeline => {
                             _ = cb.successful_graphics.fetchAdd(1, .release);
                             _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
                         },
-                        .COMPUTE_PIPELINE => {
+                        .compute_pipeline => {
                             _ = cb.successful_compute.fetchAdd(1, .release);
                             _ = cb.parsed_compute_failures.fetchAdd(1, .release);
                         },
-                        .RAYTRACING_PIPELINE => {
+                        .raytracing_pipeline => {
                             _ = cb.successful_raytracing.fetchAdd(1, .release);
                             _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
                         },
@@ -510,7 +508,7 @@ pub fn create_threaded(
     db: *Database,
     vk_device: vk.VkDevice,
 ) !void {
-    var remaining_entries = db.entries.getPtr(.GRAPHICS_PIPELINE).values();
+    var remaining_entries = db.entries.getPtr(.graphics_pipeline).values();
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
         for (thread_contexts[1..]) |*tc| {
