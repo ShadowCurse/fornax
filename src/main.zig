@@ -290,85 +290,10 @@ pub fn open_control_block(shmem_fd: i32) !void {
         return error.InvalidControlBlockMagic;
 }
 
-pub fn check_version_and_hash(v: anytype, entry: *const Database.Entry) !void {
-    const tag = entry.get_tag() catch unreachable;
-    const hash: u64 = entry.get_value() catch unreachable;
-    if (v.version != 6) {
-        log.err(
-            @src(),
-            "{s} has invalid version: {d} != {d}",
-            .{ @tagName(tag), v.version, @as(u32, 6) },
-        );
-        return error.InvalidVerson;
-    }
-    if (v.hash != hash) {
-        log.err(
-            @src(),
-            "{s} hash not equal to json version: 0x{x} != 0x{x}",
-            .{ @tagName(tag), v.hash, hash },
-        );
-        return error.InvalidHash;
-    }
-}
-
-pub const Action = union(enum) {
-    Pass: struct { u64, u64 },
-    Defer,
-    Remove,
-};
-pub const REPLAY_FN =
-    fn (Allocator, *Database.EntryMeta, *const Database, vk.VkDevice) anyerror!Action;
-pub fn create_replay_fn(
-    comptime TAG: Database.Entry.Tag,
-    comptime PARSE_FN: anytype,
-    comptime CREATE_FN: anytype,
-) REPLAY_FN {
-    const Inner = struct {
-        pub fn replay(
-            tmp_alloc: Allocator,
-            entry: *Database.EntryMeta,
-            db: *const Database,
-            vk_device: vk.VkDevice,
-        ) anyerror!Action {
-            const e = Database.Entry.from_ptr(entry.entry_ptr);
-            const parse_start = try std.time.Instant.now();
-            const result = PARSE_FN(tmp_alloc, tmp_alloc, db, entry.payload) catch |err| {
-                if (err == error.NoHandleFound) return .Defer;
-                if (err == error.NoObjectFound) return .Remove;
-                log.err(
-                    @src(),
-                    "Encountered error {} while parsing {s}",
-                    .{ err, @tagName(TAG) },
-                );
-                log.debug(@src(), "json: {s}", .{entry.payload});
-                return err;
-            };
-            const parse_end = try std.time.Instant.now();
-            try check_version_and_hash(result, &e);
-            const create_start = try std.time.Instant.now();
-            const handle = CREATE_FN(vk_device, result.create_info) catch |err| {
-                log.err(
-                    @src(),
-                    "Encountered error {} while creating {s}",
-                    .{ err, @tagName(TAG) },
-                );
-                vu.print_struct(result.create_info);
-                return .Remove;
-            };
-            const create_end = try std.time.Instant.now();
-            @atomicStore(?*anyopaque, &entry.handle, handle, .seq_cst);
-            return .{ .Pass = .{ parse_end.since(parse_start), create_end.since(create_start) } };
-        }
-    };
-    return Inner.replay;
-}
-
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
     tmp_arena: std.heap.ArenaAllocator,
     work_queue: std.ArrayListUnmanaged(*Database.EntryMeta),
-    parse_time_acc: u64,
-    create_time_acc: u64,
     progress: *std.Progress.Node,
     db: *Database,
     vk_device: vk.VkDevice,
@@ -377,8 +302,6 @@ pub const ThreadContext = struct {
         _ = self.arena.reset(.retain_capacity);
         _ = self.tmp_arena.reset(.retain_capacity);
         self.work_queue = .empty;
-        self.parse_time_acc = 0;
-        self.create_time_acc = 0;
     }
 };
 
@@ -401,8 +324,6 @@ pub fn init_thread_contexts(
             .arena = .init(std.heap.page_allocator),
             .tmp_arena = .init(std.heap.page_allocator),
             .work_queue = .empty,
-            .parse_time_acc = 0,
-            .create_time_acc = 0,
             .progress = progress,
             .db = db,
             .vk_device = vk_device,
@@ -429,199 +350,39 @@ pub fn init_thread_pool_context(
     try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
 }
 
-pub const replay_sampler = create_replay_fn(
-    .SAMPLER,
-    parsing.parse_sampler,
-    create_vk_sampler,
-);
-
-pub const replay_descriptor_set = create_replay_fn(
-    .DESCRIPTOR_SET_LAYOUT,
-    parsing.parse_descriptor_set_layout,
-    create_descriptor_set_layout,
-);
-
-pub const replay_pipeline_layout = create_replay_fn(
-    .PIPELINE_LAYOUT,
-    parsing.parse_pipeline_layout,
-    create_pipeline_layout,
-);
-
-pub const replay_render_pass = create_replay_fn(
-    .RENDER_PASS,
-    parsing.parse_render_pass,
-    create_render_pass,
-);
-
-pub const replay_shader_module = create_replay_fn(
-    .SHADER_MODULE,
-    parsing.parse_shader_module,
-    create_shader_module,
-);
-
-pub const replay_graphics_pipeline = create_replay_fn(
-    .GRAPHICS_PIPELINE,
-    parsing.parse_graphics_pipeline,
-    create_graphics_pipeline,
-);
-
-pub const replay_compute_pipeline = create_replay_fn(
-    .COMPUTE_PIPELINE,
-    parsing.parse_compute_pipeline,
-    create_compute_pipeline,
-);
-
-pub const replay_raytracing_pipeline = create_replay_fn(
-    .RAYTRACING_PIPELINE,
-    parsing.parse_raytracing_pipeline,
-    create_raytracing_pipeline,
-);
-
-pub fn replay_chunk(
-    context: *ThreadContext,
-    chunk: []Database.EntryMeta,
-    tag: Database.Entry.Tag,
-    replay_fn: *const REPLAY_FN,
-) void {
-    const alloc = context.arena.allocator();
-
-    const name = std.fmt.allocPrint(alloc, "replaying {s}", .{@tagName(tag)}) catch unreachable;
-    var sub_progress = context.progress.start(name, chunk.len);
-    defer sub_progress.end();
-
-    var tmp_allocator = std.heap.ArenaAllocator.init(alloc);
-    const tmp_alloc = tmp_allocator.allocator();
-    for (chunk) |*gp| {
-        defer _ = tmp_allocator.reset(.retain_capacity);
-        defer sub_progress.completeOne();
-
-        const action = replay_fn(tmp_alloc, gp, context.db, context.vk_device) catch break;
-        switch (action) {
-            .Pass => |times| {
-                const parse_time_ns, const create_time_ns = times;
-                context.parse_time_acc += parse_time_ns;
-                context.create_time_acc += create_time_ns;
-            },
-            .Defer => context.deferred_entries.append(alloc, gp.*) catch unreachable,
-            .Remove => context.removed_entries.append(alloc, gp.*) catch unreachable,
-        }
-    }
-}
-
-pub fn print_replay_time(
+pub fn print_time(
+    comptime WORK: []const u8,
     start: std.time.Instant,
-    tag: Database.Entry.Tag,
-    processed: usize,
-    removed: usize,
-    total_parse_ns: u64,
-    total_create_ns: u64,
+    counters: *const std.EnumArray(Database.Entry.Tag, u32),
 ) void {
     const now = std.time.Instant.now() catch unreachable;
     const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    const avg_parse = if (processed == 0) 0 else total_parse_ns / processed;
-    const avg_create = if (processed == 0) 0 else total_create_ns / processed;
+    const thread_id = std.Thread.getCurrentId();
     log.info(
         @src(),
-        "Replayed {d:>6} {s:<21} in {d:>9.3}ms Skipped {d:>6} Avg parse time: {d:>8}ns Avg create time: {d:>8}ns",
+        "Thread {d}: {s} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} in {d:>6.3}ms",
         .{
-            processed,
-            @tagName(tag),
+            thread_id,
+            WORK,
+            Database.Entry.Tag.SAMPLER,
+            counters.get(.SAMPLER),
+            Database.Entry.Tag.DESCRIPTOR_SET_LAYOUT,
+            counters.get(.DESCRIPTOR_SET_LAYOUT),
+            Database.Entry.Tag.PIPELINE_LAYOUT,
+            counters.get(.PIPELINE_LAYOUT),
+            Database.Entry.Tag.SHADER_MODULE,
+            counters.get(.SHADER_MODULE),
+            Database.Entry.Tag.RENDER_PASS,
+            counters.get(.RENDER_PASS),
+            Database.Entry.Tag.GRAPHICS_PIPELINE,
+            counters.get(.GRAPHICS_PIPELINE),
+            Database.Entry.Tag.COMPUTE_PIPELINE,
+            counters.get(.COMPUTE_PIPELINE),
+            Database.Entry.Tag.RAYTRACING_PIPELINE,
+            counters.get(.RAYTRACING_PIPELINE),
             dt,
-            removed,
-            avg_parse,
-            avg_create,
         },
     );
-}
-pub fn replay(
-    tmp_allocator: *std.heap.ArenaAllocator,
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    db: *Database,
-    tag: Database.Entry.Tag,
-    replay_fn: *const REPLAY_FN,
-) !void {
-    const entries = db.entries.getPtrConst(tag).values();
-
-    var processed = entries.len;
-    var removed: usize = 0;
-    var total_parse_ns: u64 = 0;
-    var total_create_ns: u64 = 0;
-    const t_start = try std.time.Instant.now();
-    defer print_replay_time(t_start, tag, processed, removed, total_parse_ns, total_create_ns);
-
-    const tmp_alloc = tmp_allocator.allocator();
-    defer _ = tmp_allocator.reset(.retain_capacity);
-
-    var remaining_entries = entries;
-    while (remaining_entries.len != 0) {
-        if (thread_contexts.len != 1) {
-            const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
-
-            for (thread_contexts[1..]) |*tc| {
-                const chunk = remaining_entries[0..chunk_size];
-                remaining_entries = remaining_entries[chunk_size..];
-                thread_pool.pool.spawnWg(
-                    &thread_pool.wait_group,
-                    replay_chunk,
-                    .{ tc, chunk, tag, replay_fn },
-                );
-            }
-        }
-        thread_pool.pool.spawnWg(
-            &thread_pool.wait_group,
-            replay_chunk,
-            .{ &thread_contexts[0], remaining_entries, tag, replay_fn },
-        );
-        thread_pool.wait_group.wait();
-        thread_pool.wait_group.reset();
-
-        _ = tmp_allocator.reset(.retain_capacity);
-        var deferred_entries: std.ArrayListUnmanaged(Database.EntryMeta) = .empty;
-        for (thread_contexts) |*context| {
-            total_parse_ns += context.parse_time_acc;
-            total_create_ns += context.create_time_acc;
-            processed -= context.removed_entries.items.len;
-            removed += context.removed_entries.items.len;
-
-            try deferred_entries.appendSlice(tmp_alloc, context.deferred_entries.items);
-            for (context.removed_entries.items) |r| {
-                const e = Database.Entry.from_ptr(r.entry_ptr);
-                _ = db.entries.getPtr(tag).swapRemove(try e.get_value());
-            }
-            context.reset();
-        }
-        remaining_entries = deferred_entries.items;
-    }
-
-    if (control_block) |cb| {
-        switch (tag) {
-            .SHADER_MODULE => {
-                cb.total_modules.store(@intCast(processed), .release);
-                cb.successful_modules.store(@intCast(processed), .release);
-                cb.parsed_module_failures.store(@intCast(removed), .release);
-            },
-            .GRAPHICS_PIPELINE => {
-                cb.total_graphics.store(@intCast(processed), .release);
-                cb.parsed_graphics.store(@intCast(processed), .release);
-                cb.successful_graphics.store(@intCast(processed), .release);
-                cb.parsed_graphics_failures.store(@intCast(removed), .release);
-            },
-            .COMPUTE_PIPELINE => {
-                cb.total_compute.store(@intCast(processed), .release);
-                cb.parsed_compute.store(@intCast(processed), .release);
-                cb.successful_compute.store(@intCast(processed), .release);
-                cb.parsed_compute_failures.store(@intCast(removed), .release);
-            },
-            .RAYTRACING_PIPELINE => {
-                cb.total_raytracing.store(@intCast(processed), .release);
-                cb.parsed_raytracing.store(@intCast(processed), .release);
-                cb.successful_raytracing.store(@intCast(processed), .release);
-                cb.parsed_raytracing_failures.store(@intCast(removed), .release);
-            },
-            else => {},
-        }
-    }
 }
 
 pub fn parse(context: *ThreadContext) void {
@@ -630,6 +391,10 @@ pub fn parse(context: *ThreadContext) void {
 pub fn parse_inner(context: *ThreadContext) !void {
     const alloc = context.arena.allocator();
     const tmp_alloc = context.tmp_arena.allocator();
+
+    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
+    const t_start = try std.time.Instant.now();
+    defer print_time("parsed", t_start, &counters);
 
     while (context.work_queue.pop()) |entry| {
         defer _ = context.tmp_arena.reset(.retain_capacity);
@@ -643,6 +408,25 @@ pub fn parse_inner(context: *ThreadContext) !void {
             const d_status =
                 @atomicLoad(Database.EntryMeta.Status, &dep_entry.status, .seq_cst);
             if (d_status != .parsed) try context.work_queue.append(alloc, dep_entry);
+        }
+        const tag = try entry.entry.get_tag();
+        counters.getPtr(tag).* += 1;
+        if (control_block) |cb| {
+            switch (tag) {
+                .GRAPHICS_PIPELINE => {
+                    _ = cb.total_graphics.fetchAdd(1, .release);
+                    _ = cb.parsed_graphics.fetchAdd(1, .release);
+                },
+                .COMPUTE_PIPELINE => {
+                    _ = cb.total_compute.fetchAdd(1, .release);
+                    _ = cb.parsed_compute.fetchAdd(1, .release);
+                },
+                .RAYTRACING_PIPELINE => {
+                    _ = cb.total_raytracing.fetchAdd(1, .release);
+                    _ = cb.parsed_raytracing.fetchAdd(1, .release);
+                },
+                else => {},
+            }
         }
     }
 }
@@ -676,6 +460,11 @@ pub fn create(context: *ThreadContext, vk_device: vk.VkDevice) void {
 }
 pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
     const alloc = context.arena.allocator();
+
+    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
+    const t_start = try std.time.Instant.now();
+    defer print_time("created", t_start, &counters);
+
     while (context.work_queue.pop()) |entry| {
         switch (try entry.create(vk_device, context.db)) {
             .dependencies => {
@@ -690,10 +479,31 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
             .creating => try context.work_queue.append(alloc, entry),
             .created => {
                 entry.destroy_dependencies(vk_device, context.db);
+
+                const tag = try entry.entry.get_tag();
+                counters.getPtr(tag).* += 1;
+                if (control_block) |cb| {
+                    switch (tag) {
+                        .GRAPHICS_PIPELINE => {
+                            _ = cb.successful_graphics.fetchAdd(1, .release);
+                            _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
+                        },
+                        .COMPUTE_PIPELINE => {
+                            _ = cb.successful_compute.fetchAdd(1, .release);
+                            _ = cb.parsed_compute_failures.fetchAdd(1, .release);
+                        },
+                        .RAYTRACING_PIPELINE => {
+                            _ = cb.successful_raytracing.fetchAdd(1, .release);
+                            _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
+                        },
+                        else => {},
+                    }
+                }
             },
         }
     }
 }
+
 pub fn create_threaded(
     thread_pool: *ThreadPool,
     thread_contexts: []align(64) ThreadContext,
