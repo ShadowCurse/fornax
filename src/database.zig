@@ -320,39 +320,40 @@ pub const EntryMeta = struct {
     }
 
     pub fn destroy_dependencies(self: *EntryMeta, vk_device: vk.VkDevice, db: *Database) void {
-        if (@cmpxchgWeak(u32, &self.dependencies_destroyed, 0, 1, .seq_cst, .seq_cst)) |_| {
-            for (self.dependencies) |dep| {
-                const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
-                log.assert(
-                    @src(),
-                    old_value != 0,
-                    "Attempt to destroy object {t} hash: 0x{x} second time",
-                    .{ dep.tag, dep.hash },
-                );
-                if (old_value == 1) {
-                    switch (dep.tag) {
-                        .APPLICATION_INFO => {},
-                        .SAMPLER => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
-                        .DESCRIPTOR_SET_LAYOUT => root.destroy_descriptor_set_layout(
-                            vk_device,
-                            @ptrCast(d.handle),
-                        ),
-                        .PIPELINE_LAYOUT => root.destroy_pipeline_layout(
-                            vk_device,
-                            @ptrCast(d.handle),
-                        ),
-                        .SHADER_MODULE => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
-                        .RENDER_PASS => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
-                        .GRAPHICS_PIPELINE,
-                        .COMPUTE_PIPELINE,
-                        .RAYTRACING_PIPELINE,
-                        => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
-                        .APPLICATION_BLOB_LINK => {},
-                    }
+        if (@cmpxchgWeak(u32, &self.dependencies_destroyed, 0, 1, .seq_cst, .seq_cst) != null)
+            return;
+
+        for (self.dependencies) |dep| {
+            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
+            log.assert(
+                @src(),
+                old_value != 0,
+                "Attempt to destroy object {t} hash: 0x{x} second time",
+                .{ dep.tag, dep.hash },
+            );
+            if (old_value == 1) {
+                switch (dep.tag) {
+                    .APPLICATION_INFO => {},
+                    .SAMPLER => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
+                    .DESCRIPTOR_SET_LAYOUT => root.destroy_descriptor_set_layout(
+                        vk_device,
+                        @ptrCast(d.handle),
+                    ),
+                    .PIPELINE_LAYOUT => root.destroy_pipeline_layout(
+                        vk_device,
+                        @ptrCast(d.handle),
+                    ),
+                    .SHADER_MODULE,
+                    => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
+                    .RENDER_PASS => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
+                    .GRAPHICS_PIPELINE,
+                    .COMPUTE_PIPELINE,
+                    .RAYTRACING_PIPELINE,
+                    => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
+                    .APPLICATION_BLOB_LINK => {},
                 }
             }
-            @atomicStore(u32, &self.dependencies_destroyed, 1, .seq_cst);
         }
     }
 };

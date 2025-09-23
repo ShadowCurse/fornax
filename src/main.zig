@@ -704,8 +704,7 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
             },
             .creating => try context.work_queue.append(alloc, entry),
             .created => {
-                if (try entry.entry.get_value() == 0x596639c53367d8a6)
-                    entry.destroy_dependencies(vk_device, context.db);
+                entry.destroy_dependencies(vk_device, context.db);
             },
         }
     }
