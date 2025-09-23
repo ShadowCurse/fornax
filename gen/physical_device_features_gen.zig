@@ -149,7 +149,6 @@ fn write_physical_device_struct(file: *const std.fs.File, types: []const []const
         defer _ = arena.reset(.retain_capacity);
 
         const name = try root.format_name(alloc, t, false);
-        // const name = try get_field_name(alloc, t);
         const stype = try root.get_stype(alloc, t);
         const line = try std.fmt.allocPrint(alloc,
             \\{s}: vk.{s} =

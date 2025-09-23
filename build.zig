@@ -7,15 +7,15 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const gen_exe = create_gen_exe(b, target, optimize);
+    const miniz_mod = create_miniz_module(b, target, optimize);
+    const volk_mod = create_volk_module(b, target, optimize);
+
+    const gen_exe = create_gen_exe(b, target, optimize, volk_mod);
     {
         const run_cmd = b.addRunArtifact(gen_exe);
         const run_step = b.step("gen", "Gen");
         run_step.dependOn(&run_cmd.step);
     }
-
-    const miniz_mod = create_miniz_module(b, target, optimize);
-    const volk_mod = create_volk_module(b, target, optimize);
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -59,11 +59,15 @@ pub fn create_gen_exe(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    volk_mod: *std.Build.Module,
 ) *std.Build.Step.Compile {
     const gen_mod = b.createModule(.{
         .root_source_file = b.path("gen/main.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "volk", .module = volk_mod },
+        },
     });
     const gen = b.addExecutable(.{
         .name = "gen",
@@ -136,6 +140,7 @@ pub fn create_volk_module(
         .root_source_file = volk_translate.getOutput(),
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
     volk_mod.addIncludePath(b.path("thirdparty/volk"));
     volk_mod.addIncludePath(b.path("thirdparty/Vulkan-Headers/include"));

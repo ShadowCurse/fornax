@@ -10,590 +10,4540 @@ const log = @import("log.zig");
 pub fn print_chain(chain: anytype) void {
     var current: ?*const anyopaque = chain;
     while (current) |c| {
-        const base_struct: *const vk.VkBaseInStructure = @alignCast(@ptrCast(c));
+        const base_struct: *const vk.VkBaseInStructure = @ptrCast(@alignCast(c));
         switch (base_struct.sType) {
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_APPLICATION_INFO => {
+                const nn: *const vk.VkApplicationInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO => {
+                const nn: *const vk.VkInstanceCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO => {
+                const nn: *const vk.VkDeviceQueueCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkanMemoryModelFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO => {
+                const nn: *const vk.VkDeviceCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_SUBMIT_INFO => {
+                const nn: *const vk.VkSubmitInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO => {
+                const nn: *const vk.VkMemoryAllocateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVariablePointersFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE => {
+                const nn: *const vk.VkMappedMemoryRange = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BIND_SPARSE_INFO => {
+                const nn: *const vk.VkBindSparseInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO => {
+                const nn: *const vk.VkFenceCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO => {
+                const nn: *const vk.VkSemaphoreCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceTensorFeaturesARM = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_EVENT_CREATE_INFO => {
+                const nn: *const vk.VkEventCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceSynchronization2FeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO => {
+                const nn: *const vk.VkQueryPoolCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO => {
+                const nn: *const vk.VkBufferCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceSubgroupSizeControlFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO => {
+                const nn: *const vk.VkBufferViewCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO => {
+                const nn: *const vk.VkImageCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderTileImageFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO => {
+                const nn: *const vk.VkImageViewCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO => {
+                const nn: *const vk.VkShaderModuleCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineCacheCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineShaderStageCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineVertexInputStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineInputAssemblyStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineTessellationStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineViewportStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL => {
-                const nn: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineRasterizationStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineMultisampleStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineDepthStencilStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineColorBlendStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloatControls2FeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineDynamicStateCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO => {
+                const nn: *const vk.VkGraphicsPipelineCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloat16Int8Features = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO => {
+                const nn: *const vk.VkComputePipelineCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderExpectAssumeFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO => {
+                const nn: *const vk.VkPipelineLayoutCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderDrawParametersFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO => {
+                const nn: *const vk.VkSamplerCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorSetLayoutCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorPoolCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderClockFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO => {
+                const nn: *const vk.VkDescriptorSetAllocateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET => {
+                const nn: *const vk.VkWriteDescriptorSet = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicInt64Features = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET => {
+                const nn: *const vk.VkCopyDescriptorSet = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO => {
+                const nn: *const vk.VkFramebufferCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO => {
+                const nn: *const vk.VkRenderPassCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO => {
+                const nn: *const vk.VkCommandPoolCreateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceScalarBlockLayoutFeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO => {
+                const nn: *const vk.VkCommandBufferAllocateInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO => {
+                const nn: *const vk.VkCommandBufferInheritanceInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO => {
+                const nn: *const vk.VkCommandBufferBeginInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO => {
+                const nn: *const vk.VkRenderPassBeginInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER => {
+                const nn: *const vk.VkBufferMemoryBarrier = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER => {
+                const nn: *const vk.VkImageMemoryBarrier = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER => {
+                const nn: *const vk.VkMemoryBarrier = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceSubgroupProperties = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayQueryFeaturesKHR = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO => {
+                const nn: *const vk.VkBindBufferMemoryInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceProvokingVertexFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePipelineRobustnessFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePipelineProtectedAccessFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewFeatures = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance7FeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance5FeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance4FeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceLineRasterizationFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceInlineUniformBlockFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 => {
-                const nn: *const vk.VkPhysicalDeviceFeatures2 = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceDynamicRenderingFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorIndexingFeatures = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClipControlFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClampControlFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeatures = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR = @alignCast(@ptrCast(c));
-                print_struct(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES => {
-                const nn: *const vk.VkPhysicalDevice8BitStorageFeatures = @alignCast(@ptrCast(c));
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO => {
+                const nn: *const vk.VkBindImageMemoryInfo = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES => {
-                const nn: *const vk.VkPhysicalDevice16BitStorageFeatures = @alignCast(@ptrCast(c));
+                const nn: *const vk.VkPhysicalDevice16BitStorageFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS => {
+                const nn: *const vk.VkMemoryDedicatedRequirements = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO => {
+                const nn: *const vk.VkMemoryDedicatedAllocateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO => {
+                const nn: *const vk.VkMemoryAllocateFlagsInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO => {
+                const nn: *const vk.VkDeviceGroupRenderPassBeginInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO => {
+                const nn: *const vk.VkDeviceGroupCommandBufferBeginInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO => {
+                const nn: *const vk.VkDeviceGroupSubmitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO => {
+                const nn: *const vk.VkDeviceGroupBindSparseInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO => {
+                const nn: *const vk.VkBindBufferMemoryDeviceGroupInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO => {
+                const nn: *const vk.VkBindImageMemoryDeviceGroupInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceGroupProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO => {
+                const nn: *const vk.VkDeviceGroupDeviceCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2 => {
+                const nn: *const vk.VkBufferMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2 => {
+                const nn: *const vk.VkImageMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 => {
+                const nn: *const vk.VkImageSparseMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 => {
+                const nn: *const vk.VkMemoryRequirements2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2 => {
+                const nn: *const vk.VkSparseImageMemoryRequirements2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 => {
+                const nn: *const vk.VkPhysicalDeviceFeatures2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 => {
+                const nn: *const vk.VkPhysicalDeviceProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2 => {
+                const nn: *const vk.VkFormatProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2 => {
+                const nn: *const vk.VkImageFormatProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2 => {
+                const nn: *const vk.VkPhysicalDeviceImageFormatInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 => {
+                const nn: *const vk.VkQueueFamilyProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 => {
+                const nn: *const vk.VkPhysicalDeviceMemoryProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2 => {
+                const nn: *const vk.VkSparseImageFormatProperties2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 => {
+                const nn: *const vk.VkPhysicalDeviceSparseImageFormatInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDevicePointClippingProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO => {
+                const nn: *const vk.VkRenderPassInputAttachmentAspectCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO => {
+                const nn: *const vk.VkImageViewUsageCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineTessellationDomainOriginStateCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO => {
+                const nn: *const vk.VkRenderPassMultiviewCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceMultiviewFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceMultiviewProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVariablePointersFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO => {
+                const nn: *const vk.VkProtectedSubmitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceProtectedMemoryFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceProtectedMemoryProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2 => {
+                const nn: *const vk.VkDeviceQueueInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO => {
+                const nn: *const vk.VkSamplerYcbcrConversionCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO => {
+                const nn: *const vk.VkSamplerYcbcrConversionInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO => {
+                const nn: *const vk.VkBindImagePlaneMemoryInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO => {
+                const nn: *const vk.VkImagePlaneMemoryRequirementsInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES => {
+                const nn: *const vk.VkSamplerYcbcrConversionImageFormatProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorUpdateTemplateCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO => {
+                const nn: *const vk.VkPhysicalDeviceExternalImageFormatInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES => {
+                const nn: *const vk.VkExternalImageFormatProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO => {
+                const nn: *const vk.VkPhysicalDeviceExternalBufferInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES => {
+                const nn: *const vk.VkExternalBufferProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceIDProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO => {
+                const nn: *const vk.VkExternalMemoryBufferCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO => {
+                const nn: *const vk.VkExternalMemoryImageCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO => {
+                const nn: *const vk.VkExportMemoryAllocateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO => {
+                const nn: *const vk.VkPhysicalDeviceExternalFenceInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES => {
+                const nn: *const vk.VkExternalFenceProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO => {
+                const nn: *const vk.VkExportFenceCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO => {
+                const nn: *const vk.VkExportSemaphoreCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO => {
+                const nn: *const vk.VkPhysicalDeviceExternalSemaphoreInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES => {
+                const nn: *const vk.VkExternalSemaphoreProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance3Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT => {
+                const nn: *const vk.VkDescriptorSetLayoutSupport = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderDrawParametersFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan11Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan11Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan12Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan12Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO => {
+                const nn: *const vk.VkImageFormatListCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 => {
+                const nn: *const vk.VkAttachmentDescription2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 => {
+                const nn: *const vk.VkAttachmentReference2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 => {
+                const nn: *const vk.VkSubpassDescription2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 => {
+                const nn: *const vk.VkSubpassDependency2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 => {
+                const nn: *const vk.VkRenderPassCreateInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO => {
+                const nn: *const vk.VkSubpassBeginInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_END_INFO => {
+                const nn: *const vk.VkSubpassEndInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES => {
+                const nn: *const vk.VkPhysicalDevice8BitStorageFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceDriverProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderAtomicInt64Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderFloat16Int8Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceFloatControlsProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorIndexingFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorIndexingProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO => {
+                const nn: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT => {
+                const nn: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupport = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceDepthStencilResolveProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE => {
+                const nn: *const vk.VkSubpassDescriptionDepthStencilResolve = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceScalarBlockLayoutFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO => {
+                const nn: *const vk.VkImageStencilUsageCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceSamplerFilterMinmaxProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO => {
+                const nn: *const vk.VkSamplerReductionModeCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVulkanMemoryModelFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceImagelessFramebufferFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO => {
+                const nn: *const vk.VkFramebufferAttachmentsCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO => {
+                const nn: *const vk.VkFramebufferAttachmentImageInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO => {
+                const nn: *const vk.VkRenderPassAttachmentBeginInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT => {
+                const nn: *const vk.VkAttachmentReferenceStencilLayout = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT => {
+                const nn: *const vk.VkAttachmentDescriptionStencilLayout = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceHostQueryResetFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceTimelineSemaphoreFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceTimelineSemaphoreProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO => {
+                const nn: *const vk.VkSemaphoreTypeCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO => {
+                const nn: *const vk.VkTimelineSemaphoreSubmitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO => {
+                const nn: *const vk.VkSemaphoreWaitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO => {
+                const nn: *const vk.VkSemaphoreSignalInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO => {
+                const nn: *const vk.VkBufferDeviceAddressInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO => {
+                const nn: *const vk.VkBufferOpaqueCaptureAddressCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO => {
+                const nn: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO => {
+                const nn: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan13Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan13Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO => {
+                const nn: *const vk.VkPipelineCreationFeedbackCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceToolProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES => {
+                const nn: *const vk.VkPhysicalDevicePrivateDataFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO => {
+                const nn: *const vk.VkDevicePrivateDataCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO => {
+                const nn: *const vk.VkPrivateDataSlotCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES => {
+                const nn: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2 => {
+                const nn: *const vk.VkMemoryBarrier2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2 => {
+                const nn: *const vk.VkBufferMemoryBarrier2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 => {
+                const nn: *const vk.VkImageMemoryBarrier2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEPENDENCY_INFO => {
+                const nn: *const vk.VkDependencyInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBMIT_INFO_2 => {
+                const nn: *const vk.VkSubmitInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO => {
+                const nn: *const vk.VkSemaphoreSubmitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO => {
+                const nn: *const vk.VkCommandBufferSubmitInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceSynchronization2Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceImageRobustnessFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2 => {
+                const nn: *const vk.VkCopyBufferInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2 => {
+                const nn: *const vk.VkCopyImageInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2 => {
+                const nn: *const vk.VkCopyBufferToImageInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2 => {
+                const nn: *const vk.VkCopyImageToBufferInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2 => {
+                const nn: *const vk.VkBlitImageInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2 => {
+                const nn: *const vk.VkResolveImageInfo2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_COPY_2 => {
+                const nn: *const vk.VkBufferCopy2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_COPY_2 => {
+                const nn: *const vk.VkImageCopy2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_BLIT_2 => {
+                const nn: *const vk.VkImageBlit2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2 => {
+                const nn: *const vk.VkBufferImageCopy2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2 => {
+                const nn: *const vk.VkImageResolve2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceSubgroupSizeControlProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceSubgroupSizeControlFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceInlineUniformBlockFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceInlineUniformBlockProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK => {
+                const nn: *const vk.VkWriteDescriptorSetInlineUniformBlock = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO => {
+                const nn: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_INFO => {
+                const nn: *const vk.VkRenderingInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO => {
+                const nn: *const vk.VkRenderingAttachmentInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO => {
+                const nn: *const vk.VkPipelineRenderingCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceDynamicRenderingFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO => {
+                const nn: *const vk.VkCommandBufferInheritanceRenderingInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceShaderIntegerDotProductProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceTexelBufferAlignmentProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3 => {
+                const nn: *const vk.VkFormatProperties3 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance4Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance4Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS => {
+                const nn: *const vk.VkDeviceBufferMemoryRequirements = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_MEMORY_REQUIREMENTS => {
+                const nn: *const vk.VkDeviceImageMemoryRequirements = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan14Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceVulkan14Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO => {
+                const nn: *const vk.VkDeviceQueueGlobalPriorityCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES => {
+                const nn: *const vk.VkQueueFamilyGlobalPriorityProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderFloatControls2Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceShaderExpectAssumeFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceLineRasterizationFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineRasterizationLineStateCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceLineRasterizationProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO => {
+                const nn: *const vk.VkPipelineVertexInputDivisorStateCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceIndexTypeUint8Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_MAP_INFO => {
+                const nn: *const vk.VkMemoryMapInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_UNMAP_INFO => {
+                const nn: *const vk.VkMemoryUnmapInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance5Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance5Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_AREA_INFO => {
+                const nn: *const vk.VkRenderingAreaInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_SUBRESOURCE_INFO => {
+                const nn: *const vk.VkDeviceImageSubresourceInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBRESOURCE_LAYOUT_2 => {
+                const nn: *const vk.VkSubresourceLayout2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_SUBRESOURCE_2 => {
+                const nn: *const vk.VkImageSubresource2 = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO => {
+                const nn: *const vk.VkPipelineCreateFlags2CreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO => {
+                const nn: *const vk.VkBufferUsageFlags2CreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDevicePushDescriptorProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO => {
+                const nn: *const vk.VkRenderingAttachmentLocationInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO => {
+                const nn: *const vk.VkRenderingInputAttachmentIndexInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance6Features = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance6Properties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS => {
+                const nn: *const vk.VkBindMemoryStatus = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO => {
+                const nn: *const vk.VkBindDescriptorSetsInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO => {
+                const nn: *const vk.VkPushConstantsInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO => {
+                const nn: *const vk.VkPushDescriptorSetInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_WITH_TEMPLATE_INFO => {
+                const nn: *const vk.VkPushDescriptorSetWithTemplateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES => {
+                const nn: *const vk.VkPhysicalDevicePipelineProtectedAccessFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO => {
+                const nn: *const vk.VkPipelineRobustnessCreateInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES => {
+                const nn: *const vk.VkPhysicalDevicePipelineRobustnessFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDevicePipelineRobustnessProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES => {
+                const nn: *const vk.VkPhysicalDeviceHostImageCopyFeatures = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES => {
+                const nn: *const vk.VkPhysicalDeviceHostImageCopyProperties = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY => {
+                const nn: *const vk.VkMemoryToImageCopy = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_TO_MEMORY_COPY => {
+                const nn: *const vk.VkImageToMemoryCopy = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO => {
+                const nn: *const vk.VkCopyImageToMemoryInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO => {
+                const nn: *const vk.VkCopyMemoryToImageInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO => {
+                const nn: *const vk.VkHostImageLayoutTransitionInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO => {
+                const nn: *const vk.VkCopyImageToImageInfo = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE => {
+                const nn: *const vk.VkSubresourceHostMemcpySize = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY => {
+                const nn: *const vk.VkHostImageCopyDevicePerformanceQuery = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR => {
+                const nn: *const vk.VkSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR => {
+                const nn: *const vk.VkPresentInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR => {
+                const nn: *const vk.VkDeviceGroupPresentCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR => {
+                const nn: *const vk.VkImageSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR => {
+                const nn: *const vk.VkBindImageMemorySwapchainInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR => {
+                const nn: *const vk.VkAcquireNextImageInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR => {
+                const nn: *const vk.VkDeviceGroupPresentInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR => {
+                const nn: *const vk.VkDeviceGroupSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkDisplayModeCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkDisplaySurfaceCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR => {
+                const nn: *const vk.VkDisplayPresentInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT => {
+                const nn: *const vk.VkDebugReportCallbackCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD => {
+                const nn: *const vk.VkPipelineRasterizationStateRasterizationOrderAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT => {
+                const nn: *const vk.VkDebugMarkerObjectNameInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT => {
+                const nn: *const vk.VkDebugMarkerObjectTagInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT => {
+                const nn: *const vk.VkDebugMarkerMarkerInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR => {
+                const nn: *const vk.VkVideoProfileInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR => {
+                const nn: *const vk.VkVideoCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR => {
+                const nn: *const vk.VkVideoPictureResourceInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR => {
+                const nn: *const vk.VkVideoSessionMemoryRequirementsKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR => {
+                const nn: *const vk.VkBindVideoSessionMemoryInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR => {
+                const nn: *const vk.VkVideoSessionCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR => {
+                const nn: *const vk.VkVideoSessionParametersCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_UPDATE_INFO_KHR => {
+                const nn: *const vk.VkVideoSessionParametersUpdateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR => {
+                const nn: *const vk.VkVideoBeginCodingInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR => {
+                const nn: *const vk.VkVideoEndCodingInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR => {
+                const nn: *const vk.VkVideoCodingControlInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR => {
+                const nn: *const vk.VkVideoReferenceSlotInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR => {
+                const nn: *const vk.VkQueueFamilyVideoPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR => {
+                const nn: *const vk.VkVideoProfileListInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoFormatInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR => {
+                const nn: *const vk.VkVideoFormatPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR => {
+                const nn: *const vk.VkQueueFamilyQueryResultStatusPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR => {
+                const nn: *const vk.VkVideoDecodeInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR => {
+                const nn: *const vk.VkVideoDecodeCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR => {
+                const nn: *const vk.VkVideoDecodeUsageInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV => {
+                const nn: *const vk.VkDedicatedAllocationImageCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV => {
+                const nn: *const vk.VkDedicatedAllocationBufferCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV => {
+                const nn: *const vk.VkDedicatedAllocationMemoryAllocateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceTransformFeedbackPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineRasterizationStateStreamCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CU_MODULE_CREATE_INFO_NVX => {
+                const nn: *const vk.VkCuModuleCreateInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CU_FUNCTION_CREATE_INFO_NVX => {
+                const nn: *const vk.VkCuFunctionCreateInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CU_LAUNCH_INFO_NVX => {
+                const nn: *const vk.VkCuLaunchInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CU_MODULE_TEXTURING_MODE_CREATE_INFO_NVX => {
+                const nn: *const vk.VkCuModuleTexturingModeCreateInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_HANDLE_INFO_NVX => {
+                const nn: *const vk.VkImageViewHandleInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ADDRESS_PROPERTIES_NVX => {
+                const nn: *const vk.VkImageViewAddressPropertiesNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD => {
+                const nn: *const vk.VkTextureLODGatherFormatPropertiesAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCornerSampledImageFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV => {
+                const nn: *const vk.VkExternalMemoryImageCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV => {
+                const nn: *const vk.VkExportMemoryAllocateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT => {
+                const nn: *const vk.VkValidationFlagsEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT => {
+                const nn: *const vk.VkImageViewASTCDecodeModeEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceASTCDecodeFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR => {
+                const nn: *const vk.VkImportMemoryFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR => {
+                const nn: *const vk.VkMemoryFdPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR => {
+                const nn: *const vk.VkMemoryGetFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR => {
+                const nn: *const vk.VkImportSemaphoreFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR => {
+                const nn: *const vk.VkSemaphoreGetFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT => {
+                const nn: *const vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CONDITIONAL_RENDERING_BEGIN_INFO_EXT => {
+                const nn: *const vk.VkConditionalRenderingBeginInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR => {
+                const nn: *const vk.VkPresentRegionsKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineViewportWScalingStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_EXT => {
+                const nn: *const vk.VkSurfaceCapabilities2EXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT => {
+                const nn: *const vk.VkDisplayPowerInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT => {
+                const nn: *const vk.VkDeviceEventInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT => {
+                const nn: *const vk.VkDisplayEventInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT => {
+                const nn: *const vk.VkSwapchainCounterCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX => {
+                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX => {
+                const nn: *const vk.VkMultiviewPerViewAttributesInfoNVX = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineViewportSwizzleStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineDiscardRectangleStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceConservativeRasterizationPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineRasterizationConservativeStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_HDR_METADATA_EXT => {
+                const nn: *const vk.VkHdrMetadataEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG => {
+                const nn: *const vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR => {
+                const nn: *const vk.VkSharedPresentSurfaceCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMPORT_FENCE_FD_INFO_KHR => {
+                const nn: *const vk.VkImportFenceFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR => {
+                const nn: *const vk.VkFenceGetFdInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePerformanceQueryFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePerformanceQueryPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkQueryPoolPerformanceCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR => {
+                const nn: *const vk.VkPerformanceQuerySubmitInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACQUIRE_PROFILING_LOCK_INFO_KHR => {
+                const nn: *const vk.VkAcquireProfilingLockInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_KHR => {
+                const nn: *const vk.VkPerformanceCounterKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_DESCRIPTION_KHR => {
+                const nn: *const vk.VkPerformanceCounterDescriptionKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR => {
+                const nn: *const vk.VkPhysicalDeviceSurfaceInfo2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR => {
+                const nn: *const vk.VkSurfaceCapabilities2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR => {
+                const nn: *const vk.VkSurfaceFormat2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PROPERTIES_2_KHR => {
+                const nn: *const vk.VkDisplayProperties2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_PROPERTIES_2_KHR => {
+                const nn: *const vk.VkDisplayPlaneProperties2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_PROPERTIES_2_KHR => {
+                const nn: *const vk.VkDisplayModeProperties2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_INFO_2_KHR => {
+                const nn: *const vk.VkDisplayPlaneInfo2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_CAPABILITIES_2_KHR => {
+                const nn: *const vk.VkDisplayPlaneCapabilities2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT => {
+                const nn: *const vk.VkDebugUtilsObjectNameInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT => {
+                const nn: *const vk.VkDebugUtilsObjectTagInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT => {
+                const nn: *const vk.VkDebugUtilsLabelEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT => {
+                const nn: *const vk.VkDebugUtilsMessengerCallbackDataEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT => {
+                const nn: *const vk.VkDebugUtilsMessengerCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD => {
+                const nn: *const vk.VkAttachmentSampleCountInfoAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT => {
+                const nn: *const vk.VkSampleLocationsInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT => {
+                const nn: *const vk.VkRenderPassSampleLocationsBeginInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineSampleLocationsStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceSampleLocationsPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT => {
+                const nn: *const vk.VkMultisamplePropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineCoverageToColorStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR => {
+                const nn: *const vk.VkWriteDescriptorSetAccelerationStructureKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR => {
+                const nn: *const vk.VkAccelerationStructureBuildGeometryInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR => {
+                const nn: *const vk.VkAccelerationStructureDeviceAddressInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR => {
+                const nn: *const vk.VkAccelerationStructureGeometryAabbsDataKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR => {
+                const nn: *const vk.VkAccelerationStructureGeometryInstancesDataKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR => {
+                const nn: *const vk.VkAccelerationStructureGeometryTrianglesDataKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR => {
+                const nn: *const vk.VkAccelerationStructureGeometryKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_VERSION_INFO_KHR => {
+                const nn: *const vk.VkAccelerationStructureVersionInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR => {
+                const nn: *const vk.VkCopyAccelerationStructureInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_INFO_KHR => {
+                const nn: *const vk.VkCopyAccelerationStructureToMemoryInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_INFO_KHR => {
+                const nn: *const vk.VkCopyMemoryToAccelerationStructureInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceAccelerationStructurePropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkAccelerationStructureCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR => {
+                const nn: *const vk.VkAccelerationStructureBuildSizesInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkRayTracingPipelineCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR => {
+                const nn: *const vk.VkRayTracingShaderGroupCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkRayTracingPipelineInterfaceCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRayQueryFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineCoverageModulationStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT => {
+                const nn: *const vk.VkDrmFormatModifierPropertiesListEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImageDrmFormatModifierInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT => {
+                const nn: *const vk.VkImageDrmFormatModifierListCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT => {
+                const nn: *const vk.VkImageDrmFormatModifierExplicitCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT => {
+                const nn: *const vk.VkImageDrmFormatModifierPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT => {
+                const nn: *const vk.VkDrmFormatModifierPropertiesList2EXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkValidationCacheCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkShaderModuleValidationCacheCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineViewportShadingRateImageStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShadingRateImagePropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV => {
+                const nn: *const vk.VkRayTracingPipelineCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_NV => {
+                const nn: *const vk.VkAccelerationStructureCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GEOMETRY_NV => {
+                const nn: *const vk.VkGeometryNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV => {
+                const nn: *const vk.VkGeometryTrianglesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV => {
+                const nn: *const vk.VkGeometryAABBNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_NV => {
+                const nn: *const vk.VkBindAccelerationStructureMemoryInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV => {
+                const nn: *const vk.VkWriteDescriptorSetAccelerationStructureNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_NV => {
+                const nn: *const vk.VkAccelerationStructureMemoryRequirementsInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_NV => {
+                const nn: *const vk.VkRayTracingShaderGroupCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV => {
+                const nn: *const vk.VkAccelerationStructureInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImageViewImageFormatInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT => {
+                const nn: *const vk.VkFilterCubicImageViewImageFormatPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT => {
+                const nn: *const vk.VkImportMemoryHostPointerInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT => {
+                const nn: *const vk.VkMemoryHostPointerPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceExternalMemoryHostPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderClockFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD => {
+                const nn: *const vk.VkPipelineCompilerControlCreateInfoAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD => {
+                const nn: *const vk.VkPhysicalDeviceShaderCorePropertiesAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD => {
+                const nn: *const vk.VkDeviceMemoryOverallocationCreateInfoAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceMeshShaderPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceExclusiveScissorFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV => {
+                const nn: *const vk.VkCheckpointDataNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV => {
+                const nn: *const vk.VkQueueFamilyCheckpointPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV => {
+                const nn: *const vk.VkQueueFamilyCheckpointProperties2NV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CHECKPOINT_DATA_2_NV => {
+                const nn: *const vk.VkCheckpointData2NV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL => {
+                const nn: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_QUERY_CREATE_INFO_INTEL => {
+                const nn: *const vk.VkQueryPoolPerformanceQueryCreateInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INITIALIZE_PERFORMANCE_API_INFO_INTEL => {
+                const nn: *const vk.VkInitializePerformanceApiInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_MARKER_INFO_INTEL => {
+                const nn: *const vk.VkPerformanceMarkerInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_STREAM_MARKER_INFO_INTEL => {
+                const nn: *const vk.VkPerformanceStreamMarkerInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_OVERRIDE_INFO_INTEL => {
+                const nn: *const vk.VkPerformanceOverrideInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_CONFIGURATION_ACQUIRE_INFO_INTEL => {
+                const nn: *const vk.VkPerformanceConfigurationAcquireInfoINTEL = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePCIBusInfoPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT => {
+                const nn: *const vk.VkRenderPassFragmentDensityMapCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT => {
+                const nn: *const vk.VkRenderingFragmentDensityMapAttachmentInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR => {
+                const nn: *const vk.VkFragmentShadingRateAttachmentInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkPipelineFragmentShadingRateStateCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShadingRatePropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR => {
+                const nn: *const vk.VkRenderingFragmentShadingRateAttachmentInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD => {
+                const nn: *const vk.VkPhysicalDeviceShaderCoreProperties2AMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD => {
+                const nn: *const vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMemoryBudgetPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMemoryPriorityFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_PRIORITY_ALLOCATE_INFO_EXT => {
+                const nn: *const vk.VkMemoryPriorityAllocateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR => {
+                const nn: *const vk.VkSurfaceProtectedCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT => {
+                const nn: *const vk.VkBufferDeviceAddressCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT => {
+                const nn: *const vk.VkValidationFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePresentWaitFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_NV => {
+                const nn: *const vk.VkCooperativeMatrixPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineCoverageReductionStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_MIXED_SAMPLES_COMBINATION_NV => {
+                const nn: *const vk.VkFramebufferMixedSamplesCombinationNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceProvokingVertexFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceProvokingVertexPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkHeadlessSurfaceCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_INFO_KHR => {
+                const nn: *const vk.VkPipelineInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_PROPERTIES_KHR => {
+                const nn: *const vk.VkPipelineExecutablePropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR => {
+                const nn: *const vk.VkPipelineExecutableInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_STATISTIC_KHR => {
+                const nn: *const vk.VkPipelineExecutableStatisticKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR => {
+                const nn: *const vk.VkPipelineExecutableInternalRepresentationKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMapMemoryPlacedPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT => {
+                const nn: *const vk.VkMemoryMapPlacedInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV => {
+                const nn: *const vk.VkGraphicsShaderGroupCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV => {
+                const nn: *const vk.VkGraphicsPipelineShaderGroupsCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV => {
+                const nn: *const vk.VkIndirectCommandsLayoutTokenNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV => {
+                const nn: *const vk.VkIndirectCommandsLayoutCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV => {
+                const nn: *const vk.VkGeneratedCommandsInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV => {
+                const nn: *const vk.VkGeneratedCommandsMemoryRequirementsInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV => {
+                const nn: *const vk.VkCommandBufferInheritanceViewportScissorInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM => {
+                const nn: *const vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM => {
+                const nn: *const vk.VkRenderPassTransformBeginInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_INFO_EXT => {
+                const nn: *const vk.VkDepthBiasInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT => {
+                const nn: *const vk.VkDepthBiasRepresentationInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDeviceMemoryReportFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT => {
+                const nn: *const vk.VkDeviceDeviceMemoryReportCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_REPORT_CALLBACK_DATA_EXT => {
+                const nn: *const vk.VkDeviceMemoryReportCallbackDataEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT => {
+                const nn: *const vk.VkSamplerCustomBorderColorCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceCustomBorderColorPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR => {
+                const nn: *const vk.VkPipelineLibraryCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDevicePresentBarrierFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_BARRIER_NV => {
+                const nn: *const vk.VkSurfaceCapabilitiesPresentBarrierNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV => {
+                const nn: *const vk.VkSwapchainPresentBarrierCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeRateControlInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeRateControlLayerInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR => {
+                const nn: *const vk.VkVideoEncodeCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeUsageInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR => {
+                const nn: *const vk.VkQueryPoolVideoEncodeFeedbackCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_PROPERTIES_KHR => {
+                const nn: *const vk.VkVideoEncodeQualityLevelPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeQualityLevelInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeSessionParametersGetInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_FEEDBACK_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeSessionParametersFeedbackInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV => {
+                const nn: *const vk.VkDeviceDiagnosticsConfigCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceTileShadingPropertiesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM => {
+                const nn: *const vk.VkRenderPassTileShadingCreateInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PER_TILE_BEGIN_INFO_QCOM => {
+                const nn: *const vk.VkPerTileBeginInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PER_TILE_END_INFO_QCOM => {
+                const nn: *const vk.VkPerTileEndInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPATCH_TILE_INFO_QCOM => {
+                const nn: *const vk.VkDispatchTileInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV => {
+                const nn: *const vk.VkQueryLowLatencySupportNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorBufferPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_DENSITY_MAP_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT => {
+                const nn: *const vk.VkDescriptorAddressInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT => {
+                const nn: *const vk.VkDescriptorGetInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUFFER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
+                const nn: *const vk.VkBufferCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
+                const nn: *const vk.VkImageCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
+                const nn: *const vk.VkImageViewCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
+                const nn: *const vk.VkSamplerCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT => {
+                const nn: *const vk.VkOpaqueCaptureDescriptorDataCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT => {
+                const nn: *const vk.VkDescriptorBufferBindingInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT => {
+                const nn: *const vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
+                const nn: *const vk.VkAccelerationStructureCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT => {
+                const nn: *const vk.VkGraphicsPipelineLibraryCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD => {
+                const nn: *const vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV => {
+                const nn: *const vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_MOTION_TRIANGLES_DATA_NV => {
+                const nn: *const vk.VkAccelerationStructureGeometryMotionTrianglesDataNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV => {
+                const nn: *const vk.VkAccelerationStructureMotionInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMeshShaderPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMap2FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMap2PropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM => {
+                const nn: *const vk.VkCopyCommandTransformInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImageCompressionControlFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT => {
+                const nn: *const vk.VkImageCompressionControlEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT => {
+                const nn: *const vk.VkImageCompressionPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevice4444FormatsFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFaultFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT => {
+                const nn: *const vk.VkDeviceFaultCountsEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT => {
+                const nn: *const vk.VkDeviceFaultInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT => {
+                const nn: *const vk.VkVertexInputBindingDescription2EXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT => {
+                const nn: *const vk.VkVertexInputAttributeDescription2EXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDrmPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceAddressBindingReportFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_ADDRESS_BINDING_CALLBACK_DATA_EXT => {
+                const nn: *const vk.VkDeviceAddressBindingCallbackDataEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDepthClipControlFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineViewportDepthClipControlCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_GET_REMOTE_ADDRESS_INFO_NV => {
+                const nn: *const vk.VkMemoryGetRemoteAddressInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_PROPERTIES_IDENTIFIER_EXT => {
+                const nn: *const vk.VkPipelinePropertiesIdentifierEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFrameBoundaryFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT => {
+                const nn: *const vk.VkFrameBoundaryEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SUBPASS_RESOLVE_PERFORMANCE_QUERY_EXT => {
+                const nn: *const vk.VkSubpassResolvePerformanceQueryEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT => {
+                const nn: *const vk.VkMultisampledRenderToSingleSampledInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineColorWriteCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMultiDrawFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMultiDrawPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderTileImageFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderTileImagePropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_INFO_EXT => {
+                const nn: *const vk.VkMicromapBuildInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MICROMAP_VERSION_INFO_EXT => {
+                const nn: *const vk.VkMicromapVersionInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_INFO_EXT => {
+                const nn: *const vk.VkCopyMicromapInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_TO_MEMORY_INFO_EXT => {
+                const nn: *const vk.VkCopyMicromapToMemoryInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_MICROMAP_INFO_EXT => {
+                const nn: *const vk.VkCopyMemoryToMicromapInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceOpacityMicromapPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MICROMAP_CREATE_INFO_EXT => {
+                const nn: *const vk.VkMicromapCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_SIZES_INFO_EXT => {
+                const nn: *const vk.VkMicromapBuildSizesInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT => {
+                const nn: *const vk.VkAccelerationStructureTrianglesOpacityMicromapEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT => {
+                const nn: *const vk.VkSamplerBorderColorComponentMappingCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceShaderCorePropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDeviceQueueShaderCoreControlCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceSchedulingControlsFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceSchedulingControlsPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT => {
+                const nn: *const vk.VkImageViewSlicedCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE => {
+                const nn: *const vk.VkDescriptorSetBindingReferenceVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE => {
+                const nn: *const vk.VkDescriptorSetLayoutHostMappingInfoVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceRenderPassStripedFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceRenderPassStripedPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM => {
+                const nn: *const vk.VkRenderPassStripeBeginInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_INFO_ARM => {
+                const nn: *const vk.VkRenderPassStripeInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM => {
+                const nn: *const vk.VkRenderPassStripeSubmitInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV => {
+                const nn: *const vk.VkComputePipelineIndirectBufferInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_INDIRECT_DEVICE_ADDRESS_INFO_NV => {
+                const nn: *const vk.VkPipelineIndirectDeviceAddressInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV => {
+                const nn: *const vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_SPHERES_DATA_NV => {
+                const nn: *const vk.VkAccelerationStructureGeometrySpheresDataNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceImageProcessingPropertiesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM => {
+                const nn: *const vk.VkImageViewSampleWeightCreateInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceNestedCommandBufferFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceNestedCommandBufferPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT => {
+                const nn: *const vk.VkExternalMemoryAcquireUnmodifiedEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState3PropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT => {
+                const nn: *const vk.VkRenderPassCreationControlEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT => {
+                const nn: *const vk.VkRenderPassCreationFeedbackCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT => {
+                const nn: *const vk.VkRenderPassSubpassFeedbackCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_INFO_LUNARG => {
+                const nn: *const vk.VkDirectDriverLoadingInfoLUNARG = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG => {
+                const nn: *const vk.VkDirectDriverLoadingListLUNARG = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_CREATE_INFO_ARM => {
+                const nn: *const vk.VkTensorCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_VIEW_CREATE_INFO_ARM => {
+                const nn: *const vk.VkTensorViewCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_TENSOR_MEMORY_INFO_ARM => {
+                const nn: *const vk.VkBindTensorMemoryInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_ARM => {
+                const nn: *const vk.VkWriteDescriptorSetTensorARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceTensorPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_FORMAT_PROPERTIES_ARM => {
+                const nn: *const vk.VkTensorFormatPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM => {
+                const nn: *const vk.VkTensorDescriptionARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_REQUIREMENTS_INFO_ARM => {
+                const nn: *const vk.VkTensorMemoryRequirementsInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_BARRIER_ARM => {
+                const nn: *const vk.VkTensorMemoryBarrierARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceTensorFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_TENSOR_MEMORY_REQUIREMENTS_ARM => {
+                const nn: *const vk.VkDeviceTensorMemoryRequirementsARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COPY_TENSOR_INFO_ARM => {
+                const nn: *const vk.VkCopyTensorInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_COPY_ARM => {
+                const nn: *const vk.VkTensorCopyARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_DEPENDENCY_INFO_ARM => {
+                const nn: *const vk.VkTensorDependencyInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_TENSOR_ARM => {
+                const nn: *const vk.VkMemoryDedicatedAllocateInfoTensorARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_TENSOR_INFO_ARM => {
+                const nn: *const vk.VkPhysicalDeviceExternalTensorInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_TENSOR_PROPERTIES_ARM => {
+                const nn: *const vk.VkExternalTensorPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM => {
+                const nn: *const vk.VkExternalMemoryTensorCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_TENSOR_INFO_ARM => {
+                const nn: *const vk.VkDescriptorGetTensorInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_CAPTURE_DESCRIPTOR_DATA_INFO_ARM => {
+                const nn: *const vk.VkTensorCaptureDescriptorDataInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TENSOR_VIEW_CAPTURE_DESCRIPTOR_DATA_INFO_ARM => {
+                const nn: *const vk.VkTensorViewCaptureDescriptorDataInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM => {
+                const nn: *const vk.VkFrameBoundaryTensorsARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineShaderStageModuleIdentifierCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_IDENTIFIER_EXT => {
+                const nn: *const vk.VkShaderModuleIdentifierEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceOpticalFlowPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV => {
+                const nn: *const vk.VkOpticalFlowImageFormatInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_PROPERTIES_NV => {
+                const nn: *const vk.VkOpticalFlowImageFormatPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV => {
+                const nn: *const vk.VkOpticalFlowSessionCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV => {
+                const nn: *const vk.VkOpticalFlowExecuteInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV => {
+                const nn: *const vk.VkOpticalFlowSessionCreatePrivateDataInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD => {
+                const nn: *const vk.VkPhysicalDeviceAntiLagFeaturesAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ANTI_LAG_DATA_AMD => {
+                const nn: *const vk.VkAntiLagDataAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ANTI_LAG_PRESENTATION_INFO_AMD => {
+                const nn: *const vk.VkAntiLagPresentationInfoAMD = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR => {
+                const nn: *const vk.VkSurfaceCapabilitiesPresentWait2KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePresentWait2FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PRESENT_WAIT_2_INFO_KHR => {
+                const nn: *const vk.VkPresentWait2InfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderObjectPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT => {
+                const nn: *const vk.VkShaderCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePipelineBinaryFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR => {
+                const nn: *const vk.VkPipelineBinaryCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR => {
+                const nn: *const vk.VkPipelineBinaryInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_KEY_KHR => {
+                const nn: *const vk.VkPipelineBinaryKeyKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePipelineBinaryPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RELEASE_CAPTURED_PIPELINE_DATA_INFO_KHR => {
+                const nn: *const vk.VkReleaseCapturedPipelineDataInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_DATA_INFO_KHR => {
+                const nn: *const vk.VkPipelineBinaryDataInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR => {
+                const nn: *const vk.VkPipelineCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR => {
+                const nn: *const vk.VkDevicePipelineBinaryInternalCacheControlKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR => {
+                const nn: *const vk.VkPipelineBinaryHandlesInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TILE_PROPERTIES_QCOM => {
+                const nn: *const vk.VkTilePropertiesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC => {
+                const nn: *const vk.VkPhysicalDeviceAmigoProfilingFeaturesSEC = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC => {
+                const nn: *const vk.VkAmigoProfilingSubmitInfoSEC = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR => {
+                const nn: *const vk.VkSurfacePresentModeKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR => {
+                const nn: *const vk.VkSurfacePresentScalingCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR => {
+                const nn: *const vk.VkSurfacePresentModeCompatibilityKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR => {
+                const nn: *const vk.VkSwapchainPresentFenceInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR => {
+                const nn: *const vk.VkSwapchainPresentModesCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR => {
+                const nn: *const vk.VkSwapchainPresentModeInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR => {
+                const nn: *const vk.VkSwapchainPresentScalingCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR => {
+                const nn: *const vk.VkReleaseSwapchainImagesInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeVectorPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COOPERATIVE_VECTOR_PROPERTIES_NV => {
+                const nn: *const vk.VkCooperativeVectorPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CONVERT_COOPERATIVE_VECTOR_MATRIX_INFO_NV => {
+                const nn: *const vk.VkConvertCooperativeVectorMatrixInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT => {
+                const nn: *const vk.VkMutableDescriptorTypeCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT => {
+                const nn: *const vk.VkLayerSettingsCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_PROPERTIES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV => {
+                const nn: *const vk.VkLatencySleepModeInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_LATENCY_SLEEP_INFO_NV => {
+                const nn: *const vk.VkLatencySleepInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SET_LATENCY_MARKER_INFO_NV => {
+                const nn: *const vk.VkSetLatencyMarkerInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GET_LATENCY_MARKER_INFO_NV => {
+                const nn: *const vk.VkGetLatencyMarkerInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_LATENCY_TIMINGS_FRAME_REPORT_NV => {
+                const nn: *const vk.VkLatencyTimingsFrameReportNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_OUT_OF_BAND_QUEUE_TYPE_INFO_NV => {
+                const nn: *const vk.VkOutOfBandQueueTypeInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_LATENCY_CREATE_INFO_NV => {
+                const nn: *const vk.VkSwapchainLatencyCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_LATENCY_SURFACE_CAPABILITIES_NV => {
+                const nn: *const vk.VkLatencySurfaceCapabilitiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_KHR => {
+                const nn: *const vk.VkCooperativeMatrixPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineSessionCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_RESOURCE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineResourceInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_ARM => {
+                const nn: *const vk.VkDataGraphPipelineConstantARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_MEMORY_REQUIREMENTS_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_DATA_GRAPH_PIPELINE_SESSION_MEMORY_INFO_ARM => {
+                const nn: *const vk.VkBindDataGraphPipelineSessionMemoryInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceDataGraphFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineShaderModuleCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_PROPERTY_QUERY_RESULT_ARM => {
+                const nn: *const vk.VkDataGraphPipelinePropertyQueryResultARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineCompilerControlCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENTS_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENT_ARM => {
+                const nn: *const vk.VkDataGraphPipelineSessionBindPointRequirementARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineIdentifierCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_DISPATCH_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineDispatchInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM => {
+                const nn: *const vk.VkDataGraphProcessingEngineCreateInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_PROPERTIES_ARM => {
+                const nn: *const vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROPERTIES_ARM => {
+                const nn: *const vk.VkQueueFamilyDataGraphPropertiesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_INFO_ARM => {
+                const nn: *const vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM => {
+                const nn: *const vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM => {
+                const nn: *const vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR => {
+                const nn: *const vk.VkVideoInlineQueryInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM => {
+                const nn: *const vk.VkSamplerBlockMatchWindowCreateInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM => {
+                const nn: *const vk.VkSamplerCubicWeightsCreateInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM => {
+                const nn: *const vk.VkBlitImageCubicWeightsInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM => {
+                const nn: *const vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceCubicClampFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_FEEDBACK_LOOP_INFO_EXT => {
+                const nn: *const vk.VkAttachmentFeedbackLoopInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT => {
+                const nn: *const vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_KHR => {
+                const nn: *const vk.VkCalibratedTimestampInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT => {
+                const nn: *const vk.VkSetDescriptorBufferOffsetsInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_BUFFER_EMBEDDED_SAMPLERS_INFO_EXT => {
+                const nn: *const vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM => {
+                const nn: *const vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM => {
+                const nn: *const vk.VkTileMemoryRequirementsQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM => {
+                const nn: *const vk.VkTileMemoryBindInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM => {
+                const nn: *const vk.VkTileMemorySizeInfoQCOM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_STEREO_CREATE_INFO_NV => {
+                const nn: *const vk.VkDisplaySurfaceStereoCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_STEREO_PROPERTIES_NV => {
+                const nn: *const vk.VkDisplayModeStereoPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_CAPABILITIES_KHR => {
+                const nn: *const vk.VkVideoEncodeIntraRefreshCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_INTRA_REFRESH_CREATE_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeSessionIntraRefreshCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeIntraRefreshInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_INTRA_REFRESH_INFO_KHR => {
+                const nn: *const vk.VkVideoReferenceIntraRefreshInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_CAPABILITIES_KHR => {
+                const nn: *const vk.VkVideoEncodeQuantizationMapCapabilitiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_QUANTIZATION_MAP_PROPERTIES_KHR => {
+                const nn: *const vk.VkVideoFormatQuantizationMapPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeQuantizationMapInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR => {
+                const nn: *const vk.VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV => {
+                const nn: *const vk.VkExternalComputeQueueDeviceCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_CREATE_INFO_NV => {
+                const nn: *const vk.VkExternalComputeQueueCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DATA_PARAMS_NV => {
+                const nn: *const vk.VkExternalComputeQueueDataParamsNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_COMPUTE_QUEUE_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance7FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance7PropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_LIST_KHR => {
+                const nn: *const vk.VkPhysicalDeviceLayeredApiPropertiesListKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceLayeredApiPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_VULKAN_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceLayeredApiVulkanPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceRayTracingValidationFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_CLUSTERS_BOTTOM_LEVEL_INPUT_NV => {
+                const nn: *const vk.VkClusterAccelerationStructureClustersBottomLevelInputNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_TRIANGLE_CLUSTER_INPUT_NV => {
+                const nn: *const vk.VkClusterAccelerationStructureTriangleClusterInputNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_MOVE_OBJECTS_INPUT_NV => {
+                const nn: *const vk.VkClusterAccelerationStructureMoveObjectsInputNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_INPUT_INFO_NV => {
+                const nn: *const vk.VkClusterAccelerationStructureInputInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_COMMANDS_INFO_NV => {
+                const nn: *const vk.VkClusterAccelerationStructureCommandsInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV => {
+                const nn: *const vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV => {
+                const nn: *const vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_INSTANCES_INPUT_NV => {
+                const nn: *const vk.VkPartitionedAccelerationStructureInstancesInputNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_BUILD_PARTITIONED_ACCELERATION_STRUCTURE_INFO_NV => {
+                const nn: *const vk.VkBuildPartitionedAccelerationStructureInfoNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_FLAGS_NV => {
+                const nn: *const vk.VkPartitionedAccelerationStructureFlagsNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_EXT => {
+                const nn: *const vk.VkGeneratedCommandsMemoryRequirementsInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_CREATE_INFO_EXT => {
+                const nn: *const vk.VkIndirectExecutionSetCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_EXT => {
+                const nn: *const vk.VkGeneratedCommandsInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_EXT => {
+                const nn: *const vk.VkIndirectCommandsLayoutCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_EXT => {
+                const nn: *const vk.VkIndirectCommandsLayoutTokenEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_PIPELINE_EXT => {
+                const nn: *const vk.VkWriteIndirectExecutionSetPipelineEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_SHADER_EXT => {
+                const nn: *const vk.VkWriteIndirectExecutionSetShaderEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_PIPELINE_INFO_EXT => {
+                const nn: *const vk.VkIndirectExecutionSetPipelineInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_INFO_EXT => {
+                const nn: *const vk.VkIndirectExecutionSetShaderInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_LAYOUT_INFO_EXT => {
+                const nn: *const vk.VkIndirectExecutionSetShaderLayoutInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT => {
+                const nn: *const vk.VkGeneratedCommandsPipelineInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT => {
+                const nn: *const vk.VkGeneratedCommandsShaderInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance8FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR => {
+                const nn: *const vk.VkMemoryBarrierAccessFlags3KHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA => {
+                const nn: *const vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA => {
+                const nn: *const vk.VkPhysicalDeviceImageAlignmentControlPropertiesMESA = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA => {
+                const nn: *const vk.VkImageAlignmentControlCreateInfoMESA = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceDepthClampControlFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT => {
+                const nn: *const vk.VkPipelineViewportDepthClampControlCreateInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance9FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceMaintenance9PropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_OWNERSHIP_TRANSFER_PROPERTIES_KHR => {
+                const nn: *const vk.VkQueueFamilyOwnershipTransferPropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceVideoMaintenance2FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_FLEXIBLE_DIMENSIONS_PROPERTIES_NV => {
+                const nn: *const vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_PROPERTIES_NV => {
+                const nn: *const vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM => {
+                const nn: *const vk.VkPhysicalDeviceFormatPackFeaturesARM = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE => {
+                const nn: *const vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRobustness2FeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR => {
+                const nn: *const vk.VkPhysicalDeviceRobustness2PropertiesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT => {
+                const nn: *const vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_RENDERING_END_INFO_EXT => {
+                const nn: *const vk.VkRenderingEndInfoEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT => {
+                const nn: *const vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR => {
+                const nn: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR = @ptrCast(@alignCast(c));
+                print_struct(nn);
+                current = nn.pNext;
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC => {
+                const nn: *const vk.VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC = @ptrCast(@alignCast(c));
                 print_struct(nn);
                 current = nn.pNext;
             },
@@ -640,9 +4590,31 @@ fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) v
             ),
             ?*anyopaque,
             ?*const anyopaque,
+            vk.VkBuffer,
+            vk.VkImage,
+            vk.VkInstance,
+            vk.VkPhysicalDevice,
+            vk.VkDevice,
+            vk.VkQueue,
+            vk.VkSemaphore,
+            vk.VkCommandBuffer,
+            vk.VkFence,
+            vk.VkDeviceMemory,
+            vk.VkEvent,
+            vk.VkQueryPool,
+            vk.VkBufferView,
+            vk.VkImageView,
+            vk.VkShaderModule,
+            vk.VkPipelineCache,
             vk.VkPipelineLayout,
-            vk.VkRenderPass,
             vk.VkPipeline,
+            vk.VkRenderPass,
+            vk.VkDescriptorSetLayout,
+            vk.VkSampler,
+            vk.VkDescriptorSet,
+            vk.VkDescriptorPool,
+            vk.VkFramebuffer,
+            vk.VkCommandPool,
             => {
                 log.output("{s}: {?},\n", .{ field.name, @field(@"struct", field.name) });
             },
@@ -664,7 +4636,10 @@ fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) v
                     print_struct_offset(field.name, binding, fields_base_offset);
             },
             [*c]const vk.VkDescriptorSetLayout => {
-                const len = @field(@"struct", "setLayoutCount");
+                const len = if (@hasField(t, "descriptorSetCount"))
+                    @field(@"struct", "descriptorSetCount")
+                else if (@hasField(t, "setLayoutCount"))
+                    @field(@"struct", "setLayoutCount");
                 var elements: []const *anyopaque = undefined;
                 elements.ptr = @ptrCast(@field(@"struct", field.name));
                 elements.len = len;
