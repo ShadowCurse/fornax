@@ -5,9 +5,8 @@ const std = @import("std");
 const vk = @import("volk");
 const miniz = @import("miniz");
 const log = @import("log.zig");
-const vu = @import("vulkan_utils.zig");
 const parsing = @import("parsing.zig");
-const root = @import("root");
+const vulkan = @import("vulkan.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -350,35 +349,35 @@ pub const Entry = struct {
 
         switch (self.tag) {
             .application_info => {},
-            .sampler => self.handle = try root.create_vk_sampler(
+            .sampler => self.handle = try vulkan.create_vk_sampler(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .descriptor_set_layout => self.handle = try root.create_descriptor_set_layout(
+            .descriptor_set_layout => self.handle = try vulkan.create_descriptor_set_layout(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .pipeline_layout => self.handle = try root.create_pipeline_layout(
+            .pipeline_layout => self.handle = try vulkan.create_pipeline_layout(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .shader_module => self.handle = try root.create_shader_module(
+            .shader_module => self.handle = try vulkan.create_shader_module(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .render_pass => self.handle = try root.create_render_pass(
+            .render_pass => self.handle = try vulkan.create_render_pass(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .graphics_pipeline => self.handle = try root.create_graphics_pipeline(
+            .graphics_pipeline => self.handle = try vulkan.create_graphics_pipeline(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .compute_pipeline => self.handle = try root.create_compute_pipeline(
+            .compute_pipeline => self.handle = try vulkan.create_compute_pipeline(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
-            .raytracing_pipeline => self.handle = try root.create_raytracing_pipeline(
+            .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
                 vk_device,
                 @ptrCast(@alignCast(self.create_info)),
             ),
@@ -410,22 +409,22 @@ pub const Entry = struct {
             if (old_value == 1) {
                 switch (dep.tag) {
                     .application_info => {},
-                    .sampler => root.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
-                    .descriptor_set_layout => root.destroy_descriptor_set_layout(
+                    .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
+                    .descriptor_set_layout => vulkan.destroy_descriptor_set_layout(
                         vk_device,
                         @ptrCast(d.handle),
                     ),
-                    .pipeline_layout => root.destroy_pipeline_layout(
+                    .pipeline_layout => vulkan.destroy_pipeline_layout(
                         vk_device,
                         @ptrCast(d.handle),
                     ),
                     .shader_module,
-                    => root.destroy_shader_module(vk_device, @ptrCast(d.handle)),
-                    .render_pass => root.destroy_render_pass(vk_device, @ptrCast(d.handle)),
+                    => vulkan.destroy_shader_module(vk_device, @ptrCast(d.handle)),
+                    .render_pass => vulkan.destroy_render_pass(vk_device, @ptrCast(d.handle)),
                     .graphics_pipeline,
                     .compute_pipeline,
                     .raytracing_pipeline,
-                    => root.destroy_pipeline(vk_device, @ptrCast(d.handle)),
+                    => vulkan.destroy_pipeline(vk_device, @ptrCast(d.handle)),
                     .application_blob_link => {},
                 }
             }
