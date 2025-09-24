@@ -383,9 +383,9 @@ pub fn print_time(
 }
 
 pub fn parse(context: *ThreadContext) void {
-    parse_inner(context) catch unreachable;
+    parse_inner(parsing, context) catch unreachable;
 }
-pub fn parse_inner(context: *ThreadContext) !void {
+pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
     const alloc = context.arena.allocator();
     const tmp_alloc = context.tmp_arena.allocator();
 
@@ -405,7 +405,7 @@ pub fn parse_inner(context: *ThreadContext) !void {
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (curr_entry.parse(alloc, tmp_alloc, context.db)) {
+            switch (curr_entry.parse(PARSE, alloc, tmp_alloc, context.db)) {
                 .parsed => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
@@ -430,7 +430,7 @@ pub fn parse_inner(context: *ThreadContext) !void {
         }
     }
 
-    const now = std.time.Instant.now() catch unreachable;
+    const now = try std.time.Instant.now();
     const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
     const thread_id = std.Thread.getCurrentId();
     log.info(
@@ -550,6 +550,143 @@ pub fn create_threaded(
     );
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
+}
+
+test "parse" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var progress = std.Progress.start(.{});
+    defer progress.end();
+
+    var tmp_dir = std.testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+    const tmp_file = try tmp_dir.dir.createFile("parse_test", .{});
+
+    var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
+    try db.entries.getPtr(.graphics_pipeline).put(alloc, 70, .{
+        .tag = .graphics_pipeline,
+        .hash = 70,
+        .payload_flag = .not_compressed,
+        .payload_crc = 0,
+        .payload_stored_size = 0,
+        .payload_decompressed_size = 0,
+        .payload_file_offset = 0,
+    });
+    try db.entries.getPtr(.graphics_pipeline).put(alloc, 71, .{
+        .tag = .graphics_pipeline,
+        .hash = 71,
+        .payload_flag = .not_compressed,
+        .payload_crc = 0,
+        .payload_stored_size = 0,
+        .payload_decompressed_size = 0,
+        .payload_file_offset = 0,
+    });
+    var thread_context: ThreadContext = .{
+        .arena = .init(std.heap.page_allocator),
+        .tmp_arena = .init(std.heap.page_allocator),
+        .work_queue = .empty,
+        .progress = &progress,
+        .db = &db,
+        .vk_device = undefined,
+    };
+    var test_entry: Database.Entry = .{
+        .tag = .graphics_pipeline,
+        .hash = 69,
+        .payload_flag = .not_compressed,
+        .payload_crc = 0,
+        .payload_stored_size = 0,
+        .payload_decompressed_size = 0,
+        .payload_file_offset = 0,
+    };
+    try thread_context.work_queue.append(thread_context.arena.allocator(), &test_entry);
+
+    const TestParse = struct {
+        pub fn parse_sampler(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedSampler {
+            unreachable;
+        }
+        pub fn parse_descriptor_set_layout(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedDescriptorSetLayout {
+            unreachable;
+        }
+        pub fn parse_pipeline_layout(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedPipelineLayout {
+            unreachable;
+        }
+        pub fn parse_shader_module(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedShaderModule {
+            unreachable;
+        }
+        pub fn parse_render_pass(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedRenderPass {
+            unreachable;
+        }
+        pub fn parse_compute_pipeline(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedComputePipeline {
+            unreachable;
+        }
+        pub fn parse_raytracing_pipeline(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedRaytracingPipeline {
+            unreachable;
+        }
+        pub fn parse_graphics_pipeline(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) !parsing.ParsedGraphicsPipeline {
+            const Global = struct {
+                var n: u32 = 0;
+            };
+            defer Global.n += 1;
+
+            var dependencies: []const Database.Entry.Dependency = &.{
+                .{ .tag = .graphics_pipeline, .hash = 70 },
+                .{ .tag = .graphics_pipeline, .hash = 71 },
+            };
+            if (Global.n != 0) dependencies = &.{};
+            return .{
+                .version = 6,
+                .hash = 69 + Global.n,
+                .create_info = undefined,
+                .dependencies = dependencies,
+            };
+        }
+    };
+    try parse_inner(TestParse, &thread_context);
+    try std.testing.expectEqual(.parsed, test_entry.status);
+    const pipelines = db.entries.getPtr(.graphics_pipeline);
+    for (pipelines.values()) |*entry|
+        try std.testing.expectEqual(.parsed, entry.status);
 }
 
 comptime {

@@ -37,7 +37,7 @@ pub const Entry = struct {
     payload_crc: u32,
     payload_stored_size: u32,
     payload_decompressed_size: u32,
-    payload_file_offset: u32 = undefined,
+    payload_file_offset: u32,
 
     create_info: ?*const anyopaque = null,
     dependencies: []const Dependency = &.{},
@@ -185,6 +185,7 @@ pub const Entry = struct {
     };
     pub fn parse(
         self: *Entry,
+        comptime PARSE: type,
         alloc: Allocator,
         tmp_alloc: Allocator,
         db: *Database,
@@ -204,7 +205,7 @@ pub const Entry = struct {
             };
         }
 
-        self.parse_inner(alloc, tmp_alloc, db) catch {
+        self.parse_inner(PARSE, alloc, tmp_alloc, db) catch {
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
             return .invalid;
         };
@@ -213,17 +214,23 @@ pub const Entry = struct {
         return .parsed;
     }
 
-    fn parse_inner(self: *Entry, alloc: Allocator, tmp_alloc: Allocator, db: *Database) !void {
+    fn parse_inner(
+        self: *Entry,
+        comptime PARSE: type,
+        alloc: Allocator,
+        tmp_alloc: Allocator,
+        db: *Database,
+    ) !void {
         const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
         switch (self.tag) {
             .application_info => {},
             .sampler => {
-                const result = try parsing.parse_sampler(alloc, tmp_alloc, db, payload);
+                const result = try PARSE.parse_sampler(alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = @ptrCast(result.create_info);
             },
             .descriptor_set_layout => {
-                const result = try parsing.parse_descriptor_set_layout(
+                const result = try PARSE.parse_descriptor_set_layout(
                     alloc,
                     tmp_alloc,
                     db,
@@ -238,7 +245,7 @@ pub const Entry = struct {
                 }
             },
             .pipeline_layout => {
-                const result = try parsing.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
+                const result = try PARSE.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = @ptrCast(result.create_info);
                 self.dependencies = result.dependencies;
@@ -248,7 +255,7 @@ pub const Entry = struct {
                 }
             },
             .shader_module => {
-                const result = try parsing.parse_shader_module(
+                const result = try PARSE.parse_shader_module(
                     alloc,
                     tmp_alloc,
                     db,
@@ -258,7 +265,7 @@ pub const Entry = struct {
                 self.create_info = @ptrCast(result.create_info);
             },
             .render_pass => {
-                const result = try parsing.parse_render_pass(
+                const result = try PARSE.parse_render_pass(
                     alloc,
                     tmp_alloc,
                     db,
@@ -268,7 +275,7 @@ pub const Entry = struct {
                 self.create_info = @ptrCast(result.create_info);
             },
             .graphics_pipeline => {
-                const result = try parsing.parse_graphics_pipeline(
+                const result = try PARSE.parse_graphics_pipeline(
                     alloc,
                     tmp_alloc,
                     db,
@@ -283,7 +290,7 @@ pub const Entry = struct {
                 }
             },
             .compute_pipeline => {
-                const result = try parsing.parse_compute_pipeline(
+                const result = try PARSE.parse_compute_pipeline(
                     alloc,
                     tmp_alloc,
                     db,
@@ -298,7 +305,7 @@ pub const Entry = struct {
                 }
             },
             .raytracing_pipeline => {
-                const result = try parsing.parse_raytracing_pipeline(
+                const result = try PARSE.parse_raytracing_pipeline(
                     alloc,
                     tmp_alloc,
                     db,
