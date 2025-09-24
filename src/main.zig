@@ -127,9 +127,6 @@ pub fn main() !void {
 
     const db_path = std.mem.span(args.database_paths.values[0]);
 
-    // var db: Database = try .init(tmp_alloc, &progress_root, db_path);
-    // _ = tmp_arena.reset(.retain_capacity);
-
     var db: Database = try .init(tmp_alloc, &progress_root, db_path);
     _ = tmp_arena.reset(.retain_capacity);
 
