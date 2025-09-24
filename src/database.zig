@@ -68,6 +68,7 @@ pub const Entry = struct {
         parsed,
         creating,
         created,
+        invalid,
     };
 
     pub const PayloadFlags = enum {
@@ -177,25 +178,43 @@ pub const Entry = struct {
             return error.InvalidHash;
         }
     }
+
+    pub const ParseResult = enum {
+        parsed,
+        deferred,
+        invalid,
+    };
     pub fn parse(
         self: *Entry,
         alloc: Allocator,
         tmp_alloc: Allocator,
         db: *Database,
-    ) !bool {
+    ) ParseResult {
         if (@cmpxchgWeak(Status, &self.status, .not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
             log.assert(
                 @src(),
-                old == .parsing or old == .parsed,
+                old == .parsing or old == .parsed or old == .invalid,
                 "Encountered strange entry state: {t}",
                 .{old},
             );
-            const parsed = old == .parsed;
-            return parsed;
+            return switch (old) {
+                .parsed => .parsed,
+                .parsing => .deferred,
+                .invalid => .invalid,
+                else => unreachable,
+            };
         }
-        // TODO figure out what to do on parsing failure
-        defer @atomicStore(Status, &self.status, .parsed, .seq_cst);
 
+        self.parse_inner(alloc, tmp_alloc, db) catch {
+            @atomicStore(Status, &self.status, .invalid, .seq_cst);
+            return .invalid;
+        };
+
+        @atomicStore(Status, &self.status, .parsed, .seq_cst);
+        return .parsed;
+    }
+
+    fn parse_inner(self: *Entry, alloc: Allocator, tmp_alloc: Allocator, db: *Database) !void {
         const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
         switch (self.tag) {
             .application_info => {},
@@ -296,7 +315,6 @@ pub const Entry = struct {
             },
             .application_blob_link => {},
         }
-        return true;
     }
 
     pub const CreateResult = enum {
