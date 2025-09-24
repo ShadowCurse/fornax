@@ -196,7 +196,6 @@ pub fn main() !void {
     );
 
     try parse_threaded(&thread_pool, tread_contexts, &db);
-    try validate_threaded(&thread_pool, tread_contexts, &db);
     try create_threaded(tmp_alloc, &thread_pool, tread_contexts, &db, vk_device);
 
     // Don't set the completion because otherwise Steam will remember that everything
@@ -390,44 +389,51 @@ pub fn parse_inner(context: *ThreadContext) !void {
     const alloc = context.arena.allocator();
     const tmp_alloc = context.tmp_arena.allocator();
 
-    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const t_start = try std.time.Instant.now();
-    defer print_time("parsed", t_start, &counters);
+    var valid: u32 = 0;
+    var invalid: u32 = 0;
+    const start = try std.time.Instant.now();
 
-    while (context.work_queue.pop()) |entry| {
+    while (context.work_queue.pop()) |root_entry| {
         defer _ = context.tmp_arena.reset(.retain_capacity);
 
-        switch (entry.parse(alloc, tmp_alloc, context.db)) {
-            .parsed => {
-                for (entry.dependencies) |dep| {
-                    const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    const d_status =
-                        @atomicLoad(Database.Entry.Status, &dep_entry.status, .seq_cst);
-                    if (d_status != .parsed) try context.work_queue.append(alloc, dep_entry);
-                }
-                counters.getPtr(entry.tag).* += 1;
-                if (control_block) |cb| {
-                    switch (entry.tag) {
-                        .graphics_pipeline => {
-                            _ = cb.total_graphics.fetchAdd(1, .release);
-                            _ = cb.parsed_graphics.fetchAdd(1, .release);
-                        },
-                        .compute_pipeline => {
-                            _ = cb.total_compute.fetchAdd(1, .release);
-                            _ = cb.parsed_compute.fetchAdd(1, .release);
-                        },
-                        .raytracing_pipeline => {
-                            _ = cb.total_raytracing.fetchAdd(1, .release);
-                            _ = cb.parsed_raytracing.fetchAdd(1, .release);
-                        },
-                        else => {},
+        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
+        try queue.append(tmp_alloc, .{ root_entry, 0 });
+        while (queue.pop()) |tuple| {
+            const curr_entry, const next_dep = tuple;
+
+            switch (curr_entry.parse(alloc, tmp_alloc, context.db)) {
+                .parsed => {
+                    if (next_dep != curr_entry.dependencies.len) {
+                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
+                        const dep = curr_entry.dependencies[next_dep];
+                        const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+                        try queue.append(tmp_alloc, .{ dep_entry, 0 });
                     }
-                }
-            },
-            .deferred => try context.work_queue.append(alloc, entry),
-            .invalid => {},
+                },
+                .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
+                .invalid => {
+                    invalid += 1;
+                    for (queue.items) |t| {
+                        const e, _ = t;
+                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
+                        e.destroy_dependencies(context.vk_device, context.db);
+                    }
+                    break;
+                },
+            }
+        } else {
+            valid += 1;
         }
     }
+
+    const now = std.time.Instant.now() catch unreachable;
+    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
+    const thread_id = std.Thread.getCurrentId();
+    log.info(
+        @src(),
+        "Thread {d}: parsed entries: valid {d:>6} invalid: {d:>6} in {d:>6.3}ms",
+        .{ thread_id, valid, invalid, dt },
+    );
 }
 
 pub fn parse_threaded(
@@ -450,83 +456,6 @@ pub fn parse_threaded(
         e,
     );
     thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{&thread_contexts[0]});
-    thread_pool.wait_group.wait();
-    thread_pool.wait_group.reset();
-}
-
-pub fn validate(context: *ThreadContext) void {
-    validate_inner(context) catch unreachable;
-}
-pub fn validate_inner(context: *ThreadContext) !void {
-    const tmp_alloc = context.tmp_arena.allocator();
-
-    var valid: u32 = 0;
-    var invalid: u32 = 0;
-    const start = try std.time.Instant.now();
-
-    while (context.work_queue.pop()) |root_entry| {
-        defer _ = context.tmp_arena.reset(.retain_capacity);
-
-        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry, 0 });
-        while (queue.pop()) |tuple| {
-            const curr_entry, const next_dep = tuple;
-            const status = @atomicLoad(Database.Entry.Status, &curr_entry.status, .seq_cst);
-            switch (status) {
-                .parsed => {
-                    if (next_dep != curr_entry.dependencies.len) {
-                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
-                        const dep = curr_entry.dependencies[next_dep];
-                        const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                        try queue.append(tmp_alloc, .{ dep_entry, 0 });
-                    }
-                },
-                .invalid => {
-                    invalid += 1;
-                    for (queue.items) |t| {
-                        const e, _ = t;
-                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
-                        e.destroy_dependencies(context.vk_device, context.db);
-                    }
-                    break;
-                },
-                else => unreachable,
-            }
-        } else {
-            valid += 1;
-        }
-    }
-
-    const now = std.time.Instant.now() catch unreachable;
-    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    const thread_id = std.Thread.getCurrentId();
-    log.info(
-        @src(),
-        "Thread {d}: validation results: valid {d:>6} invalid: {d:>6} in {d:>6.3}ms",
-        .{ thread_id, valid, invalid, dt },
-    );
-}
-
-pub fn validate_threaded(
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    db: *Database,
-) !void {
-    var remaining_entries = db.entries.getPtr(.graphics_pipeline).values();
-    if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
-        for (thread_contexts[1..]) |*tc| {
-            const chunk = remaining_entries[0..chunk_size];
-            for (chunk) |*e| try tc.work_queue.append(tc.arena.allocator(), e);
-            remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, validate, .{tc});
-        }
-    }
-    for (remaining_entries) |*e| try thread_contexts[0].work_queue.append(
-        thread_contexts[0].arena.allocator(),
-        e,
-    );
-    thread_pool.pool.spawnWg(&thread_pool.wait_group, validate, .{&thread_contexts[0]});
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
 }
