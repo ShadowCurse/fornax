@@ -393,8 +393,12 @@ pub fn parse_inner(context: *ThreadContext) !void {
     var invalid: u32 = 0;
     const start = try std.time.Instant.now();
 
+    var progress = context.progress.start("parsing", context.work_queue.items.len);
+    defer progress.end();
+
     while (context.work_queue.pop()) |root_entry| {
         defer _ = context.tmp_arena.reset(.retain_capacity);
+        defer progress.completeOne();
 
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
         try queue.append(tmp_alloc, .{ root_entry, 0 });
@@ -470,7 +474,12 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
     const t_start = try std.time.Instant.now();
     defer print_time("created", t_start, &counters);
 
+    var progress = context.progress.start("creation", 0);
+    defer progress.end();
+
     while (context.work_queue.pop()) |entry| {
+        defer progress.completeOne();
+
         switch (try entry.create(vk_device, context.db)) {
             .dependencies => {
                 try context.work_queue.append(alloc, entry);
