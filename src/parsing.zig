@@ -487,6 +487,13 @@ test "parse_compute_pipeline" {
         .arena = arena,
     };
     try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
 
@@ -556,6 +563,13 @@ test "parse_raytracing_pipeline" {
         .arena = arena,
     };
     try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
 
@@ -1591,6 +1605,13 @@ test "test_parse_vk_descriptor_set_layout_binding" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.sampler).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
 
@@ -1659,6 +1680,13 @@ test "test_parse_vk_pipeline_layout_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.descriptor_set_layout).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
 
@@ -2216,9 +2244,23 @@ test "test_parse_vk_graphics_pipeline_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
     try db.entries.getPtr(.render_pass).put(alloc, 0x3333333333333333, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -2299,6 +2341,13 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.shader_module).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -3311,6 +3360,13 @@ test "test_parse_vk_compute_pipeline_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.pipeline_layout).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
 
@@ -3417,6 +3473,13 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.pipeline_layout).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -3529,6 +3592,13 @@ test "test_parse_vk_pipeline_library_create_info" {
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
     try db.entries.getPtr(.raytracing_pipeline).put(alloc, 0x1111111111111111, .{
+        .tag = undefined,
+        .hash = undefined,
+        .payload_flag = undefined,
+        .payload_crc = undefined,
+        .payload_stored_size = undefined,
+        .payload_decompressed_size= undefined,
+        .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
