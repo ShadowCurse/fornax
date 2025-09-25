@@ -23,6 +23,8 @@ pub const Context = struct {
     db: *const Database,
 };
 
+pub const Error = Allocator.Error | ScannerError;
+
 pub const ParsedApplicationInfo = struct {
     version: u32,
     application_info: *const vk.VkApplicationInfo,
@@ -492,7 +494,7 @@ test "parse_compute_pipeline" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -568,7 +570,7 @@ test "parse_raytracing_pipeline" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -746,8 +748,18 @@ fn print_unexpected_token(token: std.json.Token) void {
     }
 }
 
-fn scanner_next_number(scanner: *std.json.Scanner) ![]const u8 {
-    switch (try scanner.next()) {
+const ScannerError = error{InvalidJson};
+fn scanner_check(
+    result: std.json.Scanner.NextError!std.json.Scanner.Token,
+) ScannerError!std.json.Scanner.Token {
+    return result catch |err| {
+        log.err(@src(), "Json scanner error: {t}", .{err});
+        return error.InvalidJson;
+    };
+}
+
+fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    switch (try scanner_check(scanner.next())) {
         .number => |v| return v,
         else => |t| {
             print_unexpected_token(t);
@@ -756,8 +768,8 @@ fn scanner_next_number(scanner: *std.json.Scanner) ![]const u8 {
     }
 }
 
-fn scanner_next_string(scanner: *std.json.Scanner) ![]const u8 {
-    switch (try scanner.next()) {
+fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    switch (try scanner_check(scanner.next())) {
         .string => |s| return s,
         else => |t| {
             print_unexpected_token(t);
@@ -766,8 +778,8 @@ fn scanner_next_string(scanner: *std.json.Scanner) ![]const u8 {
     }
 }
 
-fn scanner_next_number_or_string(scanner: *std.json.Scanner) ![]const u8 {
-    switch (try scanner.next()) {
+fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    switch (try scanner_check(scanner.next())) {
         .string => |s| return s,
         .number => |v| return v,
         else => |t| {
@@ -777,10 +789,10 @@ fn scanner_next_number_or_string(scanner: *std.json.Scanner) ![]const u8 {
     }
 }
 
-fn scanner_object_next_field(scanner: *std.json.Scanner) !?[]const u8 {
-    loop: switch (try scanner.next()) {
+fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    loop: switch (try scanner_check(scanner.next())) {
         .string => |s| return s,
-        .object_begin => continue :loop try scanner.next(),
+        .object_begin => continue :loop try scanner_check(scanner.next()),
         .end_of_document, .object_end => return null,
         else => |t| {
             print_unexpected_token(t);
@@ -789,9 +801,9 @@ fn scanner_object_next_field(scanner: *std.json.Scanner) !?[]const u8 {
     }
 }
 
-fn scanner_array_next_object(scanner: *std.json.Scanner) !bool {
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
+    loop: switch (try scanner_check(scanner.next())) {
+        .array_begin => continue :loop try scanner_check(scanner.next()),
         .array_end => return false,
         .object_begin => return true,
         else => |t| {
@@ -801,9 +813,9 @@ fn scanner_array_next_object(scanner: *std.json.Scanner) !bool {
     }
 }
 
-fn scanner_array_next_number(scanner: *std.json.Scanner) !?[]const u8 {
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    loop: switch (try scanner_check(scanner.next())) {
+        .array_begin => continue :loop try scanner_check(scanner.next()),
         .array_end => return null,
         .number => |v| return v,
         else => |t| {
@@ -813,9 +825,9 @@ fn scanner_array_next_number(scanner: *std.json.Scanner) !?[]const u8 {
     }
 }
 
-fn scanner_array_next_string(scanner: *std.json.Scanner) !?[]const u8 {
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    loop: switch (try scanner_check(scanner.next())) {
+        .array_begin => continue :loop try scanner_check(scanner.next()),
         .array_end => return null,
         .string => |s| return s,
         else => |t| {
@@ -825,8 +837,8 @@ fn scanner_array_next_string(scanner: *std.json.Scanner) !?[]const u8 {
     }
 }
 
-fn scanner_object_begin(scanner: *std.json.Scanner) !void {
-    switch (try scanner.next()) {
+fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
+    switch (try scanner_check(scanner.next())) {
         .object_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -835,8 +847,8 @@ fn scanner_object_begin(scanner: *std.json.Scanner) !void {
     }
 }
 
-fn scanner_array_begin(scanner: *std.json.Scanner) !void {
-    switch (try scanner.next()) {
+fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
+    switch (try scanner_check(scanner.next())) {
         .array_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -925,7 +937,10 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
         if (hash == 0) {
             try tmp.append(context.tmp_alloc, null);
         } else {
-            switch (try context.db.get_handle(tag, hash)) {
+            const handle = context.db.get_handle(tag, hash) orelse {
+                return error.NoHandle;
+            };
+            switch (handle) {
                 .handle => |h| try tmp.append(context.tmp_alloc, @ptrCast(h)),
                 .dependency => |d| {
                     denpendencies_found += 1;
@@ -1610,7 +1625,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -1685,7 +1700,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -2249,7 +2264,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -2259,7 +2274,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -2346,7 +2361,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -3365,7 +3380,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -3478,7 +3493,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
@@ -3597,7 +3612,7 @@ test "test_parse_vk_pipeline_library_create_info" {
         .payload_flag = undefined,
         .payload_crc = undefined,
         .payload_stored_size = undefined,
-        .payload_decompressed_size= undefined,
+        .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
