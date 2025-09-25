@@ -23,7 +23,20 @@ pub const Context = struct {
     db: *const Database,
 };
 
-pub const Error = Allocator.Error | ScannerError;
+const ScannerError = std.json.Scanner.NextError || error{InvalidJson};
+const ParseIntError = std.fmt.ParseIntError;
+const ParseFloatError = std.fmt.ParseFloatError;
+const DecoderError = std.base64.Error;
+const AdditionalError = error{
+    BasePipelinesNotSupported,
+    InvalidShaderPayloadEncoding,
+    InvalidShaderPayload,
+    NoShaderCodePayload,
+    InvalidsTypeForLibraries,
+    NoHandle,
+};
+pub const Error = Allocator.Error || ScannerError || ParseIntError || ParseFloatError ||
+    DecoderError || AdditionalError;
 
 pub const ParsedApplicationInfo = struct {
     version: u32,
@@ -35,7 +48,7 @@ pub fn parse_application_info(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedApplicationInfo {
+) Error!ParsedApplicationInfo {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_application_info = try alloc.create(vk.VkApplicationInfo);
     const vk_physical_device_features2 = try alloc.create(vk.VkPhysicalDeviceFeatures2);
@@ -96,7 +109,7 @@ pub fn parse_sampler(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedSampler {
+) Error!ParsedSampler {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_sampler_create_info = try alloc.create(vk.VkSamplerCreateInfo);
     vk_sampler_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
@@ -161,7 +174,7 @@ pub fn parse_descriptor_set_layout(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedDescriptorSetLayout {
+) Error!ParsedDescriptorSetLayout {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_descriptor_set_layout_create_info =
         try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
@@ -230,7 +243,7 @@ pub fn parse_pipeline_layout(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedPipelineLayout {
+) Error!ParsedPipelineLayout {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_pipeline_layout_create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
 
@@ -297,7 +310,7 @@ pub fn parse_shader_module(
     tmp_alloc: Allocator,
     database: *const Database,
     payload: []const u8,
-) !ParsedShaderModule {
+) Error!ParsedShaderModule {
     // For shader modules the payload is divided in to 2 parts: json and code.
     // json part is 0 teriminated.
     const json_str = std.mem.span(@as([*c]const u8, @ptrCast(payload.ptr)));
@@ -372,7 +385,7 @@ pub fn parse_render_pass(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedRenderPass {
+) Error!ParsedRenderPass {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_render_pass_create_info = try alloc.create(vk.VkRenderPassCreateInfo);
 
@@ -436,7 +449,7 @@ pub fn parse_compute_pipeline(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedComputePipeline {
+) Error!ParsedComputePipeline {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkComputePipelineCreateInfo);
 
@@ -515,7 +528,7 @@ pub fn parse_raytracing_pipeline(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedRaytracingPipeline {
+) Error!ParsedRaytracingPipeline {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkRayTracingPipelineCreateInfoKHR);
 
@@ -591,7 +604,7 @@ pub fn parse_graphics_pipeline(
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) !ParsedGraphicsPipeline {
+) Error!ParsedGraphicsPipeline {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
 
@@ -748,18 +761,8 @@ fn print_unexpected_token(token: std.json.Token) void {
     }
 }
 
-const ScannerError = error{InvalidJson};
-fn scanner_check(
-    result: std.json.Scanner.NextError!std.json.Scanner.Token,
-) ScannerError!std.json.Scanner.Token {
-    return result catch |err| {
-        log.err(@src(), "Json scanner error: {t}", .{err});
-        return error.InvalidJson;
-    };
-}
-
 fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
-    switch (try scanner_check(scanner.next())) {
+    switch (try scanner.next()) {
         .number => |v| return v,
         else => |t| {
             print_unexpected_token(t);
@@ -769,7 +772,7 @@ fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
 }
 
 fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
-    switch (try scanner_check(scanner.next())) {
+    switch (try scanner.next()) {
         .string => |s| return s,
         else => |t| {
             print_unexpected_token(t);
@@ -779,7 +782,7 @@ fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
 }
 
 fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
-    switch (try scanner_check(scanner.next())) {
+    switch (try scanner.next()) {
         .string => |s| return s,
         .number => |v| return v,
         else => |t| {
@@ -790,9 +793,9 @@ fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]cons
 }
 
 fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
-    loop: switch (try scanner_check(scanner.next())) {
+    loop: switch (try scanner.next()) {
         .string => |s| return s,
-        .object_begin => continue :loop try scanner_check(scanner.next()),
+        .object_begin => continue :loop try scanner.next(),
         .end_of_document, .object_end => return null,
         else => |t| {
             print_unexpected_token(t);
@@ -802,8 +805,8 @@ fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u
 }
 
 fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
-    loop: switch (try scanner_check(scanner.next())) {
-        .array_begin => continue :loop try scanner_check(scanner.next()),
+    loop: switch (try scanner.next()) {
+        .array_begin => continue :loop try scanner.next(),
         .array_end => return false,
         .object_begin => return true,
         else => |t| {
@@ -814,8 +817,8 @@ fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
 }
 
 fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
-    loop: switch (try scanner_check(scanner.next())) {
-        .array_begin => continue :loop try scanner_check(scanner.next()),
+    loop: switch (try scanner.next()) {
+        .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
         .number => |v| return v,
         else => |t| {
@@ -826,8 +829,8 @@ fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u
 }
 
 fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
-    loop: switch (try scanner_check(scanner.next())) {
-        .array_begin => continue :loop try scanner_check(scanner.next()),
+    loop: switch (try scanner.next()) {
+        .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
         .string => |s| return s,
         else => |t| {
@@ -838,7 +841,7 @@ fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u
 }
 
 fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
-    switch (try scanner_check(scanner.next())) {
+    switch (try scanner.next()) {
         .object_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -848,7 +851,7 @@ fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
 }
 
 fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
-    switch (try scanner_check(scanner.next())) {
+    switch (try scanner.next()) {
         .array_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -857,7 +860,7 @@ fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
     }
 }
 
-pub fn parse_simple_type(context: *Context, output: anytype) anyerror!void {
+pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
     const output_type = @typeInfo(@TypeOf(output)).pointer.child;
     const output_fields = @typeInfo(output_type).@"struct".fields;
     var field_is_parsed: [output_fields.len]bool = .{false} ** output_fields.len;
@@ -900,7 +903,7 @@ pub fn parse_simple_type(context: *Context, output: anytype) anyerror!void {
     }
 }
 
-fn parse_number_array(comptime T: type, context: *Context) ![]T {
+fn parse_number_array(comptime T: type, context: *Context) Error![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_number(context.scanner)) |v| {
@@ -910,13 +913,16 @@ fn parse_number_array(comptime T: type, context: *Context) ![]T {
     return try context.alloc.dupe(T, tmp.items);
 }
 
-fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) !void {
+fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) Error!void {
     const v = try scanner_next_string(context.scanner);
     const hash = try std.fmt.parseInt(u64, v, 16);
     if (hash == 0)
         location.* = null
     else {
-        switch (try context.db.get_handle(tag, hash)) {
+        const handle = context.db.get_handle(tag, hash) orelse {
+            return error.NoHandle;
+        };
+        switch (handle) {
             .handle => |h| location.* = h,
             .dependency => |d| {
                 var dep = d;
@@ -927,7 +933,7 @@ fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*
     }
 }
 
-fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Context) ![]T {
+fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Context) Error![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     var denpendencies_found: u32 = 0;
@@ -971,9 +977,9 @@ fn parse_object_array(
     comptime PARSE_FN: fn (
         *Context,
         *T,
-    ) anyerror!void,
+    ) Error!void,
     context: *Context,
-) ![]T {
+) Error![]T {
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     const current_dep_number = context.dependencies.items.len;
@@ -1005,7 +1011,7 @@ fn parse_object_array(
 pub fn parse_vk_physical_device_mesh_shader_features_ext(
     context: *Context,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
     return parse_simple_type(context, obj);
 }
@@ -1013,7 +1019,7 @@ pub fn parse_vk_physical_device_mesh_shader_features_ext(
 pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
     context: *Context,
     obj: *vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR };
     return parse_simple_type(context, obj);
 }
@@ -1021,7 +1027,7 @@ pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
 pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
     context: *Context,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
-) !void {
+) Error!void {
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
     };
@@ -1040,7 +1046,7 @@ pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
 pub fn parse_vk_pipeline_rendering_create_info_khr(
     context: *Context,
     obj: *vk.VkPipelineRenderingCreateInfo,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
@@ -1072,7 +1078,7 @@ pub fn parse_vk_pipeline_rendering_create_info_khr(
 pub fn parse_vk_physical_device_robustness_2_features_khr(
     context: *Context,
     obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR };
     try parse_simple_type(context, obj);
 }
@@ -1080,7 +1086,7 @@ pub fn parse_vk_physical_device_robustness_2_features_khr(
 pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
     context: *Context,
     obj: *vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
     try parse_simple_type(context, obj);
 }
@@ -1088,7 +1094,7 @@ pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
 pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
     context: *Context,
     obj: *vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT,
-) !void {
+) Error!void {
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
     };
@@ -1098,7 +1104,7 @@ pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
 pub fn parse_vk_pipeline_create_flags_2_create_info(
     context: *Context,
     obj: *vk.VkPipelineCreateFlags2CreateInfo,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
     try parse_simple_type(context, obj);
 }
@@ -1106,7 +1112,7 @@ pub fn parse_vk_pipeline_create_flags_2_create_info(
 pub fn parse_vk_graphics_pipeline_library_create_info_ext(
     context: *Context,
     obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT };
     try parse_simple_type(context, obj);
 }
@@ -1114,13 +1120,13 @@ pub fn parse_vk_graphics_pipeline_library_create_info_ext(
 pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
     context: *Context,
     obj: *vk.VkPipelineVertexInputDivisorStateCreateInfo,
-) !void {
+) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO };
     const Inner = struct {
         fn parse_vk_vertex_input_binding_divisor_description(
             c: *Context,
             item: *vk.VkVertexInputBindingDivisorDescription,
-        ) !void {
+        ) Error!void {
             try parse_simple_type(c, item);
         }
     };
@@ -1147,20 +1153,20 @@ pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
 pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
     context: *Context,
     obj: *vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
-) !void {
+) Error!void {
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
     };
     try parse_simple_type(context, obj);
 }
 
-pub fn parse_pnext_chain(context: *Context) !?*anyopaque {
+pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
     const Inner = struct {
         fn parse_next(
             c: *Context,
             first_in_chain: *?*anyopaque,
             last_pnext_in_chain: *?**anyopaque,
-        ) !void {
+        ) Error!void {
             const v = try scanner_next_number(c.scanner);
             const stype = try std.fmt.parseInt(u32, v, 10);
             switch (stype) {
@@ -1293,7 +1299,7 @@ pub fn parse_pnext_chain(context: *Context) !?*anyopaque {
             c: *Context,
             first_in_chain: *?*anyopaque,
             last_pnext_in_chain: *?**anyopaque,
-        ) !void {
+        ) Error!void {
             const obj = try c.alloc.create(vk.VkPipelineLibraryCreateInfoKHR);
             obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
             if (first_in_chain.* == null)
@@ -1343,7 +1349,7 @@ pub fn parse_pnext_chain(context: *Context) !?*anyopaque {
 fn parse_vk_application_info(
     context: *Context,
     item: *vk.VkApplicationInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "applicationName")) {
@@ -1407,7 +1413,7 @@ test "test_parse_vk_application_info" {
 fn parse_vk_physical_device_features2(
     context: *Context,
     item: *vk.VkPhysicalDeviceFeatures2,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "robustBufferAccess")) {
@@ -1453,7 +1459,7 @@ test "test_parse_vk_physical_device_features2" {
 fn parse_vk_sampler_create_info(
     context: *Context,
     item: *vk.VkSamplerCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -1517,7 +1523,7 @@ test "test_parse_vk_sampler_create_info" {
 fn parse_vk_descriptor_set_layout_create_info(
     context: *Context,
     item: *vk.VkDescriptorSetLayoutCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -1575,7 +1581,7 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
 fn parse_vk_descriptor_set_layout_binding(
     context: *Context,
     item: *vk.VkDescriptorSetLayoutBinding,
-) !void {
+) Error!void {
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "descriptorType")) {
             const v = try scanner_next_number(context.scanner);
@@ -1651,7 +1657,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
 fn parse_vk_pipeline_layout_create_info(
     context: *Context,
     item: *vk.VkPipelineLayoutCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -1728,7 +1734,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
 fn parse_vk_push_constant_range(
     context: *Context,
     item: *vk.VkPushConstantRange,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -1764,7 +1770,7 @@ fn parse_vk_shader_module_create_info(
     context: *Context,
     item: *vk.VkShaderModuleCreateInfo,
     shader_code_payload: []const u8,
-) !void {
+) Error!void {
     const Inner = struct {
         fn decode_shader_payload(input: []const u8, output: []u32) bool {
             var offset: u64 = 0;
@@ -1858,7 +1864,7 @@ test "test_parse_vk_shader_module_create_info" {
 fn parse_vk_render_pass_create_info(
     context: *Context,
     item: *vk.VkRenderPassCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -1933,7 +1939,7 @@ test "test_parse_vk_render_pass_create_info" {
 fn parse_vk_subpass_dependency(
     context: *Context,
     item: *vk.VkSubpassDependency,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -1976,7 +1982,7 @@ test "test_parse_vk_subpass_dependency" {
 fn parse_vk_attachment_description(
     context: *Context,
     item: *vk.VkAttachmentDescription,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -2023,7 +2029,7 @@ test "test_parse_vk_attachment_description" {
 fn parse_vk_subpass_description(
     context: *Context,
     item: *vk.VkSubpassDescription,
-) !void {
+) Error!void {
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
             const v = try scanner_next_number(context.scanner);
@@ -2115,7 +2121,7 @@ test "test_parse_vk_subpass_description" {
 fn parse_vk_attachment_reference(
     context: *Context,
     item: *vk.VkAttachmentReference,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -2148,7 +2154,7 @@ test "test_parse_vk_attachment_reference" {
 fn parse_vk_graphics_pipeline_create_info(
     context: *Context,
     item: *vk.VkGraphicsPipelineCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2313,7 +2319,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
 fn parse_vk_pipeline_shader_stage_create_info(
     context: *Context,
     item: *vk.VkPipelineShaderStageCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2391,7 +2397,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
 fn parse_vk_pipeline_vertex_input_state_create_info(
     context: *Context,
     item: *vk.VkPipelineVertexInputStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2460,7 +2466,7 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
 fn parse_vk_pipeline_input_assembly_state_create_info(
     context: *Context,
     item: *vk.VkPipelineInputAssemblyStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -2501,7 +2507,7 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
 fn parse_vk_pipeline_tessellation_state_create_info(
     context: *Context,
     item: *vk.VkPipelineTessellationStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -2540,7 +2546,7 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
 fn parse_vk_pipeline_viewport_state_create_info(
     context: *Context,
     item: *vk.VkPipelineViewportStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2617,7 +2623,7 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
 fn parse_vk_pipeline_rasterization_state_create_info(
     context: *Context,
     item: *vk.VkPipelineRasterizationStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -2674,7 +2680,7 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
 fn parse_vk_pipeline_multisample_state_create_info(
     context: *Context,
     item: *vk.VkPipelineMultisampleStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2753,7 +2759,7 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
 fn parse_vk_stencil_op_state(
     context: *Context,
     item: *vk.VkStencilOpState,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -2796,7 +2802,7 @@ test "test_parse_vk_stencil_op_state" {
 fn parse_vk_pipeline_depth_stencil_state_create_info(
     context: *Context,
     item: *vk.VkPipelineDepthStencilStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2886,7 +2892,7 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
 fn parse_vk_pipeline_color_blend_state_create_info(
     context: *Context,
     item: *vk.VkPipelineColorBlendStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2968,7 +2974,7 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
 fn parse_vk_pipeline_dynamic_state_create_info(
     context: *Context,
     item: *vk.VkPipelineDynamicStateCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3024,7 +3030,7 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
 fn parse_vk_vertex_input_attribute_description(
     context: *Context,
     item: *vk.VkVertexInputAttributeDescription,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -3061,7 +3067,7 @@ test "test_parse_vk_vertex_input_attribute_description" {
 fn parse_vk_vertex_input_binding_description(
     context: *Context,
     item: *vk.VkVertexInputBindingDescription,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -3096,7 +3102,7 @@ test "test_parse_vk_vertex_input_binding_description" {
 fn parse_vk_pipeline_color_blend_attachment_state(
     context: *Context,
     item: *vk.VkPipelineColorBlendAttachmentState,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -3141,7 +3147,7 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
 fn parse_vk_viewport(
     context: *Context,
     item: *vk.VkViewport,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -3182,7 +3188,7 @@ test "test_parse_vk_viewport" {
 fn parse_vk_rect_2d(
     context: *Context,
     item: *vk.VkRect2D,
-) !void {
+) Error!void {
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "x")) {
             const v = try scanner_next_number(context.scanner);
@@ -3236,7 +3242,7 @@ test "test_parse_vk_rect_2d" {
 fn parse_vk_specialization_map_entry(
     context: *Context,
     item: *vk.VkSpecializationMapEntry,
-) !void {
+) Error!void {
     try parse_simple_type(context, item);
 }
 
@@ -3271,7 +3277,7 @@ test "test_parse_vk_specialization_map_entry" {
 fn parse_vk_specialization_info(
     context: *Context,
     item: *vk.VkSpecializationInfo,
-) !void {
+) Error!void {
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "dataSize")) {
             const v = try scanner_next_number(context.scanner);
@@ -3330,7 +3336,7 @@ test "test_parse_vk_specialization_info" {
 fn parse_vk_compute_pipeline_create_info(
     context: *Context,
     item: *vk.VkComputePipelineCreateInfo,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3410,7 +3416,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
 fn parse_vk_raytracing_pipeline_create_info(
     context: *Context,
     item: *vk.VkRayTracingPipelineCreateInfoKHR,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3530,7 +3536,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
 fn parse_vk_ray_tracing_shader_group_create_info(
     context: *Context,
     item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
     try parse_simple_type(context, item);
 }
@@ -3576,7 +3582,7 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
 fn parse_vk_pipeline_library_create_info(
     context: *Context,
     item: *vk.VkPipelineLibraryCreateInfoKHR,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3639,7 +3645,7 @@ test "test_parse_vk_pipeline_library_create_info" {
 fn parse_vk_ray_tracing_pipeline_interface_create_info(
     context: *Context,
     item: *vk.VkRayTracingPipelineInterfaceCreateInfoKHR,
-) !void {
+) Error!void {
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR };
     try parse_simple_type(context, item);
 }

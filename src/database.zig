@@ -501,15 +501,11 @@ pub const GetHandleResult = union(enum) {
     handle: *anyopaque,
     dependency: Entry.Dependency,
 };
-pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) !GetHandleResult {
+pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) ?GetHandleResult {
     const entries = self.entries.getPtrConst(tag);
     const entry = entries.getPtr(hash) orelse {
-        log.debug(
-            @src(),
-            "Attempt to get handle for not existing object with tag: {s} hash: 0x{x}",
-            .{ @tagName(tag), hash },
-        );
-        return error.NoObjectFound;
+        log.debug(@src(), "Cannot get handle for the entry: {t} 0x{x}", .{ tag, hash });
+        return null;
     };
     const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
     if (handle) |h|
