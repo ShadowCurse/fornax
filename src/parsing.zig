@@ -99,22 +99,29 @@ test "parse_application_info" {
     try std.testing.expectEqual(result.version, 69);
 }
 
-pub const ParsedSampler = struct {
+pub const Result = struct {
     version: u32,
     hash: u64,
-    create_info: *const vk.VkSamplerCreateInfo,
+    create_info: *const anyopaque,
 };
+pub const ResultWithDependencies = struct {
+    version: u32,
+    hash: u64,
+    create_info: *const anyopaque,
+    dependencies: []const Dependency = &.{},
+};
+
 pub fn parse_sampler(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedSampler {
+) Error!Result {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_sampler_create_info = try alloc.create(vk.VkSamplerCreateInfo);
     vk_sampler_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
-    var result: ParsedSampler = .{
+    var result: Result = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_sampler_create_info,
@@ -163,23 +170,17 @@ test "parse_sampler" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedDescriptorSetLayout = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
-    dependencies: []const Dependency = &.{},
-};
 pub fn parse_descriptor_set_layout(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedDescriptorSetLayout {
+) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_descriptor_set_layout_create_info =
         try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
 
-    var result: ParsedDescriptorSetLayout = .{
+    var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_descriptor_set_layout_create_info,
@@ -232,22 +233,16 @@ test "parse_descriptor_set_layout" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedPipelineLayout = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkPipelineLayoutCreateInfo,
-    dependencies: []const Dependency = &.{},
-};
 pub fn parse_pipeline_layout(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedPipelineLayout {
+) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_pipeline_layout_create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
 
-    var result: ParsedPipelineLayout = .{
+    var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_pipeline_layout_create_info,
@@ -300,17 +295,12 @@ test "parse_pipeline_layout" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedShaderModule = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkShaderModuleCreateInfo,
-};
 pub fn parse_shader_module(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     payload: []const u8,
-) Error!ParsedShaderModule {
+) Error!Result {
     // For shader modules the payload is divided in to 2 parts: json and code.
     // json part is 0 teriminated.
     const json_str = std.mem.span(@as([*c]const u8, @ptrCast(payload.ptr)));
@@ -322,7 +312,7 @@ pub fn parse_shader_module(
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_shader_module_create_info = try alloc.create(vk.VkShaderModuleCreateInfo);
 
-    var result: ParsedShaderModule = .{
+    var result: Result = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_shader_module_create_info,
@@ -375,21 +365,16 @@ test "parse_shader_module" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedRenderPass = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkRenderPassCreateInfo,
-};
 pub fn parse_render_pass(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedRenderPass {
+) Error!Result {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_render_pass_create_info = try alloc.create(vk.VkRenderPassCreateInfo);
 
-    var result: ParsedRenderPass = .{
+    var result: Result = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_render_pass_create_info,
@@ -438,22 +423,16 @@ test "parse_render_pass" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedComputePipeline = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkComputePipelineCreateInfo,
-    dependencies: []const Dependency = &.{},
-};
 pub fn parse_compute_pipeline(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedComputePipeline {
+) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkComputePipelineCreateInfo);
 
-    var result: ParsedComputePipeline = .{
+    var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
         .create_info = create_info,
@@ -517,22 +496,16 @@ test "parse_compute_pipeline" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedRaytracingPipeline = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
-    dependencies: []const Dependency = &.{},
-};
 pub fn parse_raytracing_pipeline(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedRaytracingPipeline {
+) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkRayTracingPipelineCreateInfoKHR);
 
-    var result: ParsedRaytracingPipeline = .{
+    var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
         .create_info = create_info,
@@ -593,22 +566,16 @@ test "parse_raytracing_pipeline" {
     try std.testing.expectEqual(result.hash, 0x1111111111111111);
 }
 
-pub const ParsedGraphicsPipeline = struct {
-    version: u32,
-    hash: u64,
-    create_info: *const vk.VkGraphicsPipelineCreateInfo,
-    dependencies: []const Dependency = &.{},
-};
 pub fn parse_graphics_pipeline(
     alloc: Allocator,
     tmp_alloc: Allocator,
     database: *const Database,
     json_str: []const u8,
-) Error!ParsedGraphicsPipeline {
+) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
 
-    var result: ParsedGraphicsPipeline = .{
+    var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
         .create_info = vk_graphics_pipeline_create_info,

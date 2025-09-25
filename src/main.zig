@@ -602,68 +602,35 @@ test "parse" {
     try thread_context.work_queue.append(thread_context.arena.allocator(), &test_entry);
 
     const TestParse = struct {
-        pub fn parse_sampler(
+        fn dummy_parse(
             _: Allocator,
             _: Allocator,
             _: *const Database,
             _: []const u8,
-        ) !parsing.ParsedSampler {
+        ) parsing.Error!parsing.Result {
             unreachable;
         }
-        pub fn parse_descriptor_set_layout(
+        fn dummy_parse_with_dependencies(
             _: Allocator,
             _: Allocator,
             _: *const Database,
             _: []const u8,
-        ) !parsing.ParsedDescriptorSetLayout {
+        ) parsing.Error!parsing.ResultWithDependencies {
             unreachable;
         }
-        pub fn parse_pipeline_layout(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) !parsing.ParsedPipelineLayout {
-            unreachable;
-        }
-        pub fn parse_shader_module(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) !parsing.ParsedShaderModule {
-            unreachable;
-        }
-        pub fn parse_render_pass(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) !parsing.ParsedRenderPass {
-            unreachable;
-        }
-        pub fn parse_compute_pipeline(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) !parsing.ParsedComputePipeline {
-            unreachable;
-        }
-        pub fn parse_raytracing_pipeline(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) !parsing.ParsedRaytracingPipeline {
-            unreachable;
-        }
+        pub const parse_sampler = dummy_parse;
+        pub const parse_descriptor_set_layout = dummy_parse_with_dependencies;
+        pub const parse_pipeline_layout = dummy_parse_with_dependencies;
+        pub const parse_shader_module = dummy_parse;
+        pub const parse_render_pass = dummy_parse;
+        pub const parse_compute_pipeline = dummy_parse_with_dependencies;
+        pub const parse_raytracing_pipeline = dummy_parse_with_dependencies;
         pub fn parse_graphics_pipeline(
             _: Allocator,
             _: Allocator,
             _: *const Database,
             _: []const u8,
-        ) !parsing.ParsedGraphicsPipeline {
+        ) parsing.Error!parsing.ResultWithDependencies {
             const Global = struct {
                 var n: u32 = 0;
             };
