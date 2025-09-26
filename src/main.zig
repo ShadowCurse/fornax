@@ -347,41 +347,6 @@ pub fn init_thread_pool_context(
     try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
 }
 
-pub fn print_time(
-    comptime WORK: []const u8,
-    start: std.time.Instant,
-    counters: *const std.EnumArray(Database.Entry.Tag, u32),
-) void {
-    const now = std.time.Instant.now() catch unreachable;
-    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    const thread_id = std.Thread.getCurrentId();
-    log.info(
-        @src(),
-        "Thread {d}: {s} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} in {d:>6.3}ms",
-        .{
-            thread_id,
-            WORK,
-            Database.Entry.Tag.sampler,
-            counters.get(.sampler),
-            Database.Entry.Tag.descriptor_set_layout,
-            counters.get(.descriptor_set_layout),
-            Database.Entry.Tag.pipeline_layout,
-            counters.get(.pipeline_layout),
-            Database.Entry.Tag.shader_module,
-            counters.get(.shader_module),
-            Database.Entry.Tag.render_pass,
-            counters.get(.render_pass),
-            Database.Entry.Tag.graphics_pipeline,
-            counters.get(.graphics_pipeline),
-            Database.Entry.Tag.compute_pipeline,
-            counters.get(.compute_pipeline),
-            Database.Entry.Tag.raytracing_pipeline,
-            counters.get(.raytracing_pipeline),
-            dt,
-        },
-    );
-}
-
 pub fn parse(context: *ThreadContext) void {
     parse_inner(parsing, context) catch unreachable;
 }
@@ -420,7 +385,7 @@ pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
                     for (queue.items) |t| {
                         const e, _ = t;
                         @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
-                        e.destroy_dependencies(context.vk_device, context.db);
+                        e.decrement_dependencies(context.db);
                     }
                     break;
                 },
@@ -464,6 +429,40 @@ pub fn parse_threaded(
     thread_pool.wait_group.reset();
 }
 
+pub fn print_time(
+    comptime WORK: []const u8,
+    start: std.time.Instant,
+    counters: *const std.EnumArray(Database.Entry.Tag, u32),
+) void {
+    const now = std.time.Instant.now() catch unreachable;
+    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
+    const thread_id = std.Thread.getCurrentId();
+    log.info(
+        @src(),
+        "Thread {d}: {s} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} in {d:>6.3}ms",
+        .{
+            thread_id,
+            WORK,
+            Database.Entry.Tag.sampler,
+            counters.get(.sampler),
+            Database.Entry.Tag.descriptor_set_layout,
+            counters.get(.descriptor_set_layout),
+            Database.Entry.Tag.pipeline_layout,
+            counters.get(.pipeline_layout),
+            Database.Entry.Tag.shader_module,
+            counters.get(.shader_module),
+            Database.Entry.Tag.render_pass,
+            counters.get(.render_pass),
+            Database.Entry.Tag.graphics_pipeline,
+            counters.get(.graphics_pipeline),
+            Database.Entry.Tag.compute_pipeline,
+            counters.get(.compute_pipeline),
+            Database.Entry.Tag.raytracing_pipeline,
+            counters.get(.raytracing_pipeline),
+            dt,
+        },
+    );
+}
 pub fn create(context: *ThreadContext, vk_device: vk.VkDevice) void {
     create_inner(context, vk_device) catch unreachable;
 }

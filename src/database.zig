@@ -393,6 +393,23 @@ pub const Entry = struct {
         return .created;
     }
 
+    pub fn decrement_dependencies(self: *Entry, db: *Database) void {
+        if (@cmpxchgWeak(
+            bool,
+            &self.dependencies_destroyed,
+            false,
+            true,
+            .seq_cst,
+            .seq_cst,
+        ) != null)
+            return;
+
+        for (self.dependencies) |dep| {
+            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            _ = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
+        }
+    }
+
     pub fn destroy_dependencies(self: *Entry, vk_device: vk.VkDevice, db: *Database) void {
         if (@cmpxchgWeak(
             bool,
