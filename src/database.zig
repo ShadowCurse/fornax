@@ -184,7 +184,8 @@ pub const Entry = struct {
     pub fn parse(
         self: *Entry,
         comptime PARSE: type,
-        alloc: Allocator,
+        dependency_alloc: Allocator,
+        entry_alloc: Allocator,
         tmp_alloc: Allocator,
         db: *Database,
     ) ParseResult {
@@ -203,7 +204,7 @@ pub const Entry = struct {
             };
         }
 
-        self.parse_inner(PARSE, alloc, tmp_alloc, db) catch {
+        self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch {
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
             return .invalid;
         };
@@ -235,7 +236,8 @@ pub const Entry = struct {
     fn parse_inner(
         self: *Entry,
         comptime PARSE: type,
-        alloc: Allocator,
+        dependency_alloc: Allocator,
+        entry_alloc: Allocator,
         tmp_alloc: Allocator,
         db: *Database,
     ) !void {
@@ -243,26 +245,26 @@ pub const Entry = struct {
         switch (self.tag) {
             .application_info => {},
             .sampler => {
-                const result = try PARSE.parse_sampler(alloc, tmp_alloc, db, payload);
+                const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = @ptrCast(result.create_info);
             },
             .descriptor_set_layout => {
                 const result = try PARSE.parse_descriptor_set_layout(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
                 );
-                try self.process_result_with_dependencies(alloc, db, &result);
+                try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .pipeline_layout => {
-                const result = try PARSE.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
-                try self.process_result_with_dependencies(alloc, db, &result);
+                const result = try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
+                try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .shader_module => {
                 const result = try PARSE.parse_shader_module(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
@@ -272,7 +274,7 @@ pub const Entry = struct {
             },
             .render_pass => {
                 const result = try PARSE.parse_render_pass(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
@@ -282,30 +284,30 @@ pub const Entry = struct {
             },
             .graphics_pipeline => {
                 const result = try PARSE.parse_graphics_pipeline(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
                 );
-                try self.process_result_with_dependencies(alloc, db, &result);
+                try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .compute_pipeline => {
                 const result = try PARSE.parse_compute_pipeline(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
                 );
-                try self.process_result_with_dependencies(alloc, db, &result);
+                try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .raytracing_pipeline => {
                 const result = try PARSE.parse_raytracing_pipeline(
-                    alloc,
+                    entry_alloc,
                     tmp_alloc,
                     db,
                     payload,
                 );
-                try self.process_result_with_dependencies(alloc, db, &result);
+                try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .application_blob_link => {},
         }

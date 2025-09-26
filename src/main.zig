@@ -392,7 +392,14 @@ pub fn parse_inner(
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (curr_entry.parse(PARSE, alloc, tmp_alloc, context.db)) {
+            switch (curr_entry.parse(
+                PARSE,
+                // TODO maybe use per thread alloc
+                std.heap.smp_allocator,
+                alloc,
+                tmp_alloc,
+                context.db,
+            )) {
                 .parsed => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
@@ -494,9 +501,9 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
     var progress = context.progress.start("creation", root_entries.len);
     defer progress.end();
 
-    for (root_entries) |root_entry| {
+    for (root_entries) |*root_entry| {
         defer _ = context.arena.reset(.retain_capacity);
-        // defer _ = root_entry.arena.reset(.free_all);
+        defer _ = root_entry.arena.reset(.free_all);
         defer progress.completeOne();
 
         const tmp_alloc = context.arena.allocator();
