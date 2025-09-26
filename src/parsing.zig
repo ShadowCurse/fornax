@@ -11,7 +11,6 @@ const log = @import("log.zig");
 const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
 const Database = @import("database.zig");
-const Dependency = Database.Entry.Dependency;
 
 const Allocator = std.mem.Allocator;
 
@@ -98,6 +97,12 @@ test "parse_application_info" {
     const result = try parse_application_info(alloc, alloc, &db, json);
     try std.testing.expectEqual(result.version, 69);
 }
+
+pub const Dependency = struct {
+    tag: Database.Entry.Tag,
+    hash: u64,
+    ptr_to_handle: ?*?*anyopaque = null,
+};
 
 pub const Result = struct {
     version: u32,
@@ -210,7 +215,7 @@ pub fn parse_descriptor_set_layout(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
+    result.dependencies = context.dependencies.items;
     return result;
 }
 
@@ -272,7 +277,7 @@ pub fn parse_pipeline_layout(
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
-    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
+    result.dependencies = context.dependencies.items;
     return result;
 }
 
@@ -459,7 +464,7 @@ pub fn parse_compute_pipeline(
             );
         }
     }
-    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
+    result.dependencies = context.dependencies.items;
     return result;
 }
 
@@ -529,7 +534,7 @@ pub fn parse_raytracing_pipeline(
             try parse_vk_raytracing_pipeline_create_info(&context, create_info);
         }
     }
-    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
+    result.dependencies = context.dependencies.items;
     return result;
 }
 
@@ -602,7 +607,7 @@ pub fn parse_graphics_pipeline(
             );
         }
     }
-    result.dependencies = try alloc.dupe(Dependency, context.dependencies.items);
+    result.dependencies = context.dependencies.items;
     return result;
 }
 
@@ -891,9 +896,12 @@ fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*
         };
         switch (handle) {
             .handle => |h| location.* = h,
-            .dependency => |d| {
-                var dep = d;
-                dep.ptr_to_handle = location;
+            .dependency => {
+                const dep: Dependency = .{
+                    .tag = tag,
+                    .hash = hash,
+                    .ptr_to_handle = location,
+                };
                 try context.dependencies.append(context.tmp_alloc, dep);
             },
         }
@@ -915,9 +923,12 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
             };
             switch (handle) {
                 .handle => |h| try tmp.append(context.tmp_alloc, @ptrCast(h)),
-                .dependency => |d| {
+                .dependency => {
                     denpendencies_found += 1;
-                    var dep = d;
+                    var dep: Dependency = .{
+                        .tag = tag,
+                        .hash = hash,
+                    };
                     // Initially store the offset into the tmp array for the
                     // handle we need. Need to do this type hack to allow any
                     // number to be stored in the "8 byte" aligned pointer

@@ -196,7 +196,7 @@ pub fn main() !void {
     );
 
     try parse_threaded(&thread_pool, tread_contexts, &db);
-    try create_threaded(tmp_alloc, &thread_pool, tread_contexts, &db, vk_device);
+    try create_threaded(tmp_alloc, &thread_pool, tread_contexts, &db);
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
@@ -375,8 +375,7 @@ pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
-                        const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                        try queue.append(tmp_alloc, .{ dep_entry, 0 });
+                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
                     }
                 },
                 .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
@@ -385,7 +384,7 @@ pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
                     for (queue.items) |t| {
                         const e, _ = t;
                         @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
-                        e.decrement_dependencies(context.db);
+                        e.decrement_dependencies();
                     }
                     break;
                 },
@@ -463,10 +462,10 @@ pub fn print_time(
         },
     );
 }
-pub fn create(context: *ThreadContext, vk_device: vk.VkDevice) void {
-    create_inner(context, vk_device) catch unreachable;
+pub fn create(context: *ThreadContext) void {
+    create_inner(context) catch unreachable;
 }
-pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
+pub fn create_inner(context: *ThreadContext) !void {
     const alloc = context.arena.allocator();
 
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
@@ -479,19 +478,18 @@ pub fn create_inner(context: *ThreadContext, vk_device: vk.VkDevice) !void {
     while (context.work_queue.pop()) |entry| {
         defer progress.completeOne();
 
-        switch (try entry.create(vk_device, context.db)) {
+        switch (try entry.create(context.vk_device)) {
             .dependencies => {
                 try context.work_queue.append(alloc, entry);
                 for (entry.dependencies) |dep| {
-                    const dep_entry = context.db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
                     const d_status =
-                        @atomicLoad(Database.Entry.Status, &dep_entry.status, .seq_cst);
-                    if (d_status != .created) try context.work_queue.append(alloc, dep_entry);
+                        @atomicLoad(Database.Entry.Status, &dep.entry.status, .seq_cst);
+                    if (d_status != .created) try context.work_queue.append(alloc, dep.entry);
                 }
             },
             .creating => try context.work_queue.append(alloc, entry),
             .created => {
-                entry.destroy_dependencies(vk_device, context.db);
+                entry.destroy_dependencies(context.vk_device);
 
                 counters.getPtr(entry.tag).* += 1;
                 if (control_block) |cb| {
@@ -521,7 +519,6 @@ pub fn create_threaded(
     thread_pool: *ThreadPool,
     thread_contexts: []align(64) ThreadContext,
     db: *Database,
-    vk_device: vk.VkDevice,
 ) !void {
     var valid_entries: std.ArrayListUnmanaged(*Database.Entry) = .empty;
     for (db.entries.getPtr(.graphics_pipeline).values()) |*entry| {
@@ -535,7 +532,7 @@ pub fn create_threaded(
             const chunk = remaining_entries[0..chunk_size];
             for (chunk) |e| try tc.work_queue.append(tc.arena.allocator(), e);
             remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{ tc, vk_device });
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{tc});
         }
     }
     for (remaining_entries) |e| try thread_contexts[0].work_queue.append(
@@ -545,7 +542,7 @@ pub fn create_threaded(
     thread_pool.pool.spawnWg(
         &thread_pool.wait_group,
         create,
-        .{ &thread_contexts[0], vk_device },
+        .{&thread_contexts[0]},
     );
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
@@ -635,7 +632,7 @@ test "parse" {
             };
             defer Global.n += 1;
 
-            var dependencies: []const Database.Entry.Dependency = &.{
+            var dependencies: []const parsing.Dependency = &.{
                 .{ .tag = .graphics_pipeline, .hash = 70 },
                 .{ .tag = .graphics_pipeline, .hash = 71 },
             };

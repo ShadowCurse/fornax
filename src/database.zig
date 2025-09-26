@@ -76,9 +76,8 @@ pub const Entry = struct {
     };
 
     pub const Dependency = struct {
-        tag: Tag,
-        hash: u64,
-        ptr_to_handle: ?*?*anyopaque = null,
+        entry: *Entry,
+        ptr_to_handle: ?*?*anyopaque,
     };
 
     pub fn print_graph(self: *const Entry, db: *const Database) !void {
@@ -92,9 +91,8 @@ pub const Entry = struct {
             .{ self.tag, self.hash, self.dependent_by },
         );
         for (self.dependencies) |dep| {
-            const d = db.entries.getPtrConst(dep.tag).getPtr(dep.hash).?;
             G.padding += 1;
-            try d.print_graph(db);
+            try dep.print_graph(db);
             G.padding -= 1;
         }
     }
@@ -214,6 +212,26 @@ pub const Entry = struct {
         return .parsed;
     }
 
+    fn process_result_with_dependencies(
+        self: *Entry,
+        alloc: Allocator,
+        db: *Database,
+        result: *const parsing.ResultWithDependencies,
+    ) !void {
+        try self.check_version_and_hash(result);
+        self.create_info = @ptrCast(result.create_info);
+        const dependencies = try alloc.alloc(Dependency, result.dependencies.len);
+        for (result.dependencies, 0..) |dep, i| {
+            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            dependencies[i] = .{
+                .entry = dep_entry,
+                .ptr_to_handle = dep.ptr_to_handle,
+            };
+            _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
+        }
+        self.dependencies = dependencies;
+    }
+
     fn parse_inner(
         self: *Entry,
         comptime PARSE: type,
@@ -236,23 +254,11 @@ pub const Entry = struct {
                     db,
                     payload,
                 );
-                try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
-                self.dependencies = result.dependencies;
-                for (self.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
-                }
+                try self.process_result_with_dependencies(alloc, db, &result);
             },
             .pipeline_layout => {
                 const result = try PARSE.parse_pipeline_layout(alloc, tmp_alloc, db, payload);
-                try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
-                self.dependencies = result.dependencies;
-                for (self.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
-                }
+                try self.process_result_with_dependencies(alloc, db, &result);
             },
             .shader_module => {
                 const result = try PARSE.parse_shader_module(
@@ -281,13 +287,7 @@ pub const Entry = struct {
                     db,
                     payload,
                 );
-                try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
-                self.dependencies = result.dependencies;
-                for (self.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
-                }
+                try self.process_result_with_dependencies(alloc, db, &result);
             },
             .compute_pipeline => {
                 const result = try PARSE.parse_compute_pipeline(
@@ -296,13 +296,7 @@ pub const Entry = struct {
                     db,
                     payload,
                 );
-                try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
-                self.dependencies = result.dependencies;
-                for (self.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
-                }
+                try self.process_result_with_dependencies(alloc, db, &result);
             },
             .raytracing_pipeline => {
                 const result = try PARSE.parse_raytracing_pipeline(
@@ -311,13 +305,7 @@ pub const Entry = struct {
                     db,
                     payload,
                 );
-                try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
-                self.dependencies = result.dependencies;
-                for (self.dependencies) |dep| {
-                    const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-                    _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
-                }
+                try self.process_result_with_dependencies(alloc, db, &result);
             },
             .application_blob_link => {},
         }
@@ -328,10 +316,9 @@ pub const Entry = struct {
         creating,
         created,
     };
-    pub fn create(self: *Entry, vk_device: vk.VkDevice, db: *Database) !CreateResult {
+    pub fn create(self: *Entry, vk_device: vk.VkDevice) !CreateResult {
         for (self.dependencies) |dep| {
-            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-            const d_status = @atomicLoad(Status, &dep_entry.status, .seq_cst);
+            const d_status = @atomicLoad(Status, &dep.entry.status, .seq_cst);
             if (d_status != .created) return .dependencies;
         }
 
@@ -349,10 +336,7 @@ pub const Entry = struct {
         }
         defer @atomicStore(Status, &self.status, .created, .seq_cst);
 
-        for (self.dependencies) |dep| {
-            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-            dep.ptr_to_handle.?.* = dep_entry.handle;
-        }
+        for (self.dependencies) |dep| dep.ptr_to_handle.?.* = dep.entry.handle;
 
         switch (self.tag) {
             .application_info => {},
@@ -393,7 +377,7 @@ pub const Entry = struct {
         return .created;
     }
 
-    pub fn decrement_dependencies(self: *Entry, db: *Database) void {
+    pub fn decrement_dependencies(self: *Entry) void {
         if (@cmpxchgWeak(
             bool,
             &self.dependencies_destroyed,
@@ -404,13 +388,11 @@ pub const Entry = struct {
         ) != null)
             return;
 
-        for (self.dependencies) |dep| {
-            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-            _ = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
-        }
+        for (self.dependencies) |dep|
+            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
     }
 
-    pub fn destroy_dependencies(self: *Entry, vk_device: vk.VkDevice, db: *Database) void {
+    pub fn destroy_dependencies(self: *Entry, vk_device: vk.VkDevice) void {
         if (@cmpxchgWeak(
             bool,
             &self.dependencies_destroyed,
@@ -422,33 +404,33 @@ pub const Entry = struct {
             return;
 
         for (self.dependencies) |dep| {
-            const d = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
-            const old_value = @atomicRmw(u32, &d.dependent_by, .Sub, 1, .seq_cst);
+            const old_value = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
             log.assert(
                 @src(),
                 old_value != 0,
                 "Attempt to destroy object {t} hash: 0x{x} second time",
-                .{ dep.tag, dep.hash },
+                .{ dep.entry.tag, dep.entry.hash },
             );
             if (old_value == 1) {
-                switch (dep.tag) {
+                switch (dep.entry.tag) {
                     .application_info => {},
-                    .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(d.handle)),
+                    .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(dep.entry.handle)),
                     .descriptor_set_layout => vulkan.destroy_descriptor_set_layout(
                         vk_device,
-                        @ptrCast(d.handle),
+                        @ptrCast(dep.entry.handle),
                     ),
                     .pipeline_layout => vulkan.destroy_pipeline_layout(
                         vk_device,
-                        @ptrCast(d.handle),
+                        @ptrCast(dep.entry.handle),
                     ),
                     .shader_module,
-                    => vulkan.destroy_shader_module(vk_device, @ptrCast(d.handle)),
-                    .render_pass => vulkan.destroy_render_pass(vk_device, @ptrCast(d.handle)),
+                    => vulkan.destroy_shader_module(vk_device, @ptrCast(dep.entry.handle)),
+                    .render_pass,
+                    => vulkan.destroy_render_pass(vk_device, @ptrCast(dep.entry.handle)),
                     .graphics_pipeline,
                     .compute_pipeline,
                     .raytracing_pipeline,
-                    => vulkan.destroy_pipeline(vk_device, @ptrCast(d.handle)),
+                    => vulkan.destroy_pipeline(vk_device, @ptrCast(dep.entry.handle)),
                     .application_blob_link => {},
                 }
             }
@@ -514,9 +496,11 @@ pub const FileEntry = extern struct {
     }
 };
 
+// TODO this is only called during parsing phase, so no handles can be built at that
+// time, so what is the point of having a `handle` return type?
 pub const GetHandleResult = union(enum) {
     handle: *anyopaque,
-    dependency: Entry.Dependency,
+    dependency,
 };
 pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) ?GetHandleResult {
     const entries = self.entries.getPtrConst(tag);
@@ -527,14 +511,8 @@ pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) ?GetHandleRe
     const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
     if (handle) |h|
         return .{ .handle = h }
-    else {
-        return .{
-            .dependency = .{
-                .tag = tag,
-                .hash = hash,
-            },
-        };
-    }
+    else
+        return .dependency;
 }
 
 pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8) !Database {
