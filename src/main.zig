@@ -130,16 +130,13 @@ pub fn main() !void {
     var db: Database = try .init(tmp_alloc, &progress_root, db_path);
     _ = tmp_arena.reset(.retain_capacity);
 
+    const graphics_pipelines = db.entries.getPtrConst(.graphics_pipeline).values().len;
+    const compute_pipelines = db.entries.getPtrConst(.compute_pipeline).values().len;
+    const raytracing_pipelines = db.entries.getPtrConst(.raytracing_pipeline).values().len;
     if (control_block) |cb| {
-        const graphics: u32 =
-            @intCast(db.entries.getPtrConst(.graphics_pipeline).values().len);
-        cb.static_total_count_graphics.store(graphics, .release);
-        const compute: u32 =
-            @intCast(db.entries.getPtrConst(.compute_pipeline).values().len);
-        cb.static_total_count_compute.store(compute, .release);
-        const raytracing: u32 =
-            @intCast(db.entries.getPtrConst(.raytracing_pipeline).values().len);
-        cb.static_total_count_raytracing.store(raytracing, .release);
+        cb.static_total_count_graphics.store(@intCast(graphics_pipelines), .release);
+        cb.static_total_count_compute.store(@intCast(compute_pipelines), .release);
+        cb.static_total_count_raytracing.store(@intCast(raytracing_pipelines), .release);
 
         cb.num_running_processes.store(args.num_threads.? + 1, .release);
         cb.num_processes_memory_stats.store(args.num_threads.? + 1, .release);
@@ -195,8 +192,30 @@ pub fn main() !void {
         vk_device,
     );
 
-    try parse_threaded(&thread_pool, tread_contexts, &db);
-    try create_threaded(&thread_pool, tread_contexts, &db);
+    const total_pipelines = graphics_pipelines + compute_pipelines + raytracing_pipelines;
+
+    const root_entries: []RootEntry = try arena_alloc.alloc(RootEntry, total_pipelines);
+    var re = root_entries;
+    for (
+        db.entries.getPtr(.graphics_pipeline).values(),
+        re[0..graphics_pipelines],
+    ) |*entry, *root|
+        root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
+    re = root_entries[graphics_pipelines..];
+    for (
+        db.entries.getPtr(.compute_pipeline).values(),
+        re[0..compute_pipelines],
+    ) |*entry, *root|
+        root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
+    re = root_entries[compute_pipelines..];
+    for (
+        db.entries.getPtr(.raytracing_pipeline).values(),
+        re[0..raytracing_pipelines],
+    ) |*entry, *root|
+        root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
+
+    try parse_threaded(&thread_pool, tread_contexts, root_entries);
+    try create_threaded(&thread_pool, tread_contexts, root_entries);
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
@@ -204,11 +223,8 @@ pub fn main() !void {
     //     cb.progress_complete.store(1, .release);
 
     var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
-    for (tread_contexts) |*context| {
+    for (tread_contexts) |*context|
         total_used_bytes += context.arena.queryCapacity();
-        total_used_bytes += context.tmp_arena.queryCapacity();
-    }
-    log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
     log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
     const rusage = std.posix.getrusage(0);
     log.info(@src(), "Resource usage: max rss: {d}MB minor faults: {d} major faults: {d}", .{
@@ -217,6 +233,11 @@ pub fn main() !void {
         rusage.majflt,
     });
 }
+
+const RootEntry = struct {
+    entry: *Database.Entry,
+    arena: std.heap.ArenaAllocator,
+};
 
 pub const MAX_PROCESS_STATS = 256;
 pub const CONTROL_BLOCK_MAGIC = 0x19bcde1d;
@@ -296,17 +317,9 @@ pub fn open_control_block(shmem_fd: i32) !void {
 
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
-    tmp_arena: std.heap.ArenaAllocator,
-    work_queue: std.ArrayListUnmanaged(*Database.Entry),
     progress: *std.Progress.Node,
     db: *Database,
     vk_device: vk.VkDevice,
-
-    pub fn reset(self: *ThreadContext) void {
-        _ = self.arena.reset(.retain_capacity);
-        _ = self.tmp_arena.reset(.retain_capacity);
-        self.work_queue = .empty;
-    }
 };
 
 pub fn init_thread_contexts(
@@ -326,8 +339,6 @@ pub fn init_thread_contexts(
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
-            .tmp_arena = .init(std.heap.page_allocator),
-            .work_queue = .empty,
             .progress = progress,
             .db = db,
             .vk_device = vk_device,
@@ -354,26 +365,30 @@ pub fn init_thread_pool_context(
     try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
 }
 
-pub fn parse(context: *ThreadContext) void {
-    parse_inner(parsing, context) catch unreachable;
+pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
+    parse_inner(parsing, context, root_entries) catch unreachable;
 }
-pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
-    const alloc = context.arena.allocator();
-    const tmp_alloc = context.tmp_arena.allocator();
-
+pub fn parse_inner(
+    comptime PARSE: type,
+    context: *ThreadContext,
+    root_entries: []RootEntry,
+) !void {
     var valid: u32 = 0;
     var invalid: u32 = 0;
     const start = try std.time.Instant.now();
 
-    var progress = context.progress.start("parsing", context.work_queue.items.len);
+    var progress = context.progress.start("parsing", root_entries.len);
     defer progress.end();
 
-    while (context.work_queue.pop()) |root_entry| {
-        defer _ = context.tmp_arena.reset(.retain_capacity);
+    for (root_entries) |*root_entry| {
+        defer _ = context.arena.reset(.retain_capacity);
         defer progress.completeOne();
 
+        const tmp_alloc = context.arena.allocator();
+
+        const alloc = root_entry.arena.allocator();
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry, 0 });
+        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
@@ -411,36 +426,25 @@ pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
     );
 }
 
-fn distribute_entries_to_parse(
+pub fn parse_threaded(
+    thread_pool: *ThreadPool,
     thread_contexts: []align(64) ThreadContext,
-    db: *Database,
-    tag: Database.Entry.Tag,
+    root_entries: []RootEntry,
 ) !void {
-    var remaining_entries = db.entries.getPtr(tag).values();
+    var remaining_entries = root_entries;
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
         for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
-            for (chunk) |*e| try tc.work_queue.append(tc.arena.allocator(), e);
             remaining_entries = remaining_entries[chunk_size..];
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{ tc, chunk });
         }
     }
-    for (remaining_entries) |*e| try thread_contexts[0].work_queue.append(
-        thread_contexts[0].arena.allocator(),
-        e,
+    thread_pool.pool.spawnWg(
+        &thread_pool.wait_group,
+        parse,
+        .{ &thread_contexts[0], remaining_entries },
     );
-}
-
-pub fn parse_threaded(
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    db: *Database,
-) !void {
-    try distribute_entries_to_parse(thread_contexts, db, .graphics_pipeline);
-    try distribute_entries_to_parse(thread_contexts, db, .compute_pipeline);
-    try distribute_entries_to_parse(thread_contexts, db, .raytracing_pipeline);
-    for (thread_contexts) |*tc|
-        thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{tc});
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
 }
@@ -479,25 +483,26 @@ pub fn print_time(
         },
     );
 }
-pub fn create(context: *ThreadContext) void {
-    create_inner(context) catch unreachable;
+pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
+    create_inner(context, root_entries) catch unreachable;
 }
-pub fn create_inner(context: *ThreadContext) !void {
-    const tmp_alloc = context.tmp_arena.allocator();
-
+pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const t_start = try std.time.Instant.now();
     defer print_time("created", t_start, &counters);
 
-    var progress = context.progress.start("creation", 0);
+    var progress = context.progress.start("creation", root_entries.len);
     defer progress.end();
 
-    while (context.work_queue.pop()) |root_entry| {
-        defer _ = context.tmp_arena.reset(.retain_capacity);
+    for (root_entries) |root_entry| {
+        defer _ = context.arena.reset(.retain_capacity);
+        // defer _ = root_entry.arena.reset(.free_all);
         defer progress.completeOne();
 
+        const tmp_alloc = context.arena.allocator();
+
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry, 0 });
+        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
@@ -562,13 +567,23 @@ fn distribute_entries_to_create(
 pub fn create_threaded(
     thread_pool: *ThreadPool,
     thread_contexts: []align(64) ThreadContext,
-    db: *Database,
+    root_entries: []RootEntry,
 ) !void {
-    try distribute_entries_to_create(thread_contexts, db, .graphics_pipeline);
-    try distribute_entries_to_create(thread_contexts, db, .compute_pipeline);
-    try distribute_entries_to_create(thread_contexts, db, .raytracing_pipeline);
-    for (thread_contexts) |*tc|
-        thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{tc});
+    var remaining_entries = root_entries;
+    if (thread_contexts.len != 1) {
+        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        for (thread_contexts[1..]) |*tc| {
+            const chunk = remaining_entries[0..chunk_size];
+            remaining_entries = remaining_entries[chunk_size..];
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{ tc, chunk });
+        }
+    }
+    thread_pool.pool.spawnWg(
+        &thread_pool.wait_group,
+        create,
+        .{ &thread_contexts[0], remaining_entries },
+    );
+
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
 }
@@ -605,8 +620,6 @@ test "parse" {
     });
     var thread_context: ThreadContext = .{
         .arena = .init(std.heap.page_allocator),
-        .tmp_arena = .init(std.heap.page_allocator),
-        .work_queue = .empty,
         .progress = &progress,
         .db = &db,
         .vk_device = undefined,
@@ -620,7 +633,8 @@ test "parse" {
         .payload_decompressed_size = 0,
         .payload_file_offset = 0,
     };
-    try thread_context.work_queue.append(thread_context.arena.allocator(), &test_entry);
+    const root_entries: []RootEntry = try alloc.alloc(RootEntry, 1);
+    root_entries[0] = .{ .entry = &test_entry, .arena = .init(alloc) };
 
     const TestParse = struct {
         fn dummy_parse(
@@ -670,7 +684,7 @@ test "parse" {
             };
         }
     };
-    try parse_inner(TestParse, &thread_context);
+    try parse_inner(TestParse, &thread_context, root_entries);
     try std.testing.expectEqual(.parsed, test_entry.status);
     const pipelines = db.entries.getPtr(.graphics_pipeline);
     for (pipelines.values()) |*entry|
