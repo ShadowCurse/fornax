@@ -196,7 +196,7 @@ pub fn main() !void {
     );
 
     try parse_threaded(&thread_pool, tread_contexts, &db);
-    try create_threaded(tmp_alloc, &thread_pool, tread_contexts, &db);
+    try create_threaded(&thread_pool, tread_contexts, &db);
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
@@ -404,26 +404,36 @@ pub fn parse_inner(comptime PARSE: type, context: *ThreadContext) !void {
     );
 }
 
-pub fn parse_threaded(
-    thread_pool: *ThreadPool,
+fn distribute_entries_to_parse(
     thread_contexts: []align(64) ThreadContext,
     db: *Database,
+    tag: Database.Entry.Tag,
 ) !void {
-    var remaining_entries = db.entries.getPtr(.graphics_pipeline).values();
+    var remaining_entries = db.entries.getPtr(tag).values();
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
         for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
             for (chunk) |*e| try tc.work_queue.append(tc.arena.allocator(), e);
             remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{tc});
         }
     }
     for (remaining_entries) |*e| try thread_contexts[0].work_queue.append(
         thread_contexts[0].arena.allocator(),
         e,
     );
-    thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{&thread_contexts[0]});
+}
+
+pub fn parse_threaded(
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
+    db: *Database,
+) !void {
+    try distribute_entries_to_parse(thread_contexts, db, .graphics_pipeline);
+    try distribute_entries_to_parse(thread_contexts, db, .compute_pipeline);
+    try distribute_entries_to_parse(thread_contexts, db, .raytracing_pipeline);
+    for (thread_contexts) |*tc|
+        thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{tc});
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
 }
@@ -514,36 +524,38 @@ pub fn create_inner(context: *ThreadContext) !void {
     }
 }
 
-pub fn create_threaded(
-    tmp_alloc: Allocator,
-    thread_pool: *ThreadPool,
+fn distribute_entries_to_create(
     thread_contexts: []align(64) ThreadContext,
     db: *Database,
+    tag: Database.Entry.Tag,
 ) !void {
-    var valid_entries: std.ArrayListUnmanaged(*Database.Entry) = .empty;
-    for (db.entries.getPtr(.graphics_pipeline).values()) |*entry| {
-        if (entry.status != .invalid)
-            try valid_entries.append(tmp_alloc, entry);
-    }
-    var remaining_entries = valid_entries.items;
+    var remaining_entries = db.entries.getPtr(tag).values();
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
         for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
-            for (chunk) |e| try tc.work_queue.append(tc.arena.allocator(), e);
+            for (chunk) |*e|
+                if (e.status != .invalid) try tc.work_queue.append(tc.arena.allocator(), e);
             remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{tc});
         }
     }
-    for (remaining_entries) |e| try thread_contexts[0].work_queue.append(
-        thread_contexts[0].arena.allocator(),
-        e,
-    );
-    thread_pool.pool.spawnWg(
-        &thread_pool.wait_group,
-        create,
-        .{&thread_contexts[0]},
-    );
+    for (remaining_entries) |*e|
+        if (e.status != .invalid)
+            try thread_contexts[0].work_queue.append(
+                thread_contexts[0].arena.allocator(),
+                e,
+            );
+}
+pub fn create_threaded(
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
+    db: *Database,
+) !void {
+    try distribute_entries_to_create(thread_contexts, db, .graphics_pipeline);
+    try distribute_entries_to_create(thread_contexts, db, .compute_pipeline);
+    try distribute_entries_to_create(thread_contexts, db, .raytracing_pipeline);
+    for (thread_contexts) |*tc|
+        thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{tc});
     thread_pool.wait_group.wait();
     thread_pool.wait_group.reset();
 }
