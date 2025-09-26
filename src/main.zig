@@ -476,7 +476,7 @@ pub fn create(context: *ThreadContext) void {
     create_inner(context) catch unreachable;
 }
 pub fn create_inner(context: *ThreadContext) !void {
-    const alloc = context.arena.allocator();
+    const tmp_alloc = context.tmp_arena.allocator();
 
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const t_start = try std.time.Instant.now();
@@ -485,41 +485,47 @@ pub fn create_inner(context: *ThreadContext) !void {
     var progress = context.progress.start("creation", 0);
     defer progress.end();
 
-    while (context.work_queue.pop()) |entry| {
+    while (context.work_queue.pop()) |root_entry| {
+        defer _ = context.tmp_arena.reset(.retain_capacity);
         defer progress.completeOne();
 
-        switch (try entry.create(context.vk_device)) {
-            .dependencies => {
-                try context.work_queue.append(alloc, entry);
-                for (entry.dependencies) |dep| {
-                    const d_status =
-                        @atomicLoad(Database.Entry.Status, &dep.entry.status, .seq_cst);
-                    if (d_status != .created) try context.work_queue.append(alloc, dep.entry);
-                }
-            },
-            .creating => try context.work_queue.append(alloc, entry),
-            .created => {
-                entry.destroy_dependencies(context.vk_device);
+        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
+        try queue.append(tmp_alloc, .{ root_entry, 0 });
+        while (queue.pop()) |tuple| {
+            const curr_entry, const next_dep = tuple;
 
-                counters.getPtr(entry.tag).* += 1;
-                if (control_block) |cb| {
-                    switch (entry.tag) {
-                        .graphics_pipeline => {
-                            _ = cb.successful_graphics.fetchAdd(1, .release);
-                            _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
-                        },
-                        .compute_pipeline => {
-                            _ = cb.successful_compute.fetchAdd(1, .release);
-                            _ = cb.parsed_compute_failures.fetchAdd(1, .release);
-                        },
-                        .raytracing_pipeline => {
-                            _ = cb.successful_raytracing.fetchAdd(1, .release);
-                            _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
-                        },
-                        else => {},
+            switch (try curr_entry.create(context.vk_device)) {
+                .dependencies => {
+                    if (next_dep != curr_entry.dependencies.len) {
+                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
+                        const dep = curr_entry.dependencies[next_dep];
+                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
                     }
-                }
-            },
+                },
+                .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
+                .created => {
+                    curr_entry.destroy_dependencies(context.vk_device);
+
+                    counters.getPtr(curr_entry.tag).* += 1;
+                    if (control_block) |cb| {
+                        switch (curr_entry.tag) {
+                            .graphics_pipeline => {
+                                _ = cb.successful_graphics.fetchAdd(1, .release);
+                                _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
+                            },
+                            .compute_pipeline => {
+                                _ = cb.successful_compute.fetchAdd(1, .release);
+                                _ = cb.parsed_compute_failures.fetchAdd(1, .release);
+                            },
+                            .raytracing_pipeline => {
+                                _ = cb.successful_raytracing.fetchAdd(1, .release);
+                                _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
+                            },
+                            else => {},
+                        }
+                    }
+                },
+            }
         }
     }
 }
