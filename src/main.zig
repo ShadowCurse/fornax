@@ -209,6 +209,13 @@ pub fn main() !void {
         total_used_bytes += context.tmp_arena.queryCapacity();
     }
     log.info(@src(), "Total memory usage: {d}MB", .{total_used_bytes / 1024 / 1024});
+    log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
+    const rusage = std.posix.getrusage(0);
+    log.info(@src(), "Resource usage: max rss: {d}MB minor faults: {d} major faults: {d}", .{
+        @as(usize, @intCast(rusage.maxrss)) / 1024,
+        rusage.minflt,
+        rusage.majflt,
+    });
 }
 
 pub const MAX_PROCESS_STATS = 256;
