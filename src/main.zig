@@ -184,8 +184,11 @@ pub fn main() !void {
 
     var thread_pool: ThreadPool = undefined;
     try init_thread_pool_context(&thread_pool, args.num_threads);
+    var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
+    const shared_alloc = shared_arena.allocator();
     const tread_contexts = try init_thread_contexts(
         arena_alloc,
+        shared_alloc,
         args.num_threads,
         &progress_root,
         &db,
@@ -222,7 +225,8 @@ pub fn main() !void {
     // if (control_block) |cb|
     //     cb.progress_complete.store(1, .release);
 
-    var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity();
+    var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
+        db.arena.queryCapacity();
     for (tread_contexts) |*context|
         total_used_bytes += context.arena.queryCapacity();
     log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
@@ -317,6 +321,7 @@ pub fn open_control_block(shmem_fd: i32) !void {
 
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
+    shared_alloc: Allocator,
     progress: *std.Progress.Node,
     db: *Database,
     vk_device: vk.VkDevice,
@@ -324,6 +329,7 @@ pub const ThreadContext = struct {
 
 pub fn init_thread_contexts(
     alloc: Allocator,
+    shared_alloc: Allocator,
     num_threads: ?u32,
     progress: *std.Progress.Node,
     db: *Database,
@@ -339,6 +345,7 @@ pub fn init_thread_contexts(
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
+            .shared_alloc = shared_alloc,
             .progress = progress,
             .db = db,
             .vk_device = vk_device,
@@ -384,9 +391,10 @@ pub fn parse_inner(
         defer _ = context.arena.reset(.retain_capacity);
         defer progress.completeOne();
 
+        const shared_alloc = context.shared_alloc;
+        const alloc = root_entry.arena.allocator();
         const tmp_alloc = context.arena.allocator();
 
-        const alloc = root_entry.arena.allocator();
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
         try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
         while (queue.pop()) |tuple| {
@@ -394,8 +402,7 @@ pub fn parse_inner(
 
             switch (curr_entry.parse(
                 PARSE,
-                // TODO maybe use per thread alloc
-                std.heap.smp_allocator,
+                shared_alloc,
                 alloc,
                 tmp_alloc,
                 context.db,
@@ -626,7 +633,8 @@ test "parse" {
         .payload_file_offset = 0,
     });
     var thread_context: ThreadContext = .{
-        .arena = .init(std.heap.page_allocator),
+        .arena = .init(alloc),
+        .shared_alloc = alloc,
         .progress = &progress,
         .db = &db,
         .vk_device = undefined,
