@@ -180,7 +180,7 @@ pub fn main() !void {
         parsed_application_info.device_features2,
         args.enable_validation,
     );
-    _ = tmp_arena.reset(.retain_capacity);
+    _ = tmp_arena.reset(.free_all);
 
     var thread_pool: ThreadPool = undefined;
     try init_thread_pool_context(&thread_pool, args.num_threads);
