@@ -208,7 +208,8 @@ pub const Entry = struct {
             };
         }
 
-        self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch {
+        self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch |err| {
+            log.err(@src(), "Cannot parse object: {t} 0x{x}: {t}", .{ self.tag, self.hash, err });
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
             return .invalid;
         };
@@ -321,29 +322,48 @@ pub const Entry = struct {
         dependencies,
         creating,
         created,
+        invalid,
     };
-    pub fn create(self: *Entry, vk_device: vk.VkDevice) !CreateResult {
+    pub fn create(self: *Entry, vk_device: vk.VkDevice) CreateResult {
         for (self.dependencies) |dep| {
             const d_status = @atomicLoad(Status, &dep.entry.status, .seq_cst);
+            if (d_status == .invalid) {
+                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                return .invalid;
+            }
             if (d_status != .created) return .dependencies;
         }
 
         if (@cmpxchgWeak(Status, &self.status, .parsed, .creating, .seq_cst, .seq_cst)) |old| {
             log.assert(
                 @src(),
-                old == .creating or old == .created,
+                old == .creating or old == .created or old == .invalid,
                 "Encountered strange entry state: {t}",
                 .{old},
             );
-            if (old == .created)
-                return .created
-            else
-                return .creating;
+            return switch (old) {
+                .created => .created,
+                .creating => .creating,
+                .invalid => .invalid,
+                else => unreachable,
+            };
         }
-        defer @atomicStore(Status, &self.status, .created, .seq_cst);
 
+        self.create_inner(vk_device) catch |err| {
+            log.err(
+                @src(),
+                "Cannot create object: {t} 0x{x}: {t}",
+                .{ self.tag, self.hash, err },
+            );
+            @atomicStore(Status, &self.status, .invalid, .seq_cst);
+            return .invalid;
+        };
+        @atomicStore(Status, &self.status, .created, .seq_cst);
+        return .created;
+    }
+
+    fn create_inner(self: *Entry, vk_device: vk.VkDevice) !void {
         for (self.dependencies) |dep| dep.ptr_to_handle.?.* = dep.entry.handle;
-
         switch (self.tag) {
             .application_info => {},
             .sampler => self.handle = try vulkan.create_vk_sampler(
@@ -380,7 +400,6 @@ pub const Entry = struct {
             ),
             .application_blob_link => {},
         }
-        return .created;
     }
 
     pub fn decrement_dependencies(self: *Entry) void {

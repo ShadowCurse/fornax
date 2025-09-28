@@ -516,7 +516,7 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (try curr_entry.create(context.vk_device)) {
+            switch (curr_entry.create(context.vk_device)) {
                 .dependencies => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
@@ -546,6 +546,15 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
                             else => {},
                         }
                     }
+                },
+                .invalid => {
+                    curr_entry.destroy_dependencies(context.vk_device);
+                    for (queue.items) |t| {
+                        const e, _ = t;
+                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
+                        e.destroy_dependencies(context.vk_device);
+                    }
+                    break;
                 },
             }
         }
