@@ -209,7 +209,11 @@ pub const Entry = struct {
         }
 
         self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch |err| {
-            log.err(@src(), "Cannot parse object: {t} 0x{x:0>16}: {t}", .{ self.tag, self.hash, err });
+            log.debug(
+                @src(),
+                "Cannot parse object: {t} 0x{x:0>16}: {t}",
+                .{ self.tag, self.hash, err },
+            );
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
             return .invalid;
         };
@@ -350,7 +354,7 @@ pub const Entry = struct {
         }
 
         self.create_inner(vk_device) catch |err| {
-            log.err(
+            log.debug(
                 @src(),
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
                 .{ self.tag, self.hash, err },
