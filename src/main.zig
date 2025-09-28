@@ -608,6 +608,40 @@ pub fn create_threaded(
 }
 
 test "parse" {
+    const Dummy = struct {
+        fn parse(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) parsing.Error!parsing.Result {
+            unreachable;
+        }
+        fn parse_with_dependencies(
+            _: Allocator,
+            _: Allocator,
+            _: *const Database,
+            _: []const u8,
+        ) parsing.Error!parsing.ResultWithDependencies {
+            unreachable;
+        }
+
+        fn put_hashes(alloc: Allocator, db: *Database, hashes: []const u32) !void {
+            db.entries.getPtr(.graphics_pipeline).deinit(alloc);
+            db.entries = .initFill(.empty);
+            for (hashes) |hash|
+                try db.entries.getPtr(.graphics_pipeline).put(alloc, hash, .{
+                    .tag = .graphics_pipeline,
+                    .hash = hash,
+                    .payload_flag = .not_compressed,
+                    .payload_crc = 0,
+                    .payload_stored_size = 0,
+                    .payload_decompressed_size = 0,
+                    .payload_file_offset = 0,
+                });
+        }
+    };
+
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
@@ -619,24 +653,6 @@ test "parse" {
     const tmp_file = try tmp_dir.dir.createFile("parse_test", .{});
 
     var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.graphics_pipeline).put(alloc, 70, .{
-        .tag = .graphics_pipeline,
-        .hash = 70,
-        .payload_flag = .not_compressed,
-        .payload_crc = 0,
-        .payload_stored_size = 0,
-        .payload_decompressed_size = 0,
-        .payload_file_offset = 0,
-    });
-    try db.entries.getPtr(.graphics_pipeline).put(alloc, 71, .{
-        .tag = .graphics_pipeline,
-        .hash = 71,
-        .payload_flag = .not_compressed,
-        .payload_crc = 0,
-        .payload_stored_size = 0,
-        .payload_decompressed_size = 0,
-        .payload_file_offset = 0,
-    });
     var thread_context: ThreadContext = .{
         .arena = .init(alloc),
         .shared_alloc = alloc,
@@ -644,71 +660,136 @@ test "parse" {
         .db = &db,
         .vk_device = undefined,
     };
-    var test_entry: Database.Entry = .{
-        .tag = .graphics_pipeline,
-        .hash = 69,
-        .payload_flag = .not_compressed,
-        .payload_crc = 0,
-        .payload_stored_size = 0,
-        .payload_decompressed_size = 0,
-        .payload_file_offset = 0,
-    };
-    const root_entries: []RootEntry = try alloc.alloc(RootEntry, 1);
-    root_entries[0] = .{ .entry = &test_entry, .arena = .init(alloc) };
 
-    const TestParse = struct {
-        fn dummy_parse(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) parsing.Error!parsing.Result {
-            unreachable;
-        }
-        fn dummy_parse_with_dependencies(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) parsing.Error!parsing.ResultWithDependencies {
-            unreachable;
-        }
-        pub const parse_sampler = dummy_parse;
-        pub const parse_descriptor_set_layout = dummy_parse_with_dependencies;
-        pub const parse_pipeline_layout = dummy_parse_with_dependencies;
-        pub const parse_shader_module = dummy_parse;
-        pub const parse_render_pass = dummy_parse;
-        pub const parse_compute_pipeline = dummy_parse_with_dependencies;
-        pub const parse_raytracing_pipeline = dummy_parse_with_dependencies;
-        pub fn parse_graphics_pipeline(
-            _: Allocator,
-            _: Allocator,
-            _: *const Database,
-            _: []const u8,
-        ) parsing.Error!parsing.ResultWithDependencies {
+    // Simple root node with 2 deps
+    {
+        const TestParse = struct {
             const Global = struct {
                 var n: u32 = 0;
             };
-            defer Global.n += 1;
 
-            var dependencies: []const parsing.Dependency = &.{
-                .{ .tag = .graphics_pipeline, .hash = 70 },
-                .{ .tag = .graphics_pipeline, .hash = 71 },
-            };
-            if (Global.n != 0) dependencies = &.{};
-            return .{
-                .version = 6,
-                .hash = 69 + Global.n,
-                .create_info = undefined,
-                .dependencies = dependencies,
-            };
+            pub const parse_sampler = Dummy.parse;
+            pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
+            pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
+            pub const parse_shader_module = Dummy.parse;
+            pub const parse_render_pass = Dummy.parse;
+            pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;
+            pub fn parse_graphics_pipeline(
+                _: Allocator,
+                _: Allocator,
+                _: *const Database,
+                _: []const u8,
+            ) parsing.Error!parsing.ResultWithDependencies {
+                defer Global.n += 1;
+
+                var dependencies: []const parsing.Dependency = &.{
+                    .{ .tag = .graphics_pipeline, .hash = 1 },
+                    .{ .tag = .graphics_pipeline, .hash = 2 },
+                };
+                if (Global.n != 0) dependencies = &.{};
+                return .{
+                    .version = 6,
+                    .hash = Global.n,
+                    .create_info = undefined,
+                    .dependencies = dependencies,
+                };
+            }
+        };
+        try Dummy.put_hashes(alloc, &db, &.{ 1, 2 });
+        var test_entry: Database.Entry = .{
+            .tag = .graphics_pipeline,
+            .hash = 0,
+            .payload_flag = .not_compressed,
+            .payload_crc = 0,
+            .payload_stored_size = 0,
+            .payload_decompressed_size = 0,
+            .payload_file_offset = 0,
+        };
+        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        try parse_inner(TestParse, &thread_context, &root_entries);
+        try std.testing.expectEqual(.parsed, test_entry.status);
+        const pipelines = db.entries.getPtr(.graphics_pipeline);
+        for (pipelines.values()) |*entry| {
+            try std.testing.expectEqual(.parsed, entry.status);
+            try std.testing.expectEqual(1, entry.dependent_by);
         }
-    };
-    try parse_inner(TestParse, &thread_context, root_entries);
-    try std.testing.expectEqual(.parsed, test_entry.status);
-    const pipelines = db.entries.getPtr(.graphics_pipeline);
-    for (pipelines.values()) |*entry|
-        try std.testing.expectEqual(.parsed, entry.status);
+    }
+
+    // Simple root node with 2 deps, one of deps is invalid
+    {
+        const TestParse = struct {
+            const Global = struct {
+                var n: u32 = 0;
+            };
+
+            pub const parse_sampler = Dummy.parse;
+            pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
+            pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
+            pub const parse_shader_module = Dummy.parse;
+            pub const parse_render_pass = Dummy.parse;
+            pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;
+            pub fn parse_graphics_pipeline(
+                _: Allocator,
+                _: Allocator,
+                _: *const Database,
+                _: []const u8,
+            ) parsing.Error!parsing.ResultWithDependencies {
+                defer Global.n += 1;
+
+                var dependencies: []const parsing.Dependency = undefined;
+                var hash: u32 = undefined;
+                switch (Global.n) {
+                    0 => {
+                        hash = 0;
+                        dependencies = &.{
+                            .{ .tag = .graphics_pipeline, .hash = 1 },
+                            .{ .tag = .graphics_pipeline, .hash = 2 },
+                        };
+                    },
+                    1 => {
+                        hash = 1;
+                        dependencies = &.{};
+                    },
+                    2 => {
+                        return error.InvalidJson;
+                    },
+                    else => unreachable,
+                }
+                return .{
+                    .version = 6,
+                    .hash = hash,
+                    .create_info = undefined,
+                    .dependencies = dependencies,
+                };
+            }
+        };
+        try Dummy.put_hashes(alloc, &db, &.{ 1, 2 });
+        var test_entry: Database.Entry = .{
+            .tag = .graphics_pipeline,
+            .hash = 0,
+            .payload_flag = .not_compressed,
+            .payload_crc = 0,
+            .payload_stored_size = 0,
+            .payload_decompressed_size = 0,
+            .payload_file_offset = 0,
+        };
+        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        try parse_inner(TestParse, &thread_context, &root_entries);
+        try std.testing.expectEqual(.invalid, test_entry.status);
+        const pipelines = db.entries.getPtr(.graphics_pipeline);
+        for (pipelines.values()) |*entry| {
+            if (entry.hash == 1) {
+                try std.testing.expectEqual(.parsed, entry.status);
+                try std.testing.expectEqual(0, entry.dependent_by);
+            }
+            if (entry.hash == 2) {
+                try std.testing.expectEqual(.invalid, entry.status);
+                try std.testing.expectEqual(0, entry.dependent_by);
+            }
+        }
+    }
 }
 
 comptime {

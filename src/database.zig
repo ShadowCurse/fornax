@@ -165,16 +165,16 @@ pub const Entry = struct {
         if (v.version != 6) {
             log.err(
                 @src(),
-                "{t} has invalid version: {d} != {d}",
-                .{ self.tag, v.version, @as(u32, 6) },
+                "Vertion of entry: {t} 0x{x} is invalid: {d} != {d}",
+                .{ self.tag, self.hash, v.version, @as(u32, 6) },
             );
             return error.InvalidVerson;
         }
         if (v.hash != self.hash) {
             log.err(
                 @src(),
-                "{t} hash not equal to json version: 0x{x} != 0x{x}",
-                .{ self.tag, v.hash, self.hash },
+                "Hash for entry: {t} 0x{x} is not equal to json value: 0x{x} != 0x{x}",
+                .{ self.tag, self.hash, v.hash, self.hash },
             );
             return error.InvalidHash;
         }
