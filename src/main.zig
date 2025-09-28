@@ -200,13 +200,13 @@ pub fn main() !void {
         re[0..graphics_pipelines],
     ) |*entry, *root|
         root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
-    re = root_entries[graphics_pipelines..];
+    re = re[graphics_pipelines..];
     for (
         db.entries.getPtr(.compute_pipeline).values(),
         re[0..compute_pipelines],
     ) |*entry, *root|
         root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
-    re = root_entries[compute_pipelines..];
+    re = re[compute_pipelines..];
     for (
         db.entries.getPtr(.raytracing_pipeline).values(),
         re[0..raytracing_pipelines],
