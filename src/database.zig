@@ -91,7 +91,7 @@ pub const Entry = struct {
         for (0..G.padding) |_|
             log.output("    ", .{});
         log.output(
-            "{t} hash: 0x{x} depended_by: {d}\n",
+            "{t} hash: 0x{x:0>16} depended_by: {d}\n",
             .{ self.tag, self.hash, self.dependent_by },
         );
         for (self.dependencies) |dep| {
@@ -165,7 +165,7 @@ pub const Entry = struct {
         if (v.version != 6) {
             log.err(
                 @src(),
-                "Vertion of entry: {t} 0x{x} is invalid: {d} != {d}",
+                "Vertion of entry: {t} 0x{x:0>16} is invalid: {d} != {d}",
                 .{ self.tag, self.hash, v.version, @as(u32, 6) },
             );
             return error.InvalidVerson;
@@ -173,7 +173,7 @@ pub const Entry = struct {
         if (v.hash != self.hash) {
             log.err(
                 @src(),
-                "Hash for entry: {t} 0x{x} is not equal to json value: 0x{x} != 0x{x}",
+                "Hash for entry: {t} 0x{x:0>16} is not equal to json value: 0x{x:0>16} != 0x{x:0>16}",
                 .{ self.tag, self.hash, v.hash, self.hash },
             );
             return error.InvalidHash;
@@ -209,7 +209,7 @@ pub const Entry = struct {
         }
 
         self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch |err| {
-            log.err(@src(), "Cannot parse object: {t} 0x{x}: {t}", .{ self.tag, self.hash, err });
+            log.err(@src(), "Cannot parse object: {t} 0x{x:0>16}: {t}", .{ self.tag, self.hash, err });
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
             return .invalid;
         };
@@ -352,7 +352,7 @@ pub const Entry = struct {
         self.create_inner(vk_device) catch |err| {
             log.err(
                 @src(),
-                "Cannot create object: {t} 0x{x}: {t}",
+                "Cannot create object: {t} 0x{x:0>16}: {t}",
                 .{ self.tag, self.hash, err },
             );
             @atomicStore(Status, &self.status, .invalid, .seq_cst);
@@ -433,7 +433,7 @@ pub const Entry = struct {
             log.assert(
                 @src(),
                 old_value != 0,
-                "Attempt to destroy object {t} hash: 0x{x} second time",
+                "Attempt to destroy object {t} hash: 0x{x:0>16} second time",
                 .{ dep.entry.tag, dep.entry.hash },
             );
             if (old_value == 1) {
@@ -530,7 +530,7 @@ pub const GetHandleResult = union(enum) {
 pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) ?GetHandleResult {
     const entries = self.entries.getPtrConst(tag);
     const entry = entries.getPtr(hash) orelse {
-        log.debug(@src(), "Cannot get handle for the entry: {t} 0x{x}", .{ tag, hash });
+        log.debug(@src(), "Cannot get handle for the entry: {t} 0x{x:0>16}", .{ tag, hash });
         return null;
     };
     const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
