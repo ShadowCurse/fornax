@@ -43,7 +43,7 @@ pub const Entry = struct {
     payload_decompressed_size: u32,
     payload_file_offset: u32,
 
-    create_info: ?*const anyopaque = null,
+    create_info: ?*align(8) const anyopaque = null,
     dependencies: []const Dependency = &.{},
     handle: ?*anyopaque = null,
 
@@ -256,7 +256,7 @@ pub const Entry = struct {
             .sampler => {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
+                self.create_info = result.create_info;
             },
             .descriptor_set_layout => {
                 const result = try PARSE.parse_descriptor_set_layout(
@@ -279,7 +279,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
+                self.create_info = result.create_info;
             },
             .render_pass => {
                 const result = try PARSE.parse_render_pass(
@@ -289,7 +289,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.check_version_and_hash(result);
-                self.create_info = @ptrCast(result.create_info);
+                self.create_info = result.create_info;
             },
             .graphics_pipeline => {
                 const result = try PARSE.parse_graphics_pipeline(
@@ -377,40 +377,41 @@ pub const Entry = struct {
             dep.ptr_to_handle.?.* = dep.entry.handle;
         }
         switch (self.tag) {
-            .application_info => {},
             .sampler => self.handle = try vulkan.create_vk_sampler(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .descriptor_set_layout => self.handle = try vulkan.create_descriptor_set_layout(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .pipeline_layout => self.handle = try vulkan.create_pipeline_layout(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .shader_module => self.handle = try vulkan.create_shader_module(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .render_pass => self.handle = try vulkan.create_render_pass(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .graphics_pipeline => self.handle = try vulkan.create_graphics_pipeline(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
             .compute_pipeline => self.handle = try vulkan.create_compute_pipeline(
                 vk_device,
-                @ptrCast(@alignCast(self.create_info)),
+                @ptrCast(self.create_info),
             ),
-            .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
-                vk_device,
-                @ptrCast(@alignCast(self.create_info)),
-            ),
-            .application_blob_link => {},
+            // TODO for some reason the `create_info` is changed when ptr is cast to the
+            // target type.
+            // .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
+            //     vk_device,
+            //     @ptrCast(self.create_info),
+            // ),
+            else => {},
         }
     }
 

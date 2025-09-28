@@ -107,12 +107,12 @@ pub const Dependency = struct {
 pub const Result = struct {
     version: u32,
     hash: u64,
-    create_info: *const anyopaque,
+    create_info: *align(8) const anyopaque,
 };
 pub const ResultWithDependencies = struct {
     version: u32,
     hash: u64,
-    create_info: *const anyopaque,
+    create_info: *align(8) const anyopaque,
     dependencies: []const Dependency = &.{},
 };
 
@@ -123,13 +123,13 @@ pub fn parse_sampler(
     json_str: []const u8,
 ) Error!Result {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_sampler_create_info = try alloc.create(vk.VkSamplerCreateInfo);
-    vk_sampler_create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+    const create_info = try alloc.create(vk.VkSamplerCreateInfo);
+    create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
 
     var result: Result = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_sampler_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -147,7 +147,7 @@ pub fn parse_sampler(
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            try parse_simple_type(&context, vk_sampler_create_info);
+            try parse_simple_type(&context, create_info);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -182,13 +182,13 @@ pub fn parse_descriptor_set_layout(
     json_str: []const u8,
 ) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_descriptor_set_layout_create_info =
+    const create_info =
         try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
 
     var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_descriptor_set_layout_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -208,7 +208,7 @@ pub fn parse_descriptor_set_layout(
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             try parse_vk_descriptor_set_layout_create_info(
                 &context,
-                vk_descriptor_set_layout_create_info,
+                create_info,
             );
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
@@ -245,12 +245,12 @@ pub fn parse_pipeline_layout(
     json_str: []const u8,
 ) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_pipeline_layout_create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
+    const create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
 
     var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_pipeline_layout_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -270,7 +270,7 @@ pub fn parse_pipeline_layout(
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             try parse_vk_pipeline_layout_create_info(
                 &context,
-                vk_pipeline_layout_create_info,
+                create_info,
             );
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
@@ -315,12 +315,12 @@ pub fn parse_shader_module(
     const shader_code_payload = payload[json_str.len + 1 ..];
 
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_shader_module_create_info = try alloc.create(vk.VkShaderModuleCreateInfo);
+    const create_info = try alloc.create(vk.VkShaderModuleCreateInfo);
 
     var result: Result = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_shader_module_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -340,7 +340,7 @@ pub fn parse_shader_module(
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             try parse_vk_shader_module_create_info(
                 &context,
-                vk_shader_module_create_info,
+                create_info,
                 shader_code_payload,
             );
         } else {
@@ -377,12 +377,12 @@ pub fn parse_render_pass(
     json_str: []const u8,
 ) Error!Result {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_render_pass_create_info = try alloc.create(vk.VkRenderPassCreateInfo);
+    const create_info = try alloc.create(vk.VkRenderPassCreateInfo);
 
     var result: Result = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_render_pass_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -400,7 +400,7 @@ pub fn parse_render_pass(
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
-            try parse_vk_render_pass_create_info(&context, vk_render_pass_create_info);
+            try parse_vk_render_pass_create_info(&context, create_info);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -440,7 +440,7 @@ pub fn parse_compute_pipeline(
     var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
-        .create_info = create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -503,7 +503,7 @@ pub fn parse_raytracing_pipeline(
     var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
-        .create_info = create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -558,12 +558,12 @@ pub fn parse_graphics_pipeline(
     json_str: []const u8,
 ) Error!ResultWithDependencies {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const vk_graphics_pipeline_create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
+    const create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
 
     var result: ResultWithDependencies = .{
         .version = 0,
         .hash = 0,
-        .create_info = vk_graphics_pipeline_create_info,
+        .create_info = @ptrCast(create_info),
     };
 
     var context: Context = .{
@@ -583,7 +583,7 @@ pub fn parse_graphics_pipeline(
             result.hash = try std.fmt.parseInt(u64, ss, 16);
             try parse_vk_graphics_pipeline_create_info(
                 &context,
-                vk_graphics_pipeline_create_info,
+                create_info,
             );
         }
     }
