@@ -214,7 +214,29 @@ pub fn main() !void {
         root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
 
     try parse_threaded(&thread_pool, tread_contexts, root_entries);
+    log.info(@src(), "Parsing results: {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d}", .{
+        Database.Entry.Tag.graphics_pipeline,
+        parsed_graphics.raw,
+        parsed_graphics_failures.raw,
+        Database.Entry.Tag.compute_pipeline,
+        parsed_compute.raw,
+        parsed_compute_failures.raw,
+        Database.Entry.Tag.raytracing_pipeline,
+        parsed_raytracing.raw,
+        parsed_raytracing_failures.raw,
+    });
     try create_threaded(&thread_pool, tread_contexts, root_entries);
+    log.info(@src(), "Creation results: {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d}", .{
+        Database.Entry.Tag.graphics_pipeline,
+        created_graphics.raw,
+        created_graphics_failures.raw,
+        Database.Entry.Tag.compute_pipeline,
+        created_compute.raw,
+        created_compute_failures.raw,
+        Database.Entry.Tag.raytracing_pipeline,
+        created_raytracing.raw,
+        created_raytracing_failures.raw,
+    });
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
@@ -368,97 +390,6 @@ pub fn init_thread_pool_context(
     try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
 }
 
-pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
-    parse_inner(parsing, context, root_entries) catch unreachable;
-}
-pub fn parse_inner(
-    comptime PARSE: type,
-    context: *ThreadContext,
-    root_entries: []RootEntry,
-) !void {
-    var valid: u32 = 0;
-    var invalid: u32 = 0;
-    const start = try std.time.Instant.now();
-
-    var progress = context.progress.start("parsing", root_entries.len);
-    defer progress.end();
-
-    for (root_entries) |*root_entry| {
-        defer _ = context.arena.reset(.retain_capacity);
-        defer progress.completeOne();
-
-        const shared_alloc = context.shared_alloc;
-        const alloc = root_entry.arena.allocator();
-        const tmp_alloc = context.arena.allocator();
-
-        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
-        while (queue.pop()) |tuple| {
-            const curr_entry, const next_dep = tuple;
-
-            switch (curr_entry.parse(
-                PARSE,
-                shared_alloc,
-                alloc,
-                tmp_alloc,
-                context.db,
-            )) {
-                .parsed => {
-                    if (next_dep != curr_entry.dependencies.len) {
-                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
-                        const dep = curr_entry.dependencies[next_dep];
-                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
-                    }
-                },
-                .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
-                .invalid => {
-                    invalid += 1;
-                    for (queue.items) |t| {
-                        const e, _ = t;
-                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
-                        e.decrement_dependencies();
-                    }
-                    break;
-                },
-            }
-        } else {
-            valid += 1;
-        }
-    }
-
-    const now = try std.time.Instant.now();
-    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    const thread_id = std.Thread.getCurrentId();
-    log.info(
-        @src(),
-        "Thread {d}: parsed entries: valid {d:>6} invalid: {d:>6} in {d:>6.3}ms",
-        .{ thread_id, valid, invalid, dt },
-    );
-}
-
-pub fn parse_threaded(
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    root_entries: []RootEntry,
-) !void {
-    var remaining_entries = root_entries;
-    if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
-        for (thread_contexts[1..]) |*tc| {
-            const chunk = remaining_entries[0..chunk_size];
-            remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{ tc, chunk });
-        }
-    }
-    thread_pool.pool.spawnWg(
-        &thread_pool.wait_group,
-        parse,
-        .{ &thread_contexts[0], remaining_entries },
-    );
-    thread_pool.wait_group.wait();
-    thread_pool.wait_group.reset();
-}
-
 pub fn print_time(
     comptime WORK: []const u8,
     start: std.time.Instant,
@@ -493,6 +424,154 @@ pub fn print_time(
         },
     );
 }
+
+var parsed_graphics: std.atomic.Value(u32) = .init(0);
+var parsed_compute: std.atomic.Value(u32) = .init(0);
+var parsed_raytracing: std.atomic.Value(u32) = .init(0);
+var parsed_graphics_failures: std.atomic.Value(u32) = .init(0);
+var parsed_compute_failures: std.atomic.Value(u32) = .init(0);
+var parsed_raytracing_failures: std.atomic.Value(u32) = .init(0);
+
+pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
+    parse_inner(parsing, context, root_entries) catch unreachable;
+}
+pub fn parse_inner(
+    comptime PARSE: type,
+    context: *ThreadContext,
+    root_entries: []RootEntry,
+) !void {
+    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
+    const start = try std.time.Instant.now();
+    defer print_time("parsed", start, &counters);
+
+    var progress = context.progress.start("parsing", root_entries.len);
+    defer progress.end();
+
+    for (root_entries) |*root_entry| {
+        defer _ = context.arena.reset(.retain_capacity);
+        defer progress.completeOne();
+
+        const shared_alloc = context.shared_alloc;
+        const alloc = root_entry.arena.allocator();
+        const tmp_alloc = context.arena.allocator();
+
+        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
+        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
+        while (queue.pop()) |tuple| {
+            const curr_entry, const next_dep = tuple;
+
+            switch (curr_entry.parse(
+                PARSE,
+                shared_alloc,
+                alloc,
+                tmp_alloc,
+                context.db,
+            )) {
+                .parsed => {
+                    counters.getPtr(curr_entry.tag).* += 1;
+                    if (next_dep != curr_entry.dependencies.len) {
+                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
+                        const dep = curr_entry.dependencies[next_dep];
+                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
+                    }
+                },
+                .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
+                .invalid => {
+                    for (queue.items) |t| {
+                        const e, _ = t;
+                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
+                        e.decrement_dependencies();
+                    }
+                    switch (root_entry.entry.tag) {
+                        .graphics_pipeline => {
+                            _ = parsed_graphics_failures.fetchAdd(1, .release);
+                        },
+                        .compute_pipeline => {
+                            _ = parsed_compute_failures.fetchAdd(1, .release);
+                        },
+                        .raytracing_pipeline => {
+                            _ = parsed_raytracing_failures.fetchAdd(1, .release);
+                        },
+                        else => {},
+                    }
+                    if (control_block) |cb| {
+                        switch (root_entry.entry.tag) {
+                            .graphics_pipeline => {
+                                _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
+                            },
+                            .compute_pipeline => {
+                                _ = cb.parsed_compute_failures.fetchAdd(1, .release);
+                            },
+                            .raytracing_pipeline => {
+                                _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
+                            },
+                            else => {},
+                        }
+                    }
+                    break;
+                },
+            }
+        } else {
+            switch (root_entry.entry.tag) {
+                .graphics_pipeline => {
+                    _ = parsed_graphics.fetchAdd(1, .release);
+                },
+                .compute_pipeline => {
+                    _ = parsed_compute.fetchAdd(1, .release);
+                },
+                .raytracing_pipeline => {
+                    _ = parsed_raytracing.fetchAdd(1, .release);
+                },
+                else => {},
+            }
+            if (control_block) |cb| {
+                switch (root_entry.entry.tag) {
+                    .graphics_pipeline => {
+                        _ = cb.parsed_graphics.fetchAdd(1, .release);
+                    },
+                    .compute_pipeline => {
+                        _ = cb.parsed_compute.fetchAdd(1, .release);
+                    },
+                    .raytracing_pipeline => {
+                        _ = cb.parsed_raytracing.fetchAdd(1, .release);
+                    },
+                    else => {},
+                }
+            }
+        }
+    }
+}
+
+pub fn parse_threaded(
+    thread_pool: *ThreadPool,
+    thread_contexts: []align(64) ThreadContext,
+    root_entries: []RootEntry,
+) !void {
+    var remaining_entries = root_entries;
+    if (thread_contexts.len != 1) {
+        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        for (thread_contexts[1..]) |*tc| {
+            const chunk = remaining_entries[0..chunk_size];
+            remaining_entries = remaining_entries[chunk_size..];
+            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{ tc, chunk });
+        }
+    }
+    thread_pool.pool.spawnWg(
+        &thread_pool.wait_group,
+        parse,
+        .{ &thread_contexts[0], remaining_entries },
+    );
+    thread_pool.wait_group.wait();
+    thread_pool.wait_group.reset();
+}
+
+var created_graphics: std.atomic.Value(u32) = .init(0);
+var created_compute: std.atomic.Value(u32) = .init(0);
+var created_raytracing: std.atomic.Value(u32) = .init(0);
+var created_graphics_failures: std.atomic.Value(u32) = .init(0);
+var created_compute_failures: std.atomic.Value(u32) = .init(0);
+var created_raytracing_failures: std.atomic.Value(u32) = .init(0);
+
 pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
     create_inner(context, root_entries) catch unreachable;
 }
@@ -526,26 +605,8 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
                 },
                 .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
                 .created => {
-                    curr_entry.destroy_dependencies(context.vk_device);
-
                     counters.getPtr(curr_entry.tag).* += 1;
-                    if (control_block) |cb| {
-                        switch (curr_entry.tag) {
-                            .graphics_pipeline => {
-                                _ = cb.successful_graphics.fetchAdd(1, .release);
-                                _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
-                            },
-                            .compute_pipeline => {
-                                _ = cb.successful_compute.fetchAdd(1, .release);
-                                _ = cb.parsed_compute_failures.fetchAdd(1, .release);
-                            },
-                            .raytracing_pipeline => {
-                                _ = cb.successful_raytracing.fetchAdd(1, .release);
-                                _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
-                            },
-                            else => {},
-                        }
-                    }
+                    curr_entry.destroy_dependencies(context.vk_device);
                 },
                 .invalid => {
                     curr_entry.destroy_dependencies(context.vk_device);
@@ -554,8 +615,47 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
                         @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
                         e.destroy_dependencies(context.vk_device);
                     }
+                    switch (root_entry.entry.tag) {
+                        .graphics_pipeline => {
+                            _ = created_graphics_failures.fetchAdd(1, .release);
+                        },
+                        .compute_pipeline => {
+                            _ = created_compute_failures.fetchAdd(1, .release);
+                        },
+                        .raytracing_pipeline => {
+                            _ = created_raytracing_failures.fetchAdd(1, .release);
+                        },
+                        else => {},
+                    }
                     break;
                 },
+            }
+        } else {
+            switch (root_entry.entry.tag) {
+                .graphics_pipeline => {
+                    _ = created_graphics.fetchAdd(1, .release);
+                },
+                .compute_pipeline => {
+                    _ = created_compute.fetchAdd(1, .release);
+                },
+                .raytracing_pipeline => {
+                    _ = created_raytracing.fetchAdd(1, .release);
+                },
+                else => {},
+            }
+            if (control_block) |cb| {
+                switch (root_entry.entry.tag) {
+                    .graphics_pipeline => {
+                        _ = cb.successful_graphics.fetchAdd(1, .release);
+                    },
+                    .compute_pipeline => {
+                        _ = cb.successful_compute.fetchAdd(1, .release);
+                    },
+                    .raytracing_pipeline => {
+                        _ = cb.successful_raytracing.fetchAdd(1, .release);
+                    },
+                    else => {},
+                }
             }
         }
     }
