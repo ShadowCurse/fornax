@@ -525,25 +525,6 @@ pub const FileEntry = extern struct {
     }
 };
 
-// TODO this is only called during parsing phase, so no handles can be built at that
-// time, so what is the point of having a `handle` return type?
-pub const GetHandleResult = union(enum) {
-    handle: *anyopaque,
-    dependency,
-};
-pub fn get_handle(self: *const Database, tag: Entry.Tag, hash: u64) ?GetHandleResult {
-    const entries = self.entries.getPtrConst(tag);
-    const entry = entries.getPtr(hash) orelse {
-        log.debug(@src(), "Cannot get handle for the entry: {t} 0x{x:0>16}", .{ tag, hash });
-        return null;
-    };
-    const handle = @atomicLoad(?*anyopaque, &entry.handle, .seq_cst);
-    if (handle) |h|
-        return .{ .handle = h }
-    else
-        return .dependency;
-}
-
 pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8) !Database {
     log.info(@src(), "Openning database as path: {s}", .{path});
     // const file = try std.fs.openFileAbsolute(path, .{});

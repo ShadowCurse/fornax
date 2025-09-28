@@ -891,20 +891,13 @@ fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*
     if (hash == 0)
         location.* = null
     else {
-        const handle = context.db.get_handle(tag, hash) orelse {
-            return error.NoHandle;
+        if (context.db.entries.getPtrConst(tag).getPtr(hash) == null) return error.NoHandle;
+        const dep: Dependency = .{
+            .tag = tag,
+            .hash = hash,
+            .ptr_to_handle = location,
         };
-        switch (handle) {
-            .handle => |h| location.* = h,
-            .dependency => {
-                const dep: Dependency = .{
-                    .tag = tag,
-                    .hash = hash,
-                    .ptr_to_handle = location,
-                };
-                try context.dependencies.append(context.tmp_alloc, dep);
-            },
-        }
+        try context.dependencies.append(context.tmp_alloc, dep);
     }
 }
 
@@ -918,26 +911,19 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
         if (hash == 0) {
             try tmp.append(context.tmp_alloc, null);
         } else {
-            const handle = context.db.get_handle(tag, hash) orelse {
-                return error.NoHandle;
+            if (context.db.entries.getPtrConst(tag).getPtr(hash) == null) return error.NoHandle;
+            denpendencies_found += 1;
+            var dep: Dependency = .{
+                .tag = tag,
+                .hash = hash,
             };
-            switch (handle) {
-                .handle => |h| try tmp.append(context.tmp_alloc, @ptrCast(h)),
-                .dependency => {
-                    denpendencies_found += 1;
-                    var dep: Dependency = .{
-                        .tag = tag,
-                        .hash = hash,
-                    };
-                    // Initially store the offset into the tmp array for the
-                    // handle we need. Need to do this type hack to allow any
-                    // number to be stored in the "8 byte" aligned pointer
-                    const ptr_as_number: *usize = @ptrCast(&dep.ptr_to_handle);
-                    ptr_as_number.* = tmp.items.len;
-                    try tmp.append(context.tmp_alloc, null);
-                    try context.dependencies.append(context.tmp_alloc, dep);
-                },
-            }
+            // Initially store the offset into the tmp array for the
+            // handle we need. Need to do this type hack to allow any
+            // number to be stored in the "8 byte" aligned pointer
+            const ptr_as_number: *usize = @ptrCast(&dep.ptr_to_handle);
+            ptr_as_number.* = tmp.items.len;
+            try tmp.append(context.tmp_alloc, null);
+            try context.dependencies.append(context.tmp_alloc, dep);
         }
     }
     const final_array = try context.alloc.dupe(T, tmp.items);
