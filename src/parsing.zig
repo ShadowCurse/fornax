@@ -95,7 +95,7 @@ test "parse_application_info" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_application_info(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
+    try std.testing.expectEqual(69, result.version);
 }
 
 pub const Dependency = struct {
@@ -171,8 +171,8 @@ test "parse_sampler" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_sampler(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_descriptor_set_layout(
@@ -234,8 +234,8 @@ test "parse_descriptor_set_layout" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_descriptor_set_layout(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_pipeline_layout(
@@ -296,8 +296,8 @@ test "parse_pipeline_layout" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_pipeline_layout(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_shader_module(
@@ -366,8 +366,8 @@ test "parse_shader_module" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_shader_module(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_render_pass(
@@ -424,8 +424,8 @@ test "parse_render_pass" {
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
     const result = try parse_render_pass(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_compute_pipeline(
@@ -480,25 +480,15 @@ test "parse_compute_pipeline" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var db: Database = .{
+    const db: Database = .{
         .file = undefined,
         .entries = .initFill(.empty),
         .arena = arena,
     };
-    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
-        .tag = undefined,
-        .hash = undefined,
-        .payload_flag = undefined,
-        .payload_crc = undefined,
-        .payload_stored_size = undefined,
-        .payload_decompressed_size = undefined,
-        .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
 
     const result = try parse_compute_pipeline(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_raytracing_pipeline(
@@ -550,25 +540,15 @@ test "parse_raytracing_pipeline" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var db: Database = .{
+    const db: Database = .{
         .file = undefined,
         .entries = .initFill(.empty),
         .arena = arena,
     };
-    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
-        .tag = undefined,
-        .hash = undefined,
-        .payload_flag = undefined,
-        .payload_crc = undefined,
-        .payload_stored_size = undefined,
-        .payload_decompressed_size = undefined,
-        .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
-    });
 
     const result = try parse_raytracing_pipeline(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 pub fn parse_graphics_pipeline(
@@ -630,8 +610,8 @@ test "parse_graphics_pipeline" {
     };
 
     const result = try parse_graphics_pipeline(alloc, alloc, &db, json);
-    try std.testing.expectEqual(result.version, 69);
-    try std.testing.expectEqual(result.hash, 0x1111111111111111);
+    try std.testing.expectEqual(69, result.version);
+    try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
 fn print_unexpected_token(token: std.json.Token) void {
@@ -1365,13 +1345,16 @@ test "test_parse_vk_application_info" {
     var item: vk.VkApplicationInfo = undefined;
     try parse_vk_application_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_APPLICATION_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqualSlices(u8, std.mem.span(item.pApplicationName), "APP_NAME");
-    try std.testing.expectEqual(item.applicationVersion, 69);
-    try std.testing.expectEqualSlices(u8, std.mem.span(item.pEngineName), "ENGINE_NAME");
-    try std.testing.expectEqual(item.engineVersion, 69);
-    try std.testing.expectEqual(item.apiVersion, 69);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_APPLICATION_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqualSlices(u8, "APP_NAME", std.mem.span(item.pApplicationName));
+    try std.testing.expectEqual(69, item.applicationVersion);
+    try std.testing.expectEqualSlices(u8, "ENGINE_NAME", std.mem.span(item.pEngineName));
+    try std.testing.expectEqual(69, item.engineVersion);
+    try std.testing.expectEqual(69, item.apiVersion);
 }
 
 fn parse_vk_physical_device_features2(
@@ -1413,8 +1396,11 @@ test "test_parse_vk_physical_device_features2" {
     var item: vk.VkPhysicalDeviceFeatures2 = undefined;
     try parse_vk_physical_device_features2(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
-    try std.testing.expectEqual(item.pNext, null);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(item.features, vk.VkPhysicalDeviceFeatures{
         .robustBufferAccess = 69,
     });
@@ -1464,24 +1450,27 @@ test "test_parse_vk_sampler_create_info" {
     var item: vk.VkSamplerCreateInfo = undefined;
     try parse_vk_sampler_create_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.magFilter, 69);
-    try std.testing.expectEqual(item.minFilter, 69);
-    try std.testing.expectEqual(item.mipmapMode, 69);
-    try std.testing.expectEqual(item.addressModeU, 69);
-    try std.testing.expectEqual(item.addressModeV, 69);
-    try std.testing.expectEqual(item.addressModeW, 69);
-    try std.testing.expectEqual(item.mipLodBias, 69);
-    try std.testing.expectEqual(item.anisotropyEnable, 69);
-    try std.testing.expectEqual(item.maxAnisotropy, 69);
-    try std.testing.expectEqual(item.compareEnable, 69);
-    try std.testing.expectEqual(item.compareOp, 69);
-    try std.testing.expectEqual(item.minLod, 69);
-    try std.testing.expectEqual(item.maxLod, 69);
-    try std.testing.expectEqual(item.borderColor, 69);
-    try std.testing.expectEqual(item.unnormalizedCoordinates, 69);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.magFilter);
+    try std.testing.expectEqual(69, item.minFilter);
+    try std.testing.expectEqual(69, item.mipmapMode);
+    try std.testing.expectEqual(69, item.addressModeU);
+    try std.testing.expectEqual(69, item.addressModeV);
+    try std.testing.expectEqual(69, item.addressModeW);
+    try std.testing.expectEqual(69, item.mipLodBias);
+    try std.testing.expectEqual(69, item.anisotropyEnable);
+    try std.testing.expectEqual(69, item.maxAnisotropy);
+    try std.testing.expectEqual(69, item.compareEnable);
+    try std.testing.expectEqual(69, item.compareOp);
+    try std.testing.expectEqual(69, item.minLod);
+    try std.testing.expectEqual(69, item.maxLod);
+    try std.testing.expectEqual(69, item.borderColor);
+    try std.testing.expectEqual(69, item.unnormalizedCoordinates);
 }
 
 fn parse_vk_descriptor_set_layout_create_info(
@@ -1536,9 +1525,9 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.bindingCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.bindingCount);
     try std.testing.expect(item.pBindings != null);
 }
 
@@ -1611,11 +1600,18 @@ test "test_parse_vk_descriptor_set_layout_binding" {
     var item: vk.VkDescriptorSetLayoutBinding = undefined;
     try parse_vk_descriptor_set_layout_binding(&context, &item);
 
-    try std.testing.expectEqual(item.binding, 69);
-    try std.testing.expectEqual(item.descriptorType, 69);
-    try std.testing.expectEqual(item.descriptorCount, 69);
-    try std.testing.expectEqual(item.stageFlags, 69);
+    try std.testing.expectEqual(69, item.binding);
+    try std.testing.expectEqual(69, item.descriptorType);
+    try std.testing.expectEqual(69, item.descriptorCount);
+    try std.testing.expectEqual(69, item.stageFlags);
     try std.testing.expect(item.pImmutableSamplers != null);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.pImmutableSamplers[0]));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.sampler, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.pImmutableSamplers[0]));
 }
 
 fn parse_vk_pipeline_layout_create_info(
@@ -1686,13 +1682,23 @@ test "test_parse_vk_pipeline_layout_create_info" {
     var item: vk.VkPipelineLayoutCreateInfo = undefined;
     try parse_vk_pipeline_layout_create_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.setLayoutCount, 1);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.setLayoutCount);
     try std.testing.expect(item.pSetLayouts != null);
-    try std.testing.expectEqual(item.pushConstantRangeCount, 1);
+    try std.testing.expectEqual(1, item.pushConstantRangeCount);
     try std.testing.expect(item.pPushConstantRanges != null);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.pSetLayouts[0]));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.descriptor_set_layout, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.pSetLayouts[0]));
 }
 
 fn parse_vk_push_constant_range(
@@ -1725,9 +1731,9 @@ test "test_parse_vk_push_constant_range" {
     var item: vk.VkPushConstantRange = undefined;
     try parse_vk_push_constant_range(&context, &item);
 
-    try std.testing.expectEqual(item.stageFlags, 69);
-    try std.testing.expectEqual(item.offset, 69);
-    try std.testing.expectEqual(item.size, 69);
+    try std.testing.expectEqual(69, item.stageFlags);
+    try std.testing.expectEqual(69, item.offset);
+    try std.testing.expectEqual(69, item.size);
 }
 
 fn parse_vk_shader_module_create_info(
@@ -1818,10 +1824,13 @@ test "test_parse_vk_shader_module_create_info" {
     var item: vk.VkShaderModuleCreateInfo = undefined;
     try parse_vk_shader_module_create_info(&context, &item, code);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.codeSize, 1);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.codeSize);
     try std.testing.expect(item.pCode != null);
 }
 
@@ -1889,14 +1898,17 @@ test "test_parse_vk_render_pass_create_info" {
     var item: vk.VkRenderPassCreateInfo = undefined;
     try parse_vk_render_pass_create_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.attachmentCount, 1);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.attachmentCount);
     try std.testing.expect(item.pAttachments != null);
-    try std.testing.expectEqual(item.subpassCount, 1);
+    try std.testing.expectEqual(1, item.subpassCount);
     try std.testing.expect(item.pSubpasses != null);
-    try std.testing.expectEqual(item.dependencyCount, 1);
+    try std.testing.expectEqual(1, item.dependencyCount);
     try std.testing.expect(item.pDependencies != null);
 }
 
@@ -1934,13 +1946,13 @@ test "test_parse_vk_subpass_dependency" {
     var item: vk.VkSubpassDependency = undefined;
     try parse_vk_subpass_dependency(&context, &item);
 
-    try std.testing.expectEqual(item.srcSubpass, 69);
-    try std.testing.expectEqual(item.dstSubpass, 69);
-    try std.testing.expectEqual(item.srcStageMask, 69);
-    try std.testing.expectEqual(item.dstStageMask, 69);
-    try std.testing.expectEqual(item.srcAccessMask, 69);
-    try std.testing.expectEqual(item.dstAccessMask, 69);
-    try std.testing.expectEqual(item.dependencyFlags, 69);
+    try std.testing.expectEqual(69, item.srcSubpass);
+    try std.testing.expectEqual(69, item.dstSubpass);
+    try std.testing.expectEqual(69, item.srcStageMask);
+    try std.testing.expectEqual(69, item.dstStageMask);
+    try std.testing.expectEqual(69, item.srcAccessMask);
+    try std.testing.expectEqual(69, item.dstAccessMask);
+    try std.testing.expectEqual(69, item.dependencyFlags);
 }
 
 fn parse_vk_attachment_description(
@@ -1979,15 +1991,15 @@ test "test_parse_vk_attachment_description" {
     var item: vk.VkAttachmentDescription = undefined;
     try parse_vk_attachment_description(&context, &item);
 
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.format, 69);
-    try std.testing.expectEqual(item.samples, 69);
-    try std.testing.expectEqual(item.loadOp, 69);
-    try std.testing.expectEqual(item.storeOp, 69);
-    try std.testing.expectEqual(item.stencilLoadOp, 69);
-    try std.testing.expectEqual(item.stencilStoreOp, 69);
-    try std.testing.expectEqual(item.initialLayout, 69);
-    try std.testing.expectEqual(item.finalLayout, 69);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.format);
+    try std.testing.expectEqual(69, item.samples);
+    try std.testing.expectEqual(69, item.loadOp);
+    try std.testing.expectEqual(69, item.storeOp);
+    try std.testing.expectEqual(69, item.stencilLoadOp);
+    try std.testing.expectEqual(69, item.stencilStoreOp);
+    try std.testing.expectEqual(69, item.initialLayout);
+    try std.testing.expectEqual(69, item.finalLayout);
 }
 
 fn parse_vk_subpass_description(
@@ -2070,15 +2082,15 @@ test "test_parse_vk_subpass_description" {
     var item: vk.VkSubpassDescription = undefined;
     try parse_vk_subpass_description(&context, &item);
 
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.pipelineBindPoint, 69);
-    try std.testing.expectEqual(item.inputAttachmentCount, 1);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.pipelineBindPoint);
+    try std.testing.expectEqual(1, item.inputAttachmentCount);
     try std.testing.expect(item.pInputAttachments != null);
-    try std.testing.expectEqual(item.colorAttachmentCount, 1);
+    try std.testing.expectEqual(1, item.colorAttachmentCount);
     try std.testing.expect(item.pColorAttachments != null);
     try std.testing.expect(item.pResolveAttachments != null);
     try std.testing.expect(item.pDepthStencilAttachment != null);
-    try std.testing.expectEqual(item.preserveAttachmentCount, 1);
+    try std.testing.expectEqual(1, item.preserveAttachmentCount);
     try std.testing.expect(item.pPreserveAttachments != null);
 }
 
@@ -2111,8 +2123,8 @@ test "test_parse_vk_attachment_reference" {
     var item: vk.VkAttachmentReference = undefined;
     try parse_vk_attachment_reference(&context, &item);
 
-    try std.testing.expectEqual(item.attachment, 69);
-    try std.testing.expectEqual(item.layout, 69);
+    try std.testing.expectEqual(69, item.attachment);
+    try std.testing.expectEqual(69, item.layout);
 }
 
 fn parse_vk_graphics_pipeline_create_info(
@@ -2217,8 +2229,8 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         \\  "depthStencilState": {},
         \\  "colorBlendState": {},
         \\  "dynamicState": {},
-        \\  "layout": "2222222222222222",
-        \\  "renderPass": "3333333333333333",
+        \\  "layout": "1111111111111111",
+        \\  "renderPass": "2222222222222222",
         \\  "subpass": 69,
         \\  "basePipelineHandle": "0000000000000000",
         \\  "basePipelineIndex": 69
@@ -2228,7 +2240,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     const alloc = arena.allocator();
 
     var db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x2222222222222222, .{
+    try db.entries.getPtr(.pipeline_layout).put(alloc, 0x1111111111111111, .{
         .tag = undefined,
         .hash = undefined,
         .payload_flag = undefined,
@@ -2238,7 +2250,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_file_offset = undefined,
         .handle = @ptrFromInt(0x69),
     });
-    try db.entries.getPtr(.render_pass).put(alloc, 0x3333333333333333, .{
+    try db.entries.getPtr(.render_pass).put(alloc, 0x2222222222222222, .{
         .tag = undefined,
         .hash = undefined,
         .payload_flag = undefined,
@@ -2259,10 +2271,13 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     var item: vk.VkGraphicsPipelineCreateInfo = undefined;
     try parse_vk_graphics_pipeline_create_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.stageCount, 1);
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
     try std.testing.expect(item.pVertexInputState != null);
     try std.testing.expect(item.pInputAssemblyState != null);
@@ -2273,11 +2288,21 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try std.testing.expect(item.pDepthStencilState != null);
     try std.testing.expect(item.pColorBlendState != null);
     try std.testing.expect(item.pDynamicState != null);
-    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
-    try std.testing.expectEqual(@intFromPtr(item.renderPass), 0x69);
-    try std.testing.expectEqual(item.subpass, 69);
-    try std.testing.expectEqual(item.basePipelineHandle, null);
-    try std.testing.expectEqual(item.basePipelineIndex, 69);
+    try std.testing.expectEqual(69, item.subpass);
+    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(69, item.basePipelineIndex);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.layout));
+    try std.testing.expectEqual(0, @intFromPtr(item.renderPass));
+    try std.testing.expectEqual(2, context.dependencies.items.len);
+    try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
+    try std.testing.expectEqual(.render_pass, context.dependencies.items[1].tag);
+    try std.testing.expectEqual(0x2222222222222222, context.dependencies.items[1].hash);
+    context.dependencies.items[1].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.renderPass));
 }
 
 fn parse_vk_pipeline_shader_stage_create_info(
@@ -2333,7 +2358,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = undefined,
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
     var context = Context{
@@ -2347,15 +2372,21 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
     try parse_vk_pipeline_shader_stage_create_info(&context, &item);
 
     try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)),
         item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.stage, 69);
-    try std.testing.expectEqual(@intFromPtr(item.module), 0x69);
-    try std.testing.expectEqualSlices(u8, std.mem.span(item.pName), "NAME");
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.stage);
+    try std.testing.expectEqualSlices(u8, "NAME", std.mem.span(item.pName));
     try std.testing.expect(item.pSpecializationInfo != null);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.module));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.shader_module, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.module));
 }
 
 fn parse_vk_pipeline_vertex_input_state_create_info(
@@ -2416,14 +2447,14 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
     try parse_vk_pipeline_vertex_input_state_create_info(&context, &item);
 
     try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)),
         item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.vertexBindingDescriptionCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.vertexBindingDescriptionCount);
     try std.testing.expect(item.pVertexBindingDescriptions != null);
-    try std.testing.expectEqual(item.vertexAttributeDescriptionCount, 1);
+    try std.testing.expectEqual(1, item.vertexAttributeDescriptionCount);
     try std.testing.expect(item.pVertexAttributeDescriptions != null);
 }
 
@@ -2462,10 +2493,10 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.topology, 69);
-    try std.testing.expectEqual(item.primitiveRestartEnable, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.topology);
+    try std.testing.expectEqual(69, item.primitiveRestartEnable);
 }
 
 fn parse_vk_pipeline_tessellation_state_create_info(
@@ -2502,9 +2533,9 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.patchControlPoints, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.patchControlPoints);
 }
 
 fn parse_vk_pipeline_viewport_state_create_info(
@@ -2576,11 +2607,11 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.viewportCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.viewportCount);
     try std.testing.expect(item.pViewports != null);
-    try std.testing.expectEqual(item.scissorCount, 1);
+    try std.testing.expectEqual(1, item.scissorCount);
     try std.testing.expect(item.pScissors != null);
 }
 
@@ -2627,18 +2658,18 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.depthClampEnable, 69);
-    try std.testing.expectEqual(item.rasterizerDiscardEnable, 69);
-    try std.testing.expectEqual(item.polygonMode, 69);
-    try std.testing.expectEqual(item.cullMode, 69);
-    try std.testing.expectEqual(item.frontFace, 69);
-    try std.testing.expectEqual(item.depthBiasEnable, 69);
-    try std.testing.expectEqual(item.depthBiasConstantFactor, 69);
-    try std.testing.expectEqual(item.depthBiasClamp, 69);
-    try std.testing.expectEqual(item.depthBiasSlopeFactor, 69);
-    try std.testing.expectEqual(item.lineWidth, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.depthClampEnable);
+    try std.testing.expectEqual(69, item.rasterizerDiscardEnable);
+    try std.testing.expectEqual(69, item.polygonMode);
+    try std.testing.expectEqual(69, item.cullMode);
+    try std.testing.expectEqual(69, item.frontFace);
+    try std.testing.expectEqual(69, item.depthBiasEnable);
+    try std.testing.expectEqual(69, item.depthBiasConstantFactor);
+    try std.testing.expectEqual(69, item.depthBiasClamp);
+    try std.testing.expectEqual(69, item.depthBiasSlopeFactor);
+    try std.testing.expectEqual(69, item.lineWidth);
 }
 
 fn parse_vk_pipeline_multisample_state_create_info(
@@ -2710,14 +2741,14 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.rasterizationSamples, 69);
-    try std.testing.expectEqual(item.sampleShadingEnable, 69);
-    try std.testing.expectEqual(item.minSampleShading, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.rasterizationSamples);
+    try std.testing.expectEqual(69, item.sampleShadingEnable);
+    try std.testing.expectEqual(69, item.minSampleShading);
     try std.testing.expect(item.pSampleMask != null);
-    try std.testing.expectEqual(item.alphaToCoverageEnable, 69);
-    try std.testing.expectEqual(item.alphaToOneEnable, 69);
+    try std.testing.expectEqual(69, item.alphaToCoverageEnable);
+    try std.testing.expectEqual(69, item.alphaToOneEnable);
 }
 
 fn parse_vk_stencil_op_state(
@@ -2754,13 +2785,13 @@ test "test_parse_vk_stencil_op_state" {
     var item: vk.VkStencilOpState = undefined;
     try parse_vk_stencil_op_state(&context, &item);
 
-    try std.testing.expectEqual(item.failOp, 69);
-    try std.testing.expectEqual(item.passOp, 69);
-    try std.testing.expectEqual(item.depthFailOp, 69);
-    try std.testing.expectEqual(item.compareOp, 69);
-    try std.testing.expectEqual(item.compareMask, 69);
-    try std.testing.expectEqual(item.writeMask, 69);
-    try std.testing.expectEqual(item.reference, 69);
+    try std.testing.expectEqual(69, item.failOp);
+    try std.testing.expectEqual(69, item.passOp);
+    try std.testing.expectEqual(69, item.depthFailOp);
+    try std.testing.expectEqual(69, item.compareOp);
+    try std.testing.expectEqual(69, item.compareMask);
+    try std.testing.expectEqual(69, item.writeMask);
+    try std.testing.expectEqual(69, item.reference);
 }
 
 fn parse_vk_pipeline_depth_stencil_state_create_info(
@@ -2840,17 +2871,17 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.depthTestEnable, 69);
-    try std.testing.expectEqual(item.depthWriteEnable, 69);
-    try std.testing.expectEqual(item.depthCompareOp, 69);
-    try std.testing.expectEqual(item.depthBoundsTestEnable, 69);
-    try std.testing.expectEqual(item.stencilTestEnable, 69);
-    try std.testing.expectEqual(item.front, vk.VkStencilOpState{});
-    try std.testing.expectEqual(item.back, vk.VkStencilOpState{});
-    try std.testing.expectEqual(item.minDepthBounds, 69);
-    try std.testing.expectEqual(item.maxDepthBounds, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.depthTestEnable);
+    try std.testing.expectEqual(69, item.depthWriteEnable);
+    try std.testing.expectEqual(69, item.depthCompareOp);
+    try std.testing.expectEqual(69, item.depthBoundsTestEnable);
+    try std.testing.expectEqual(69, item.stencilTestEnable);
+    try std.testing.expectEqual(vk.VkStencilOpState{}, item.front);
+    try std.testing.expectEqual(vk.VkStencilOpState{}, item.back);
+    try std.testing.expectEqual(69, item.minDepthBounds);
+    try std.testing.expectEqual(69, item.maxDepthBounds);
 }
 
 fn parse_vk_pipeline_color_blend_state_create_info(
@@ -2926,13 +2957,13 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.logicOpEnable, 69);
-    try std.testing.expectEqual(item.logicOp, 69);
-    try std.testing.expectEqual(item.attachmentCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.logicOpEnable);
+    try std.testing.expectEqual(69, item.logicOp);
+    try std.testing.expectEqual(1, item.attachmentCount);
     try std.testing.expect(item.pAttachments != null);
-    try std.testing.expectEqual(item.blendConstants, [4]f32{ 69.69, 69.69, 69.69, 69.69 });
+    try std.testing.expectEqual([4]f32{ 69.69, 69.69, 69.69, 69.69 }, item.blendConstants);
 }
 
 fn parse_vk_pipeline_dynamic_state_create_info(
@@ -2985,9 +3016,9 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.dynamicStateCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.dynamicStateCount);
     try std.testing.expect(item.pDynamicStates != null);
 }
 
@@ -3022,10 +3053,10 @@ test "test_parse_vk_vertex_input_attribute_description" {
     var item: vk.VkVertexInputAttributeDescription = undefined;
     try parse_vk_vertex_input_attribute_description(&context, &item);
 
-    try std.testing.expectEqual(item.location, 69);
-    try std.testing.expectEqual(item.binding, 69);
-    try std.testing.expectEqual(item.format, 69);
-    try std.testing.expectEqual(item.offset, 69);
+    try std.testing.expectEqual(69, item.location);
+    try std.testing.expectEqual(69, item.binding);
+    try std.testing.expectEqual(69, item.format);
+    try std.testing.expectEqual(69, item.offset);
 }
 
 fn parse_vk_vertex_input_binding_description(
@@ -3058,9 +3089,9 @@ test "test_parse_vk_vertex_input_binding_description" {
     var item: vk.VkVertexInputBindingDescription = undefined;
     try parse_vk_vertex_input_binding_description(&context, &item);
 
-    try std.testing.expectEqual(item.binding, 69);
-    try std.testing.expectEqual(item.stride, 69);
-    try std.testing.expectEqual(item.inputRate, 69);
+    try std.testing.expectEqual(69, item.binding);
+    try std.testing.expectEqual(69, item.stride);
+    try std.testing.expectEqual(69, item.inputRate);
 }
 
 fn parse_vk_pipeline_color_blend_attachment_state(
@@ -3098,14 +3129,14 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
     var item: vk.VkPipelineColorBlendAttachmentState = undefined;
     try parse_vk_pipeline_color_blend_attachment_state(&context, &item);
 
-    try std.testing.expectEqual(item.blendEnable, 69);
-    try std.testing.expectEqual(item.srcColorBlendFactor, 69);
-    try std.testing.expectEqual(item.dstColorBlendFactor, 69);
-    try std.testing.expectEqual(item.colorBlendOp, 69);
-    try std.testing.expectEqual(item.srcAlphaBlendFactor, 69);
-    try std.testing.expectEqual(item.dstAlphaBlendFactor, 69);
-    try std.testing.expectEqual(item.alphaBlendOp, 69);
-    try std.testing.expectEqual(item.colorWriteMask, 69);
+    try std.testing.expectEqual(69, item.blendEnable);
+    try std.testing.expectEqual(69, item.srcColorBlendFactor);
+    try std.testing.expectEqual(69, item.dstColorBlendFactor);
+    try std.testing.expectEqual(69, item.colorBlendOp);
+    try std.testing.expectEqual(69, item.srcAlphaBlendFactor);
+    try std.testing.expectEqual(69, item.dstAlphaBlendFactor);
+    try std.testing.expectEqual(69, item.alphaBlendOp);
+    try std.testing.expectEqual(69, item.colorWriteMask);
 }
 
 fn parse_vk_viewport(
@@ -3141,12 +3172,12 @@ test "test_parse_vk_viewport" {
     var item: vk.VkViewport = undefined;
     try parse_vk_viewport(&context, &item);
 
-    try std.testing.expectEqual(item.x, 69.69);
-    try std.testing.expectEqual(item.y, 69.69);
-    try std.testing.expectEqual(item.width, 69.69);
-    try std.testing.expectEqual(item.height, 69.69);
-    try std.testing.expectEqual(item.minDepth, 69.69);
-    try std.testing.expectEqual(item.maxDepth, 69.69);
+    try std.testing.expectEqual(69.69, item.x);
+    try std.testing.expectEqual(69.69, item.y);
+    try std.testing.expectEqual(69.69, item.width);
+    try std.testing.expectEqual(69.69, item.height);
+    try std.testing.expectEqual(69.69, item.minDepth);
+    try std.testing.expectEqual(69.69, item.maxDepth);
 }
 
 fn parse_vk_rect_2d(
@@ -3197,10 +3228,10 @@ test "test_parse_vk_rect_2d" {
     var item: vk.VkRect2D = undefined;
     try parse_vk_rect_2d(&context, &item);
 
-    try std.testing.expectEqual(item.offset.x, 69);
-    try std.testing.expectEqual(item.offset.y, 69);
-    try std.testing.expectEqual(item.extent.width, 69);
-    try std.testing.expectEqual(item.extent.height, 69);
+    try std.testing.expectEqual(69, item.offset.x);
+    try std.testing.expectEqual(69, item.offset.y);
+    try std.testing.expectEqual(69, item.extent.width);
+    try std.testing.expectEqual(69, item.extent.height);
 }
 
 fn parse_vk_specialization_map_entry(
@@ -3233,9 +3264,9 @@ test "test_parse_vk_specialization_map_entry" {
     var item: vk.VkSpecializationMapEntry = undefined;
     try parse_vk_specialization_map_entry(&context, &item);
 
-    try std.testing.expectEqual(item.constantID, 69);
-    try std.testing.expectEqual(item.offset, 69);
-    try std.testing.expectEqual(item.size, 69);
+    try std.testing.expectEqual(69, item.constantID);
+    try std.testing.expectEqual(69, item.offset);
+    try std.testing.expectEqual(69, item.size);
 }
 
 fn parse_vk_specialization_info(
@@ -3291,9 +3322,9 @@ test "test_parse_vk_specialization_info" {
     var item: vk.VkSpecializationInfo = undefined;
     try parse_vk_specialization_info(&context, &item);
 
-    try std.testing.expectEqual(item.mapEntryCount, 1);
+    try std.testing.expectEqual(1, item.mapEntryCount);
     try std.testing.expect(item.pMapEntries != null);
-    try std.testing.expectEqual(item.dataSize, 69);
+    try std.testing.expectEqual(69, item.dataSize);
     try std.testing.expect(item.pData != null);
 }
 
@@ -3352,7 +3383,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = undefined,
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -3366,15 +3397,24 @@ test "test_parse_vk_compute_pipeline_create_info" {
     var item: vk.VkComputePipelineCreateInfo = undefined;
     try parse_vk_compute_pipeline_create_info(&context, &item);
 
-    try std.testing.expectEqual(item.sType, vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO);
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.stage, vk.VkPipelineShaderStageCreateInfo{
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(vk.VkPipelineShaderStageCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-    });
-    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
-    try std.testing.expectEqual(item.basePipelineHandle, null);
-    try std.testing.expectEqual(item.basePipelineIndex, 69);
+    }, item.stage);
+    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(69, item.basePipelineIndex);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.layout));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
 }
 
 fn parse_vk_raytracing_pipeline_create_info(
@@ -3482,19 +3522,25 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.flags, 69);
-    try std.testing.expectEqual(item.stageCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
-    try std.testing.expectEqual(item.groupCount, 1);
+    try std.testing.expectEqual(1, item.groupCount);
     try std.testing.expect(item.pGroups != null);
-    try std.testing.expectEqual(item.maxPipelineRayRecursionDepth, 69);
+    try std.testing.expectEqual(69, item.maxPipelineRayRecursionDepth);
     try std.testing.expect(item.pLibraryInfo != null);
     try std.testing.expect(item.pLibraryInterface != null);
     try std.testing.expect(item.pDynamicState != null);
-    try std.testing.expectEqual(@intFromPtr(item.layout), 0x69);
-    try std.testing.expectEqual(item.basePipelineHandle, null);
-    try std.testing.expectEqual(item.basePipelineIndex, 69);
+    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(69, item.basePipelineIndex);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.layout));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
 }
 
 fn parse_vk_ray_tracing_shader_group_create_info(
@@ -3534,13 +3580,13 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.type, 69);
-    try std.testing.expectEqual(item.generalShader, 69);
-    try std.testing.expectEqual(item.closestHitShader, 69);
-    try std.testing.expectEqual(item.anyHitShader, 69);
-    try std.testing.expectEqual(item.intersectionShader, 69);
-    try std.testing.expectEqual(item.pShaderGroupCaptureReplayHandle, null);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.type);
+    try std.testing.expectEqual(69, item.generalShader);
+    try std.testing.expectEqual(69, item.closestHitShader);
+    try std.testing.expectEqual(69, item.anyHitShader);
+    try std.testing.expectEqual(69, item.intersectionShader);
+    try std.testing.expectEqual(null, item.pShaderGroupCaptureReplayHandle);
 }
 
 fn parse_vk_pipeline_library_create_info(
@@ -3598,12 +3644,19 @@ test "test_parse_vk_pipeline_library_create_info" {
     try parse_vk_pipeline_library_create_info(&context, &item);
 
     try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR)),
         item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.libraryCount, 1);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(1, item.libraryCount);
     try std.testing.expect(item.pLibraries != null);
+
+    try std.testing.expectEqual(0, @intFromPtr(item.pLibraries[0]));
+    try std.testing.expectEqual(1, context.dependencies.items.len);
+    try std.testing.expectEqual(.raytracing_pipeline, context.dependencies.items[0].tag);
+    try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
+    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
+    try std.testing.expectEqual(0x69, @intFromPtr(item.pLibraries[0]));
 }
 
 fn parse_vk_ray_tracing_pipeline_interface_create_info(
@@ -3640,7 +3693,7 @@ test "test_parse_vk_ray_tracing_pipeline_interface_create_info" {
         item.sType,
         vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
     );
-    try std.testing.expectEqual(item.pNext, null);
-    try std.testing.expectEqual(item.maxPipelineRayPayloadSize, 69);
-    try std.testing.expectEqual(item.maxPipelineRayHitAttributeSize, 69);
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.maxPipelineRayPayloadSize);
+    try std.testing.expectEqual(69, item.maxPipelineRayHitAttributeSize);
 }
