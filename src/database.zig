@@ -229,7 +229,7 @@ pub const Entry = struct {
         result: *const parsing.ResultWithDependencies,
     ) !void {
         try self.check_version_and_hash(result);
-        self.create_info = @ptrCast(result.create_info);
+        self.create_info = result.create_info;
         const dependencies = try alloc.alloc(Dependency, result.dependencies.len);
         for (result.dependencies, 0..) |dep, i| {
             const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
@@ -367,7 +367,15 @@ pub const Entry = struct {
     }
 
     fn create_inner(self: *Entry, vk_device: vk.VkDevice) !void {
-        for (self.dependencies) |dep| dep.ptr_to_handle.?.* = dep.entry.handle;
+        for (self.dependencies, 0..) |dep, i| {
+            log.assert(
+                @src(),
+                dep.entry.handle != null,
+                "Trying to patch create_info with empty handle of dependency {d} for {t} 0x{x:0>16}",
+                .{ i, self.tag, self.hash },
+            );
+            dep.ptr_to_handle.?.* = dep.entry.handle;
+        }
         switch (self.tag) {
             .application_info => {},
             .sampler => self.handle = try vulkan.create_vk_sampler(
