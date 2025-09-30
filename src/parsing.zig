@@ -1599,6 +1599,7 @@ fn parse_vk_descriptor_set_layout_binding(
     context: *Context,
     item: *vk.VkDescriptorSetLayoutBinding,
 ) Error!void {
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "descriptorType")) {
             const v = try scanner_next_number(context.scanner);
@@ -1769,6 +1770,7 @@ fn parse_vk_push_constant_range(
     context: *Context,
     item: *vk.VkPushConstantRange,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -1980,6 +1982,7 @@ fn parse_vk_subpass_dependency(
     context: *Context,
     item: *vk.VkSubpassDependency,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -2023,6 +2026,7 @@ fn parse_vk_attachment_description(
     context: *Context,
     item: *vk.VkAttachmentDescription,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -2070,6 +2074,7 @@ fn parse_vk_subpass_description(
     context: *Context,
     item: *vk.VkSubpassDescription,
 ) Error!void {
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
             const v = try scanner_next_number(context.scanner);
@@ -2162,6 +2167,7 @@ fn parse_vk_attachment_reference(
     context: *Context,
     item: *vk.VkAttachmentReference,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -2819,6 +2825,7 @@ fn parse_vk_stencil_op_state(
     context: *Context,
     item: *vk.VkStencilOpState,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3090,6 +3097,7 @@ fn parse_vk_vertex_input_attribute_description(
     context: *Context,
     item: *vk.VkVertexInputAttributeDescription,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3127,6 +3135,7 @@ fn parse_vk_vertex_input_binding_description(
     context: *Context,
     item: *vk.VkVertexInputBindingDescription,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3162,6 +3171,7 @@ fn parse_vk_pipeline_color_blend_attachment_state(
     context: *Context,
     item: *vk.VkPipelineColorBlendAttachmentState,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3207,6 +3217,7 @@ fn parse_vk_viewport(
     context: *Context,
     item: *vk.VkViewport,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3302,6 +3313,7 @@ fn parse_vk_specialization_map_entry(
     context: *Context,
     item: *vk.VkSpecializationMapEntry,
 ) Error!void {
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
