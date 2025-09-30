@@ -918,38 +918,102 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
 
 fn parse_object_array(
     comptime T: type,
-    comptime PARSE_FN: fn (
-        *Context,
-        *T,
-    ) Error!void,
+    comptime PARSE_FN: fn (*Context, *T) Error!void,
     context: *Context,
 ) Error![]T {
+    const Inner = struct {
+        fn migrate_dependencies(
+            c: *Context,
+            last_dep_number: usize,
+            old_slice: []const T,
+            new_slice: []const T,
+        ) void {
+            // Check if any newly added dependencies point into the tmp array and
+            // update them by calculating the offset into the tmp array and
+            // storing same offset into final array
+            const added_dependencies = c.dependencies.items.len - last_dep_number;
+            const tmp_ptr_begin: usize = @intFromPtr(old_slice.ptr);
+            const tmp_ptr_end: usize = @intFromPtr(old_slice.ptr + old_slice.len);
+            for (0..added_dependencies) |i| {
+                const dep = &c.dependencies.items[c.dependencies.items.len - 1 - i];
+                const ptr_to_handle: usize = @intFromPtr(dep.ptr_to_handle.?);
+                if (tmp_ptr_begin <= ptr_to_handle and ptr_to_handle < tmp_ptr_end) {
+                    const byte_offset = ptr_to_handle - tmp_ptr_begin;
+                    const new_slice_ptr: [*]const u8 = @ptrCast(new_slice.ptr);
+                    dep.ptr_to_handle =
+                        @ptrCast(@alignCast(@constCast(new_slice_ptr + byte_offset)));
+                }
+            }
+        }
+
+        fn recreate_tmp(
+            c: *Context,
+            last_dep_number: usize,
+            old_tmp: []T,
+        ) !std.ArrayListUnmanaged(T) {
+            var new_tmp: std.ArrayListUnmanaged(T) =
+                try .initCapacity(c.tmp_alloc, old_tmp.len * 2 + 1);
+            new_tmp.appendSliceAssumeCapacity(old_tmp);
+            migrate_dependencies(c, last_dep_number, old_tmp, new_tmp.items);
+            return new_tmp;
+        }
+    };
+
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
-    const current_dep_number = context.dependencies.items.len;
+    const last_dep_number = context.dependencies.items.len;
     while (try scanner_array_next_object(context.scanner)) {
-        try tmp.append(context.tmp_alloc, .{});
+        tmp.appendBounded(undefined) catch {
+            tmp = try Inner.recreate_tmp(context, last_dep_number, tmp.items);
+            tmp.appendAssumeCapacity(undefined);
+        };
         const item = &tmp.items[tmp.items.len - 1];
         try PARSE_FN(context, item);
     }
     const final_array = try context.alloc.dupe(T, tmp.items);
-
-    // Check if any newly added dependencies point into the tmp array and
-    // update them by calculating the offset into the tmp array and
-    // storing same offset into final array
-    const added_dependencies = context.dependencies.items.len - current_dep_number;
-    const tmp_ptr_begin: usize = @intFromPtr(tmp.items.ptr);
-    const tmp_ptr_end: usize = @intFromPtr(tmp.items.ptr + tmp.items.len);
-    for (0..added_dependencies) |i| {
-        const dep = &context.dependencies.items[context.dependencies.items.len - 1 - i];
-        const ptr_to_handle: usize = @intFromPtr(dep.ptr_to_handle.?);
-        if (tmp_ptr_begin <= ptr_to_handle and ptr_to_handle < tmp_ptr_end) {
-            const byte_offset = ptr_to_handle - tmp_ptr_begin;
-            const final_array_ptr: [*]u8 = @ptrCast(final_array.ptr);
-            dep.ptr_to_handle = @ptrCast(@alignCast(final_array_ptr + byte_offset));
-        }
-    }
+    Inner.migrate_dependencies(context, last_dep_number, tmp.items, final_array);
     return final_array;
+}
+
+test "parse_object_array" {
+    // 2 elements is enough to cause 1 reallocation of the tmp array
+    const json = "[{},{}]";
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    const Inner = struct {
+        fn dummy(c: *Context, item: *u64) Error!void {
+            while (try scanner_object_next_field(c.scanner)) |_| {}
+            item.* = 0x69;
+
+            const dep: Dependency = .{
+                .tag = .graphics_pipeline,
+                .hash = 0x69,
+                .ptr_to_handle = @ptrCast(item),
+            };
+            try c.dependencies.append(c.tmp_alloc, dep);
+        }
+    };
+    const result = try parse_object_array(u64, Inner.dummy, &context);
+    try std.testing.expectEqualSlices(u64, &.{ 0x69, 0x69 }, result);
+    try std.testing.expectEqual(
+        &result[0],
+        @as(*u64, @ptrCast(context.dependencies.items[0].ptr_to_handle.?)),
+    );
+    try std.testing.expectEqual(
+        &result[1],
+        @as(*u64, @ptrCast(context.dependencies.items[1].ptr_to_handle.?)),
+    );
 }
 
 pub fn parse_vk_physical_device_mesh_shader_features_ext(
