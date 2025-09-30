@@ -421,12 +421,10 @@ pub const Entry = struct {
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            // TODO for some reason the `create_info` is changed when ptr is cast to the
-            // target type.
-            // .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
-            //     vk_device,
-            //     @ptrCast(self.create_info),
-            // ),
+            .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
+                vk_device,
+                @ptrCast(self.create_info),
+            ),
             else => {},
         }
     }
