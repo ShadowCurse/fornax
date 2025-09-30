@@ -1575,38 +1575,69 @@ const STRUCT_SIZE =
 
 const PRINT_STRUCT =
     \\pub fn print_struct(@"struct": anytype) void {
-    \\    print_struct_offset("", @"struct", 0);
+    \\    print_struct_inner("", @"struct", 0);
     \\}
     \\
-    \\fn print_struct_offset(name: []const u8, @"struct": anytype, base_offset: u32) void {
+    \\fn print_offset_output(offset: u32, comptime format: []const u8, args: anytype) void {
+    \\    for (0..offset) |_| log.output("    ", .{});
+    \\    log.output(format, args);
+    \\}
+    \\
+    \\fn print_offset_struct(offset: u32, field_name: []const u8, @"struct": anytype) void {
+    \\    for (0..offset) |_| log.output("    ", .{});
+    \\    print_struct_inner(
+    \\        field_name,
+    \\        @"struct",
+    \\        offset,
+    \\    );
+    \\}
+    \\
+    \\fn print_offset_slice(
+    \\    offset: u32,
+    \\    field_name: []const u8,
+    \\    type_name: []const u8,
+    \\    comptime T: type,
+    \\    elements: []const T,
+    \\) void {
+    \\    print_offset_output(offset, "{s}: []{s} = [\n", .{ field_name, type_name });
+    \\    defer print_offset_output(offset, "]\n", .{});
+    \\    for (elements) |*binding| {
+    \\        for (0..offset + 1) |_| log.output("    ", .{});
+    \\        print_struct_inner(&.{}, binding, offset + 1);
+    \\    }
+    \\}
+    \\
+    \\fn print_struct_inner(name: []const u8, @"struct": anytype, base_offset: u32) void {
     \\    const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
     \\    const type_name = @typeName(t)["cimport.struct_".len..];
     \\    log.output("{s}: {s} = .{{\n", .{ name, type_name });
     \\    const fields = @typeInfo(t).@"struct".fields;
     \\    const fields_base_offset = base_offset + 1;
     \\    inline for (fields) |field| {
-    \\        for (0..fields_base_offset) |_|
-    \\            log.output("    ", .{});
     \\        switch (field.type) {
     \\            i16, i32, u32, u64, usize, vk.VkStructureType => {
-    \\                log.output("{s}: {s} = {d},\n", .{
+    \\                print_offset_output(fields_base_offset, "{s}: {s} = {d},\n", .{
     \\                    field.name,
     \\                    @typeName(field.type),
     \\                    @field(@"struct", field.name),
     \\                });
     \\            },
     \\            f32, f64 => {
-    \\                log.output("{s}: {d},\n", .{ field.name, @field(@"struct", field.name) });
+    \\                print_offset_output(
+    \\                    fields_base_offset,
+    \\                    "{s}: {d},\n",
+    \\                    .{ field.name, @field(@"struct", field.name) },
+    \\                );
     \\            },
     \\            vk.VkOffset2D,
     \\            vk.VkExtent2D,
     \\            vk.VkOffset3D,
     \\            vk.VkExtent3D,
     \\            vk.VkPhysicalDeviceFeatures,
-    \\            => print_struct_offset(
+    \\            => print_offset_struct(
+    \\                fields_base_offset,
     \\                field.name,
     \\                &@field(@"struct", field.name),
-    \\                fields_base_offset,
     \\            ),
     \\            ?*anyopaque,
     \\            ?*const anyopaque,
@@ -1635,16 +1666,24 @@ const PRINT_STRUCT =
     \\            vk.VkDescriptorPool,
     \\            vk.VkFramebuffer,
     \\            vk.VkCommandPool,
-    \\            => {
-    \\                log.output("{s}: {?},\n", .{ field.name, @field(@"struct", field.name) });
-    \\            },
-    \\            [*c]const u8 => {
-    \\                log.output("{s}: {s},\n", .{ field.name, @field(@"struct", field.name) });
-    \\            },
+    \\            => print_offset_output(
+    \\                fields_base_offset,
+    \\                "{s}: {?},\n",
+    \\                .{ field.name, @field(@"struct", field.name) },
+    \\            ),
+    \\            [*c]const u8 => print_offset_output(
+    \\                fields_base_offset,
+    \\                "{s}: {s},\n",
+    \\                .{ field.name, @field(@"struct", field.name) },
+    \\            ),
     \\            [*c]const u32 => {
     \\                if (@hasField(t, "codeSize")) {
     \\                    const len = @field(@"struct", "codeSize") / @sizeOf(u32);
-    \\                    log.output("{s}: {d} instructions,\n", .{ field.name, len });
+    \\                    print_offset_output(
+    \\                        fields_base_offset,
+    \\                        "{s}: {d} instructions,\n",
+    \\                        .{ field.name, len },
+    \\                    );
     \\                }
     \\            },
     \\            [*c]const vk.VkDescriptorSetLayoutBinding => {
@@ -1652,8 +1691,13 @@ const PRINT_STRUCT =
     \\                var elements: []const vk.VkDescriptorSetLayoutBinding = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkDescriptorSetLayoutBinding,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkDescriptorSetLayout => {
     \\                const len = if (@hasField(t, "descriptorSetCount"))
@@ -1663,31 +1707,50 @@ const PRINT_STRUCT =
     \\                var elements: []const *anyopaque = undefined;
     \\                elements.ptr = @ptrCast(@field(@"struct", field.name));
     \\                elements.len = len;
-    \\                log.output("{s}: {any},\n", .{ field.name, elements });
+    \\                print_offset_output(
+    \\                    fields_base_offset,
+    \\                    "{s}: {any},\n",
+    \\                    .{ field.name, elements },
+    \\                );
     \\            },
     \\            [*c]const vk.VkPushConstantRange => {
     \\                const len = @field(@"struct", "pushConstantRangeCount");
     \\                var elements: []const vk.VkPushConstantRange = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkPushConstantRange,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkAttachmentDescription => {
     \\                const len = @field(@"struct", "attachmentCount");
     \\                var elements: []const vk.VkAttachmentDescription = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkAttachmentDescription,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkSubpassDescription => {
     \\                const len = @field(@"struct", "subpassCount");
     \\                var elements: []const vk.VkSubpassDescription = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkSubpassDescription,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkAttachmentReference => {
     \\                const len = if (std.mem.eql(u8, field.name, "pInputAttachments"))
@@ -1710,8 +1773,13 @@ const PRINT_STRUCT =
     \\                    var elements: []const vk.VkAttachmentReference = undefined;
     \\                    elements.ptr = @field(@"struct", field.name);
     \\                    elements.len = len;
-    \\                    for (elements) |*binding|
-    \\                        print_struct_offset(field.name, binding, fields_base_offset);
+    \\                    print_offset_slice(
+    \\                        fields_base_offset,
+    \\                        field.name,
+    \\                        type_name,
+    \\                        vk.VkAttachmentReference,
+    \\                        elements,
+    \\                    );
     \\                }
     \\            },
     \\            [*c]const vk.VkSubpassDependency => {
@@ -1719,24 +1787,39 @@ const PRINT_STRUCT =
     \\                var elements: []const vk.VkSubpassDependency = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkSubpassDependency,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkPipelineShaderStageCreateInfo => {
     \\                const len = @field(@"struct", "stageCount");
     \\                var elements: []const vk.VkPipelineShaderStageCreateInfo = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkPipelineShaderStageCreateInfo,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkSpecializationMapEntry => {
     \\                const len = @field(@"struct", "mapEntryCount");
     \\                var elements: []const vk.VkSpecializationMapEntry = undefined;
     \\                elements.ptr = @field(@"struct", field.name);
     \\                elements.len = len;
-    \\                for (elements) |*binding|
-    \\                    print_struct_offset(field.name, binding, fields_base_offset);
+    \\                print_offset_slice(
+    \\                    fields_base_offset,
+    \\                    field.name,
+    \\                    type_name,
+    \\                    vk.VkSpecializationMapEntry,
+    \\                    elements,
+    \\                );
     \\            },
     \\            [*c]const vk.VkPipelineVertexInputStateCreateInfo,
     \\            [*c]const vk.VkPipelineInputAssemblyStateCreateInfo,
@@ -1754,9 +1837,13 @@ const PRINT_STRUCT =
     \\                const element_type = @typeInfo(field.type).pointer.child;
     \\                const element: ?*const element_type = @field(@"struct", field.name);
     \\                if (element) |e|
-    \\                    print_struct_offset(field.name, e, fields_base_offset)
+    \\                    print_offset_struct(fields_base_offset, field.name, e)
     \\                else
-    \\                    log.output("{s}: {?},\n", .{ field.name, element });
+    \\                    print_offset_output(
+    \\                        fields_base_offset,
+    \\                        "{s}: {?},\n",
+    \\                        .{ field.name, element },
+    \\                    );
     \\            },
     \\            else => log.warn(
     \\                @src(),
