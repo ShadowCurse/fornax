@@ -595,7 +595,7 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (curr_entry.create(context.vk_device)) {
+            switch (curr_entry.create(tmp_alloc, context.db, context.vk_device)) {
                 .dependencies => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
@@ -771,7 +771,6 @@ test "parse" {
             pub const parse_sampler = Dummy.parse;
             pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
             pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
-            pub const parse_shader_module = Dummy.parse;
             pub const parse_render_pass = Dummy.parse;
             pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
             pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;
@@ -826,7 +825,6 @@ test "parse" {
             pub const parse_sampler = Dummy.parse;
             pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
             pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
-            pub const parse_shader_module = Dummy.parse;
             pub const parse_render_pass = Dummy.parse;
             pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
             pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;

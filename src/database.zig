@@ -250,9 +250,13 @@ pub const Entry = struct {
         tmp_alloc: Allocator,
         db: *Database,
     ) !void {
+        // Shader modules consume a lot of memory. Instead of storing them
+        // in database memory, do the parsing and creation on one go since
+        // we know they cannot have dependencies.
+        if (self.tag == .shader_module) return;
+
         const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
         switch (self.tag) {
-            .application_info => {},
             .sampler => {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
@@ -268,18 +272,9 @@ pub const Entry = struct {
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
             .pipeline_layout => {
-                const result = try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
+                const result =
+                    try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-            },
-            .shader_module => {
-                const result = try PARSE.parse_shader_module(
-                    entry_alloc,
-                    tmp_alloc,
-                    db,
-                    payload,
-                );
-                try self.check_version_and_hash(result);
-                self.create_info = result.create_info;
             },
             .render_pass => {
                 const result = try PARSE.parse_render_pass(
@@ -318,7 +313,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
             },
-            .application_blob_link => {},
+            else => {},
         }
     }
 
@@ -328,7 +323,12 @@ pub const Entry = struct {
         created,
         invalid,
     };
-    pub fn create(self: *Entry, vk_device: vk.VkDevice) CreateResult {
+    pub fn create(
+        self: *Entry,
+        tmp_alloc: Allocator,
+        db: *Database,
+        vk_device: vk.VkDevice,
+    ) CreateResult {
         for (self.dependencies) |dep| {
             const d_status = @atomicLoad(Status, &dep.entry.status, .seq_cst);
             if (d_status == .invalid) {
@@ -353,7 +353,7 @@ pub const Entry = struct {
             };
         }
 
-        self.create_inner(vk_device) catch |err| {
+        self.create_inner(tmp_alloc, db, vk_device) catch |err| {
             log.debug(
                 @src(),
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
@@ -366,7 +366,12 @@ pub const Entry = struct {
         return .created;
     }
 
-    fn create_inner(self: *Entry, vk_device: vk.VkDevice) !void {
+    fn create_inner(
+        self: *Entry,
+        tmp_alloc: Allocator,
+        db: *Database,
+        vk_device: vk.VkDevice,
+    ) !void {
         for (self.dependencies, 0..) |dep, i| {
             log.assert(
                 @src(),
@@ -389,10 +394,21 @@ pub const Entry = struct {
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .shader_module => self.handle = try vulkan.create_shader_module(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
+            .shader_module => {
+                const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
+                const result = try parsing.parse_shader_module(
+                    tmp_alloc,
+                    tmp_alloc,
+                    db,
+                    payload,
+                );
+                try self.check_version_and_hash(result);
+
+                self.handle = try vulkan.create_shader_module(
+                    vk_device,
+                    @ptrCast(result.create_info),
+                );
+            },
             .render_pass => self.handle = try vulkan.create_render_pass(
                 vk_device,
                 @ptrCast(self.create_info),
