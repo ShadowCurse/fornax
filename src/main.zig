@@ -391,19 +391,22 @@ pub fn init_thread_pool_context(
 }
 
 pub fn print_time(
-    comptime WORK: []const u8,
+    stage_name: []const u8,
     start: std.time.Instant,
+    starting_count: usize,
     counters: *const std.EnumArray(Database.Entry.Tag, u32),
 ) void {
     const now = std.time.Instant.now() catch unreachable;
     const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
     const thread_id = std.Thread.getCurrentId();
-    log.info(
+    log.debug(
         @src(),
-        "Thread {d}: {s} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} in {d:>6.3}ms",
+        "Thread {d}: {s} {d:>6} pipelines in {d:>6.3}ms. Visited {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6}",
         .{
             thread_id,
-            WORK,
+            stage_name,
+            starting_count,
+            dt,
             Database.Entry.Tag.sampler,
             counters.get(.sampler),
             Database.Entry.Tag.descriptor_set_layout,
@@ -420,7 +423,6 @@ pub fn print_time(
             counters.get(.compute_pipeline),
             Database.Entry.Tag.raytracing_pipeline,
             counters.get(.raytracing_pipeline),
-            dt,
         },
     );
 }
@@ -442,7 +444,8 @@ pub fn parse_inner(
 ) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const start = try std.time.Instant.now();
-    defer print_time("parsed", start, &counters);
+    const start_count = root_entries.len;
+    defer print_time("parsed", start, start_count, &counters);
 
     var progress = context.progress.start("parsing", root_entries.len);
     defer progress.end();
@@ -450,6 +453,8 @@ pub fn parse_inner(
     for (root_entries) |*root_entry| {
         defer _ = context.arena.reset(.retain_capacity);
         defer progress.completeOne();
+
+        counters.getPtr(root_entry.entry.tag).* += 1;
 
         const shared_alloc = context.shared_alloc;
         const alloc = root_entry.arena.allocator();
@@ -468,11 +473,11 @@ pub fn parse_inner(
                 context.db,
             )) {
                 .parsed => {
-                    counters.getPtr(curr_entry.tag).* += 1;
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
                         try queue.append(tmp_alloc, .{ dep.entry, 0 });
+                        counters.getPtr(dep.entry.tag).* += 1;
                     }
                 },
                 .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
@@ -577,8 +582,9 @@ pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
 }
 pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const t_start = try std.time.Instant.now();
-    defer print_time("created", t_start, &counters);
+    const start = try std.time.Instant.now();
+    const start_count = root_entries.len;
+    defer print_time("created", start, start_count, &counters);
 
     var progress = context.progress.start("creation", root_entries.len);
     defer progress.end();
@@ -661,28 +667,6 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
     }
 }
 
-fn distribute_entries_to_create(
-    thread_contexts: []align(64) ThreadContext,
-    db: *Database,
-    tag: Database.Entry.Tag,
-) !void {
-    var remaining_entries = db.entries.getPtr(tag).values();
-    if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
-        for (thread_contexts[1..]) |*tc| {
-            const chunk = remaining_entries[0..chunk_size];
-            for (chunk) |*e|
-                if (e.status != .invalid) try tc.work_queue.append(tc.arena.allocator(), e);
-            remaining_entries = remaining_entries[chunk_size..];
-        }
-    }
-    for (remaining_entries) |*e|
-        if (e.status != .invalid)
-            try thread_contexts[0].work_queue.append(
-                thread_contexts[0].arena.allocator(),
-                e,
-            );
-}
 pub fn create_threaded(
     thread_pool: *ThreadPool,
     thread_contexts: []align(64) ThreadContext,
