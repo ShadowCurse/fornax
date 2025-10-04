@@ -815,12 +815,18 @@ fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
 pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
     const output_type = @typeInfo(@TypeOf(output)).pointer.child;
     const output_fields = @typeInfo(output_type).@"struct".fields;
-    var field_is_parsed: [output_fields.len]bool = .{false} ** output_fields.len;
+    log.comptime_assert(
+        @src(),
+        output_fields.len <= 32,
+        "Type contains more than 32 fields",
+        .{},
+    );
+    var parsed_field: u32 = 0;
     while (try scanner_object_next_field(context.scanner)) |s| {
         var consumed: bool = false;
         inline for (output_fields, 0..) |field, i| {
-            if (!field_is_parsed[i] and std.mem.eql(u8, s, field.name)) {
-                field_is_parsed[i] = true;
+            if ((parsed_field & 1 << i == 0) and std.mem.eql(u8, s, field.name)) {
+                parsed_field |= 1 << i;
                 switch (field.type) {
                     i16, i32, u32, u64, usize, c_uint => {
                         const v = try scanner_next_number(context.scanner);
