@@ -495,7 +495,7 @@ pub fn create_vk_device(
             all_extension_names[all_extensions_len] = &e.extensionName;
             all_extensions_len += 1;
         } else enabled = "filtered";
-        log.debug(@src(), "(PhysicalDevice)({s<8}) Extension version: {d}.{d}.{d} Name: {s}", .{
+        log.debug(@src(), "(PhysicalDevice)({s:^8}) Extension version: {d}.{d}.{d} Name: {s}", .{
             enabled,
             vk.VK_API_VERSION_MAJOR(e.specVersion),
             vk.VK_API_VERSION_MINOR(e.specVersion),
