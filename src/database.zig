@@ -208,15 +208,39 @@ pub const Entry = struct {
             };
         }
 
-        self.parse_inner(PARSE, dependency_alloc, entry_alloc, tmp_alloc, db) catch |err| {
-            log.debug(
-                @src(),
-                "Cannot parse object: {t} 0x{x:0>16}: {t}",
-                .{ self.tag, self.hash, err },
-            );
-            @atomicStore(Status, &self.status, .invalid, .seq_cst);
-            return .invalid;
-        };
+        // Shader modules consume a lot of memory. Instead of storing them
+        // in database memory, do the parsing and creation on one go since
+        // we know they cannot have dependencies.
+        if (self.tag != .shader_module) {
+            const payload = self.get_payload(tmp_alloc, tmp_alloc, db) catch |err| {
+                log.debug(
+                    @src(),
+                    "Cannot read the payload for {t} 0x{x:0>16}: {t}",
+                    .{ self.tag, self.hash, err },
+                );
+                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                return .invalid;
+            };
+            self.parse_inner(
+                PARSE,
+                dependency_alloc,
+                entry_alloc,
+                tmp_alloc,
+                db,
+                payload,
+            ) catch |err| {
+                log.debug(
+                    @src(),
+                    "Cannot parse object: {t} 0x{x:0>16}: {t}",
+                    .{ self.tag, self.hash, err },
+                );
+                if (err == parsing.ScannerError.InvalidJson)
+                    log.debug(@src(), "payload: {s}", .{payload});
+
+                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                return .invalid;
+            };
+        }
 
         @atomicStore(Status, &self.status, .parsed, .seq_cst);
         return .parsed;
@@ -249,13 +273,8 @@ pub const Entry = struct {
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
         db: *Database,
+        payload: []const u8,
     ) !void {
-        // Shader modules consume a lot of memory. Instead of storing them
-        // in database memory, do the parsing and creation on one go since
-        // we know they cannot have dependencies.
-        if (self.tag == .shader_module) return;
-
-        const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
         switch (self.tag) {
             .sampler => {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);

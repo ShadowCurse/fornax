@@ -22,11 +22,11 @@ pub const Context = struct {
     db: *const Database,
 };
 
-const ScannerError = std.json.Scanner.NextError || error{InvalidJson};
-const ParseIntError = std.fmt.ParseIntError;
-const ParseFloatError = std.fmt.ParseFloatError;
-const DecoderError = std.base64.Error;
-const AdditionalError = error{
+pub const ScannerError = std.json.Scanner.NextError || error{ InvalidJson, UnknownPnextChain };
+pub const ParseIntError = std.fmt.ParseIntError;
+pub const ParseFloatError = std.fmt.ParseFloatError;
+pub const DecoderError = std.base64.Error;
+pub const AdditionalError = error{
     BasePipelinesNotSupported,
     InvalidShaderPayloadEncoding,
     InvalidShaderPayload,
@@ -1304,7 +1304,7 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                 },
                 else => {
                     log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
-                    return error.InvalidJson;
+                    return error.UnknownPnextChain;
                 },
             }
         }

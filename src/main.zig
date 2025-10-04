@@ -13,7 +13,7 @@ const Database = @import("database.zig");
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
-    .level = .Info,
+    .level = .Debug,
 };
 
 const Args = struct {
