@@ -585,7 +585,10 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
 
         const payload_file_offset: u64 = file_stat.size - remaining_file_mem;
         remaining_file_mem -= entry.stored_size;
-        const entry_tag = try entry.get_tag();
+        const entry_tag = entry.get_tag() catch {
+            log.debug(@src(), "Skipping corrupted FileEntry", .{});
+            continue;
+        };
         // There is no used for these blobs, so skip them.
         if (entry_tag == .application_blob_link)
             continue;
