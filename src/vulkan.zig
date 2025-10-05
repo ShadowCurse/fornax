@@ -112,6 +112,7 @@ pub const Instance = struct {
     instance: vk.VkInstance,
     api_version: u32,
     has_properties_2: bool,
+    all_extension_names: []const [*c]const u8,
 };
 pub fn create_vk_instance(
     arena_alloc: Allocator,
@@ -209,6 +210,7 @@ pub fn create_vk_instance(
         .instance = vk_instance,
         .api_version = api_version,
         .has_properties_2 = has_properties_2,
+        .all_extension_names = all_extension_names,
     };
 }
 
@@ -417,10 +419,13 @@ pub fn usable_device_extension(
 ) bool {
     const e = std.mem.span(ext);
     if (std.mem.eql(u8, e, vk.VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME))
+        // illigal to enable with maintenance1
         return false;
     if (std.mem.eql(u8, e, vk.VK_NV_RAY_TRACING_EXTENSION_NAME))
+        // causes problems with pipeline replaying
         return false;
     if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_INFO_EXTENSION_NAME))
+        // Mesa disables shader cache when thisi is enabled.
         return false;
     if (std.mem.eql(u8, e, vk.VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
         for (all_ext_props) |other_ext| {
@@ -465,13 +470,17 @@ pub fn usable_device_extension(
     return true;
 }
 
+pub const Device = struct {
+    device: vk.VkDevice,
+    all_extension_names: []const [*c]const u8,
+};
 pub fn create_vk_device(
     arena_alloc: Allocator,
     instance: *const Instance,
     physical_device: *const PhysicalDevice,
     device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
     enable_validation: bool,
-) !vk.VkDevice {
+) !Device {
     const queue_priority: f32 = 1.0;
     const queue_create_info = vk.VkDeviceQueueCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -547,7 +556,10 @@ pub fn create_vk_device(
         null,
         &vk_device,
     ));
-    return vk_device;
+    return .{
+        .device = vk_device,
+        .all_extension_names = all_extension_names,
+    };
 }
 
 pub fn create_vk_sampler(

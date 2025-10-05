@@ -13,7 +13,7 @@ const Database = @import("database.zig");
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
-    .level = .Debug,
+    .level = .Info,
 };
 
 const Args = struct {
@@ -169,7 +169,7 @@ pub fn main() !void {
         instance.instance,
         args.enable_validation,
     );
-    const vk_device = try vulkan.create_vk_device(
+    const device = try vulkan.create_vk_device(
         tmp_alloc,
         &instance,
         &physical_device,
@@ -188,7 +188,7 @@ pub fn main() !void {
         args.num_threads,
         &progress_root,
         &db,
-        vk_device,
+        device.device,
     );
 
     const total_pipelines = graphics_pipelines + compute_pipelines + raytracing_pipelines;

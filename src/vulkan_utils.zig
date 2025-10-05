@@ -7,6 +7,7 @@ const std = @import("std");
 const vk = @import("volk");
 const log = @import("log.zig");
 
+const Allocator = std.mem.Allocator;
 pub fn struct_size(@"struct": anytype) usize {
     var size: usize = 0;
     const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
@@ -9709,3 +9710,2122 @@ pub fn check_result(result: vk.VkResult) !void {
         },
     }
 }
+pub const Extensions = struct {
+    instance: packed struct(u26) {
+        VK_KHR_surface: bool = false,
+        VK_KHR_display: bool = false,
+        VK_EXT_debug_report: bool = false,
+        VK_KHR_get_physical_device_properties2: bool = false,
+        VK_EXT_validation_flags: bool = false,
+        VK_KHR_device_group_creation: bool = false,
+        VK_KHR_external_memory_capabilities: bool = false,
+        VK_KHR_external_semaphore_capabilities: bool = false,
+        VK_EXT_direct_mode_display: bool = false,
+        VK_EXT_display_surface_counter: bool = false,
+        VK_EXT_swapchain_colorspace: bool = false,
+        VK_KHR_external_fence_capabilities: bool = false,
+        VK_KHR_get_surface_capabilities2: bool = false,
+        VK_KHR_get_display_properties2: bool = false,
+        VK_EXT_debug_utils: bool = false,
+        VK_EXT_metal_surface: bool = false,
+        VK_KHR_surface_protected_capabilities: bool = false,
+        VK_EXT_validation_features: bool = false,
+        VK_EXT_headless_surface: bool = false,
+        VK_EXT_surface_maintenance1: bool = false,
+        VK_EXT_acquire_drm_display: bool = false,
+        VK_EXT_directfb_surface: bool = false,
+        VK_KHR_portability_enumeration: bool = false,
+        VK_EXT_application_parameters: bool = false,
+        VK_KHR_surface_maintenance1: bool = false,
+        VK_EXT_layer_settings: bool = false,
+    } = .{},
+    device: packed struct(u260) {
+        VK_KHR_swapchain: bool = false,
+        VK_KHR_display_swapchain: bool = false,
+        VK_EXT_depth_range_unrestricted: bool = false,
+        VK_IMG_filter_cubic: bool = false,
+        VK_EXT_debug_marker: bool = false,
+        VK_KHR_video_queue: bool = false,
+        VK_KHR_video_decode_queue: bool = false,
+        VK_EXT_transform_feedback: bool = false,
+        VK_KHR_video_encode_h264: bool = false,
+        VK_KHR_video_encode_h265: bool = false,
+        VK_KHR_video_decode_h264: bool = false,
+        VK_KHR_dynamic_rendering: bool = false,
+        VK_KHR_multiview: bool = false,
+        VK_IMG_format_pvrtc: bool = false,
+        VK_KHR_device_group: bool = false,
+        VK_KHR_shader_draw_parameters: bool = false,
+        VK_EXT_shader_subgroup_ballot: bool = false,
+        VK_EXT_shader_subgroup_vote: bool = false,
+        VK_EXT_texture_compression_astc_hdr: bool = false,
+        VK_EXT_astc_decode_mode: bool = false,
+        VK_EXT_pipeline_robustness: bool = false,
+        VK_KHR_maintenance1: bool = false,
+        VK_KHR_external_memory: bool = false,
+        VK_KHR_external_memory_fd: bool = false,
+        VK_KHR_external_semaphore: bool = false,
+        VK_KHR_external_semaphore_fd: bool = false,
+        VK_KHR_push_descriptor: bool = false,
+        VK_EXT_conditional_rendering: bool = false,
+        VK_KHR_shader_float16_int8: bool = false,
+        VK_KHR_16bit_storage: bool = false,
+        VK_KHR_incremental_present: bool = false,
+        VK_KHR_descriptor_update_template: bool = false,
+        VK_EXT_display_control: bool = false,
+        VK_EXT_discard_rectangles: bool = false,
+        VK_EXT_conservative_rasterization: bool = false,
+        VK_EXT_depth_clip_enable: bool = false,
+        VK_EXT_hdr_metadata: bool = false,
+        VK_KHR_imageless_framebuffer: bool = false,
+        VK_KHR_create_renderpass2: bool = false,
+        VK_IMG_relaxed_line_rasterization: bool = false,
+        VK_KHR_shared_presentable_image: bool = false,
+        VK_KHR_external_fence: bool = false,
+        VK_KHR_external_fence_fd: bool = false,
+        VK_KHR_performance_query: bool = false,
+        VK_KHR_maintenance2: bool = false,
+        VK_KHR_variable_pointers: bool = false,
+        VK_EXT_external_memory_dma_buf: bool = false,
+        VK_EXT_queue_family_foreign: bool = false,
+        VK_KHR_dedicated_allocation: bool = false,
+        VK_EXT_sampler_filter_minmax: bool = false,
+        VK_KHR_storage_buffer_storage_class: bool = false,
+        VK_EXT_inline_uniform_block: bool = false,
+        VK_EXT_shader_stencil_export: bool = false,
+        VK_KHR_shader_bfloat16: bool = false,
+        VK_EXT_sample_locations: bool = false,
+        VK_KHR_relaxed_block_layout: bool = false,
+        VK_KHR_get_memory_requirements2: bool = false,
+        VK_KHR_image_format_list: bool = false,
+        VK_EXT_blend_operation_advanced: bool = false,
+        VK_KHR_acceleration_structure: bool = false,
+        VK_KHR_ray_tracing_pipeline: bool = false,
+        VK_KHR_ray_query: bool = false,
+        VK_EXT_post_depth_coverage: bool = false,
+        VK_KHR_sampler_ycbcr_conversion: bool = false,
+        VK_KHR_bind_memory2: bool = false,
+        VK_EXT_image_drm_format_modifier: bool = false,
+        VK_EXT_validation_cache: bool = false,
+        VK_EXT_descriptor_indexing: bool = false,
+        VK_EXT_shader_viewport_index_layer: bool = false,
+        VK_KHR_portability_subset: bool = false,
+        VK_KHR_maintenance3: bool = false,
+        VK_KHR_draw_indirect_count: bool = false,
+        VK_EXT_filter_cubic: bool = false,
+        VK_QCOM_render_pass_shader_resolve: bool = false,
+        VK_EXT_global_priority: bool = false,
+        VK_KHR_shader_subgroup_extended_types: bool = false,
+        VK_KHR_8bit_storage: bool = false,
+        VK_EXT_external_memory_host: bool = false,
+        VK_KHR_shader_atomic_int64: bool = false,
+        VK_KHR_shader_clock: bool = false,
+        VK_EXT_calibrated_timestamps: bool = false,
+        VK_KHR_video_decode_h265: bool = false,
+        VK_KHR_global_priority: bool = false,
+        VK_EXT_vertex_attribute_divisor: bool = false,
+        VK_EXT_pipeline_creation_feedback: bool = false,
+        VK_KHR_driver_properties: bool = false,
+        VK_KHR_shader_float_controls: bool = false,
+        VK_KHR_depth_stencil_resolve: bool = false,
+        VK_KHR_swapchain_mutable_format: bool = false,
+        VK_KHR_timeline_semaphore: bool = false,
+        VK_INTEL_shader_integer_functions2: bool = false,
+        VK_INTEL_performance_query: bool = false,
+        VK_KHR_vulkan_memory_model: bool = false,
+        VK_EXT_pci_bus_info: bool = false,
+        VK_KHR_shader_terminate_invocation: bool = false,
+        VK_EXT_fragment_density_map: bool = false,
+        VK_EXT_scalar_block_layout: bool = false,
+        VK_EXT_subgroup_size_control: bool = false,
+        VK_KHR_fragment_shading_rate: bool = false,
+        VK_KHR_dynamic_rendering_local_read: bool = false,
+        VK_EXT_shader_image_atomic_int64: bool = false,
+        VK_KHR_shader_quad_control: bool = false,
+        VK_KHR_spirv_1_4: bool = false,
+        VK_EXT_memory_budget: bool = false,
+        VK_EXT_memory_priority: bool = false,
+        VK_KHR_separate_depth_stencil_layouts: bool = false,
+        VK_EXT_buffer_device_address: bool = false,
+        VK_EXT_tooling_info: bool = false,
+        VK_EXT_separate_stencil_usage: bool = false,
+        VK_KHR_present_wait: bool = false,
+        VK_EXT_fragment_shader_interlock: bool = false,
+        VK_EXT_ycbcr_image_arrays: bool = false,
+        VK_KHR_uniform_buffer_standard_layout: bool = false,
+        VK_EXT_provoking_vertex: bool = false,
+        VK_EXT_full_screen_exclusive: bool = false,
+        VK_KHR_buffer_device_address: bool = false,
+        VK_EXT_line_rasterization: bool = false,
+        VK_EXT_shader_atomic_float: bool = false,
+        VK_EXT_host_query_reset: bool = false,
+        VK_EXT_index_type_uint8: bool = false,
+        VK_EXT_extended_dynamic_state: bool = false,
+        VK_KHR_deferred_host_operations: bool = false,
+        VK_KHR_pipeline_executable_properties: bool = false,
+        VK_EXT_host_image_copy: bool = false,
+        VK_KHR_map_memory2: bool = false,
+        VK_EXT_map_memory_placed: bool = false,
+        VK_EXT_shader_atomic_float2: bool = false,
+        VK_EXT_swapchain_maintenance1: bool = false,
+        VK_EXT_shader_demote_to_helper_invocation: bool = false,
+        VK_KHR_shader_integer_dot_product: bool = false,
+        VK_EXT_texel_buffer_alignment: bool = false,
+        VK_QCOM_render_pass_transform: bool = false,
+        VK_EXT_depth_bias_control: bool = false,
+        VK_EXT_device_memory_report: bool = false,
+        VK_EXT_robustness2: bool = false,
+        VK_EXT_custom_border_color: bool = false,
+        VK_KHR_pipeline_library: bool = false,
+        VK_KHR_shader_non_semantic_info: bool = false,
+        VK_KHR_present_id: bool = false,
+        VK_EXT_private_data: bool = false,
+        VK_EXT_pipeline_creation_cache_control: bool = false,
+        VK_KHR_video_encode_queue: bool = false,
+        VK_QCOM_render_pass_store_ops: bool = false,
+        VK_KHR_object_refresh: bool = false,
+        VK_QCOM_tile_shading: bool = false,
+        VK_EXT_metal_objects: bool = false,
+        VK_KHR_synchronization2: bool = false,
+        VK_EXT_descriptor_buffer: bool = false,
+        VK_EXT_graphics_pipeline_library: bool = false,
+        VK_KHR_fragment_shader_barycentric: bool = false,
+        VK_KHR_shader_subgroup_uniform_control_flow: bool = false,
+        VK_KHR_zero_initialize_workgroup_memory: bool = false,
+        VK_EXT_mesh_shader: bool = false,
+        VK_EXT_ycbcr_2plane_444_formats: bool = false,
+        VK_EXT_fragment_density_map2: bool = false,
+        VK_QCOM_rotated_copy_commands: bool = false,
+        VK_EXT_image_robustness: bool = false,
+        VK_KHR_workgroup_memory_explicit_layout: bool = false,
+        VK_KHR_copy_commands2: bool = false,
+        VK_EXT_image_compression_control: bool = false,
+        VK_EXT_attachment_feedback_loop_layout: bool = false,
+        VK_EXT_4444_formats: bool = false,
+        VK_EXT_device_fault: bool = false,
+        VK_EXT_rgba10x6_formats: bool = false,
+        VK_VALVE_mutable_descriptor_type: bool = false,
+        VK_EXT_vertex_input_dynamic_state: bool = false,
+        VK_EXT_physical_device_drm: bool = false,
+        VK_EXT_device_address_binding_report: bool = false,
+        VK_EXT_depth_clip_control: bool = false,
+        VK_EXT_primitive_topology_list_restart: bool = false,
+        VK_KHR_format_feature_flags2: bool = false,
+        VK_EXT_present_mode_fifo_latest_ready: bool = false,
+        VK_EXT_pipeline_properties: bool = false,
+        VK_EXT_frame_boundary: bool = false,
+        VK_EXT_multisampled_render_to_single_sampled: bool = false,
+        VK_EXT_extended_dynamic_state2: bool = false,
+        VK_EXT_color_write_enable: bool = false,
+        VK_EXT_primitives_generated_query: bool = false,
+        VK_KHR_ray_tracing_maintenance1: bool = false,
+        VK_EXT_global_priority_query: bool = false,
+        VK_EXT_image_view_min_lod: bool = false,
+        VK_EXT_multi_draw: bool = false,
+        VK_EXT_image_2d_view_of_3d: bool = false,
+        VK_EXT_shader_tile_image: bool = false,
+        VK_EXT_opacity_micromap: bool = false,
+        VK_EXT_load_store_op_none: bool = false,
+        VK_EXT_border_color_swizzle: bool = false,
+        VK_EXT_pageable_device_local_memory: bool = false,
+        VK_KHR_maintenance4: bool = false,
+        VK_KHR_shader_subgroup_rotate: bool = false,
+        VK_EXT_image_sliced_view_of_3d: bool = false,
+        VK_VALVE_descriptor_set_host_mapping: bool = false,
+        VK_EXT_depth_clamp_zero_one: bool = false,
+        VK_EXT_non_seamless_cube_map: bool = false,
+        VK_QCOM_fragment_density_map_offset: bool = false,
+        VK_KHR_shader_maximal_reconvergence: bool = false,
+        VK_EXT_image_compression_control_swapchain: bool = false,
+        VK_QCOM_image_processing: bool = false,
+        VK_EXT_nested_command_buffer: bool = false,
+        VK_EXT_external_memory_acquire_unmodified: bool = false,
+        VK_EXT_extended_dynamic_state3: bool = false,
+        VK_EXT_subpass_merge_feedback: bool = false,
+        VK_EXT_shader_module_identifier: bool = false,
+        VK_EXT_rasterization_order_attachment_access: bool = false,
+        VK_EXT_legacy_dithering: bool = false,
+        VK_EXT_pipeline_protected_access: bool = false,
+        VK_KHR_maintenance5: bool = false,
+        VK_KHR_present_id2: bool = false,
+        VK_KHR_present_wait2: bool = false,
+        VK_KHR_ray_tracing_position_fetch: bool = false,
+        VK_EXT_shader_object: bool = false,
+        VK_KHR_pipeline_binary: bool = false,
+        VK_QCOM_tile_properties: bool = false,
+        VK_KHR_swapchain_maintenance1: bool = false,
+        VK_QCOM_multiview_per_view_viewports: bool = false,
+        VK_EXT_mutable_descriptor_type: bool = false,
+        VK_EXT_legacy_vertex_attributes: bool = false,
+        VK_EXT_pipeline_library_group_handles: bool = false,
+        VK_EXT_dynamic_rendering_unused_attachments: bool = false,
+        VK_KHR_cooperative_matrix: bool = false,
+        VK_QCOM_multiview_per_view_render_areas: bool = false,
+        VK_KHR_compute_shader_derivatives: bool = false,
+        VK_KHR_video_decode_av1: bool = false,
+        VK_KHR_video_encode_av1: bool = false,
+        VK_KHR_video_decode_vp9: bool = false,
+        VK_KHR_video_maintenance1: bool = false,
+        VK_QCOM_image_processing2: bool = false,
+        VK_QCOM_filter_cubic_weights: bool = false,
+        VK_QCOM_ycbcr_degamma: bool = false,
+        VK_QCOM_filter_cubic_clamp: bool = false,
+        VK_EXT_attachment_feedback_loop_dynamic_state: bool = false,
+        VK_KHR_vertex_attribute_divisor: bool = false,
+        VK_KHR_load_store_op_none: bool = false,
+        VK_KHR_unified_image_layouts: bool = false,
+        VK_KHR_shader_float_controls2: bool = false,
+        VK_KHR_index_type_uint8: bool = false,
+        VK_KHR_line_rasterization: bool = false,
+        VK_KHR_calibrated_timestamps: bool = false,
+        VK_KHR_shader_expect_assume: bool = false,
+        VK_KHR_maintenance6: bool = false,
+        VK_QCOM_tile_memory_heap: bool = false,
+        VK_KHR_video_encode_intra_refresh: bool = false,
+        VK_KHR_video_encode_quantization_map: bool = false,
+        VK_KHR_shader_relaxed_extended_instruction: bool = false,
+        VK_KHR_maintenance7: bool = false,
+        VK_EXT_shader_replicated_composites: bool = false,
+        VK_EXT_shader_float8: bool = false,
+        VK_EXT_device_generated_commands: bool = false,
+        VK_KHR_maintenance8: bool = false,
+        VK_EXT_depth_clamp_control: bool = false,
+        VK_KHR_maintenance9: bool = false,
+        VK_KHR_video_maintenance2: bool = false,
+        VK_EXT_external_memory_metal: bool = false,
+        VK_KHR_depth_clamp_zero_one: bool = false,
+        VK_EXT_vertex_attribute_robustness: bool = false,
+        VK_VALVE_fragment_density_map_layered: bool = false,
+        VK_KHR_robustness2: bool = false,
+        VK_EXT_fragment_density_map_offset: bool = false,
+        VK_EXT_zero_initialize_device_memory: bool = false,
+        VK_KHR_present_mode_fifo_latest_ready: bool = false,
+    } = .{},
+    
+    const Self = @This();
+
+    pub fn init(
+        tmp_alloc: Allocator,
+        api_version: u32,
+        instance_extensions: []const [*c]const u8,
+        device_extensions: []const [*c]const u8,
+    ) !Self {
+        const ie = try tmp_alloc.alloc([]const u8, instance_extensions.len);
+        for (instance_extensions, ie) |a, *b| b.* = std.mem.span(a);
+        const de = try tmp_alloc.alloc([]const u8, device_extensions.len);
+        for (device_extensions, de) |a, *b| b.* = std.mem.span(a);
+        var self: Self = .{};
+        if (vk.VK_API_VERSION_1_1 <= api_version) {
+            self.instance.VK_KHR_get_physical_device_properties2 = true;
+            self.instance.VK_KHR_device_group_creation = true;
+            self.instance.VK_KHR_external_memory_capabilities = true;
+            self.instance.VK_KHR_external_semaphore_capabilities = true;
+            self.instance.VK_KHR_external_fence_capabilities = true;
+            self.device.VK_KHR_multiview = true;
+            self.device.VK_KHR_device_group = true;
+            self.device.VK_KHR_shader_draw_parameters = true;
+            self.device.VK_KHR_maintenance1 = true;
+            self.device.VK_KHR_external_memory = true;
+            self.device.VK_KHR_external_semaphore = true;
+            self.device.VK_KHR_16bit_storage = true;
+            self.device.VK_KHR_descriptor_update_template = true;
+            self.device.VK_KHR_external_fence = true;
+            self.device.VK_KHR_maintenance2 = true;
+            self.device.VK_KHR_variable_pointers = true;
+            self.device.VK_KHR_dedicated_allocation = true;
+            self.device.VK_KHR_storage_buffer_storage_class = true;
+            self.device.VK_KHR_relaxed_block_layout = true;
+            self.device.VK_KHR_get_memory_requirements2 = true;
+            self.device.VK_KHR_sampler_ycbcr_conversion = true;
+            self.device.VK_KHR_bind_memory2 = true;
+            self.device.VK_KHR_maintenance3 = true;
+        }
+        if (vk.VK_API_VERSION_1_2 <= api_version) {
+            self.device.VK_KHR_shader_float16_int8 = true;
+            self.device.VK_KHR_imageless_framebuffer = true;
+            self.device.VK_KHR_create_renderpass2 = true;
+            self.device.VK_EXT_sampler_filter_minmax = true;
+            self.device.VK_KHR_image_format_list = true;
+            self.device.VK_EXT_descriptor_indexing = true;
+            self.device.VK_EXT_shader_viewport_index_layer = true;
+            self.device.VK_KHR_draw_indirect_count = true;
+            self.device.VK_KHR_shader_subgroup_extended_types = true;
+            self.device.VK_KHR_8bit_storage = true;
+            self.device.VK_KHR_shader_atomic_int64 = true;
+            self.device.VK_KHR_driver_properties = true;
+            self.device.VK_KHR_shader_float_controls = true;
+            self.device.VK_KHR_depth_stencil_resolve = true;
+            self.device.VK_KHR_timeline_semaphore = true;
+            self.device.VK_KHR_vulkan_memory_model = true;
+            self.device.VK_EXT_scalar_block_layout = true;
+            self.device.VK_KHR_spirv_1_4 = true;
+            self.device.VK_KHR_separate_depth_stencil_layouts = true;
+            self.device.VK_EXT_separate_stencil_usage = true;
+            self.device.VK_KHR_uniform_buffer_standard_layout = true;
+            self.device.VK_KHR_buffer_device_address = true;
+            self.device.VK_EXT_host_query_reset = true;
+        }
+        if (vk.VK_API_VERSION_1_3 <= api_version) {
+            self.device.VK_KHR_dynamic_rendering = true;
+            self.device.VK_EXT_texture_compression_astc_hdr = true;
+            self.device.VK_EXT_inline_uniform_block = true;
+            self.device.VK_EXT_pipeline_creation_feedback = true;
+            self.device.VK_KHR_shader_terminate_invocation = true;
+            self.device.VK_EXT_subgroup_size_control = true;
+            self.device.VK_EXT_tooling_info = true;
+            self.device.VK_EXT_extended_dynamic_state = true;
+            self.device.VK_EXT_shader_demote_to_helper_invocation = true;
+            self.device.VK_KHR_shader_integer_dot_product = true;
+            self.device.VK_EXT_texel_buffer_alignment = true;
+            self.device.VK_KHR_shader_non_semantic_info = true;
+            self.device.VK_EXT_private_data = true;
+            self.device.VK_EXT_pipeline_creation_cache_control = true;
+            self.device.VK_KHR_synchronization2 = true;
+            self.device.VK_KHR_zero_initialize_workgroup_memory = true;
+            self.device.VK_EXT_ycbcr_2plane_444_formats = true;
+            self.device.VK_EXT_image_robustness = true;
+            self.device.VK_KHR_copy_commands2 = true;
+            self.device.VK_EXT_4444_formats = true;
+            self.device.VK_KHR_format_feature_flags2 = true;
+            self.device.VK_EXT_extended_dynamic_state2 = true;
+            self.device.VK_KHR_maintenance4 = true;
+        }
+        if (vk.VK_API_VERSION_1_4 <= api_version) {
+            self.device.VK_EXT_pipeline_robustness = true;
+            self.device.VK_KHR_push_descriptor = true;
+            self.device.VK_KHR_global_priority = true;
+            self.device.VK_KHR_dynamic_rendering_local_read = true;
+            self.device.VK_EXT_host_image_copy = true;
+            self.device.VK_KHR_map_memory2 = true;
+            self.device.VK_KHR_shader_subgroup_rotate = true;
+            self.device.VK_EXT_pipeline_protected_access = true;
+            self.device.VK_KHR_maintenance5 = true;
+            self.device.VK_KHR_vertex_attribute_divisor = true;
+            self.device.VK_KHR_load_store_op_none = true;
+            self.device.VK_KHR_shader_float_controls2 = true;
+            self.device.VK_KHR_index_type_uint8 = true;
+            self.device.VK_KHR_line_rasterization = true;
+            self.device.VK_KHR_shader_expect_assume = true;
+            self.device.VK_KHR_maintenance6 = true;
+        }
+        // Instance extensions
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_surface")) {
+                self.instance.VK_KHR_surface = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_display") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_KHR_display = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_debug_report")) {
+                self.instance.VK_EXT_debug_report = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_physical_device_properties2")) {
+                self.instance.VK_KHR_get_physical_device_properties2 = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_validation_flags")) {
+                self.instance.VK_EXT_validation_flags = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_device_group_creation")) {
+                self.instance.VK_KHR_device_group_creation = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.instance.VK_KHR_external_memory_capabilities = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.instance.VK_KHR_external_semaphore_capabilities = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_direct_mode_display") and (self.instance.VK_KHR_display)) {
+                self.instance.VK_EXT_direct_mode_display = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_display_surface_counter") and (self.instance.VK_KHR_display)) {
+                self.instance.VK_EXT_display_surface_counter = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_colorspace") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_EXT_swapchain_colorspace = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.instance.VK_KHR_external_fence_capabilities = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_surface_capabilities2") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_KHR_get_surface_capabilities2 = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_display_properties2") and (self.instance.VK_KHR_display)) {
+                self.instance.VK_KHR_get_display_properties2 = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_debug_utils")) {
+                self.instance.VK_EXT_debug_utils = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_metal_surface") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_EXT_metal_surface = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_surface_protected_capabilities") and (vk.VK_API_VERSION_1_1 <= api_version and self.instance.VK_KHR_get_surface_capabilities2)) {
+                self.instance.VK_KHR_surface_protected_capabilities = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_validation_features")) {
+                self.instance.VK_EXT_validation_features = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_headless_surface") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_EXT_headless_surface = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_surface_maintenance1") and (self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2)) {
+                self.instance.VK_EXT_surface_maintenance1 = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_acquire_drm_display") and (self.instance.VK_EXT_direct_mode_display)) {
+                self.instance.VK_EXT_acquire_drm_display = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_directfb_surface") and (self.instance.VK_KHR_surface)) {
+                self.instance.VK_EXT_directfb_surface = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_portability_enumeration")) {
+                self.instance.VK_KHR_portability_enumeration = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_application_parameters")) {
+                self.instance.VK_EXT_application_parameters = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_surface_maintenance1") and (self.instance.VK_KHR_surface or self.instance.VK_KHR_get_surface_capabilities2)) {
+                self.instance.VK_KHR_surface_maintenance1 = true;
+                break;
+            }
+        }
+        for (ie) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_layer_settings")) {
+                self.instance.VK_EXT_layer_settings = true;
+                break;
+            }
+        }
+        // Device extensions
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain") and (self.instance.VK_KHR_surface)) {
+                self.device.VK_KHR_swapchain = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_display_swapchain") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_display)) {
+                self.device.VK_KHR_display_swapchain = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_range_unrestricted")) {
+                self.device.VK_EXT_depth_range_unrestricted = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_IMG_filter_cubic")) {
+                self.device.VK_IMG_filter_cubic = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_debug_marker") and (self.instance.VK_EXT_debug_report)) {
+                self.device.VK_EXT_debug_marker = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_queue") and ((vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_KHR_synchronization2) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_KHR_video_queue = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_queue") and (self.device.VK_KHR_video_queue and (self.device.VK_KHR_synchronization2 or vk.VK_API_VERSION_1_3 <= api_version))) {
+                self.device.VK_KHR_video_decode_queue = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_transform_feedback") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_transform_feedback = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h264") and (self.device.VK_KHR_video_encode_queue)) {
+                self.device.VK_KHR_video_encode_h264 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h265") and (self.device.VK_KHR_video_encode_queue)) {
+                self.device.VK_KHR_video_encode_h265 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h264") and (self.device.VK_KHR_video_decode_queue)) {
+                self.device.VK_KHR_video_decode_h264 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_depth_stencil_resolve) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_KHR_dynamic_rendering = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_multiview") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_multiview = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_IMG_format_pvrtc")) {
+                self.device.VK_IMG_format_pvrtc = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_device_group") and (self.instance.VK_KHR_device_group_creation)) {
+                self.device.VK_KHR_device_group = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_draw_parameters")) {
+                self.device.VK_KHR_shader_draw_parameters = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_subgroup_ballot")) {
+                self.device.VK_EXT_shader_subgroup_ballot = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_subgroup_vote")) {
+                self.device.VK_EXT_shader_subgroup_vote = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_texture_compression_astc_hdr") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_texture_compression_astc_hdr = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_astc_decode_mode") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_astc_decode_mode = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_pipeline_robustness = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance1")) {
+                self.device.VK_KHR_maintenance1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory") and (self.instance.VK_KHR_external_memory_capabilities or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_external_memory = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_fd") and (self.device.VK_KHR_external_memory or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_external_memory_fd = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore") and (self.instance.VK_KHR_external_semaphore_capabilities)) {
+                self.device.VK_KHR_external_semaphore = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_fd") and (self.device.VK_KHR_external_semaphore or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_external_semaphore_fd = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_push_descriptor") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_push_descriptor = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_conditional_rendering") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_conditional_rendering = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float16_int8") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_float16_int8 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_16bit_storage") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_16bit_storage = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_incremental_present") and (self.device.VK_KHR_swapchain)) {
+                self.device.VK_KHR_incremental_present = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_descriptor_update_template")) {
+                self.device.VK_KHR_descriptor_update_template = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_display_control") and (self.instance.VK_EXT_display_surface_counter and self.device.VK_KHR_swapchain)) {
+                self.device.VK_EXT_display_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_discard_rectangles") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_discard_rectangles = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_conservative_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_conservative_rasterization = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_enable") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_depth_clip_enable = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_hdr_metadata") and (self.device.VK_KHR_swapchain)) {
+                self.device.VK_EXT_hdr_metadata = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_imageless_framebuffer") and ((((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance2) or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_image_format_list) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_KHR_imageless_framebuffer = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_create_renderpass2") and ((self.device.VK_KHR_multiview and self.device.VK_KHR_maintenance2) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_create_renderpass2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_IMG_relaxed_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_IMG_relaxed_line_rasterization = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shared_presentable_image") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_get_surface_capabilities2 and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version))) {
+                self.device.VK_KHR_shared_presentable_image = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence") and (self.instance.VK_KHR_external_fence_capabilities)) {
+                self.device.VK_KHR_external_fence = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_fd") and (self.device.VK_KHR_external_fence or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_external_fence_fd = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_performance_query") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_performance_query = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance2")) {
+                self.device.VK_KHR_maintenance2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_variable_pointers") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_variable_pointers = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_dma_buf") and (self.device.VK_KHR_external_memory_fd)) {
+                self.device.VK_EXT_external_memory_dma_buf = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_queue_family_foreign") and (self.device.VK_KHR_external_memory or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_queue_family_foreign = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_dedicated_allocation") and (self.device.VK_KHR_get_memory_requirements2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_dedicated_allocation = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_sampler_filter_minmax") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_sampler_filter_minmax = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_storage_buffer_storage_class")) {
+                self.device.VK_KHR_storage_buffer_storage_class = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_inline_uniform_block") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance1) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_inline_uniform_block = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_stencil_export")) {
+                self.device.VK_EXT_shader_stencil_export = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_bfloat16") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_bfloat16 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_sample_locations") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_sample_locations = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_relaxed_block_layout")) {
+                self.device.VK_KHR_relaxed_block_layout = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_memory_requirements2")) {
+                self.device.VK_KHR_get_memory_requirements2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_image_format_list")) {
+                self.device.VK_KHR_image_format_list = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_blend_operation_advanced") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_blend_operation_advanced = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_acceleration_structure") and (((vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_EXT_descriptor_indexing and self.device.VK_KHR_buffer_device_address) or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_deferred_host_operations)) {
+                self.device.VK_KHR_acceleration_structure = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_pipeline") and ((self.device.VK_KHR_spirv_1_4 or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_acceleration_structure)) {
+                self.device.VK_KHR_ray_tracing_pipeline = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_query") and ((self.device.VK_KHR_spirv_1_4 or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_acceleration_structure)) {
+                self.device.VK_KHR_ray_query = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_post_depth_coverage")) {
+                self.device.VK_EXT_post_depth_coverage = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_sampler_ycbcr_conversion") and ((self.device.VK_KHR_maintenance1 and self.device.VK_KHR_bind_memory2 and self.device.VK_KHR_get_memory_requirements2 and self.instance.VK_KHR_get_physical_device_properties2) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_sampler_ycbcr_conversion = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_bind_memory2")) {
+                self.device.VK_KHR_bind_memory2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_drm_format_modifier") and ((((self.device.VK_KHR_bind_memory2 and self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_sampler_ycbcr_conversion) or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_image_format_list) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_EXT_image_drm_format_modifier = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_validation_cache")) {
+                self.device.VK_EXT_validation_cache = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_indexing") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance3) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_descriptor_indexing = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_viewport_index_layer")) {
+                self.device.VK_EXT_shader_viewport_index_layer = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_portability_subset") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_portability_subset = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance3") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance3 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_draw_indirect_count")) {
+                self.device.VK_KHR_draw_indirect_count = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_filter_cubic")) {
+                self.device.VK_EXT_filter_cubic = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_render_pass_shader_resolve")) {
+                self.device.VK_QCOM_render_pass_shader_resolve = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_global_priority")) {
+                self.device.VK_EXT_global_priority = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_extended_types") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_subgroup_extended_types = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_8bit_storage") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_8bit_storage = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_host") and (self.device.VK_KHR_external_memory or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_external_memory_host = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_atomic_int64") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_atomic_int64 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_clock") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_clock = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_calibrated_timestamps") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_calibrated_timestamps = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h265") and (self.device.VK_KHR_video_decode_queue)) {
+                self.device.VK_KHR_video_decode_h265 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_global_priority") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_global_priority = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_divisor") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_vertex_attribute_divisor = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_creation_feedback")) {
+                self.device.VK_EXT_pipeline_creation_feedback = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_driver_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_driver_properties = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_float_controls = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_depth_stencil_resolve") and (self.device.VK_KHR_create_renderpass2 or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_KHR_depth_stencil_resolve = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_mutable_format") and (self.device.VK_KHR_swapchain and (self.device.VK_KHR_maintenance2 or vk.VK_API_VERSION_1_1 <= api_version) and (self.device.VK_KHR_image_format_list or vk.VK_API_VERSION_1_2 <= api_version))) {
+                self.device.VK_KHR_swapchain_mutable_format = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_timeline_semaphore") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_timeline_semaphore = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_INTEL_shader_integer_functions2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_INTEL_shader_integer_functions2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_INTEL_performance_query")) {
+                self.device.VK_INTEL_performance_query = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_vulkan_memory_model") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_vulkan_memory_model = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pci_bus_info") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_pci_bus_info = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_terminate_invocation") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_terminate_invocation = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_fragment_density_map = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_scalar_block_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_scalar_block_layout = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_subgroup_size_control") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_subgroup_size_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shading_rate") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_create_renderpass2) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_KHR_fragment_shading_rate = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering_local_read") and (self.device.VK_KHR_dynamic_rendering or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_KHR_dynamic_rendering_local_read = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_image_atomic_int64") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_shader_image_atomic_int64 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_quad_control") and (((vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_KHR_vulkan_memory_model) or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_shader_maximal_reconvergence)) {
+                self.device.VK_KHR_shader_quad_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_spirv_1_4") and (vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_KHR_shader_float_controls)) {
+                self.device.VK_KHR_spirv_1_4 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_memory_budget") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_memory_budget = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_memory_priority") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_memory_priority = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_separate_depth_stencil_layouts") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_create_renderpass2) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_KHR_separate_depth_stencil_layouts = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_buffer_device_address") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_buffer_device_address = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_tooling_info")) {
+                self.device.VK_EXT_tooling_info = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_separate_stencil_usage")) {
+                self.device.VK_EXT_separate_stencil_usage = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_wait") and (self.device.VK_KHR_swapchain and self.device.VK_KHR_present_id)) {
+                self.device.VK_KHR_present_wait = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_shader_interlock") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_fragment_shader_interlock = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_image_arrays") and (self.device.VK_KHR_sampler_ycbcr_conversion or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_ycbcr_image_arrays = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_uniform_buffer_standard_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_uniform_buffer_standard_layout = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_provoking_vertex") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_provoking_vertex = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_full_screen_exclusive") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2 and self.device.VK_KHR_swapchain)) {
+                self.device.VK_EXT_full_screen_exclusive = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_buffer_device_address") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_device_group) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_buffer_device_address = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_line_rasterization = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_shader_atomic_float = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_host_query_reset") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_host_query_reset = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_index_type_uint8") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_index_type_uint8 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_extended_dynamic_state = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_deferred_host_operations")) {
+                self.device.VK_KHR_deferred_host_operations = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_executable_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_pipeline_executable_properties = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_host_image_copy") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_copy_commands2 and self.device.VK_KHR_format_feature_flags2) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_host_image_copy = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_map_memory2")) {
+                self.device.VK_KHR_map_memory2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_map_memory_placed") and (self.device.VK_KHR_map_memory2 or vk.VK_API_VERSION_1_4 <= api_version)) {
+                self.device.VK_EXT_map_memory_placed = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float2") and (self.device.VK_EXT_shader_atomic_float)) {
+                self.device.VK_EXT_shader_atomic_float2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_maintenance1") and (self.device.VK_KHR_swapchain and self.instance.VK_EXT_surface_maintenance1 and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version))) {
+                self.device.VK_EXT_swapchain_maintenance1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_demote_to_helper_invocation") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_shader_demote_to_helper_invocation = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_integer_dot_product") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_integer_dot_product = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_texel_buffer_alignment") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_texel_buffer_alignment = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_render_pass_transform")) {
+                self.device.VK_QCOM_render_pass_transform = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_bias_control") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_depth_bias_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_memory_report") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_device_memory_report = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_robustness2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_robustness2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_custom_border_color") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_custom_border_color = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_library")) {
+                self.device.VK_KHR_pipeline_library = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_non_semantic_info")) {
+                self.device.VK_KHR_shader_non_semantic_info = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_id") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_present_id = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_private_data") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_private_data = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_creation_cache_control") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_pipeline_creation_cache_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_queue") and (self.device.VK_KHR_video_queue and (self.device.VK_KHR_synchronization2 or vk.VK_API_VERSION_1_3 <= api_version))) {
+                self.device.VK_KHR_video_encode_queue = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_render_pass_store_ops")) {
+                self.device.VK_QCOM_render_pass_store_ops = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_object_refresh")) {
+                self.device.VK_KHR_object_refresh = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_shading") and (self.device.VK_QCOM_tile_properties or self.instance.VK_KHR_get_physical_device_properties2)) {
+                self.device.VK_QCOM_tile_shading = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_metal_objects")) {
+                self.device.VK_EXT_metal_objects = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_synchronization2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_synchronization2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_buffer") and (((((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_buffer_device_address and self.device.VK_EXT_descriptor_indexing) or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_synchronization2) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_descriptor_buffer = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_graphics_pipeline_library") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_pipeline_library)) {
+                self.device.VK_EXT_graphics_pipeline_library = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shader_barycentric") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_fragment_shader_barycentric = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_uniform_control_flow") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_subgroup_uniform_control_flow = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_zero_initialize_workgroup_memory") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_zero_initialize_workgroup_memory = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_mesh_shader") and (self.device.VK_KHR_spirv_1_4 or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_EXT_mesh_shader = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_2plane_444_formats") and (self.device.VK_KHR_sampler_ycbcr_conversion or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_ycbcr_2plane_444_formats = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map2") and (self.device.VK_EXT_fragment_density_map)) {
+                self.device.VK_EXT_fragment_density_map2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_rotated_copy_commands") and (self.device.VK_KHR_copy_commands2 or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_QCOM_rotated_copy_commands = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_image_robustness = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_workgroup_memory_explicit_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_workgroup_memory_explicit_layout = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_copy_commands2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_copy_commands2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_image_compression_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_attachment_feedback_loop_layout = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_4444_formats") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_4444_formats = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_fault") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_device_fault = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_rgba10x6_formats") and (self.device.VK_KHR_sampler_ycbcr_conversion or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_rgba10x6_formats = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_VALVE_mutable_descriptor_type") and (self.device.VK_KHR_maintenance3)) {
+                self.device.VK_VALVE_mutable_descriptor_type = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_input_dynamic_state") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_vertex_input_dynamic_state = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_physical_device_drm") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_physical_device_drm = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_address_binding_report") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.instance.VK_EXT_debug_utils)) {
+                self.device.VK_EXT_device_address_binding_report = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_control") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_depth_clip_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_primitive_topology_list_restart") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_primitive_topology_list_restart = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_format_feature_flags2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_format_feature_flags2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_present_mode_fifo_latest_ready") and (self.device.VK_KHR_swapchain)) {
+                self.device.VK_EXT_present_mode_fifo_latest_ready = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_pipeline_properties = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_frame_boundary")) {
+                self.device.VK_EXT_frame_boundary = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_multisampled_render_to_single_sampled") and ((self.device.VK_KHR_create_renderpass2 and self.device.VK_KHR_depth_stencil_resolve) or vk.VK_API_VERSION_1_2 <= api_version)) {
+                self.device.VK_EXT_multisampled_render_to_single_sampled = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_extended_dynamic_state2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_color_write_enable") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_color_write_enable = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_primitives_generated_query") and (self.device.VK_EXT_transform_feedback)) {
+                self.device.VK_EXT_primitives_generated_query = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_maintenance1") and (self.device.VK_KHR_acceleration_structure)) {
+                self.device.VK_KHR_ray_tracing_maintenance1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_global_priority_query") and (self.device.VK_EXT_global_priority and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version))) {
+                self.device.VK_EXT_global_priority_query = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_view_min_lod") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_image_view_min_lod = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_multi_draw") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_multi_draw = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_2d_view_of_3d") and ((self.device.VK_KHR_maintenance1 and self.instance.VK_KHR_get_physical_device_properties2) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_image_2d_view_of_3d = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_tile_image") and (vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_shader_tile_image = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_opacity_micromap") and (self.device.VK_KHR_acceleration_structure and (self.device.VK_KHR_synchronization2 or vk.VK_API_VERSION_1_3 <= api_version))) {
+                self.device.VK_EXT_opacity_micromap = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_load_store_op_none")) {
+                self.device.VK_EXT_load_store_op_none = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_border_color_swizzle") and (self.device.VK_EXT_custom_border_color)) {
+                self.device.VK_EXT_border_color_swizzle = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pageable_device_local_memory") and (self.device.VK_EXT_memory_priority)) {
+                self.device.VK_EXT_pageable_device_local_memory = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance4") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance4 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_rotate")) {
+                self.device.VK_KHR_shader_subgroup_rotate = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_sliced_view_of_3d") and ((self.device.VK_KHR_maintenance1 and self.instance.VK_KHR_get_physical_device_properties2) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_image_sliced_view_of_3d = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_VALVE_descriptor_set_host_mapping") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_VALVE_descriptor_set_host_mapping = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_zero_one") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_depth_clamp_zero_one = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_non_seamless_cube_map") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_non_seamless_cube_map = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_fragment_density_map_offset") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_EXT_fragment_density_map)) {
+                self.device.VK_QCOM_fragment_density_map_offset = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_maximal_reconvergence") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_maximal_reconvergence = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control_swapchain") and (self.device.VK_EXT_image_compression_control)) {
+                self.device.VK_EXT_image_compression_control_swapchain = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing") and (self.device.VK_KHR_format_feature_flags2 or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_QCOM_image_processing = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_nested_command_buffer") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_nested_command_buffer = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_acquire_unmodified") and (self.device.VK_KHR_external_memory or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_external_memory_acquire_unmodified = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state3") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_extended_dynamic_state3 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_subpass_merge_feedback") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_subpass_merge_feedback = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_module_identifier") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_EXT_pipeline_creation_cache_control) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_shader_module_identifier = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_rasterization_order_attachment_access") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_rasterization_order_attachment_access = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_legacy_dithering") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_legacy_dithering = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_protected_access") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_pipeline_protected_access = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance5") and ((vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_KHR_maintenance5 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_id2") and (self.instance.VK_KHR_get_surface_capabilities2 and self.instance.VK_KHR_surface and self.device.VK_KHR_swapchain)) {
+                self.device.VK_KHR_present_id2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_wait2") and (self.instance.VK_KHR_get_surface_capabilities2 and self.instance.VK_KHR_surface and self.device.VK_KHR_swapchain and self.device.VK_KHR_present_id2)) {
+                self.device.VK_KHR_present_wait2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_position_fetch") and (self.device.VK_KHR_acceleration_structure)) {
+                self.device.VK_KHR_ray_tracing_position_fetch = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_object") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_shader_object = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_binary") and (self.device.VK_KHR_maintenance5 or vk.VK_API_VERSION_1_4 <= api_version)) {
+                self.device.VK_KHR_pipeline_binary = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_QCOM_tile_properties = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_maintenance1") and (self.device.VK_KHR_swapchain or self.instance.VK_KHR_surface_maintenance1 or self.instance.VK_KHR_get_physical_device_properties2)) {
+                self.device.VK_KHR_swapchain_maintenance1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_viewports") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_QCOM_multiview_per_view_viewports = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_mutable_descriptor_type") and (self.device.VK_KHR_maintenance3 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_mutable_descriptor_type = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_legacy_vertex_attributes") and (self.device.VK_EXT_vertex_input_dynamic_state)) {
+                self.device.VK_EXT_legacy_vertex_attributes = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_library_group_handles") and (self.device.VK_KHR_ray_tracing_pipeline and self.device.VK_KHR_pipeline_library)) {
+                self.device.VK_EXT_pipeline_library_group_handles = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_dynamic_rendering_unused_attachments") and (((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_dynamic_rendering_unused_attachments = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_cooperative_matrix") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_cooperative_matrix = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_render_areas")) {
+                self.device.VK_QCOM_multiview_per_view_render_areas = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_compute_shader_derivatives") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_compute_shader_derivatives = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_av1") and (self.device.VK_KHR_video_decode_queue)) {
+                self.device.VK_KHR_video_decode_av1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_av1") and (self.device.VK_KHR_video_encode_queue)) {
+                self.device.VK_KHR_video_encode_av1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_vp9") and (self.device.VK_KHR_video_decode_queue)) {
+                self.device.VK_KHR_video_decode_vp9 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance1") and (self.device.VK_KHR_video_queue)) {
+                self.device.VK_KHR_video_maintenance1 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing2") and (self.device.VK_QCOM_image_processing)) {
+                self.device.VK_QCOM_image_processing2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_weights") and (self.device.VK_EXT_filter_cubic)) {
+                self.device.VK_QCOM_filter_cubic_weights = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_ycbcr_degamma")) {
+                self.device.VK_QCOM_ycbcr_degamma = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_clamp") and ((self.device.VK_EXT_filter_cubic) and (vk.VK_API_VERSION_1_2 <= api_version or self.device.VK_EXT_sampler_filter_minmax))) {
+                self.device.VK_QCOM_filter_cubic_clamp = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_dynamic_state") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_EXT_attachment_feedback_loop_layout)) {
+                self.device.VK_EXT_attachment_feedback_loop_dynamic_state = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_vertex_attribute_divisor") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_vertex_attribute_divisor = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_load_store_op_none")) {
+                self.device.VK_KHR_load_store_op_none = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_unified_image_layouts")) {
+                self.device.VK_KHR_unified_image_layouts = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls2") and (vk.VK_API_VERSION_1_1 <= api_version and self.device.VK_KHR_shader_float_controls)) {
+                self.device.VK_KHR_shader_float_controls2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_index_type_uint8") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_index_type_uint8 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_line_rasterization = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_calibrated_timestamps") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_calibrated_timestamps = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_expect_assume") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_shader_expect_assume = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance6") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance6 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_memory_heap") and ((self.device.VK_KHR_get_memory_requirements2 and self.instance.VK_KHR_get_physical_device_properties2) or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_QCOM_tile_memory_heap = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_intra_refresh") and (self.device.VK_KHR_video_encode_queue)) {
+                self.device.VK_KHR_video_encode_intra_refresh = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_quantization_map") and (self.device.VK_KHR_video_encode_queue and (self.device.VK_KHR_format_feature_flags2 or vk.VK_API_VERSION_1_3 <= api_version))) {
+                self.device.VK_KHR_video_encode_quantization_map = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_relaxed_extended_instruction")) {
+                self.device.VK_KHR_shader_relaxed_extended_instruction = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance7") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance7 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_replicated_composites")) {
+                self.device.VK_EXT_shader_replicated_composites = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_float8")) {
+                self.device.VK_EXT_shader_float8 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_generated_commands") and (((self.device.VK_KHR_buffer_device_address or vk.VK_API_VERSION_1_2 <= api_version) and self.device.VK_KHR_maintenance5) or vk.VK_API_VERSION_1_3 <= api_version)) {
+                self.device.VK_EXT_device_generated_commands = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance8") and (vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance8 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_control") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_depth_clamp_control = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance9") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_maintenance9 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance2") and (self.device.VK_KHR_video_queue)) {
+                self.device.VK_KHR_video_maintenance2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_metal") and (self.device.VK_KHR_external_memory or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_external_memory_metal = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_depth_clamp_zero_one") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_depth_clamp_zero_one = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_vertex_attribute_robustness = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_VALVE_fragment_density_map_layered") and ((self.device.VK_KHR_maintenance5 or vk.VK_API_VERSION_1_4 <= api_version) and self.device.VK_EXT_fragment_density_map)) {
+                self.device.VK_VALVE_fragment_density_map_layered = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_robustness2") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_KHR_robustness2 = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map_offset") and ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_EXT_fragment_density_map and (self.device.VK_KHR_create_renderpass2 or vk.VK_API_VERSION_1_2 <= api_version) and (vk.VK_API_VERSION_1_3 <= api_version or self.device.VK_KHR_dynamic_rendering))) {
+                self.device.VK_EXT_fragment_density_map_offset = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_EXT_zero_initialize_device_memory") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
+                self.device.VK_EXT_zero_initialize_device_memory = true;
+                break;
+            }
+        }
+        for (de) |ext| {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_mode_fifo_latest_ready") and (self.device.VK_KHR_swapchain)) {
+                self.device.VK_KHR_present_mode_fifo_latest_ready = true;
+                break;
+            }
+        }
+        return self;
+    }
+};

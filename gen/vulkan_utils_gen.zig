@@ -3,6 +3,7 @@ const Allocator = std.mem.Allocator;
 
 const root = @import("root");
 const vk = @import("volk");
+const xml = @import("xml.zig");
 
 const PATH = "src/vulkan_utils.zig";
 const HEADER =
@@ -12,6 +13,7 @@ const HEADER =
     \\const vk = @import("volk");
     \\const log = @import("log.zig");
     \\
+    \\const Allocator = std.mem.Allocator;
     \\
 ;
 
@@ -1445,6 +1447,7 @@ pub fn gen() !void {
         "VK_PIPELINE_BINARY_MISSING_KHR",
         "VK_ERROR_NOT_ENOUGH_SPACE_KHR",
     });
+    try write_extension_type(&file);
 }
 
 const STRUCT_SIZE =
@@ -1860,6 +1863,16 @@ const PRINT_STRUCT =
     \\
 ;
 
+fn write_fmt(
+    file: *const std.fs.File,
+    alloc: Allocator,
+    comptime fmt: []const u8,
+    args: anytype,
+) !void {
+    const line = try std.fmt.allocPrint(alloc, fmt, args);
+    _ = try file.write(line);
+}
+
 fn write_print_chain(
     file: *const std.fs.File,
     stypes: []const struct { u32, []const u8 },
@@ -2004,6 +2017,314 @@ fn write_check_result(file: *const std.fs.File, errors: []const []const u8) !voi
         \\        },
         \\    }
         \\}
+        \\
+    );
+}
+
+const Extension = struct {
+    name: []const u8 = &.{},
+    type: []const u8 = &.{},
+    author: []const u8 = &.{},
+    depends: []const u8 = &.{},
+    promoted_to: []const u8 = &.{},
+
+    pub fn format(self: *const Extension, writer: anytype) !void {
+        try writer.print(
+            "name: {s} type: {s} author: {s} depends: {s} promoted_to: {s}",
+            .{ self.name, self.type, self.author, self.depends, self.promoted_to },
+        );
+    }
+};
+
+const IGNORE_NAMES: []const []const u8 = &.{
+    "AMD",
+    "ANDROID",
+    "ARM",
+    "FUCHSIA",
+    "GGP",
+    "GOOGLE",
+    "HUAWEI",
+    "LUNARG",
+    "MESA",
+    "MSFT",
+    "MVK",
+    "NN",
+    "NV",
+    "OHOS",
+    "QNX",
+    "RESERVED",
+    "SEC",
+    "android",
+    "extension",
+    "mir",
+    "wayland",
+    "win32",
+    "xcb",
+    "xlib",
+};
+
+fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
+    if (std.mem.startsWith(u8, s, "VK_VERSION_1_1")) return "VK_API_VERSION_1_1";
+    if (std.mem.startsWith(u8, s, "VK_VERSION_1_2")) return "VK_API_VERSION_1_2";
+    if (std.mem.startsWith(u8, s, "VK_VERSION_1_3")) return "VK_API_VERSION_1_3";
+    if (std.mem.startsWith(u8, s, "VK_VERSION_1_4")) return "VK_API_VERSION_1_4";
+    return null;
+}
+
+// Converst:
+// ((VK_KHR_get_physical_device_properties2,VK_VERSION_1_1)+VK_KHR_dynamic_rendering),VK_VERSION_1_3
+// into:
+// ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version
+fn write_depends(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    instance_extensions: []const Extension,
+    depends: []const u8,
+) !void {
+    _ = try file.write(" and (");
+    var output: std.ArrayListUnmanaged(u8) = .empty;
+    var writer = output.writer(alloc);
+    var i: usize = 0;
+    while (i < depends.len) : (i += 1) {
+        const c = depends[i];
+        switch (c) {
+            '(' => _ = try writer.write("("),
+            ')' => _ = try writer.write(")"),
+            ',' => _ = try writer.write(" or "),
+            '+' => _ = try writer.write(" and "),
+            else => {
+                if (vk_version_to_api_version(depends[i..])) |version| {
+                    try writer.print("vk.{s} <= api_version", .{version});
+                    i += "VK_VERSION_1_1".len - 1;
+                } else {
+                    if (std.mem.indexOfAny(u8, depends[i..], ",+)")) |index| {
+                        const name = depends[i .. i + index];
+                        var t: []const u8 = "device";
+                        for (instance_extensions) |*ext| {
+                            if (std.mem.eql(u8, name, ext.name)) {
+                                t = "instance";
+                                break;
+                            }
+                        }
+                        try writer.print("self.{s}.{s}", .{ t, name });
+                        i += index - 1;
+                    } else {
+                        const name = depends[i..];
+                        var t: []const u8 = "device";
+                        for (instance_extensions) |*ext| {
+                            if (std.mem.eql(u8, name, ext.name)) {
+                                t = "instance";
+                                break;
+                            }
+                        }
+                        try writer.print("self.{s}.{s}", .{ t, name });
+                        i += depends[i..].len - 1;
+                    }
+                }
+            },
+        }
+    }
+    _ = try file.write(output.items);
+    _ = try file.write(")");
+}
+
+fn write_extension_type(file: *const std.fs.File) !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const xml_file = try std.fs.cwd().openFile("thirdparty/Vulkan-Headers/registry/vk.xml", .{});
+    const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
+    _ = try xml_file.readAll(buffer);
+
+    var instance_extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var device_extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var parser: xml.Parser = .init(buffer);
+    while (parser.next()) |token| {
+        switch (token) {
+            .element_start => |es| {
+                if (std.mem.eql(u8, es, "extension")) {
+                    var ext: Extension = .{};
+                    inner: while (parser.next()) |attr| {
+                        switch (attr) {
+                            .attribute => |a| {
+                                if (std.mem.eql(u8, a.name, "name")) {
+                                    ext.name = a.value;
+                                } else if (std.mem.eql(u8, a.name, "type")) {
+                                    ext.type = a.value;
+                                } else if (std.mem.eql(u8, a.name, "author")) {
+                                    ext.author = a.value;
+                                } else if (std.mem.eql(u8, a.name, "depends")) {
+                                    ext.depends = a.value;
+                                } else if (std.mem.eql(u8, a.name, "promotedto")) {
+                                    ext.promoted_to = a.value;
+                                }
+                            },
+                            else => {
+                                for (IGNORE_NAMES) |ia|
+                                    if (std.mem.indexOf(u8, ext.name, ia) != null)
+                                        break :inner;
+                                if (std.mem.eql(u8, ext.type, "instance")) {
+                                    try instance_extensions.append(alloc, ext);
+                                } else {
+                                    try device_extensions.append(alloc, ext);
+                                }
+                                break :inner;
+                            },
+                        }
+                    }
+                }
+            },
+            else => {},
+        }
+    }
+    try write_fmt(
+        file,
+        alloc,
+        \\pub const Extensions = struct {{
+        \\    instance: packed struct(u{d}) {{
+        \\
+    ,
+        .{instance_extensions.items.len},
+    );
+    for (instance_extensions.items) |*ext| {
+        std.log.info("{f}", .{ext});
+        try write_fmt(file, alloc,
+            \\        {s}: bool = false,
+            \\
+        , .{ext.name});
+    }
+    try write_fmt(
+        file,
+        alloc,
+        \\    }} = .{{}},
+        \\    device: packed struct(u{d}) {{
+        \\
+    ,
+        .{device_extensions.items.len},
+    );
+
+    for (device_extensions.items) |*ext| {
+        std.log.info("{f}", .{ext});
+        try write_fmt(file, alloc,
+            \\        {s}: bool = false,
+            \\
+        , .{ext.name});
+    }
+    _ = try file.write(
+        \\    } = .{},
+        \\
+        \\    const Self = @This();
+        \\
+    );
+
+    _ = try file.write(
+        \\
+        \\    pub fn init(
+        \\        tmp_alloc: Allocator,
+        \\        api_version: u32,
+        \\        instance_extensions: []const [*c]const u8,
+        \\        device_extensions: []const [*c]const u8,
+        \\    ) !Self {
+        \\        const ie = try tmp_alloc.alloc([]const u8, instance_extensions.len);
+        \\        for (instance_extensions, ie) |a, *b| b.* = std.mem.span(a);
+        \\        const de = try tmp_alloc.alloc([]const u8, device_extensions.len);
+        \\        for (device_extensions, de) |a, *b| b.* = std.mem.span(a);
+        \\        var self: Self = .{};
+        \\
+    );
+    {
+        for (&[_]struct { []const u8, []const u8 }{
+            .{ "VK_API_VERSION_1_1", "VK_VERSION_1_1" },
+            .{ "VK_API_VERSION_1_2", "VK_VERSION_1_2" },
+            .{ "VK_API_VERSION_1_3", "VK_VERSION_1_3" },
+            .{ "VK_API_VERSION_1_4", "VK_VERSION_1_4" },
+        }) |tuple| {
+            const api_version, const promoted_to = tuple;
+            try write_fmt(file, alloc,
+                \\        if (vk.{s} <= api_version) {{
+                \\
+            , .{api_version});
+            for (instance_extensions.items) |*ext| {
+                if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
+                try write_fmt(file, alloc,
+                    \\            self.instance.{s} = true;
+                    \\
+                , .{ext.name});
+            }
+            for (device_extensions.items) |*ext| {
+                if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
+                try write_fmt(file, alloc,
+                    \\            self.device.{s} = true;
+                    \\
+                , .{ext.name});
+            }
+            _ = try file.write(
+                \\        }
+                \\
+            );
+        }
+    }
+    _ = try file.write(
+        \\        // Instance extensions
+        \\
+    );
+    {
+        for (instance_extensions.items) |*ext| {
+            {
+                try write_fmt(file, alloc,
+                    \\        for (ie) |ext| {{
+                    \\            if (std.mem.eql(u8, ext, "{s}")
+                , .{ext.name});
+            }
+            if (ext.depends.len != 0) try write_depends(
+                alloc,
+                file,
+                instance_extensions.items,
+                ext.depends,
+            );
+            try write_fmt(file, alloc,
+                \\) {{
+                \\                self.instance.{s} = true;
+                \\                break;
+                \\            }}
+                \\        }}
+                \\
+            , .{ext.name});
+        }
+    }
+    _ = try file.write(
+        \\        // Device extensions
+        \\
+    );
+    {
+        for (device_extensions.items) |*ext| {
+            {
+                try write_fmt(file, alloc,
+                    \\        for (de) |ext| {{
+                    \\            if (std.mem.eql(u8, ext, "{s}")
+                , .{ext.name});
+            }
+            if (ext.depends.len != 0) try write_depends(
+                alloc,
+                file,
+                instance_extensions.items,
+                ext.depends,
+            );
+            try write_fmt(file, alloc,
+                \\) {{
+                \\                self.device.{s} = true;
+                \\                break;
+                \\            }}
+                \\        }}
+                \\
+            , .{ext.name});
+        }
+    }
+
+    _ = try file.write(
+        \\        return self;
+        \\    }
+        \\};
         \\
     );
 }
