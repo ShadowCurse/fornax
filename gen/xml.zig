@@ -65,6 +65,12 @@ pub const Parser = struct {
                                     self.buffer = buffer[index + 1 ..];
                                     return token;
                                 },
+                                '!' => {
+                                    const buffer = self.buffer[4..];
+                                    const index =
+                                        std.mem.indexOf(u8, buffer, "-->") orelse return null;
+                                    self.buffer = buffer[index + 3 ..];
+                                },
                                 else => {
                                     const buffer = self.buffer[1..];
                                     const buffer_end =
