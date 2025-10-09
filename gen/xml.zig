@@ -195,6 +195,12 @@ pub const Parser = struct {
         }
     }
 
+    pub fn check_peek_element_start(self: *Self, start: []const u8) bool {
+        const es = self.peek_element_start() orelse return false;
+        if (!std.mem.eql(u8, es, start)) return false;
+        return true;
+    }
+
     pub fn element_start(self: *Self) ?[]const u8 {
         switch (self.next() orelse return null) {
             .element_start => |v| return v,
@@ -216,6 +222,13 @@ pub const Parser = struct {
         }
     }
 
+    pub fn peek_attribute(self: *Self) ?Attribute {
+        switch (self.peek_next() orelse return null) {
+            .attribute => |attr| return attr,
+            else => return null,
+        }
+    }
+
     pub fn attribute(self: *Self) ?Attribute {
         switch (self.next() orelse return null) {
             .attribute => |attr| return attr,
@@ -229,7 +242,9 @@ pub const Parser = struct {
     }
 
     pub fn skip_element(self: *Self, element: []const u8) void {
-        _ = self.skip_attributes();
+        if (self.skip_attributes()) |sa|
+            if (sa == .attribute_list_end_contained)
+                return;
         var depth: u32 = 0;
         while (self.next()) |n| {
             switch (n) {
