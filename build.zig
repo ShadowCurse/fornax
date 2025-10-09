@@ -10,12 +10,7 @@ pub fn build(b: *std.Build) !void {
     const miniz_mod = create_miniz_module(b, target, optimize);
     const volk_mod = create_volk_module(b, target, optimize);
 
-    const gen_exe = create_gen_exe(b, target, optimize, volk_mod);
-    {
-        const run_cmd = b.addRunArtifact(gen_exe);
-        const run_step = b.step("gen", "Gen");
-        run_step.dependOn(&run_cmd.step);
-    }
+    create_gen_exe(b, target, optimize, volk_mod);
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -60,7 +55,7 @@ pub fn create_gen_exe(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     volk_mod: *std.Build.Module,
-) *std.Build.Step.Compile {
+) void {
     const gen_mod = b.createModule(.{
         .root_source_file = b.path("gen/main.zig"),
         .target = target,
@@ -69,11 +64,27 @@ pub fn create_gen_exe(
             .{ .name = "volk", .module = volk_mod },
         },
     });
+
+    const exe_unit_tests = b.addTest(.{
+        .name = "gen_unit_test",
+        .root_module = gen_mod,
+        .filters = b.args orelse &.{},
+    });
+    b.installArtifact(exe_unit_tests);
+    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
+    run_exe_unit_tests.step.dependOn(b.getInstallStep());
+    const test_step = b.step("gen_test", "Run gen unit tests");
+    test_step.dependOn(&run_exe_unit_tests.step);
+
     const gen = b.addExecutable(.{
         .name = "gen",
         .root_module = gen_mod,
     });
-    return gen;
+    b.installArtifact(gen);
+
+    const run_cmd = b.addRunArtifact(gen);
+    const run_step = b.step("gen", "Gen");
+    run_step.dependOn(&run_cmd.step);
 }
 
 pub fn create_miniz_module(
