@@ -44,8 +44,12 @@ pub fn replace_beginning(
 }
 
 const ENDINGS: []const []const u8 = &.{
+    "ANDROID",
+    "FUCHSIA",
+    "HUAWEI",
     "INTEL",
     "VALVE",
+    "MESA",
     "QCOM",
     "KHR",
     "EXT",
@@ -216,4 +220,9 @@ pub fn get_type(alloc: Allocator, stype: []const u8) ![]const u8 {
 pub fn main() !void {
     try physical_device_features.gen();
     try vulkan_utils.gen();
+}
+
+comptime {
+    _ = @import("vulkan_utils_gen.zig");
+    _ = @import("xml.zig");
 }

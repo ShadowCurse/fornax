@@ -10001,7 +10001,7 @@ pub const Extensions = struct {
         VK_EXT_zero_initialize_device_memory: bool = false,
         VK_KHR_present_mode_fifo_latest_ready: bool = false,
     } = .{},
-    
+
     const Self = @This();
 
     pub fn init(

@@ -2021,22 +2021,7 @@ fn write_check_result(file: *const std.fs.File, errors: []const []const u8) !voi
     );
 }
 
-const Extension = struct {
-    name: []const u8 = &.{},
-    type: []const u8 = &.{},
-    author: []const u8 = &.{},
-    depends: []const u8 = &.{},
-    promoted_to: []const u8 = &.{},
-
-    pub fn format(self: *const Extension, writer: anytype) !void {
-        try writer.print(
-            "name: {s} type: {s} author: {s} depends: {s} promoted_to: {s}",
-            .{ self.name, self.type, self.author, self.depends, self.promoted_to },
-        );
-    }
-};
-
-const IGNORE_NAMES: []const []const u8 = &.{
+const IGNORE_SUB_NAMES: []const []const u8 = &.{
     "AMD",
     "ANDROID",
     "ARM",
@@ -2078,7 +2063,7 @@ fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
 fn write_depends(
     alloc: Allocator,
     file: *const std.fs.File,
-    instance_extensions: []const Extension,
+    extensions: []const Extension,
     depends: []const u8,
 ) !void {
     _ = try file.write(" and (");
@@ -2100,8 +2085,8 @@ fn write_depends(
                     if (std.mem.indexOfAny(u8, depends[i..], ",+)")) |index| {
                         const name = depends[i .. i + index];
                         var t: []const u8 = "device";
-                        for (instance_extensions) |*ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
+                        for (extensions) |*ext| {
+                            if (ext.type == .instance and std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2111,8 +2096,8 @@ fn write_depends(
                     } else {
                         const name = depends[i..];
                         var t: []const u8 = "device";
-                        for (instance_extensions) |*ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
+                        for (extensions) |*ext| {
+                            if (ext.type == .instance and std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2136,46 +2121,35 @@ fn write_extension_type(file: *const std.fs.File) !void {
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    var instance_extensions: std.ArrayListUnmanaged(Extension) = .empty;
-    var device_extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var types: std.ArrayListUnmanaged(Type) = .empty;
+    var extensions: std.ArrayListUnmanaged(Extension) = .empty;
     var parser: xml.Parser = .init(buffer);
-    while (parser.next()) |token| {
+    while (parser.peek_next()) |token| {
         switch (token) {
             .element_start => |es| {
-                if (std.mem.eql(u8, es, "extension")) {
-                    var ext: Extension = .{};
-                    inner: while (parser.next()) |attr| {
-                        switch (attr) {
-                            .attribute => |a| {
-                                if (std.mem.eql(u8, a.name, "name")) {
-                                    ext.name = a.value;
-                                } else if (std.mem.eql(u8, a.name, "type")) {
-                                    ext.type = a.value;
-                                } else if (std.mem.eql(u8, a.name, "author")) {
-                                    ext.author = a.value;
-                                } else if (std.mem.eql(u8, a.name, "depends")) {
-                                    ext.depends = a.value;
-                                } else if (std.mem.eql(u8, a.name, "promotedto")) {
-                                    ext.promoted_to = a.value;
-                                }
-                            },
-                            else => {
-                                for (IGNORE_NAMES) |ia|
-                                    if (std.mem.indexOf(u8, ext.name, ia) != null)
-                                        break :inner;
-                                if (std.mem.eql(u8, ext.type, "instance")) {
-                                    try instance_extensions.append(alloc, ext);
-                                } else {
-                                    try device_extensions.append(alloc, ext);
-                                }
-                                break :inner;
-                            },
-                        }
-                    }
+                if (std.mem.eql(u8, es, "registry")) {
+                    _ = parser.next();
+                    continue;
+                } else if (std.mem.eql(u8, es, "types")) {
+                    types = try parse_types(alloc, &parser);
+                } else if (std.mem.eql(u8, es, "extensions")) {
+                    extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
+                } else {
+                    parser.skip_current_element();
                 }
             },
-            else => {},
+            else => {
+                _ = parser.next();
+            },
         }
+    }
+    var instance_extensions_count: usize = 0;
+    for (extensions.items) |*ext| {
+        if (ext.type == .instance) instance_extensions_count += 1;
+    }
+    var device_extensions_count: usize = 0;
+    for (extensions.items) |*ext| {
+        if (ext.type == .device) device_extensions_count += 1;
     }
     try write_fmt(
         file,
@@ -2184,10 +2158,10 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\    instance: packed struct(u{d}) {{
         \\
     ,
-        .{instance_extensions.items.len},
+        .{instance_extensions_count},
     );
-    for (instance_extensions.items) |*ext| {
-        std.log.info("{f}", .{ext});
+    for (extensions.items) |*ext| {
+        if (ext.type != .instance) continue;
         try write_fmt(file, alloc,
             \\        {s}: bool = false,
             \\
@@ -2200,11 +2174,11 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\    device: packed struct(u{d}) {{
         \\
     ,
-        .{device_extensions.items.len},
+        .{device_extensions_count},
     );
 
-    for (device_extensions.items) |*ext| {
-        std.log.info("{f}", .{ext});
+    for (extensions.items) |*ext| {
+        if (ext.type != .device) continue;
         try write_fmt(file, alloc,
             \\        {s}: bool = false,
             \\
@@ -2244,14 +2218,16 @@ fn write_extension_type(file: *const std.fs.File) !void {
                 \\        if (vk.{s} <= api_version) {{
                 \\
             , .{api_version});
-            for (instance_extensions.items) |*ext| {
+            for (extensions.items) |*ext| {
+                if (ext.type != .instance) continue;
                 if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
                 try write_fmt(file, alloc,
                     \\            self.instance.{s} = true;
                     \\
                 , .{ext.name});
             }
-            for (device_extensions.items) |*ext| {
+            for (extensions.items) |*ext| {
+                if (ext.type != .device) continue;
                 if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
                 try write_fmt(file, alloc,
                     \\            self.device.{s} = true;
@@ -2269,7 +2245,8 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
     {
-        for (instance_extensions.items) |*ext| {
+        for (extensions.items) |*ext| {
+            if (ext.type != .instance) continue;
             {
                 try write_fmt(file, alloc,
                     \\        for (ie) |ext| {{
@@ -2279,7 +2256,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
             if (ext.depends.len != 0) try write_depends(
                 alloc,
                 file,
-                instance_extensions.items,
+                extensions.items,
                 ext.depends,
             );
             try write_fmt(file, alloc,
@@ -2297,7 +2274,8 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
     {
-        for (device_extensions.items) |*ext| {
+        for (extensions.items) |*ext| {
+            if (ext.type != .device) continue;
             {
                 try write_fmt(file, alloc,
                     \\        for (de) |ext| {{
@@ -2307,7 +2285,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
             if (ext.depends.len != 0) try write_depends(
                 alloc,
                 file,
-                instance_extensions.items,
+                extensions.items,
                 ext.depends,
             );
             try write_fmt(file, alloc,
@@ -2327,4 +2305,630 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\};
         \\
     );
+}
+
+const Extension = struct {
+    name: []const u8 = &.{},
+    type: ?Extension.Type = null,
+    depends: []const u8 = &.{},
+    promoted_to: []const u8 = &.{},
+    deprecated_by: []const u8 = &.{},
+    require: []const Require = &.{},
+
+    const Type = enum {
+        instance,
+        device,
+    };
+
+    const Require = struct {
+        depends: ?[]const u8 = null,
+        items: []const Item = &.{},
+
+        const Item = union(enum) {
+            @"enum": Enum,
+            type: []const u8,
+        };
+
+        const Enum = struct {
+            name: []const u8,
+            extends: []const u8,
+        };
+
+        pub fn format(self: *const Require, writer: anytype) !void {
+            try writer.print("depends: {?s}\n", .{self.depends});
+            for (self.items) |i| {
+                switch (i) {
+                    .@"enum" => |ee| try writer.print(
+                        "enum: name: {s} extends: {s}\n",
+                        .{ ee.name, ee.extends },
+                    ),
+                    .type => |t| try writer.print("type: {s}\n", .{t}),
+                }
+            }
+        }
+    };
+
+    pub fn format(self: *const Extension, writer: anytype) !void {
+        try writer.print(
+            "name: {s} type: {?t} depends: {s} promoted_to: {s} deprecated_by: {s}\n",
+            .{ self.name, self.type, self.depends, self.promoted_to, self.deprecated_by },
+        );
+        for (self.require) |r| try writer.print("require: {f}\n", .{r});
+    }
+};
+
+fn parse_extension_require(alloc: Allocator, original_parser: *xml.Parser) !?Extension.Require {
+    if (!original_parser.check_peek_element_start("require")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Extension.Require = .{};
+    if (parser.state == .attribute) {
+        while (parser.attribute()) |attr| {
+            if (std.mem.eql(u8, attr.name, "depends")) {
+                result.depends = attr.value;
+                _ = parser.skip_attributes();
+                break;
+            } else if (std.mem.eql(u8, attr.name, "comment")) {
+                loop: switch (parser.next() orelse return null) {
+                    .attribute_list_end => break,
+                    .attribute_list_end_contained => {
+                        original_parser.* = parser;
+                        return result;
+                    },
+                    else => continue :loop parser.next() orelse return null,
+                }
+            }
+        }
+    }
+
+    var items: std.ArrayListUnmanaged(Extension.Require.Item) = .empty;
+    while (parser.element_start()) |es| {
+        if (std.mem.eql(u8, es, "enum")) {
+            const first_attr = parser.attribute() orelse return null;
+            if (std.mem.eql(u8, first_attr.name, "extends") or
+                std.mem.eql(u8, first_attr.name, "offset") or
+                std.mem.eql(u8, first_attr.name, "value") or
+                std.mem.eql(u8, first_attr.name, "alias") or
+                std.mem.eql(u8, first_attr.name, "name") or
+                std.mem.eql(u8, first_attr.name, "api"))
+            {
+                _ = parser.skip_attributes();
+                continue;
+            }
+            var e: Extension.Require.Enum = undefined;
+            const extends = parser.attribute() orelse return null;
+            e.extends = extends.value;
+            const name = parser.attribute() orelse return null;
+            e.name = name.value;
+            _ = parser.skip_attributes();
+            try items.append(alloc, .{ .@"enum" = e });
+        } else if (std.mem.eql(u8, es, "type")) {
+            const name = parser.attribute() orelse return null;
+            _ = parser.skip_attributes();
+            try items.append(alloc, .{ .type = name.value });
+        } else if (std.mem.eql(u8, es, "command")) {
+            _ = parser.skip_attributes();
+        } else if (std.mem.eql(u8, es, "feature")) {
+            _ = parser.skip_attributes();
+        } else {
+            parser.skip_to_specific_element_end(es);
+        }
+    }
+    result.items = items.items;
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_extension_require" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    {
+        const text =
+            \\<require>
+            \\    <comment>comment</comment>
+            \\    <enum value="1" name="A"/>
+            \\    <enum value="&quot;B&quot;" name="A"/>
+            \\    <enum offset="0" extends="A" dir="-" name="A"/>
+            \\    <enum bitpos="0" extends="A" name="A"/>
+            \\    <type name="A"/>
+            \\    <command name="A"/>
+            \\    <feature name="A" struct="A"/>
+            \\</require>----
+        ;
+
+        var parser: xml.Parser = .init(text);
+        const r = (try parse_extension_require(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = r;
+        // std.log.err("{f}", .{r});
+    }
+    {
+        const text =
+            \\<require depends="A">
+            \\    <comment>comment</comment>
+            \\    <enum value="1" name="A"/>
+            \\    <enum value="&quot;B&quot;" name="A"/>
+            \\    <enum offset="0" extends="A" dir="-" name="A"/>
+            \\    <enum bitpos="0" extends="A" name="A"/>
+            \\    <type name="A"/>
+            \\    <command name="A"/>
+            \\    <feature name="A" struct="A"/>
+            \\</require>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const r = (try parse_extension_require(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = r;
+        // std.log.err("{f}", .{r});
+    }
+    {
+        const text =
+            \\<require comment="A"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const r = try parse_extension_require(alloc, &parser);
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = r;
+        // std.log.err("{f}", .{r});
+    }
+}
+
+fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?Extension {
+    if (!original_parser.check_peek_element_start("extension")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+    if (parser.state != .attribute) return null;
+
+    var result: Extension = .{};
+    while (parser.attribute()) |attr| {
+        if (std.mem.eql(u8, attr.name, "name")) {
+            result.name = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "supported")) {
+            if (std.mem.eql(u8, attr.value, "disabled")) return null;
+        } else if (std.mem.eql(u8, attr.name, "depends")) {
+            result.depends = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "promotedto")) {
+            result.promoted_to = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "deprecatedby")) {
+            result.deprecated_by = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "type")) {
+            if (std.mem.eql(u8, attr.value, "device"))
+                result.type = .device
+            else if (std.mem.eql(u8, attr.value, "instance"))
+                result.type = .instance;
+        }
+    }
+
+    var fields: std.ArrayListUnmanaged(Extension.Require) = .empty;
+    while (parser.peek_element_start()) |next_es| {
+        if (std.mem.eql(u8, next_es, "require")) {
+            if (try parse_extension_require(alloc, &parser)) |r|
+                try fields.append(alloc, r);
+        } else {
+            parser.skip_current_element();
+        }
+    }
+    result.require = fields.items;
+    _ = parser.element_end();
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_single_extension" {
+    const text =
+        \\<extension name="A" number="1" type="device" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
+        \\    <require>
+        \\        <comment>comment</comment>
+        \\        <enum value="1" name="A"/>
+        \\        <enum value="&quot;A&quot;" name="A"/>
+        \\        <enum extends="A" name="A" alias="A"/>
+        \\        <enum bitpos="0" extends="A" name="A"/>
+        \\        <type name="A"/>
+        \\        <feature name="A" struct="A"/>
+        \\    </require>
+        \\    <require depends="B">
+        \\        <comment>comment</comment>
+        \\        <enum value="1" name="B"/>
+        \\        <enum value="&quot;B&quot;" name="B"/>
+        \\        <enum extends="B" name="B" alias="B"/>
+        \\        <enum bitpos="0" extends="B" name="B"/>
+        \\        <type name="B"/>
+        \\        <feature name="B" struct="B"/>
+        \\    </require>
+        \\    <require comment="C">
+        \\        <comment>comment</comment>
+        \\        <enum value="1" name="C"/>
+        \\        <enum value="&quot;C&quot;" name="C"/>
+        \\        <enum extends="C" name="C" alias="C"/>
+        \\        <enum bitpos="0" extends="C" name="C"/>
+        \\        <type name="C"/>
+        \\        <feature name="C" struct="C"/>
+        \\    </require>
+        \\    <deprecate explanationlink="D">
+        \\        <command name="D"/>
+        \\    </deprecate>
+        \\</extension>----
+    ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var parser: xml.Parser = .init(text);
+    const e = (try parse_extension(alloc, &parser)).?;
+    try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    _ = e;
+    // std.log.err("{f}", .{e});
+}
+
+fn parse_extensions(
+    alloc: Allocator,
+    parser: *xml.Parser,
+    ignore_subnames: []const []const u8,
+) !std.ArrayListUnmanaged(Extension) {
+    if (!parser.check_peek_element_start("extensions")) return .empty;
+
+    _ = parser.element_start();
+    _ = parser.skip_attributes();
+
+    var extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    loop: while (true) {
+        if (try parse_extension(alloc, parser)) |ext| {
+            for (ignore_subnames) |ia|
+                if (std.mem.indexOf(u8, ext.name, ia) != null) continue :loop;
+            try extensions.append(alloc, ext);
+        } else {
+            // std.log.err("skipped out {s}", .{parser.buffer[0..50]});
+            parser.skip_current_element();
+        }
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "extension")) break,
+            else => {},
+        }
+    }
+    _ = parser.next();
+    return extensions;
+}
+
+test "parse_several_extensions" {
+    const text =
+        \\<extensions comment="Text">
+        \\  <extension name="A" number="1" type="device" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
+        \\      <require>
+        \\      </require>
+        \\  </extension>
+        \\  <extension name="B" number="1" type="device" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
+        \\      <require>
+        \\      </require>
+        \\  </extension>
+        \\</extensions>----
+    ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var parser: xml.Parser = .init(text);
+    const extensions = try parse_extensions(alloc, &parser, &.{});
+    try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    try std.testing.expectEqual(2, extensions.items.len);
+}
+
+const Type = union(enum) {
+    // define
+    // basetype
+    // handle
+    // enum
+    // funcpointer
+    @"struct": Struct,
+
+    pub fn format(self: *const Type, writer: anytype) !void {
+        switch (self.*) {
+            .@"struct" => |s| try writer.print("{f}\n", .{s}),
+        }
+    }
+};
+
+const Struct = struct {
+    name: []const u8 = &.{},
+    extends: ?[]const u8 = null,
+    members: []const Member = &.{},
+
+    const Member = struct {
+        name: []const u8 = &.{},
+        type: []const u8 = &.{},
+        value: ?[]const u8 = null,
+        len: ?[]const u8 = null,
+        pub fn format(self: *const Member, writer: anytype) !void {
+            try writer.print(
+                "name: {s} type: {s} value: {?s} len: {?s}",
+                .{ self.name, self.type, self.value, self.len },
+            );
+        }
+    };
+
+    pub fn format(self: *const Struct, writer: anytype) !void {
+        try writer.print(
+            "name: {s} extends: {?s} fields: {d}\n",
+            .{ self.name, self.extends, self.members.len },
+        );
+        for (self.members) |*field| try writer.print("{f}\n", .{field});
+    }
+};
+
+fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
+    if (!original_parser.check_peek_element_start("member")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Struct.Member = .{};
+    if (parser.state == .attribute) {
+        while (parser.attribute()) |attr| {
+            if (std.mem.eql(u8, attr.name, "len")) {
+                result.len = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "values")) {
+                result.value = attr.value;
+            }
+        }
+    }
+
+    parser.skip_to_specific_element_start("type");
+    result.type = parser.text() orelse return null;
+    parser.skip_to_specific_element_end("type");
+
+    parser.skip_to_specific_element_start("name");
+    result.name = parser.text() orelse return null;
+    parser.skip_to_specific_element_end("name");
+
+    parser.skip_to_specific_element_end("member");
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_struct_member" {
+    const text0 =
+        \\<member><type>A</type> <name>A</name><comment>AAA</comment></member>----
+    ;
+    {
+        var parser: xml.Parser = .init(text0);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = m;
+        // std.log.err("{f}", .{m});
+    }
+    const text1 =
+        \\<member values="A"><type>A</type> <name>A</name></member>----
+    ;
+    {
+        var parser: xml.Parser = .init(text1);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = m;
+        // std.log.err("{f}", .{m});
+    }
+    const text2 =
+        \\<member noautovalidity="true" optional="true">const <type>A</type>* <name>A</name><comment>AAA</comment></member>----
+    ;
+    {
+        var parser: xml.Parser = .init(text2);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = m;
+        // std.log.err("{f}", .{m});
+    }
+    const text3 =
+        \\<member optional="true"><type>A</type> <name>A</name></member>----
+    ;
+    {
+        var parser: xml.Parser = .init(text3);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = m;
+        // std.log.err("{f}", .{m});
+    }
+    const text4 =
+        \\<member len="A,null-terminated"> <type>A</type> <name>A</name></member>----
+    ;
+    {
+        var parser: xml.Parser = .init(text4);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = m;
+        // std.log.err("{f}", .{m});
+    }
+}
+
+fn parse_struct(alloc: Allocator, original_parser: *xml.Parser) !?Struct {
+    if (!original_parser.check_peek_element_start("type")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+    if (parser.state != .attribute) return null;
+
+    var result: Struct = .{};
+    const first_attr = parser.attribute().?;
+    if (!std.mem.eql(u8, first_attr.name, "category") or
+        !std.mem.eql(u8, first_attr.value, "struct"))
+        return null;
+
+    while (parser.peek_attribute()) |_| {
+        const attr = parser.attribute().?;
+        if (std.mem.eql(u8, attr.name, "name")) {
+            result.name = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "structextends")) {
+            result.extends = attr.value;
+        }
+    }
+
+    const attributes_end = parser.skip_attributes().?;
+    if (attributes_end != .attribute_list_end_contained) {
+        var members: std.ArrayListUnmanaged(Struct.Member) = .empty;
+        while (parse_struct_member(&parser)) |member| {
+            try members.append(alloc, member);
+        }
+        parser.skip_to_specific_element_end("type");
+        result.members = members.items;
+    }
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_single_struct" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    {
+        const text =
+            \\<type category="struct" name="A" structextends="A">
+            \\    <member><type>A</type> <name>A</name><comment>AAA</comment></member>
+            \\</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const s = (try parse_struct(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = s;
+        // std.log.err("{f}", .{s});
+    }
+
+    {
+        const text =
+            \\<type category="struct" name="A" alias="A"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const s = (try parse_struct(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = s;
+        // std.log.err("{f}", .{s});
+    }
+}
+
+fn parse_type(alloc: Allocator, parser: *xml.Parser) !?Type {
+    if (!parser.check_peek_element_start("type")) return null;
+
+    if (try parse_struct(alloc, parser)) |s| {
+        return .{ .@"struct" = s };
+    } else {
+        return null;
+    }
+}
+
+test "parse_single_type" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    {
+        const text =
+            \\<type name="vk_platform" category="include">#include "vk_platform.h"</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type category="include" name="X11/Xlib.h"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type category="basetype">struct <name>ANativeWindow</name>;</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type requires="X11/Xlib.h" name="Display"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type name="int"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type requires="R" category="bitmask"> <type>T</type> <name>N</name>;</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type api="vulkan" category="define"> <name>VK_HEADER_VERSION</name> 321</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const t = try parse_type(alloc, &parser);
+        try std.testing.expectEqual(t, null);
+    }
+    {
+        const text =
+            \\<type category="struct" name="A" structextends="A">
+            \\    <member values="A"><type>A</type> <name>A</name></member>
+            \\</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        _ = (try parse_type(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    }
+}
+
+fn parse_types(alloc: Allocator, parser: *xml.Parser) !std.ArrayListUnmanaged(Type) {
+    if (!parser.check_peek_element_start("types")) return .empty;
+
+    _ = parser.element_start();
+    _ = parser.skip_attributes();
+
+    var types: std.ArrayListUnmanaged(Type) = .empty;
+    while (true) {
+        if (try parse_type(alloc, parser)) |t| {
+            try types.append(alloc, t);
+        } else {
+            parser.skip_current_element();
+        }
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "types")) break,
+            else => {},
+        }
+    }
+    _ = parser.next();
+    return types;
+}
+
+test "parse_several_types" {
+    const text =
+        \\<types comment="Vulkan type definitions">
+        \\    <type name="a" category="include">#include "vk_platform.h"</type>
+        \\        <comment>AAA</comment>
+        \\    <type category="include" name="X11/Xlib.h"/>
+        \\    <type category="struct" name="A" alias="A"/>
+        \\    <type category="struct" name="A">
+        \\        <member values="A"><type>A</type> <name>sType</name></member>
+        \\    </type>
+        \\</types>----
+    ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var parser: xml.Parser = .init(text);
+    const types = try parse_types(alloc, &parser);
+    try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    try std.testing.expectEqual(2, types.items.len);
 }
