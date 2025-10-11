@@ -2022,33 +2022,6 @@ fn write_check_result(file: *const std.fs.File, errors: []const []const u8) !voi
     );
 }
 
-const IGNORE_SUB_NAMES: []const []const u8 = &.{
-    "AMD",
-    "ANDROID",
-    "ARM",
-    "FUCHSIA",
-    "GGP",
-    "GOOGLE",
-    "HUAWEI",
-    "LUNARG",
-    "MESA",
-    "MSFT",
-    "MVK",
-    "NN",
-    "NV",
-    "OHOS",
-    "QNX",
-    "RESERVED",
-    "SEC",
-    "android",
-    "extension",
-    "mir",
-    "wayland",
-    "win32",
-    "xcb",
-    "xlib",
-};
-
 fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
     if (std.mem.startsWith(u8, s, "VK_VERSION_1_1")) return "VK_API_VERSION_1_1";
     if (std.mem.startsWith(u8, s, "VK_VERSION_1_2")) return "VK_API_VERSION_1_2";
@@ -2064,7 +2037,7 @@ fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
 fn write_depends(
     alloc: Allocator,
     file: *const std.fs.File,
-    extensions: []const vkp.Extension,
+    instance_extensions: []const vkp.Extension,
     depends: []const u8,
 ) !void {
     _ = try file.write(" and (");
@@ -2086,8 +2059,8 @@ fn write_depends(
                     if (std.mem.indexOfAny(u8, depends[i..], ",+)")) |index| {
                         const name = depends[i .. i + index];
                         var t: []const u8 = "device";
-                        for (extensions) |*ext| {
-                            if (ext.type == .instance and std.mem.eql(u8, name, ext.name)) {
+                        for (instance_extensions) |*ext| {
+                            if (std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2097,8 +2070,8 @@ fn write_depends(
                     } else {
                         const name = depends[i..];
                         var t: []const u8 = "device";
-                        for (extensions) |*ext| {
-                            if (ext.type == .instance and std.mem.eql(u8, name, ext.name)) {
+                        for (instance_extensions) |*ext| {
+                            if (std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2117,47 +2090,8 @@ fn write_depends(
 fn write_extension_type(file: *const std.fs.File) !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
+    const db: vkp.Database = try .init(alloc, "thirdparty/Vulkan-Headers/registry/vk.xml");
 
-    const xml_file = try std.fs.cwd().openFile("thirdparty/Vulkan-Headers/registry/vk.xml", .{});
-    const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
-    _ = try xml_file.readAll(buffer);
-
-    var types: vkp.Types = undefined;
-    var extensions: std.ArrayListUnmanaged(vkp.Extension) = .empty;
-    var enums: std.ArrayListUnmanaged(vkp.Enum) = .empty;
-    var parser: xml.Parser = .init(buffer);
-    while (parser.peek_next()) |token| {
-        switch (token) {
-            .element_start => |es| {
-                if (std.mem.eql(u8, es, "registry")) {
-                    _ = parser.next();
-                    continue;
-                } else if (std.mem.eql(u8, es, "types")) {
-                    types = try vkp.parse_types(alloc, &parser);
-                } else if (std.mem.eql(u8, es, "extensions")) {
-                    extensions = try vkp.parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
-                } else if (std.mem.eql(u8, es, "enums")) {
-                    if (try vkp.parse_enum(alloc, &parser)) |e|
-                        try enums.append(alloc, e)
-                    else
-                        parser.skip_current_element();
-                } else {
-                    parser.skip_current_element();
-                }
-            },
-            else => {
-                _ = parser.next();
-            },
-        }
-    }
-    var instance_extensions_count: usize = 0;
-    for (extensions.items) |*ext| {
-        if (ext.type == .instance) instance_extensions_count += 1;
-    }
-    var device_extensions_count: usize = 0;
-    for (extensions.items) |*ext| {
-        if (ext.type == .device) device_extensions_count += 1;
-    }
     try write_fmt(
         file,
         alloc,
@@ -2165,10 +2099,9 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\    instance: packed struct(u{d}) {{
         \\
     ,
-        .{instance_extensions_count},
+        .{db.extensions.instance.len},
     );
-    for (extensions.items) |*ext| {
-        if (ext.type != .instance) continue;
+    for (db.extensions.instance) |*ext| {
         try write_fmt(file, alloc,
             \\        {s}: bool = false,
             \\
@@ -2181,11 +2114,10 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\    device: packed struct(u{d}) {{
         \\
     ,
-        .{device_extensions_count},
+        .{db.extensions.device.len},
     );
 
-    for (extensions.items) |*ext| {
-        if (ext.type != .device) continue;
+    for (db.extensions.device) |*ext| {
         try write_fmt(file, alloc,
             \\        {s}: bool = false,
             \\
@@ -2225,16 +2157,14 @@ fn write_extension_type(file: *const std.fs.File) !void {
                 \\        if (vk.{s} <= api_version) {{
                 \\
             , .{api_version});
-            for (extensions.items) |*ext| {
-                if (ext.type != .instance) continue;
+            for (db.extensions.instance) |*ext| {
                 if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
                 try write_fmt(file, alloc,
                     \\            self.instance.{s} = true;
                     \\
                 , .{ext.name});
             }
-            for (extensions.items) |*ext| {
-                if (ext.type != .device) continue;
+            for (db.extensions.device) |*ext| {
                 if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
                 try write_fmt(file, alloc,
                     \\            self.device.{s} = true;
@@ -2252,18 +2182,15 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
     {
-        for (extensions.items) |*ext| {
-            if (ext.type != .instance) continue;
-            {
-                try write_fmt(file, alloc,
-                    \\        for (ie) |ext| {{
-                    \\            if (std.mem.eql(u8, ext, "{s}")
-                , .{ext.name});
-            }
+        for (db.extensions.instance) |*ext| {
+            try write_fmt(file, alloc,
+                \\        for (ie) |ext| {{
+                \\            if (std.mem.eql(u8, ext, "{s}")
+            , .{ext.name});
             if (ext.depends.len != 0) try write_depends(
                 alloc,
                 file,
-                extensions.items,
+                db.extensions.instance,
                 ext.depends,
             );
             try write_fmt(file, alloc,
@@ -2281,18 +2208,15 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
     {
-        for (extensions.items) |*ext| {
-            if (ext.type != .device) continue;
-            {
-                try write_fmt(file, alloc,
-                    \\        for (de) |ext| {{
-                    \\            if (std.mem.eql(u8, ext, "{s}")
-                , .{ext.name});
-            }
+        for (db.extensions.device) |*ext| {
+            try write_fmt(file, alloc,
+                \\        for (de) |ext| {{
+                \\            if (std.mem.eql(u8, ext, "{s}")
+            , .{ext.name});
             if (ext.depends.len != 0) try write_depends(
                 alloc,
                 file,
-                extensions.items,
+                db.extensions.instance,
                 ext.depends,
             );
             try write_fmt(file, alloc,
@@ -2313,19 +2237,18 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
 
-    for (types.structs) |s| {
+    for (db.types.structs) |s| {
         try write_fmt(file, alloc,
             \\
             \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
             \\
-            // \\    return
         , .{ s.name, s.name });
         var tmp: std.ArrayListUnmanaged(u8) = .empty;
         var writer = tmp.writer(alloc);
         var checked_members: u32 = 0;
         for (s.members) |m| {
             if (checked_members == 0) {
-                for (enums.items) |e| {
+                for (db.enums.items) |e| {
                     if (std.mem.eql(u8, e.name, m.type)) {
                         checked_members += 1;
                         try writer.print(
@@ -2334,7 +2257,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
                         break;
                     }
                 }
-                for (types.bitmasks) |b| {
+                for (db.types.bitmasks) |b| {
                     if (std.mem.eql(u8, m.type, b.type_name)) {
                         checked_members += 1;
                         try writer.print(
@@ -2344,7 +2267,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
                     }
                 }
             } else {
-                for (enums.items) |e| {
+                for (db.enums.items) |e| {
                     if (std.mem.eql(u8, e.name, m.type)) {
                         checked_members += 1;
                         try writer.print(
@@ -2354,7 +2277,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
                         break;
                     }
                 }
-                for (types.bitmasks) |b| {
+                for (db.types.bitmasks) |b| {
                     if (std.mem.eql(u8, m.type, b.type_name)) {
                         checked_members += 1;
                         try writer.print(
@@ -2382,7 +2305,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
             , .{tmp.items});
         }
     }
-    for (enums.items) |e| {
+    for (db.enums.items) |e| {
         if (std.mem.indexOfScalar(u8, e.name, ' ') != null) continue;
         try write_fmt(file, alloc,
             \\
@@ -2405,7 +2328,9 @@ fn write_extension_type(file: *const std.fs.File) !void {
                 , .{});
 
                 var extensions_used: u32 = 0;
-                for (extensions.items) |ext| {
+                var iter = db.all_extensions();
+                while (iter.next()) |tuple| {
+                    const ext, const t = tuple;
                     for (ext.require) |req| {
                         for (req.items) |item| {
                             switch (item) {
@@ -2416,7 +2341,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
                                             \\    if (extensions.{t}.{s})
                                             \\        valid_bits |= vk.{s};
                                             \\
-                                        , .{ ext.type.?, ext.name, ee.name });
+                                        , .{ t, ext.name, ee.name });
                                     }
                                 },
                                 else => {},
@@ -2491,7 +2416,9 @@ fn write_extension_type(file: *const std.fs.File) !void {
                     \\
                 );
                 var extensions_used: u32 = 0;
-                for (extensions.items) |ext| {
+                var iter = db.all_extensions();
+                while (iter.next()) |tuple| {
+                    const ext, const t = tuple;
                     for (ext.require) |req| {
                         for (req.items) |item| {
                             switch (item) {
@@ -2502,7 +2429,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
                                             \\    if (extensions.{t}.{s} and item.* == vk.{s})
                                             \\        return true;
                                             \\
-                                        , .{ ext.type.?, ext.name, ee.name });
+                                        , .{ t, ext.name, ee.name });
                                     }
                                 },
                                 else => {},

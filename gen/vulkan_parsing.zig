@@ -3,9 +3,113 @@ const Allocator = std.mem.Allocator;
 
 const xml = @import("xml.zig");
 
+// Ignore list for extensions names
+const IGNORE_SUB_NAMES: []const []const u8 = &.{
+    "AMD",
+    "ANDROID",
+    "ARM",
+    "FUCHSIA",
+    "GGP",
+    "GOOGLE",
+    "HUAWEI",
+    "LUNARG",
+    "MESA",
+    "MSFT",
+    "MVK",
+    "NN",
+    "NV",
+    "OHOS",
+    "QNX",
+    "RESERVED",
+    "SEC",
+    "android",
+    "extension",
+    "mir",
+    "wayland",
+    "win32",
+    "xcb",
+    "xlib",
+};
+
+pub const Database = struct {
+    types: Types,
+    extensions: Extensions,
+    enums: std.ArrayListUnmanaged(Enum),
+
+    const Self = @This();
+
+    pub fn init(alloc: Allocator, path: []const u8) !Self {
+        const xml_file = try std.fs.cwd().openFile(path, .{});
+        const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
+        _ = try xml_file.readAll(buffer);
+
+        var types: Types = undefined;
+        var extensions: Extensions = undefined;
+        var enums: std.ArrayListUnmanaged(Enum) = .empty;
+        var parser: xml.Parser = .init(buffer);
+        while (parser.peek_next()) |token| {
+            switch (token) {
+                .element_start => |es| {
+                    if (std.mem.eql(u8, es, "registry")) {
+                        _ = parser.next();
+                        continue;
+                    } else if (std.mem.eql(u8, es, "types")) {
+                        types = try parse_types(alloc, &parser);
+                    } else if (std.mem.eql(u8, es, "extensions")) {
+                        extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
+                    } else if (std.mem.eql(u8, es, "enums")) {
+                        if (try parse_enum(alloc, &parser)) |e|
+                            try enums.append(alloc, e)
+                        else
+                            parser.skip_current_element();
+                    } else {
+                        parser.skip_current_element();
+                    }
+                },
+                else => {
+                    _ = parser.next();
+                },
+            }
+        }
+        return .{
+            .types = types,
+            .extensions = extensions,
+            .enums = enums,
+        };
+    }
+
+    pub const AllExtensionsIterator = struct {
+        db: *const Self,
+        instance_index: u32 = 0,
+        device_index: u32 = 0,
+
+        pub fn next(self: *AllExtensionsIterator) ?struct { *const Extension, Extension.Type } {
+            while (self.instance_index < self.db.extensions.instance.len) {
+                const ext = &self.db.extensions.instance[self.instance_index];
+                self.instance_index += 1;
+                return .{ ext, .instance };
+            }
+            while (self.device_index < self.db.extensions.device.len) {
+                const ext = &self.db.extensions.device[self.device_index];
+                self.device_index += 1;
+                return .{ ext, .device };
+            }
+            return null;
+        }
+    };
+
+    pub fn all_extensions(self: *const Self) AllExtensionsIterator {
+        return .{ .db = self };
+    }
+};
+
+pub const Extensions = struct {
+    instance: []const Extension = &.{},
+    device: []const Extension = &.{},
+};
+
 pub const Extension = struct {
     name: []const u8 = &.{},
-    type: ?Extension.Type = null,
     depends: []const u8 = &.{},
     promoted_to: []const u8 = &.{},
     deprecated_by: []const u8 = &.{},
@@ -46,8 +150,8 @@ pub const Extension = struct {
 
     pub fn format(self: *const Extension, writer: anytype) !void {
         try writer.print(
-            "name: {s} type: {?t} depends: {s} promoted_to: {s} deprecated_by: {s}\n",
-            .{ self.name, self.type, self.depends, self.promoted_to, self.deprecated_by },
+            "name: {s} depends: {s} promoted_to: {s} deprecated_by: {s}\n",
+            .{ self.name, self.depends, self.promoted_to, self.deprecated_by },
         );
         for (self.require) |r| try writer.print("require: {f}\n", .{r});
     }
@@ -172,7 +276,10 @@ test "parse_extension_require" {
     }
 }
 
-pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?Extension {
+pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?struct {
+    Extension,
+    Extension.Type,
+} {
     if (!original_parser.check_peek_element_start("extension")) return null;
 
     var parser = original_parser.*;
@@ -180,6 +287,7 @@ pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?Extensi
     if (parser.state != .attribute) return null;
 
     var result: Extension = .{};
+    var t: ?Extension.Type = null;
     while (parser.attribute()) |attr| {
         if (std.mem.eql(u8, attr.name, "name")) {
             result.name = attr.value;
@@ -193,11 +301,12 @@ pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?Extensi
             result.deprecated_by = attr.value;
         } else if (std.mem.eql(u8, attr.name, "type")) {
             if (std.mem.eql(u8, attr.value, "device"))
-                result.type = .device
+                t = .device
             else if (std.mem.eql(u8, attr.value, "instance"))
-                result.type = .instance;
+                t = .instance;
         }
     }
+    if (t == null) return null;
 
     var fields: std.ArrayListUnmanaged(Extension.Require) = .empty;
     while (parser.peek_element_start()) |next_es| {
@@ -212,7 +321,7 @@ pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?Extensi
     _ = parser.element_end();
 
     original_parser.* = parser;
-    return result;
+    return .{ result, t.? };
 }
 
 test "parse_single_extension" {
@@ -265,18 +374,23 @@ pub fn parse_extensions(
     alloc: Allocator,
     parser: *xml.Parser,
     ignore_subnames: []const []const u8,
-) !std.ArrayListUnmanaged(Extension) {
-    if (!parser.check_peek_element_start("extensions")) return .empty;
+) !Extensions {
+    if (!parser.check_peek_element_start("extensions")) return .{};
 
     _ = parser.element_start();
     _ = parser.skip_attributes();
 
-    var extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var instance_extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var device_extensions: std.ArrayListUnmanaged(Extension) = .empty;
     loop: while (true) {
-        if (try parse_extension(alloc, parser)) |ext| {
+        if (try parse_extension(alloc, parser)) |tuple| {
+            const ext, const t = tuple;
             for (ignore_subnames) |ia|
                 if (std.mem.indexOf(u8, ext.name, ia) != null) continue :loop;
-            try extensions.append(alloc, ext);
+            switch (t) {
+                .instance => try instance_extensions.append(alloc, ext),
+                .device => try device_extensions.append(alloc, ext),
+            }
         } else {
             // std.log.err("skipped out {s}", .{parser.buffer[0..50]});
             parser.skip_current_element();
@@ -287,7 +401,10 @@ pub fn parse_extensions(
         }
     }
     _ = parser.next();
-    return extensions;
+    return .{
+        .instance = instance_extensions.items,
+        .device = device_extensions.items,
+    };
 }
 
 test "parse_several_extensions" {
