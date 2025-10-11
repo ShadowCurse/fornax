@@ -2618,17 +2618,22 @@ test "parse_several_extensions" {
 }
 
 const Type = union(enum) {
-    // define
-    // basetype
-    // handle
-    // enum
-    // funcpointer
+    bitmask: Bitmask,
     @"struct": Struct,
 
     pub fn format(self: *const Type, writer: anytype) !void {
         switch (self.*) {
             .@"struct" => |s| try writer.print("{f}\n", .{s}),
         }
+    }
+};
+
+const Bitmask = struct {
+    type_name: []const u8,
+    enum_name: []const u8,
+
+    pub fn format(self: *const Bitmask, writer: anytype) !void {
+        try writer.print("type_name: {s} enum_name: {s}", .{ self.type_name, self.enum_name });
     }
 };
 
@@ -2658,6 +2663,51 @@ const Struct = struct {
         for (self.members) |*field| try writer.print("{f}\n", .{field});
     }
 };
+
+fn parse_bitmask(original_parser: *xml.Parser) ?Bitmask {
+    if (!original_parser.check_peek_element_start("type")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var correct_category: bool = false;
+    var enum_name: ?[]const u8 = null;
+    if (parser.state == .attribute) {
+        while (parser.attribute()) |attr| {
+            if (std.mem.eql(u8, attr.name, "requires")) {
+                enum_name = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "category")) {
+                if (!std.mem.eql(u8, attr.value, "bitmask"))
+                    return null
+                else
+                    correct_category = true;
+            }
+        }
+    }
+    if (!correct_category or enum_name == null) return null;
+
+    var result: Bitmask = undefined;
+    result.enum_name = enum_name.?;
+    parser.skip_to_specific_element_start("name");
+    result.type_name = parser.text() orelse return null;
+    parser.skip_to_specific_element_end("type");
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_bitmask" {
+    {
+        const text =
+            \\<type requires="A" category="bitmask">typedef <type> </type> <name>B</name>;</type>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const b = parse_bitmask(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = b;
+        // std.log.err("{f}", .{m});
+    }
+}
 
 fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
     if (!original_parser.check_peek_element_start("member")) return null;
@@ -2812,6 +2862,8 @@ fn parse_type(alloc: Allocator, parser: *xml.Parser) !?Type {
 
     if (try parse_struct(alloc, parser)) |s| {
         return .{ .@"struct" = s };
+    } else if (parse_bitmask(parser)) |b| {
+        return .{ .bitmask = b };
     } else {
         return null;
     }
