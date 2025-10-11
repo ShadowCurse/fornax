@@ -2311,6 +2311,233 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\};
         \\
     );
+
+    for (types.items) |tt| {
+        switch (tt) {
+            .@"struct" => |t| {
+                try write_fmt(file, alloc,
+                    \\
+                    \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
+                    \\
+                    // \\    return
+                , .{ t.name, t.name });
+                var tmp: std.ArrayListUnmanaged(u8) = .empty;
+                var writer = tmp.writer(alloc);
+                var checked_members: u32 = 0;
+                for (t.members) |m| {
+                    if (checked_members == 0) {
+                        for (enums.items) |e| {
+                            if (std.mem.eql(u8, e.name, m.type)) {
+                                checked_members += 1;
+                                try writer.print(
+                                    \\(check_{t}_{s}(extensions, &item.{s})
+                                , .{ e.type, e.name, m.name });
+                                break;
+                            }
+                        }
+                        for (types.items) |ttt| {
+                            switch (ttt) {
+                                .bitmask => |b| {
+                                    if (std.mem.eql(u8, m.type, b.type_name)) {
+                                        checked_members += 1;
+                                        try writer.print(
+                                            \\(check_bitmask_{s}(extensions, &item.{s})
+                                        , .{ b.enum_name, m.name });
+                                        break;
+                                    }
+                                },
+                                else => {},
+                            }
+                        }
+                    } else {
+                        for (enums.items) |e| {
+                            if (std.mem.eql(u8, e.name, m.type)) {
+                                checked_members += 1;
+                                try writer.print(
+                                    \\ and
+                                    \\        check_{t}_{s}(extensions, &item.{s})
+                                , .{ e.type, e.name, m.name });
+                                break;
+                            }
+                        }
+                        for (types.items) |ttt| {
+                            switch (ttt) {
+                                .bitmask => |b| {
+                                    if (std.mem.eql(u8, m.type, b.type_name)) {
+                                        checked_members += 1;
+                                        try writer.print(
+                                            \\ and
+                                            \\        check_bitmask_{s}(extensions, &item.{s})
+                                        , .{ b.enum_name, m.name });
+                                        break;
+                                    }
+                                },
+                                else => {},
+                            }
+                        }
+                    }
+                }
+                if (checked_members == 0)
+                    _ = try file.write(
+                        \\    _ = extensions;
+                        \\    _ = item;
+                        \\    return true;
+                        \\}
+                        \\
+                    )
+                else {
+                    try write_fmt(file, alloc,
+                        \\    return {s});
+                        \\}}
+                        \\
+                    , .{tmp.items});
+                }
+            },
+            else => {},
+        }
+    }
+    for (enums.items) |e| {
+        if (std.mem.indexOfScalar(u8, e.name, ' ') != null) continue;
+        try write_fmt(file, alloc,
+            \\
+            \\pub fn check_{t}_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
+            \\
+        , .{ e.type, e.name, e.name });
+        switch (e.type) {
+            .bitmask => {
+                var tmp: std.ArrayListUnmanaged(u8) = .empty;
+                var writer = tmp.writer(alloc);
+                for (e.items) |i| {
+                    try writer.print(
+                        \\ |
+                        \\        vk.{s}
+                    , .{i.name});
+                }
+                try writer.print(
+                    \\;
+                    \\
+                , .{});
+
+                var extensions_used: u32 = 0;
+                for (extensions.items) |ext| {
+                    for (ext.require) |req| {
+                        for (req.items) |item| {
+                            switch (item) {
+                                .@"enum" => |ee| {
+                                    if (std.mem.eql(u8, ee.extends, e.name)) {
+                                        extensions_used += 1;
+                                        try writer.print(
+                                            \\    if (extensions.{t}.{s})
+                                            \\        valid_bits |= vk.{s};
+                                            \\
+                                        , .{ ext.type.?, ext.name, ee.name });
+                                    }
+                                },
+                                else => {},
+                            }
+                        }
+                    }
+                }
+                if (extensions_used != 0)
+                    try write_fmt(file, alloc,
+                        \\    var valid_bits: u32 = 0{s}
+                    , .{tmp.items})
+                else
+                    try write_fmt(file, alloc,
+                        \\    _ = extensions;
+                        \\    const valid_bits: u32 = 0{s}
+                    , .{tmp.items});
+
+                try write_fmt(file, alloc,
+                    \\    return (item.* & ~valid_bits) == 0;
+                    \\}}
+                    \\
+                , .{});
+            },
+            .@"enum" => {
+                if (e.items.len != 1) {
+                    _ = try file.write(
+                        \\    const min = @min(
+                    );
+                    for (e.items) |i| {
+                        try write_fmt(file, alloc,
+                            \\
+                            \\        vk.{s},
+                        , .{i.name});
+                    }
+                    _ = try file.write(
+                        \\
+                        \\    );
+                        \\
+                    );
+                } else {
+                    try write_fmt(file, alloc,
+                        \\    const min = vk.{s};
+                        \\
+                    , .{e.items[0].name});
+                }
+
+                if (e.items.len != 1) {
+                    _ = try file.write(
+                        \\    const max = @max(
+                    );
+                    for (e.items) |i| {
+                        try write_fmt(file, alloc,
+                            \\
+                            \\        vk.{s},
+                        , .{i.name});
+                    }
+                    _ = try file.write(
+                        \\
+                        \\    );
+                        \\
+                    );
+                } else {
+                    try write_fmt(file, alloc,
+                        \\    const max = vk.{s};
+                        \\
+                    , .{e.items[0].name});
+                }
+
+                _ = try file.write(
+                    \\    if (min <= item.* and item.* <= max)
+                    \\        return true;
+                    \\
+                );
+                var extensions_used: u32 = 0;
+                for (extensions.items) |ext| {
+                    for (ext.require) |req| {
+                        for (req.items) |item| {
+                            switch (item) {
+                                .@"enum" => |ee| {
+                                    if (std.mem.eql(u8, ee.extends, e.name)) {
+                                        extensions_used += 1;
+                                        try write_fmt(file, alloc,
+                                            \\    if (extensions.{t}.{s} and item.* == vk.{s})
+                                            \\        return true;
+                                            \\
+                                        , .{ ext.type.?, ext.name, ee.name });
+                                    }
+                                },
+                                else => {},
+                            }
+                        }
+                    }
+                }
+                if (extensions_used == 0)
+                    _ = try file.write(
+                        \\    _ = extensions;
+                        \\
+                    );
+
+                _ = try file.write(
+                    \\    return false;
+                    \\}
+                    \\
+                );
+            },
+        }
+    }
 }
 
 const Extension = struct {
