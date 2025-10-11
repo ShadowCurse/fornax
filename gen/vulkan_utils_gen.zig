@@ -2122,7 +2122,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    var types: std.ArrayListUnmanaged(vkp.Type) = .empty;
+    var types: vkp.Types = undefined;
     var extensions: std.ArrayListUnmanaged(vkp.Extension) = .empty;
     var enums: std.ArrayListUnmanaged(vkp.Enum) = .empty;
     var parser: xml.Parser = .init(buffer);
@@ -2313,88 +2313,73 @@ fn write_extension_type(file: *const std.fs.File) !void {
         \\
     );
 
-    for (types.items) |tt| {
-        switch (tt) {
-            .@"struct" => |t| {
-                try write_fmt(file, alloc,
-                    \\
-                    \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
-                    \\
-                    // \\    return
-                , .{ t.name, t.name });
-                var tmp: std.ArrayListUnmanaged(u8) = .empty;
-                var writer = tmp.writer(alloc);
-                var checked_members: u32 = 0;
-                for (t.members) |m| {
-                    if (checked_members == 0) {
-                        for (enums.items) |e| {
-                            if (std.mem.eql(u8, e.name, m.type)) {
-                                checked_members += 1;
-                                try writer.print(
-                                    \\(check_{t}_{s}(extensions, &item.{s})
-                                , .{ e.type, e.name, m.name });
-                                break;
-                            }
-                        }
-                        for (types.items) |ttt| {
-                            switch (ttt) {
-                                .bitmask => |b| {
-                                    if (std.mem.eql(u8, m.type, b.type_name)) {
-                                        checked_members += 1;
-                                        try writer.print(
-                                            \\(check_bitmask_{s}(extensions, &item.{s})
-                                        , .{ b.enum_name, m.name });
-                                        break;
-                                    }
-                                },
-                                else => {},
-                            }
-                        }
-                    } else {
-                        for (enums.items) |e| {
-                            if (std.mem.eql(u8, e.name, m.type)) {
-                                checked_members += 1;
-                                try writer.print(
-                                    \\ and
-                                    \\        check_{t}_{s}(extensions, &item.{s})
-                                , .{ e.type, e.name, m.name });
-                                break;
-                            }
-                        }
-                        for (types.items) |ttt| {
-                            switch (ttt) {
-                                .bitmask => |b| {
-                                    if (std.mem.eql(u8, m.type, b.type_name)) {
-                                        checked_members += 1;
-                                        try writer.print(
-                                            \\ and
-                                            \\        check_bitmask_{s}(extensions, &item.{s})
-                                        , .{ b.enum_name, m.name });
-                                        break;
-                                    }
-                                },
-                                else => {},
-                            }
-                        }
+    for (types.structs) |s| {
+        try write_fmt(file, alloc,
+            \\
+            \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
+            \\
+            // \\    return
+        , .{ s.name, s.name });
+        var tmp: std.ArrayListUnmanaged(u8) = .empty;
+        var writer = tmp.writer(alloc);
+        var checked_members: u32 = 0;
+        for (s.members) |m| {
+            if (checked_members == 0) {
+                for (enums.items) |e| {
+                    if (std.mem.eql(u8, e.name, m.type)) {
+                        checked_members += 1;
+                        try writer.print(
+                            \\(check_{t}_{s}(extensions, &item.{s})
+                        , .{ e.type, e.name, m.name });
+                        break;
                     }
                 }
-                if (checked_members == 0)
-                    _ = try file.write(
-                        \\    _ = extensions;
-                        \\    _ = item;
-                        \\    return true;
-                        \\}
-                        \\
-                    )
-                else {
-                    try write_fmt(file, alloc,
-                        \\    return {s});
-                        \\}}
-                        \\
-                    , .{tmp.items});
+                for (types.bitmasks) |b| {
+                    if (std.mem.eql(u8, m.type, b.type_name)) {
+                        checked_members += 1;
+                        try writer.print(
+                            \\(check_bitmask_{s}(extensions, &item.{s})
+                        , .{ b.enum_name, m.name });
+                        break;
+                    }
                 }
-            },
-            else => {},
+            } else {
+                for (enums.items) |e| {
+                    if (std.mem.eql(u8, e.name, m.type)) {
+                        checked_members += 1;
+                        try writer.print(
+                            \\ and
+                            \\        check_{t}_{s}(extensions, &item.{s})
+                        , .{ e.type, e.name, m.name });
+                        break;
+                    }
+                }
+                for (types.bitmasks) |b| {
+                    if (std.mem.eql(u8, m.type, b.type_name)) {
+                        checked_members += 1;
+                        try writer.print(
+                            \\ and
+                            \\        check_bitmask_{s}(extensions, &item.{s})
+                        , .{ b.enum_name, m.name });
+                        break;
+                    }
+                }
+            }
+        }
+        if (checked_members == 0)
+            _ = try file.write(
+                \\    _ = extensions;
+                \\    _ = item;
+                \\    return true;
+                \\}
+                \\
+            )
+        else {
+            try write_fmt(file, alloc,
+                \\    return {s});
+                \\}}
+                \\
+            , .{tmp.items});
         }
     }
     for (enums.items) |e| {
