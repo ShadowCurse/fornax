@@ -2426,13 +2426,13 @@ fn write_extension_type(file: *const std.fs.File) !void {
                 }
                 if (extensions_used != 0)
                     try write_fmt(file, alloc,
-                        \\    var valid_bits: u32 = 0{s}
-                    , .{tmp.items})
+                        \\    var valid_bits: u{d} = 0{s}
+                    , .{ e.bitwidth, tmp.items })
                 else
                     try write_fmt(file, alloc,
                         \\    _ = extensions;
-                        \\    const valid_bits: u32 = 0{s}
-                    , .{tmp.items});
+                        \\    const valid_bits: u{d} = 0{s}
+                    , .{ e.bitwidth, tmp.items });
 
                 try write_fmt(file, alloc,
                     \\    return (item.* & ~valid_bits) == 0;

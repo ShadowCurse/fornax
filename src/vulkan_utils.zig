@@ -20943,7 +20943,7 @@ pub fn check_bitmask_VkBufferUsageFlagBits(extensions: *const Extensions, item: 
 }
 
 pub fn check_bitmask_VkBufferUsageFlagBits2(extensions: *const Extensions, item: *const vk.VkBufferUsageFlagBits2) bool {
-    var valid_bits: u32 = 0 |
+    var valid_bits: u64 = 0 |
         vk.VK_BUFFER_USAGE_2_TRANSFER_SRC_BIT |
         vk.VK_BUFFER_USAGE_2_TRANSFER_DST_BIT |
         vk.VK_BUFFER_USAGE_2_UNIFORM_TEXEL_BUFFER_BIT |
@@ -21165,7 +21165,7 @@ pub fn check_bitmask_VkPipelineCreateFlagBits(extensions: *const Extensions, ite
 }
 
 pub fn check_bitmask_VkPipelineCreateFlagBits2(extensions: *const Extensions, item: *const vk.VkPipelineCreateFlagBits2) bool {
-    var valid_bits: u32 = 0 |
+    var valid_bits: u64 = 0 |
         vk.VK_PIPELINE_CREATE_2_DISABLE_OPTIMIZATION_BIT |
         vk.VK_PIPELINE_CREATE_2_ALLOW_DERIVATIVES_BIT |
         vk.VK_PIPELINE_CREATE_2_DERIVATIVE_BIT |
@@ -22958,7 +22958,7 @@ pub fn check_enum_VkPerformanceCounterScopeKHR(extensions: *const Extensions, it
 
 pub fn check_bitmask_VkMemoryDecompressionMethodFlagBitsNV(extensions: *const Extensions, item: *const vk.VkMemoryDecompressionMethodFlagBitsNV) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_MEMORY_DECOMPRESSION_METHOD_GDEFLATE_1_0_BIT_NV;
     return (item.* & ~valid_bits) == 0;
 }
@@ -23374,7 +23374,7 @@ pub fn check_enum_VkSubpassMergeStatusEXT(extensions: *const Extensions, item: *
 }
 
 pub fn check_bitmask_VkAccessFlagBits2(extensions: *const Extensions, item: *const vk.VkAccessFlagBits2) bool {
-    var valid_bits: u32 = 0 |
+    var valid_bits: u64 = 0 |
         vk.VK_ACCESS_2_NONE |
         vk.VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT |
         vk.VK_ACCESS_2_INDEX_READ_BIT |
@@ -23442,7 +23442,7 @@ pub fn check_bitmask_VkAccessFlagBits2(extensions: *const Extensions, item: *con
 }
 
 pub fn check_bitmask_VkPipelineStageFlagBits2(extensions: *const Extensions, item: *const vk.VkPipelineStageFlagBits2) bool {
-    var valid_bits: u32 = 0 |
+    var valid_bits: u64 = 0 |
         vk.VK_PIPELINE_STAGE_2_NONE |
         vk.VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT |
         vk.VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT |
@@ -23672,7 +23672,7 @@ pub fn check_bitmask_VkPresentGravityFlagBitsKHR(extensions: *const Extensions, 
 
 pub fn check_bitmask_VkPhysicalDeviceSchedulingControlsFlagBitsARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSchedulingControlsFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_SHADER_CORE_COUNT_ARM;
     return (item.* & ~valid_bits) == 0;
 }
@@ -24006,7 +24006,7 @@ pub fn check_bitmask_VkImageConstraintsInfoFlagBitsFUCHSIA(extensions: *const Ex
 }
 
 pub fn check_bitmask_VkFormatFeatureFlagBits2(extensions: *const Extensions, item: *const vk.VkFormatFeatureFlagBits2) bool {
-    var valid_bits: u32 = 0 |
+    var valid_bits: u64 = 0 |
         vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT |
         vk.VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT |
         vk.VK_FORMAT_FEATURE_2_STORAGE_IMAGE_ATOMIC_BIT |
@@ -24869,7 +24869,7 @@ pub fn check_enum_VkDepthClampModeEXT(extensions: *const Extensions, item: *cons
 
 pub fn check_bitmask_VkAccessFlagBits3KHR(extensions: *const Extensions, item: *const vk.VkAccessFlagBits3KHR) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_ACCESS_3_NONE_KHR;
     return (item.* & ~valid_bits) == 0;
 }
@@ -24903,7 +24903,7 @@ pub fn check_enum_VkCooperativeVectorMatrixLayoutNV(extensions: *const Extension
 
 pub fn check_bitmask_VkTensorCreateFlagBitsARM(extensions: *const Extensions, item: *const vk.VkTensorCreateFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_TENSOR_CREATE_MUTABLE_FORMAT_BIT_ARM |
         vk.VK_TENSOR_CREATE_PROTECTED_BIT_ARM;
     return (item.* & ~valid_bits) == 0;
@@ -24911,7 +24911,7 @@ pub fn check_bitmask_VkTensorCreateFlagBitsARM(extensions: *const Extensions, it
 
 pub fn check_bitmask_VkTensorUsageFlagBitsARM(extensions: *const Extensions, item: *const vk.VkTensorUsageFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_TENSOR_USAGE_SHADER_BIT_ARM |
         vk.VK_TENSOR_USAGE_TRANSFER_SRC_BIT_ARM |
         vk.VK_TENSOR_USAGE_TRANSFER_DST_BIT_ARM |
@@ -24936,7 +24936,7 @@ pub fn check_enum_VkTensorTilingARM(extensions: *const Extensions, item: *const 
 
 pub fn check_bitmask_VkTensorViewCreateFlagBitsARM(extensions: *const Extensions, item: *const vk.VkTensorViewCreateFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0;
+    const valid_bits: u64 = 0;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -24957,7 +24957,7 @@ pub fn check_enum_VkDefaultVertexAttributeValueKHR(extensions: *const Extensions
 
 pub fn check_bitmask_VkDataGraphPipelineSessionCreateFlagBitsARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineSessionCreateFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0 |
+    const valid_bits: u64 = 0 |
         vk.VK_DATA_GRAPH_PIPELINE_SESSION_CREATE_PROTECTED_BIT_ARM;
     return (item.* & ~valid_bits) == 0;
 }
@@ -24997,7 +24997,7 @@ pub fn check_enum_VkDataGraphPipelinePropertyARM(extensions: *const Extensions, 
 
 pub fn check_bitmask_VkDataGraphPipelineDispatchFlagBitsARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineDispatchFlagBitsARM) bool {
     _ = extensions;
-    const valid_bits: u32 = 0;
+    const valid_bits: u64 = 0;
     return (item.* & ~valid_bits) == 0;
 }
 

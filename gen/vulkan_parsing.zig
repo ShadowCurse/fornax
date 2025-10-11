@@ -657,6 +657,7 @@ test "parse_types" {
 pub const Enum = struct {
     type: enum { @"enum", bitmask },
     name: []const u8,
+    bitwidth: u32,
     items: []const Item,
 
     pub const Item = struct {
@@ -739,6 +740,7 @@ pub fn parse_enum(alloc: Allocator, original_parser: *xml.Parser) !?Enum {
     _ = parser.element_start();
 
     var result: Enum = undefined;
+    result.bitwidth = 32;
     while (parser.attribute()) |attr| {
         if (std.mem.eql(u8, attr.name, "name")) {
             result.name = attr.value;
@@ -747,6 +749,8 @@ pub fn parse_enum(alloc: Allocator, original_parser: *xml.Parser) !?Enum {
                 result.type = .@"enum"
             else if (std.mem.eql(u8, attr.value, "bitmask"))
                 result.type = .bitmask;
+        } else if (std.mem.eql(u8, attr.name, "bitwidth")) {
+            result.bitwidth = try std.fmt.parseInt(u32, attr.value, 10);
         }
     }
 
