@@ -2123,6 +2123,7 @@ fn write_extension_type(file: *const std.fs.File) !void {
 
     var types: std.ArrayListUnmanaged(Type) = .empty;
     var extensions: std.ArrayListUnmanaged(Extension) = .empty;
+    var enums: std.ArrayListUnmanaged(Enum) = .empty;
     var parser: xml.Parser = .init(buffer);
     while (parser.peek_next()) |token| {
         switch (token) {
@@ -2134,6 +2135,11 @@ fn write_extension_type(file: *const std.fs.File) !void {
                     types = try parse_types(alloc, &parser);
                 } else if (std.mem.eql(u8, es, "extensions")) {
                     extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
+                } else if (std.mem.eql(u8, es, "enums")) {
+                    if (try parse_enum(alloc, &parser)) |e|
+                        try enums.append(alloc, e)
+                    else
+                        parser.skip_current_element();
                 } else {
                     parser.skip_current_element();
                 }
@@ -2325,7 +2331,7 @@ const Extension = struct {
         items: []const Item = &.{},
 
         const Item = union(enum) {
-            @"enum": Enum,
+            @"enum": Require.Enum,
             type: []const u8,
         };
 
@@ -2983,4 +2989,151 @@ test "parse_several_types" {
     const types = try parse_types(alloc, &parser);
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     try std.testing.expectEqual(2, types.items.len);
+}
+
+const Enum = struct {
+    type: enum { @"enum", bitmask } = .@"enum",
+    name: []const u8 = &.{},
+    items: []const Item = &.{},
+
+    const Item = struct {
+        type: enum { value, bitpos },
+        name: []const u8,
+
+        pub fn format(self: *const Item, writer: anytype) !void {
+            try writer.print(
+                "type: {t} name: {s}",
+                .{ self.type, self.name },
+            );
+        }
+    };
+
+    pub fn format(self: *const Enum, writer: anytype) !void {
+        try writer.print("name: {s} type: {t}\n", .{ self.name, self.type });
+        for (self.items) |v| try writer.print("{f}\n", .{v});
+    }
+};
+
+fn parse_enum_item(original_parser: *xml.Parser) ?Enum.Item {
+    if (!original_parser.check_peek_element_start("enum")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Enum.Item = undefined;
+    while (parser.attribute()) |attr| {
+        if (std.mem.eql(u8, attr.name, "api")) {
+            return null;
+        } else if (std.mem.eql(u8, attr.name, "value")) {
+            result.type = .value;
+        } else if (std.mem.eql(u8, attr.name, "bitpos")) {
+            result.type = .bitpos;
+        } else if (std.mem.eql(u8, attr.name, "name")) {
+            result.name = attr.value;
+        }
+    }
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_single_enum_item" {
+    {
+        const text =
+            \\<enum value="8" name="A"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = parse_enum_item(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = e;
+        // std.log.err("{f}", .{e});
+    }
+    {
+        const text =
+            \\<enum bitpos="8" name="A" comment="A"/>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = parse_enum_item(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = e;
+        // std.log.err("{f}", .{e});
+    }
+
+    {
+        const text =
+            \\<enum api="vulkan"  name="A" alias="B" deprecated="aliased"/>
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = parse_enum_item(&parser);
+        try std.testing.expectEqualSlices(u8, text, parser.buffer);
+        try std.testing.expectEqual(null, e);
+    }
+}
+
+fn parse_enum(alloc: Allocator, original_parser: *xml.Parser) !?Enum {
+    if (!original_parser.check_peek_element_start("enums")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Enum = .{};
+    while (parser.attribute()) |attr| {
+        if (std.mem.eql(u8, attr.name, "name")) {
+            result.name = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "type")) {
+            if (std.mem.eql(u8, attr.value, "enum"))
+                result.type = .@"enum"
+            else if (std.mem.eql(u8, attr.value, "bitmask"))
+                result.type = .bitmask;
+        }
+    }
+
+    var values: std.ArrayListUnmanaged(Enum.Item) = .empty;
+    while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "enums")) break,
+            else => {},
+        }
+        if (parse_enum_item(&parser)) |t| {
+            try values.append(alloc, t);
+        } else {
+            parser.skip_current_element();
+        }
+    }
+    _ = parser.next();
+    result.items = values.items;
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_enum" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+    {
+        const text =
+            \\<enums name="A" type="bitmask">
+            \\    <enum bitpos="0" name="A" comment="A"/>
+            \\    <enum bitpos="1" name="A" comment="A"/>
+            \\    <enum value="0x00000003" name="A" comment="A"/>
+            \\    <enum api="vulkan"  name="A" alias="A" deprecated="aliased"/>
+            \\</enums>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = (try parse_enum(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = e;
+        // std.log.err("{f}", .{e});
+    }
+
+    {
+        const text =
+            \\<enums name="A" type="bitmask">
+            \\</enums>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = (try parse_enum(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        _ = e;
+        // std.log.err("{f}", .{e});
+    }
 }
