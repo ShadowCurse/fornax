@@ -9513,195 +9513,187 @@ pub fn check_result(result: vk.VkResult) !void {
     switch (result) {
         vk.VK_SUCCESS => return,
         vk.VK_NOT_READY => {
-            log.err(@src(), "Vulkan error: VK_NOT_READY", .{});
+            log.err(@src(), "Vulkan error: VK_NOT_READY (A fence or query has not yet completed)", .{});
             return error.VK_NOT_READY;
         },
         vk.VK_TIMEOUT => {
-            log.err(@src(), "Vulkan error: VK_TIMEOUT", .{});
+            log.err(@src(), "Vulkan error: VK_TIMEOUT (A wait operation has not completed in the specified time)", .{});
             return error.VK_TIMEOUT;
         },
         vk.VK_EVENT_SET => {
-            log.err(@src(), "Vulkan error: VK_EVENT_SET", .{});
+            log.err(@src(), "Vulkan error: VK_EVENT_SET (An event is signaled)", .{});
             return error.VK_EVENT_SET;
         },
         vk.VK_EVENT_RESET => {
-            log.err(@src(), "Vulkan error: VK_EVENT_RESET", .{});
+            log.err(@src(), "Vulkan error: VK_EVENT_RESET (An event is unsignaled)", .{});
             return error.VK_EVENT_RESET;
         },
         vk.VK_INCOMPLETE => {
-            log.err(@src(), "Vulkan error: VK_INCOMPLETE", .{});
+            log.err(@src(), "Vulkan error: VK_INCOMPLETE (A return array was too small for the result)", .{});
             return error.VK_INCOMPLETE;
         },
         vk.VK_ERROR_OUT_OF_HOST_MEMORY => {
-            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_HOST_MEMORY", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_HOST_MEMORY (A host memory allocation has failed)", .{});
             return error.VK_ERROR_OUT_OF_HOST_MEMORY;
         },
         vk.VK_ERROR_OUT_OF_DEVICE_MEMORY => {
-            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_DEVICE_MEMORY", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_DEVICE_MEMORY (A device memory allocation has failed)", .{});
             return error.VK_ERROR_OUT_OF_DEVICE_MEMORY;
         },
         vk.VK_ERROR_INITIALIZATION_FAILED => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INITIALIZATION_FAILED", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_INITIALIZATION_FAILED (Initialization of an object has failed)", .{});
             return error.VK_ERROR_INITIALIZATION_FAILED;
         },
         vk.VK_ERROR_DEVICE_LOST => {
-            log.err(@src(), "Vulkan error: VK_ERROR_DEVICE_LOST", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_DEVICE_LOST (The logical device has been lost. See &lt;&lt;devsandqueues-lost-device&gt;&gt;)", .{});
             return error.VK_ERROR_DEVICE_LOST;
         },
         vk.VK_ERROR_MEMORY_MAP_FAILED => {
-            log.err(@src(), "Vulkan error: VK_ERROR_MEMORY_MAP_FAILED", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_MEMORY_MAP_FAILED (Mapping of a memory object has failed)", .{});
             return error.VK_ERROR_MEMORY_MAP_FAILED;
         },
         vk.VK_ERROR_LAYER_NOT_PRESENT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_LAYER_NOT_PRESENT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_LAYER_NOT_PRESENT (Layer specified does not exist)", .{});
             return error.VK_ERROR_LAYER_NOT_PRESENT;
         },
         vk.VK_ERROR_EXTENSION_NOT_PRESENT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_EXTENSION_NOT_PRESENT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_EXTENSION_NOT_PRESENT (Extension specified does not exist)", .{});
             return error.VK_ERROR_EXTENSION_NOT_PRESENT;
         },
         vk.VK_ERROR_FEATURE_NOT_PRESENT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_FEATURE_NOT_PRESENT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_FEATURE_NOT_PRESENT (Requested feature is not available on this device)", .{});
             return error.VK_ERROR_FEATURE_NOT_PRESENT;
         },
         vk.VK_ERROR_INCOMPATIBLE_DRIVER => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INCOMPATIBLE_DRIVER", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_INCOMPATIBLE_DRIVER (Unable to find a Vulkan driver)", .{});
             return error.VK_ERROR_INCOMPATIBLE_DRIVER;
         },
         vk.VK_ERROR_TOO_MANY_OBJECTS => {
-            log.err(@src(), "Vulkan error: VK_ERROR_TOO_MANY_OBJECTS", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_TOO_MANY_OBJECTS (Too many objects of the type have already been created)", .{});
             return error.VK_ERROR_TOO_MANY_OBJECTS;
         },
         vk.VK_ERROR_FORMAT_NOT_SUPPORTED => {
-            log.err(@src(), "Vulkan error: VK_ERROR_FORMAT_NOT_SUPPORTED", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_FORMAT_NOT_SUPPORTED (Requested format is not supported on this device)", .{});
             return error.VK_ERROR_FORMAT_NOT_SUPPORTED;
         },
         vk.VK_ERROR_FRAGMENTED_POOL => {
-            log.err(@src(), "Vulkan error: VK_ERROR_FRAGMENTED_POOL", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_FRAGMENTED_POOL (A requested pool allocation has failed due to fragmentation of the pool's memory)", .{});
             return error.VK_ERROR_FRAGMENTED_POOL;
         },
         vk.VK_ERROR_UNKNOWN => {
-            log.err(@src(), "Vulkan error: VK_ERROR_UNKNOWN", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_UNKNOWN (An unknown error has occurred, due to an implementation or application bug)", .{});
             return error.VK_ERROR_UNKNOWN;
         },
-        vk.VK_ERROR_OUT_OF_POOL_MEMORY => {
-            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_POOL_MEMORY", .{});
-            return error.VK_ERROR_OUT_OF_POOL_MEMORY;
-        },
-        vk.VK_ERROR_INVALID_EXTERNAL_HANDLE => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_EXTERNAL_HANDLE", .{});
-            return error.VK_ERROR_INVALID_EXTERNAL_HANDLE;
-        },
-        vk.VK_ERROR_FRAGMENTATION => {
-            log.err(@src(), "Vulkan error: VK_ERROR_FRAGMENTATION", .{});
-            return error.VK_ERROR_FRAGMENTATION;
-        },
-        vk.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS", .{});
-            return error.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS;
-        },
-        vk.VK_PIPELINE_COMPILE_REQUIRED => {
-            log.err(@src(), "Vulkan error: VK_PIPELINE_COMPILE_REQUIRED", .{});
-            return error.VK_PIPELINE_COMPILE_REQUIRED;
-        },
-        vk.VK_ERROR_NOT_PERMITTED => {
-            log.err(@src(), "Vulkan error: VK_ERROR_NOT_PERMITTED", .{});
-            return error.VK_ERROR_NOT_PERMITTED;
-        },
         vk.VK_ERROR_SURFACE_LOST_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_SURFACE_LOST_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_SURFACE_LOST_KHR (VK_KHR_surface)", .{});
             return error.VK_ERROR_SURFACE_LOST_KHR;
         },
         vk.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_NATIVE_WINDOW_IN_USE_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_NATIVE_WINDOW_IN_USE_KHR (VK_KHR_surface)", .{});
             return error.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR;
         },
         vk.VK_SUBOPTIMAL_KHR => {
-            log.err(@src(), "Vulkan error: VK_SUBOPTIMAL_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_SUBOPTIMAL_KHR (VK_KHR_swapchain)", .{});
             return error.VK_SUBOPTIMAL_KHR;
         },
         vk.VK_ERROR_OUT_OF_DATE_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_DATE_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_DATE_KHR (VK_KHR_swapchain)", .{});
             return error.VK_ERROR_OUT_OF_DATE_KHR;
         },
         vk.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INCOMPATIBLE_DISPLAY_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_INCOMPATIBLE_DISPLAY_KHR (VK_KHR_display_swapchain)", .{});
             return error.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR;
         },
-        vk.VK_ERROR_VALIDATION_FAILED_EXT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VALIDATION_FAILED_EXT", .{});
-            return error.VK_ERROR_VALIDATION_FAILED_EXT;
-        },
-        vk.VK_ERROR_INVALID_SHADER_NV => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_SHADER_NV", .{});
-            return error.VK_ERROR_INVALID_SHADER_NV;
-        },
         vk.VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR;
         },
         vk.VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR;
         },
         vk.VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR;
         },
         vk.VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR;
         },
         vk.VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR;
         },
         vk.VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR (VK_KHR_video_queue)", .{});
             return error.VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR;
         },
+        vk.VK_ERROR_OUT_OF_POOL_MEMORY => {
+            log.err(@src(), "Vulkan error: VK_ERROR_OUT_OF_POOL_MEMORY (VK_KHR_maintenance1)", .{});
+            return error.VK_ERROR_OUT_OF_POOL_MEMORY;
+        },
+        vk.VK_ERROR_INVALID_EXTERNAL_HANDLE => {
+            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_EXTERNAL_HANDLE (VK_KHR_external_memory)", .{});
+            return error.VK_ERROR_INVALID_EXTERNAL_HANDLE;
+        },
         vk.VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT (VK_EXT_image_drm_format_modifier)", .{});
             return error.VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT;
         },
+        vk.VK_ERROR_FRAGMENTATION => {
+            log.err(@src(), "Vulkan error: VK_ERROR_FRAGMENTATION (VK_EXT_descriptor_indexing)", .{});
+            return error.VK_ERROR_FRAGMENTATION;
+        },
+        vk.VK_ERROR_NOT_PERMITTED => {
+            log.err(@src(), "Vulkan error: VK_ERROR_NOT_PERMITTED (VK_EXT_global_priority)", .{});
+            return error.VK_ERROR_NOT_PERMITTED;
+        },
+        vk.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS => {
+            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS (VK_EXT_buffer_device_address)", .{});
+            return error.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS;
+        },
         vk.VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT (VK_EXT_full_screen_exclusive)", .{});
             return error.VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT;
         },
         vk.VK_THREAD_IDLE_KHR => {
-            log.err(@src(), "Vulkan error: VK_THREAD_IDLE_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_THREAD_IDLE_KHR (VK_KHR_deferred_host_operations)", .{});
             return error.VK_THREAD_IDLE_KHR;
         },
         vk.VK_THREAD_DONE_KHR => {
-            log.err(@src(), "Vulkan error: VK_THREAD_DONE_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_THREAD_DONE_KHR (VK_KHR_deferred_host_operations)", .{});
             return error.VK_THREAD_DONE_KHR;
         },
         vk.VK_OPERATION_DEFERRED_KHR => {
-            log.err(@src(), "Vulkan error: VK_OPERATION_DEFERRED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_OPERATION_DEFERRED_KHR (VK_KHR_deferred_host_operations)", .{});
             return error.VK_OPERATION_DEFERRED_KHR;
         },
         vk.VK_OPERATION_NOT_DEFERRED_KHR => {
-            log.err(@src(), "Vulkan error: VK_OPERATION_NOT_DEFERRED_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_OPERATION_NOT_DEFERRED_KHR (VK_KHR_deferred_host_operations)", .{});
             return error.VK_OPERATION_NOT_DEFERRED_KHR;
         },
+        vk.VK_PIPELINE_COMPILE_REQUIRED => {
+            log.err(@src(), "Vulkan error: VK_PIPELINE_COMPILE_REQUIRED (VK_EXT_pipeline_creation_cache_control)", .{});
+            return error.VK_PIPELINE_COMPILE_REQUIRED;
+        },
         vk.VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR (VK_KHR_video_encode_queue)", .{});
             return error.VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR;
         },
         vk.VK_ERROR_COMPRESSION_EXHAUSTED_EXT => {
-            log.err(@src(), "Vulkan error: VK_ERROR_COMPRESSION_EXHAUSTED_EXT", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_COMPRESSION_EXHAUSTED_EXT (VK_EXT_image_compression_control)", .{});
             return error.VK_ERROR_COMPRESSION_EXHAUSTED_EXT;
         },
         vk.VK_INCOMPATIBLE_SHADER_BINARY_EXT => {
-            log.err(@src(), "Vulkan error: VK_INCOMPATIBLE_SHADER_BINARY_EXT", .{});
+            log.err(@src(), "Vulkan error: VK_INCOMPATIBLE_SHADER_BINARY_EXT (VK_EXT_shader_object)", .{});
             return error.VK_INCOMPATIBLE_SHADER_BINARY_EXT;
         },
         vk.VK_PIPELINE_BINARY_MISSING_KHR => {
-            log.err(@src(), "Vulkan error: VK_PIPELINE_BINARY_MISSING_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_PIPELINE_BINARY_MISSING_KHR (VK_KHR_pipeline_binary)", .{});
             return error.VK_PIPELINE_BINARY_MISSING_KHR;
         },
         vk.VK_ERROR_NOT_ENOUGH_SPACE_KHR => {
-            log.err(@src(), "Vulkan error: VK_ERROR_NOT_ENOUGH_SPACE_KHR", .{});
+            log.err(@src(), "Vulkan error: VK_ERROR_NOT_ENOUGH_SPACE_KHR (VK_KHR_pipeline_binary)", .{});
             return error.VK_ERROR_NOT_ENOUGH_SPACE_KHR;
         },
         else => {
@@ -19434,7 +19426,50 @@ pub fn check_enum_VkImageLayout(extensions: *const Extensions, item: *const vk.V
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shared_presentable_image and item.* == vk.VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map and item.* == vk.VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering_local_read and item.* == vk.VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_EXT_attachment_feedback_loop_layout and item.* == vk.VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR)
+        return true;
+    if (extensions.device.VK_EXT_zero_initialize_device_memory and item.* == vk.VK_IMAGE_LAYOUT_ZERO_INITIALIZED_EXT)
+        return true;
     return false;
 }
 
@@ -19451,7 +19486,10 @@ pub fn check_enum_VkAttachmentLoadOp(extensions: *const Extensions, item: *const
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_load_store_op_none and item.* == vk.VK_ATTACHMENT_LOAD_OP_NONE_EXT)
+        return true;
+    if (extensions.device.VK_KHR_load_store_op_none and item.* == vk.VK_ATTACHMENT_LOAD_OP_NONE_KHR)
+        return true;
     return false;
 }
 
@@ -19466,7 +19504,14 @@ pub fn check_enum_VkAttachmentStoreOp(extensions: *const Extensions, item: *cons
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_ATTACHMENT_STORE_OP_NONE_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_render_pass_store_ops and item.* == vk.VK_ATTACHMENT_STORE_OP_NONE_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_load_store_op_none and item.* == vk.VK_ATTACHMENT_STORE_OP_NONE_EXT)
+        return true;
+    if (extensions.device.VK_KHR_load_store_op_none and item.* == vk.VK_ATTACHMENT_STORE_OP_NONE_KHR)
+        return true;
     return false;
 }
 
@@ -19498,7 +19543,8 @@ pub fn check_enum_VkImageTiling(extensions: *const Extensions, item: *const vk.V
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT)
+        return true;
     return false;
 }
 
@@ -19596,7 +19642,18 @@ pub fn check_enum_VkDescriptorType(extensions: *const Extensions, item: *const v
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_inline_uniform_block and item.* == vk.VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR)
+        return true;
+    if (extensions.device.VK_VALVE_mutable_descriptor_type and item.* == vk.VK_DESCRIPTOR_TYPE_MUTABLE_VALVE)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing and item.* == vk.VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing and item.* == vk.VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_mutable_descriptor_type and item.* == vk.VK_DESCRIPTOR_TYPE_MUTABLE_EXT)
+        return true;
     return false;
 }
 
@@ -19613,7 +19670,32 @@ pub fn check_enum_VkQueryType(extensions: *const Extensions, item: *const vk.VkQ
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR)
+        return true;
+    if (extensions.device.VK_EXT_transform_feedback and item.* == vk.VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_SERIALIZATION_SIZE_KHR)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_QUERY_TYPE_PERFORMANCE_QUERY_INTEL)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_QUERY_TYPE_VIDEO_ENCODE_FEEDBACK_KHR)
+        return true;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_QUERY_TYPE_MESH_PRIMITIVES_GENERATED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_primitives_generated_query and item.* == vk.VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_maintenance1 and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_SERIALIZATION_BOTTOM_LEVEL_POINTERS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_maintenance1 and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_SIZE_KHR)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT)
+        return true;
     return false;
 }
 
@@ -19636,7 +19718,10 @@ pub fn check_enum_VkBorderColor(extensions: *const Extensions, item: *const vk.V
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_custom_border_color and item.* == vk.VK_BORDER_COLOR_FLOAT_CUSTOM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_custom_border_color and item.* == vk.VK_BORDER_COLOR_INT_CUSTOM_EXT)
+        return true;
     return false;
 }
 
@@ -19651,7 +19736,8 @@ pub fn check_enum_VkPipelineBindPoint(extensions: *const Extensions, item: *cons
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR)
+        return true;
     return false;
 }
 
@@ -19666,6 +19752,8 @@ pub fn check_enum_VkPipelineCacheHeaderVersion(extensions: *const Extensions, it
 
 pub fn check_bitmask_VkPipelineCacheCreateFlagBits(extensions: *const Extensions, item: *const vk.VkPipelineCacheCreateFlagBits) bool {
     var valid_bits: u32 = 0;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control)
+        valid_bits |= vk.VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance8)
         valid_bits |= vk.VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
@@ -19730,7 +19818,12 @@ pub fn check_enum_VkIndexType(extensions: *const Extensions, item: *const vk.VkI
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_INDEX_TYPE_NONE_KHR)
+        return true;
+    if (extensions.device.VK_EXT_index_type_uint8 and item.* == vk.VK_INDEX_TYPE_UINT8_EXT)
+        return true;
+    if (extensions.device.VK_KHR_index_type_uint8 and item.* == vk.VK_INDEX_TYPE_UINT8_KHR)
+        return true;
     return false;
 }
 
@@ -19745,7 +19838,10 @@ pub fn check_enum_VkFilter(extensions: *const Extensions, item: *const vk.VkFilt
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_IMG_filter_cubic and item.* == vk.VK_FILTER_CUBIC_IMG)
+        return true;
+    if (extensions.device.VK_EXT_filter_cubic and item.* == vk.VK_FILTER_CUBIC_EXT)
+        return true;
     return false;
 }
 
@@ -19908,7 +20004,98 @@ pub fn check_enum_VkBlendOp(extensions: *const Extensions, item: *const vk.VkBle
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_ZERO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SRC_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DST_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SRC_OVER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DST_OVER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SRC_IN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DST_IN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SRC_OUT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DST_OUT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SRC_ATOP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DST_ATOP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_XOR_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_MULTIPLY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SCREEN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_OVERLAY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DARKEN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_LIGHTEN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_COLORDODGE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_COLORBURN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HARDLIGHT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_SOFTLIGHT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_DIFFERENCE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_EXCLUSION_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_INVERT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_INVERT_RGB_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_LINEARDODGE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_LINEARBURN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_VIVIDLIGHT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_LINEARLIGHT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_PINLIGHT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HARDMIX_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HSL_HUE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HSL_SATURATION_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HSL_COLOR_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_HSL_LUMINOSITY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_PLUS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_PLUS_CLAMPED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_PLUS_CLAMPED_ALPHA_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_PLUS_DARKER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_MINUS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_MINUS_CLAMPED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_CONTRAST_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_INVERT_OVG_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_RED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_GREEN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_BLEND_OP_BLUE_EXT)
+        return true;
     return false;
 }
 
@@ -20425,7 +20612,134 @@ pub fn check_enum_VkFormat(extensions: *const Extensions, item: *const vk.VkForm
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_IMG_format_pvrtc and item.* == vk.VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8B8G8R8_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_B8G8R8G8_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8_B8R8_2PLANE_420_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8_B8R8_2PLANE_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R10X6_UNORM_PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R10X6G10X6_UNORM_2PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R12X4_UNORM_PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R12X4G12X4_UNORM_2PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16B16G16R16_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_B16G16R16G16_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16_B16R16_2PLANE_420_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_2plane_444_formats and item.* == vk.VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_2plane_444_formats and item.* == vk.VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_2plane_444_formats and item.* == vk.VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_2plane_444_formats and item.* == vk.VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_4444_formats and item.* == vk.VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT)
+        return true;
+    if (extensions.device.VK_EXT_4444_formats and item.* == vk.VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_FORMAT_A8_UNORM_KHR)
+        return true;
     return false;
 }
 
@@ -20534,7 +20848,1558 @@ pub fn check_enum_VkStructureType(extensions: *const Extensions, item: *const vk
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.instance.VK_KHR_display and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_display and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_debug_report and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_report and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_physical_device_properties2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_validation_flags and item.* == vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT)
+        return true;
+    if (extensions.instance.VK_KHR_device_group_creation and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_device_group_creation and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_memory_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_memory_capabilities and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_memory_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_memory_capabilities and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_memory_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_display_surface_counter and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_EXT)
+        return true;
+    if (extensions.instance.VK_KHR_external_fence_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_fence_capabilities and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_external_fence_capabilities and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_surface_capabilities2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_surface_capabilities2 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_surface_capabilities2 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_display_properties2 and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_display_properties2 and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_display_properties2 and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_PROPERTIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_display_properties2 and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_INFO_2_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_get_display_properties2 and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_CAPABILITIES_2_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_metal_surface and item.* == vk.VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_KHR_surface_protected_capabilities and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_validation_features and item.* == vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_headless_surface and item.* == vk.VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_directfb_surface and item.* == vk.VK_STRUCTURE_TYPE_DIRECTFB_SURFACE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_application_parameters and item.* == vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT)
+        return true;
+    if (extensions.instance.VK_KHR_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_layer_settings and item.* == vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_display_swapchain and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_debug_marker and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_debug_marker and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_debug_marker and item.* == vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_UPDATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_transform_feedback and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_transform_feedback and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_transform_feedback and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_NALU_SLICE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_GOP_REMAINING_FRAME_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_LAYER_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUALITY_LEVEL_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_GET_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_FEEDBACK_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_NALU_SLICE_SEGMENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_GOP_REMAINING_FRAME_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUALITY_LEVEL_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_GET_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_FEEDBACK_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h264 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering and item.* == vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_multiview and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_multiview and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_multiview and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_device_group and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_texture_compression_astc_hdr and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_astc_decode_mode and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_astc_decode_mode and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_external_memory and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory_fd and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory_fd and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory_fd and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_semaphore and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_semaphore_fd and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_semaphore_fd and item.* == vk.VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_push_descriptor and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_conditional_rendering and item.* == vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_conditional_rendering and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_conditional_rendering and item.* == vk.VK_STRUCTURE_TYPE_CONDITIONAL_RENDERING_BEGIN_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_float16_int8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_float16_int8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT16_INT8_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_16bit_storage and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_incremental_present and item.* == vk.VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_descriptor_update_template and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_display_control and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_display_control and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_display_control and item.* == vk.VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_display_control and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_discard_rectangles and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_discard_rectangles and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_conservative_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_conservative_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_clip_enable and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_clip_enable and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_hdr_metadata and item.* == vk.VK_STRUCTURE_TYPE_HDR_METADATA_EXT)
+        return true;
+    if (extensions.device.VK_KHR_imageless_framebuffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_imageless_framebuffer and item.* == vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_imageless_framebuffer and item.* == vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_imageless_framebuffer and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_create_renderpass2 and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_END_INFO_KHR)
+        return true;
+    if (extensions.device.VK_IMG_relaxed_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG)
+        return true;
+    if (extensions.device.VK_KHR_shared_presentable_image and item.* == vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_fence and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_fence_fd and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_FENCE_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_fence_fd and item.* == vk.VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_ACQUIRE_PROFILING_LOCK_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_DESCRIPTION_KHR)
+        return true;
+    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_variable_pointers and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_variable_pointers and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dedicated_allocation and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dedicated_allocation and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_sampler_filter_minmax and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sampler_filter_minmax and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_inline_uniform_block and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_inline_uniform_block and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_inline_uniform_block and item.* == vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_inline_uniform_block and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_bfloat16 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_get_memory_requirements2 and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_get_memory_requirements2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_get_memory_requirements2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_get_memory_requirements2 and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_get_memory_requirements2 and item.* == vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_image_format_list and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_blend_operation_advanced and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_VERSION_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_bind_memory2 and item.* == vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_bind_memory2 and item.* == vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_validation_cache and item.* == vk.VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_validation_cache and item.* == vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT)
+        return true;
+    if (extensions.device.VK_KHR_portability_subset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_portability_subset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance3 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance3 and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT_KHR)
+        return true;
+    if (extensions.device.VK_EXT_filter_cubic and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_filter_cubic and item.* == vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_subgroup_extended_types and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_8bit_storage and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_host and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_host and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_host and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_atomic_int64 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_clock and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_calibrated_timestamps and item.* == vk.VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_h265 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_creation_feedback and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_float_controls and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_depth_stencil_resolve and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_depth_stencil_resolve and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_INTEL_shader_integer_functions2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_QUERY_CREATE_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_INITIALIZE_PERFORMANCE_API_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_MARKER_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_STREAM_MARKER_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_OVERRIDE_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_CONFIGURATION_ACQUIRE_INFO_INTEL)
+        return true;
+    if (extensions.device.VK_KHR_vulkan_memory_model and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_pci_bus_info and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_terminate_invocation and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_scalar_block_layout and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subgroup_size_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subgroup_size_control and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subgroup_size_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering_local_read and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering_local_read and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_dynamic_rendering_local_read and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_shader_image_atomic_int64 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_quad_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_memory_budget and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_memory_priority and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_memory_priority and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_PRIORITY_ALLOCATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT_KHR)
+        return true;
+    if (extensions.device.VK_KHR_separate_depth_stencil_layouts and item.* == vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT_KHR)
+        return true;
+    if (extensions.device.VK_EXT_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_ADDRESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_tooling_info and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_separate_stencil_usage and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_present_wait and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_fragment_shader_interlock and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_image_arrays and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_uniform_buffer_standard_layout and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_provoking_vertex and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_provoking_vertex and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_provoking_vertex and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_full_screen_exclusive and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_full_screen_exclusive and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_FULL_SCREEN_EXCLUSIVE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_full_screen_exclusive and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_atomic_float and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_query_reset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_index_type_uint8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_STATISTIC_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_executable_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_TO_MEMORY_COPY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_host_image_copy and item.* == vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY_EXT)
+        return true;
+    if (extensions.device.VK_KHR_map_memory2 and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_MAP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_map_memory2 and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_UNMAP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_map_memory_placed and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_map_memory_placed and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_map_memory_placed and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_atomic_float2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_demote_to_helper_invocation and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_integer_dot_product and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_integer_dot_product and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_texel_buffer_alignment and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_texel_buffer_alignment and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_render_pass_transform and item.* == vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_render_pass_transform and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_depth_bias_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_bias_control and item.* == vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_bias_control and item.* == vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_memory_report and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_memory_report and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_memory_report and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_REPORT_CALLBACK_DATA_EXT)
+        return true;
+    if (extensions.device.VK_EXT_robustness2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_robustness2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_custom_border_color and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_custom_border_color and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_custom_border_color and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_library and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_id and item.* == vk.VK_STRUCTURE_TYPE_PRESENT_ID_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_id and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_private_data and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_private_data and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_private_data and item.* == vk.VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_FEEDBACK_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_object_refresh and item.* == vk.VK_STRUCTURE_TYPE_REFRESH_OBJECT_LIST_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_PER_TILE_BEGIN_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_PER_TILE_END_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_DISPATCH_TILE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECTS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_DEVICE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_QUEUE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_BUFFER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_METAL_BUFFER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_TEXTURE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_IO_SURFACE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_EXPORT_METAL_SHARED_EVENT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_metal_objects and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_DEPENDENCY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_SUBMIT_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_synchronization2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_DENSITY_MAP_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CAPTURE_DESCRIPTOR_DATA_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_buffer and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_graphics_pipeline_library and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_graphics_pipeline_library and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_graphics_pipeline_library and item.* == vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shader_barycentric and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shader_barycentric and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_subgroup_uniform_control_flow and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_zero_initialize_workgroup_memory and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_ycbcr_2plane_444_formats and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_rotated_copy_commands and item.* == vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_image_robustness and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_workgroup_memory_explicit_layout and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_COPY_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_COPY_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_BLIT_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_copy_commands2 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_STRUCTURE_TYPE_SUBRESOURCE_LAYOUT_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_SUBRESOURCE_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_attachment_feedback_loop_layout and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_4444_formats and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_fault and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_fault and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_fault and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_rgba10x6_formats and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_VALVE_mutable_descriptor_type and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_VALVE)
+        return true;
+    if (extensions.device.VK_VALVE_mutable_descriptor_type and item.* == vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_VALVE)
+        return true;
+    if (extensions.device.VK_EXT_vertex_input_dynamic_state and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_vertex_input_dynamic_state and item.* == vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_vertex_input_dynamic_state and item.* == vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_physical_device_drm and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_address_binding_report and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_address_binding_report and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_ADDRESS_BINDING_CALLBACK_DATA_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_clip_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_clip_control and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_primitive_topology_list_restart and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_format_feature_flags2 and item.* == vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3_KHR)
+        return true;
+    if (extensions.device.VK_EXT_present_mode_fifo_latest_ready and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_PROPERTIES_IDENTIFIER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_properties and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_properties and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_frame_boundary and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_frame_boundary and item.* == vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_multisampled_render_to_single_sampled and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_multisampled_render_to_single_sampled and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_RESOLVE_PERFORMANCE_QUERY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_multisampled_render_to_single_sampled and item.* == vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_color_write_enable and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_color_write_enable and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_primitives_generated_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_global_priority_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority_query and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_view_min_lod and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_view_min_lod and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_MIN_LOD_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_multi_draw and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_multi_draw and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_2d_view_of_3d and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_tile_image and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_tile_image and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_MICROMAP_VERSION_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_TO_MEMORY_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_MICROMAP_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_MICROMAP_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_SIZES_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_border_color_swizzle and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_border_color_swizzle and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pageable_device_local_memory and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance4 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance4 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance4 and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance4 and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_MEMORY_REQUIREMENTS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_subgroup_rotate and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_sliced_view_of_3d and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_image_sliced_view_of_3d and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_VALVE_descriptor_set_host_mapping and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE)
+        return true;
+    if (extensions.device.VK_VALVE_descriptor_set_host_mapping and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE)
+        return true;
+    if (extensions.device.VK_VALVE_descriptor_set_host_mapping and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE)
+        return true;
+    if (extensions.device.VK_EXT_depth_clamp_zero_one and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_non_seamless_cube_map and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_KHR_shader_maximal_reconvergence and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control_swapchain and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_nested_command_buffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_nested_command_buffer and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_acquire_unmodified and item.* == vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subpass_merge_feedback and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subpass_merge_feedback and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subpass_merge_feedback and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_subpass_merge_feedback and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_module_identifier and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_module_identifier and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_module_identifier and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_module_identifier and item.* == vk.VK_STRUCTURE_TYPE_SHADER_MODULE_IDENTIFIER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_rasterization_order_attachment_access and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_legacy_dithering and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_protected_access and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_AREA_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_SUBRESOURCE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_SUBRESOURCE_LAYOUT_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_IMAGE_SUBRESOURCE_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance5 and item.* == vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_id2 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_ID_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_id2 and item.* == vk.VK_STRUCTURE_TYPE_PRESENT_ID_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_id2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_wait2 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_wait2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_present_wait2 and item.* == vk.VK_STRUCTURE_TYPE_PRESENT_WAIT_2_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_position_fetch and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_STRUCTURE_TYPE_SHADER_REQUIRED_SUBGROUP_SIZE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_KEY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_RELEASE_CAPTURED_PIPELINE_DATA_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_DATA_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_tile_properties and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_properties and item.* == vk.VK_STRUCTURE_TYPE_TILE_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_multiview_per_view_viewports and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_mutable_descriptor_type and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_mutable_descriptor_type and item.* == vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_legacy_vertex_attributes and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_legacy_vertex_attributes and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_library_group_handles and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_dynamic_rendering_unused_attachments and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_cooperative_matrix and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_cooperative_matrix and item.* == vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_cooperative_matrix and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_multiview_per_view_render_areas and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_multiview_per_view_render_areas and item.* == vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_KHR_compute_shader_derivatives and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_compute_shader_derivatives and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_DPB_SLOT_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_LAYER_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUALITY_LEVEL_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_av1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_GOP_REMAINING_FRAME_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_vp9 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_DECODE_VP9_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_vp9 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_vp9 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PICTURE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_decode_vp9 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PROFILE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_image_processing2 and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_filter_cubic_weights and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_filter_cubic_weights and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_filter_cubic_weights and item.* == vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_ycbcr_degamma and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_ycbcr_degamma and item.* == vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_filter_cubic_clamp and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_EXT_attachment_feedback_loop_dynamic_state and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_vertex_attribute_divisor and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_unified_image_layouts and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_unified_image_layouts and item.* == vk.VK_STRUCTURE_TYPE_ATTACHMENT_FEEDBACK_LOOP_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_shader_float_controls2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_index_type_uint8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_calibrated_timestamps and item.* == vk.VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_expect_assume and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_WITH_TEMPLATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance6 and item.* == vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_BUFFER_EMBEDDED_SAMPLERS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_tile_memory_heap and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_memory_heap and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_memory_heap and item.* == vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_memory_heap and item.* == vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_QCOM_tile_memory_heap and item.* == vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_intra_refresh and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_intra_refresh and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_INTRA_REFRESH_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_intra_refresh and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_intra_refresh and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_INTRA_REFRESH_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_intra_refresh and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_QUANTIZATION_MAP_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUANTIZATION_MAP_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUANTIZATION_MAP_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_H265_QUANTIZATION_MAP_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUANTIZATION_MAP_CAPABILITIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_quantization_map and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_AV1_QUANTIZATION_MAP_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_relaxed_extended_instruction and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_LIST_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_VULKAN_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_shader_replicated_composites and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_float8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_PIPELINE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_SHADER_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_PIPELINE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_LAYOUT_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance8 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance8 and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR)
+        return true;
+    if (extensions.device.VK_EXT_depth_clamp_control and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_depth_clamp_control and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance9 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance9 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance9 and item.* == vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_OWNERSHIP_TRANSFER_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_INLINE_SESSION_PARAMETERS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_INLINE_SESSION_PARAMETERS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_INLINE_SESSION_PARAMETERS_INFO_KHR)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_metal and item.* == vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_METAL_HANDLE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_metal and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_METAL_HANDLE_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_external_memory_metal and item.* == vk.VK_STRUCTURE_TYPE_MEMORY_GET_METAL_HANDLE_INFO_EXT)
+        return true;
+    if (extensions.device.VK_KHR_depth_clamp_zero_one and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_vertex_attribute_robustness and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_VALVE_fragment_density_map_layered and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE)
+        return true;
+    if (extensions.device.VK_VALVE_fragment_density_map_layered and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE)
+        return true;
+    if (extensions.device.VK_VALVE_fragment_density_map_layered and item.* == vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE)
+        return true;
+    if (extensions.device.VK_KHR_robustness2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_robustness2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_fragment_density_map_offset and item.* == vk.VK_STRUCTURE_TYPE_RENDERING_END_INFO_EXT)
+        return true;
+    if (extensions.device.VK_EXT_zero_initialize_device_memory and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT)
+        return true;
+    if (extensions.device.VK_KHR_present_mode_fifo_latest_ready and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR)
+        return true;
     return false;
 }
 
@@ -20549,7 +22414,10 @@ pub fn check_enum_VkSubpassContents(extensions: *const Extensions, item: *const 
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_nested_command_buffer and item.* == vk.VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_EXT)
+        return true;
+    if (extensions.device.VK_KHR_maintenance7 and item.* == vk.VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR)
+        return true;
     return false;
 }
 
@@ -20598,7 +22466,70 @@ pub fn check_enum_VkResult(extensions: *const Extensions, item: *const vk.VkResu
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.instance.VK_KHR_surface and item.* == vk.VK_ERROR_SURFACE_LOST_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_surface and item.* == vk.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_SUBOPTIMAL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_ERROR_OUT_OF_DATE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_display_swapchain and item.* == vk.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance1 and item.* == vk.VK_ERROR_OUT_OF_POOL_MEMORY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_external_memory and item.* == vk.VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_drm_format_modifier and item.* == vk.VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_ERROR_FRAGMENTATION_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_ERROR_NOT_PERMITTED_EXT)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_ERROR_NOT_PERMITTED_KHR)
+        return true;
+    if (extensions.device.VK_EXT_buffer_device_address and item.* == vk.VK_ERROR_INVALID_DEVICE_ADDRESS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_full_screen_exclusive and item.* == vk.VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
+        return true;
+    if (extensions.device.VK_KHR_buffer_device_address and item.* == vk.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_deferred_host_operations and item.* == vk.VK_THREAD_IDLE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_deferred_host_operations and item.* == vk.VK_THREAD_DONE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_deferred_host_operations and item.* == vk.VK_OPERATION_DEFERRED_KHR)
+        return true;
+    if (extensions.device.VK_KHR_deferred_host_operations and item.* == vk.VK_OPERATION_NOT_DEFERRED_KHR)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control and item.* == vk.VK_PIPELINE_COMPILE_REQUIRED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control and item.* == vk.VK_ERROR_PIPELINE_COMPILE_REQUIRED_EXT)
+        return true;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR)
+        return true;
+    if (extensions.device.VK_EXT_image_compression_control and item.* == vk.VK_ERROR_COMPRESSION_EXHAUSTED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_INCOMPATIBLE_SHADER_BINARY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_PIPELINE_BINARY_MISSING_KHR)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_ERROR_NOT_ENOUGH_SPACE_KHR)
+        return true;
     return false;
 }
 
@@ -20627,7 +22558,126 @@ pub fn check_enum_VkDynamicState(extensions: *const Extensions, item: *const vk.
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_discard_rectangles and item.* == vk.VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_discard_rectangles and item.* == vk.VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_discard_rectangles and item.* == vk.VK_DYNAMIC_STATE_DISCARD_RECTANGLE_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sample_locations and item.* == vk.VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline and item.* == vk.VK_DYNAMIC_STATE_RAY_TRACING_PIPELINE_STACK_SIZE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_fragment_shading_rate and item.* == vk.VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_DYNAMIC_STATE_LINE_STIPPLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_CULL_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_FRONT_FACE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_STENCIL_OP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_vertex_input_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_VERTEX_INPUT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_DYNAMIC_STATE_LOGIC_OP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state2 and item.* == vk.VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_color_write_enable and item.* == vk.VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_POLYGON_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_SAMPLE_MASK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_ALPHA_TO_ONE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_TESSELLATION_DOMAIN_ORIGIN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_RASTERIZATION_STREAM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_CONSERVATIVE_RASTERIZATION_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_EXTRA_PRIMITIVE_OVERESTIMATION_SIZE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_DEPTH_CLIP_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COLOR_BLEND_ADVANCED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_PROVOKING_VERTEX_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_LINE_RASTERIZATION_MODE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_LINE_STIPPLE_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_DEPTH_CLIP_NEGATIVE_ONE_TO_ONE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_ENABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_VIEWPORT_SWIZZLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_ENABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_LOCATION_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_MODULATION_MODE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_ENABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_SHADING_RATE_IMAGE_ENABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_REPRESENTATIVE_FRAGMENT_TEST_ENABLE_NV)
+        return true;
+    if (extensions.device.VK_EXT_extended_dynamic_state3 and item.* == vk.VK_DYNAMIC_STATE_COVERAGE_REDUCTION_MODE_NV)
+        return true;
+    if (extensions.device.VK_EXT_attachment_feedback_loop_dynamic_state and item.* == vk.VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_DYNAMIC_STATE_LINE_STIPPLE_KHR)
+        return true;
+    if (extensions.device.VK_EXT_depth_clamp_control and item.* == vk.VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT)
+        return true;
     return false;
 }
 
@@ -20636,7 +22686,12 @@ pub fn check_enum_VkDescriptorUpdateTemplateType(extensions: *const Extensions, 
     const max = vk.VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET;
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_push_descriptor and item.* == vk.VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_descriptor_update_template and item.* == vk.VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET_KHR)
+        return true;
+    if (extensions.device.VK_KHR_descriptor_update_template and item.* == vk.VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS_KHR)
+        return true;
     return false;
 }
 
@@ -20699,7 +22754,46 @@ pub fn check_enum_VkObjectType(extensions: *const Extensions, item: *const vk.Vk
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.instance.VK_KHR_surface and item.* == vk.VK_OBJECT_TYPE_SURFACE_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_display and item.* == vk.VK_OBJECT_TYPE_DISPLAY_KHR)
+        return true;
+    if (extensions.instance.VK_KHR_display and item.* == vk.VK_OBJECT_TYPE_DISPLAY_MODE_KHR)
+        return true;
+    if (extensions.instance.VK_EXT_debug_report and item.* == vk.VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_utils and item.* == vk.VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT)
+        return true;
+    if (extensions.device.VK_KHR_swapchain and item.* == vk.VK_OBJECT_TYPE_SWAPCHAIN_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_OBJECT_TYPE_VIDEO_SESSION_KHR)
+        return true;
+    if (extensions.device.VK_KHR_video_queue and item.* == vk.VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_descriptor_update_template and item.* == vk.VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR)
+        return true;
+    if (extensions.device.VK_EXT_validation_cache and item.* == vk.VK_OBJECT_TYPE_VALIDATION_CACHE_EXT)
+        return true;
+    if (extensions.device.VK_INTEL_performance_query and item.* == vk.VK_OBJECT_TYPE_PERFORMANCE_CONFIGURATION_INTEL)
+        return true;
+    if (extensions.device.VK_KHR_deferred_host_operations and item.* == vk.VK_OBJECT_TYPE_DEFERRED_OPERATION_KHR)
+        return true;
+    if (extensions.device.VK_EXT_private_data and item.* == vk.VK_OBJECT_TYPE_PRIVATE_DATA_SLOT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_opacity_micromap and item.* == vk.VK_OBJECT_TYPE_MICROMAP_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_object and item.* == vk.VK_OBJECT_TYPE_SHADER_EXT)
+        return true;
+    if (extensions.device.VK_KHR_pipeline_binary and item.* == vk.VK_OBJECT_TYPE_PIPELINE_BINARY_KHR)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_device_generated_commands and item.* == vk.VK_OBJECT_TYPE_INDIRECT_EXECUTION_SET_EXT)
+        return true;
     return false;
 }
 
@@ -20847,6 +22941,8 @@ pub fn check_bitmask_VkMemoryPropertyFlagBits(extensions: *const Extensions, ite
 pub fn check_bitmask_VkMemoryHeapFlagBits(extensions: *const Extensions, item: *const vk.VkMemoryHeapFlagBits) bool {
     var valid_bits: u32 = 0 |
         vk.VK_MEMORY_HEAP_DEVICE_LOCAL_BIT;
+    if (extensions.instance.VK_KHR_device_group_creation)
+        valid_bits |= vk.VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR;
     if (extensions.device.VK_QCOM_tile_memory_heap)
         valid_bits |= vk.VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM;
     return (item.* & ~valid_bits) == 0;
@@ -20889,6 +22985,8 @@ pub fn check_bitmask_VkAccessFlagBits(extensions: *const Extensions, item: *cons
         valid_bits |= vk.VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
     if (extensions.device.VK_KHR_fragment_shading_rate)
         valid_bits |= vk.VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_NONE_KHR;
     if (extensions.device.VK_EXT_device_generated_commands)
         valid_bits |= vk.VK_ACCESS_COMMAND_PREPROCESS_READ_BIT_EXT;
     if (extensions.device.VK_EXT_device_generated_commands)
@@ -20923,6 +23021,10 @@ pub fn check_bitmask_VkBufferUsageFlagBits(extensions: *const Extensions, item: 
         valid_bits |= vk.VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR;
     if (extensions.device.VK_KHR_ray_tracing_pipeline)
         valid_bits |= vk.VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+    if (extensions.device.VK_EXT_buffer_device_address)
+        valid_bits |= vk.VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_EXT;
+    if (extensions.device.VK_KHR_buffer_device_address)
+        valid_bits |= vk.VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT_KHR;
     if (extensions.device.VK_KHR_video_encode_queue)
         valid_bits |= vk.VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR;
     if (extensions.device.VK_KHR_video_encode_queue)
@@ -20954,9 +23056,29 @@ pub fn check_bitmask_VkBufferUsageFlagBits2(extensions: *const Extensions, item:
         vk.VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT |
         vk.VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT;
     if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_TRANSFER_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_TRANSFER_DST_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_UNIFORM_TEXEL_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_STORAGE_TEXEL_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_UNIFORM_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_STORAGE_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_INDEX_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_VERTEX_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_INDIRECT_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_BUFFER_USAGE_2_CONDITIONAL_RENDERING_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_BUFFER_USAGE_2_SHADER_BINDING_TABLE_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_RAY_TRACING_BIT_NV;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_BUFFER_USAGE_2_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance5)
@@ -20969,6 +23091,8 @@ pub fn check_bitmask_VkBufferUsageFlagBits2(extensions: *const Extensions, item:
         valid_bits |= vk.VK_BUFFER_USAGE_2_VIDEO_ENCODE_DST_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_BUFFER_USAGE_2_VIDEO_ENCODE_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_BUFFER_USAGE_2_SHADER_DEVICE_ADDRESS_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_BUFFER_USAGE_2_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
@@ -20995,6 +23119,10 @@ pub fn check_bitmask_VkBufferCreateFlagBits(extensions: *const Extensions, item:
         vk.VK_BUFFER_CREATE_SPARSE_BINDING_BIT |
         vk.VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT |
         vk.VK_BUFFER_CREATE_SPARSE_ALIASED_BIT;
+    if (extensions.device.VK_EXT_buffer_device_address)
+        valid_bits |= vk.VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_EXT;
+    if (extensions.device.VK_KHR_buffer_device_address)
+        valid_bits |= vk.VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR;
     if (extensions.device.VK_EXT_descriptor_buffer)
         valid_bits |= vk.VK_BUFFER_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT;
     if (extensions.device.VK_KHR_video_maintenance1)
@@ -21051,6 +23179,8 @@ pub fn check_bitmask_VkImageUsageFlagBits(extensions: *const Extensions, item: *
         valid_bits |= vk.VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
     if (extensions.device.VK_KHR_fragment_shading_rate)
         valid_bits |= vk.VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_EXT_host_image_copy)
+        valid_bits |= vk.VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT;
     if (extensions.device.VK_KHR_video_encode_queue)
         valid_bits |= vk.VK_IMAGE_USAGE_VIDEO_ENCODE_DST_BIT_KHR;
     if (extensions.device.VK_KHR_video_encode_queue)
@@ -21079,14 +23209,30 @@ pub fn check_bitmask_VkImageCreateFlagBits(extensions: *const Extensions, item: 
         vk.VK_IMAGE_CREATE_SPARSE_ALIASED_BIT |
         vk.VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT |
         vk.VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance1)
+        valid_bits |= vk.VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance2)
+        valid_bits |= vk.VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance2)
+        valid_bits |= vk.VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR;
     if (extensions.device.VK_EXT_sample_locations)
         valid_bits |= vk.VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_IMAGE_CREATE_DISJOINT_BIT_KHR;
+    if (extensions.device.VK_KHR_bind_memory2)
+        valid_bits |= vk.VK_IMAGE_CREATE_ALIAS_BIT_KHR;
     if (extensions.device.VK_EXT_fragment_density_map)
         valid_bits |= vk.VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
     if (extensions.device.VK_EXT_descriptor_buffer)
         valid_bits |= vk.VK_IMAGE_CREATE_DESCRIPTOR_BUFFER_CAPTURE_REPLAY_BIT_EXT;
     if (extensions.device.VK_EXT_multisampled_render_to_single_sampled)
         valid_bits |= vk.VK_IMAGE_CREATE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_BIT_EXT;
+    if (extensions.device.VK_EXT_image_2d_view_of_3d)
+        valid_bits |= vk.VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT;
+    if (extensions.device.VK_QCOM_fragment_density_map_offset)
+        valid_bits |= vk.VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
     if (extensions.device.VK_KHR_video_maintenance1)
         valid_bits |= vk.VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR;
     if (extensions.device.VK_EXT_fragment_density_map_offset)
@@ -21125,6 +23271,12 @@ pub fn check_bitmask_VkPipelineCreateFlagBits(extensions: *const Extensions, ite
         vk.VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT |
         vk.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT |
         vk.VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PIPELINE_CREATE_DISPATCH_BASE_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PIPELINE_CREATE_DISPATCH_BASE_KHR;
     if (extensions.device.VK_KHR_ray_tracing_pipeline)
         valid_bits |= vk.VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR;
     if (extensions.device.VK_KHR_ray_tracing_pipeline)
@@ -21141,14 +23293,22 @@ pub fn check_bitmask_VkPipelineCreateFlagBits(extensions: *const Extensions, ite
         valid_bits |= vk.VK_PIPELINE_CREATE_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR;
     if (extensions.device.VK_EXT_fragment_density_map)
         valid_bits |= vk.VK_PIPELINE_CREATE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT;
+    if (extensions.device.VK_EXT_fragment_density_map)
+        valid_bits |= vk.VK_PIPELINE_RASTERIZATION_STATE_CREATE_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT;
     if (extensions.device.VK_KHR_fragment_shading_rate)
         valid_bits |= vk.VK_PIPELINE_CREATE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_KHR_fragment_shading_rate)
+        valid_bits |= vk.VK_PIPELINE_RASTERIZATION_STATE_CREATE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
     if (extensions.device.VK_KHR_pipeline_executable_properties)
         valid_bits |= vk.VK_PIPELINE_CREATE_CAPTURE_STATISTICS_BIT_KHR;
     if (extensions.device.VK_KHR_pipeline_executable_properties)
         valid_bits |= vk.VK_PIPELINE_CREATE_CAPTURE_INTERNAL_REPRESENTATIONS_BIT_KHR;
     if (extensions.device.VK_KHR_pipeline_library)
         valid_bits |= vk.VK_PIPELINE_CREATE_LIBRARY_BIT_KHR;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control)
+        valid_bits |= vk.VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_EXT;
+    if (extensions.device.VK_EXT_pipeline_creation_cache_control)
+        valid_bits |= vk.VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT_EXT;
     if (extensions.device.VK_EXT_descriptor_buffer)
         valid_bits |= vk.VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
     if (extensions.device.VK_EXT_graphics_pipeline_library)
@@ -21161,6 +23321,10 @@ pub fn check_bitmask_VkPipelineCreateFlagBits(extensions: *const Extensions, ite
         valid_bits |= vk.VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT;
     if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_PIPELINE_CREATE_RAY_TRACING_OPACITY_MICROMAP_BIT_EXT;
+    if (extensions.device.VK_EXT_pipeline_protected_access)
+        valid_bits |= vk.VK_PIPELINE_CREATE_NO_PROTECTED_ACCESS_BIT_EXT;
+    if (extensions.device.VK_EXT_pipeline_protected_access)
+        valid_bits |= vk.VK_PIPELINE_CREATE_PROTECTED_ACCESS_ONLY_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -21175,14 +23339,30 @@ pub fn check_bitmask_VkPipelineCreateFlagBits2(extensions: *const Extensions, it
         vk.VK_PIPELINE_CREATE_2_EARLY_RETURN_ON_FAILURE_BIT |
         vk.VK_PIPELINE_CREATE_2_NO_PROTECTED_ACCESS_BIT |
         vk.VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONLY_BIT;
+    if (extensions.device.VK_KHR_ray_tracing_pipeline)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_BUILT_IN_PRIMITIVES_BIT_KHR;
     if (extensions.device.VK_EXT_legacy_dithering)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_ENABLE_LEGACY_DITHERING_BIT_EXT;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_DISABLE_OPTIMIZATION_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_ALLOW_DERIVATIVES_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_DERIVATIVE_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_DISPATCH_BASE_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_DEFER_COMPILE_BIT_NV;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_CAPTURE_STATISTICS_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_CAPTURE_INTERNAL_REPRESENTATIONS_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_EARLY_RETURN_ON_FAILURE_BIT_KHR;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_LINK_TIME_OPTIMIZATION_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance5)
@@ -21218,6 +23398,10 @@ pub fn check_bitmask_VkPipelineCreateFlagBits2(extensions: *const Extensions, it
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_NO_PROTECTED_ACCESS_BIT_EXT;
+    if (extensions.device.VK_KHR_maintenance5)
+        valid_bits |= vk.VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONLY_BIT_EXT;
+    if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_RAY_TRACING_DISPLACEMENT_MICROMAP_BIT_NV;
     if (extensions.device.VK_KHR_maintenance5)
         valid_bits |= vk.VK_PIPELINE_CREATE_2_DESCRIPTOR_BUFFER_BIT_EXT;
@@ -21233,8 +23417,11 @@ pub fn check_bitmask_VkPipelineCreateFlagBits2(extensions: *const Extensions, it
 }
 
 pub fn check_bitmask_VkPipelineShaderStageCreateFlagBits(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageCreateFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0;
+    var valid_bits: u32 = 0;
+    if (extensions.device.VK_EXT_subgroup_size_control)
+        valid_bits |= vk.VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT;
+    if (extensions.device.VK_EXT_subgroup_size_control)
+        valid_bits |= vk.VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -21276,12 +23463,34 @@ pub fn check_bitmask_VkFormatFeatureFlagBits(extensions: *const Extensions, item
         vk.VK_FORMAT_FEATURE_BLIT_SRC_BIT |
         vk.VK_FORMAT_FEATURE_BLIT_DST_BIT |
         vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+    if (extensions.device.VK_IMG_filter_cubic)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG;
     if (extensions.device.VK_KHR_video_decode_queue)
         valid_bits |= vk.VK_FORMAT_FEATURE_VIDEO_DECODE_OUTPUT_BIT_KHR;
     if (extensions.device.VK_KHR_video_decode_queue)
         valid_bits |= vk.VK_FORMAT_FEATURE_VIDEO_DECODE_DPB_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance1)
+        valid_bits |= vk.VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_maintenance1)
+        valid_bits |= vk.VK_FORMAT_FEATURE_TRANSFER_DST_BIT_KHR;
+    if (extensions.device.VK_EXT_sampler_filter_minmax)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT_EXT;
     if (extensions.device.VK_KHR_acceleration_structure)
         valid_bits |= vk.VK_FORMAT_FEATURE_ACCELERATION_STRUCTURE_VERTEX_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_DISJOINT_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR;
     if (extensions.device.VK_EXT_filter_cubic)
         valid_bits |= vk.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT;
     if (extensions.device.VK_EXT_fragment_density_map)
@@ -21355,6 +23564,12 @@ pub fn check_bitmask_VkImageAspectFlagBits(extensions: *const Extensions, item: 
         vk.VK_IMAGE_ASPECT_DEPTH_BIT |
         vk.VK_IMAGE_ASPECT_STENCIL_BIT |
         vk.VK_IMAGE_ASPECT_METADATA_BIT;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_IMAGE_ASPECT_PLANE_0_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_IMAGE_ASPECT_PLANE_1_BIT_KHR;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion)
+        valid_bits |= vk.VK_IMAGE_ASPECT_PLANE_2_BIT_KHR;
     if (extensions.device.VK_EXT_image_drm_format_modifier)
         valid_bits |= vk.VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT;
     if (extensions.device.VK_EXT_image_drm_format_modifier)
@@ -21363,6 +23578,8 @@ pub fn check_bitmask_VkImageAspectFlagBits(extensions: *const Extensions, item: 
         valid_bits |= vk.VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT;
     if (extensions.device.VK_EXT_image_drm_format_modifier)
         valid_bits |= vk.VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT;
+    if (extensions.device.VK_KHR_maintenance4)
+        valid_bits |= vk.VK_IMAGE_ASPECT_NONE_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -21413,6 +23630,8 @@ pub fn check_bitmask_VkPipelineStageFlagBits(extensions: *const Extensions, item
         valid_bits |= vk.VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
     if (extensions.device.VK_KHR_fragment_shading_rate)
         valid_bits |= vk.VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_NONE_KHR;
     if (extensions.device.VK_EXT_mesh_shader)
         valid_bits |= vk.VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT;
     if (extensions.device.VK_EXT_mesh_shader)
@@ -21476,6 +23695,10 @@ pub fn check_bitmask_VkStencilFaceFlagBits(extensions: *const Extensions, item: 
 pub fn check_bitmask_VkDescriptorPoolCreateFlagBits(extensions: *const Extensions, item: *const vk.VkDescriptorPoolCreateFlagBits) bool {
     var valid_bits: u32 = 0 |
         vk.VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT;
+    if (extensions.device.VK_VALVE_mutable_descriptor_type)
+        valid_bits |= vk.VK_DESCRIPTOR_POOL_CREATE_HOST_ONLY_BIT_VALVE;
     if (extensions.device.VK_EXT_mutable_descriptor_type)
         valid_bits |= vk.VK_DESCRIPTOR_POOL_CREATE_HOST_ONLY_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
@@ -21484,6 +23707,10 @@ pub fn check_bitmask_VkDescriptorPoolCreateFlagBits(extensions: *const Extension
 pub fn check_bitmask_VkDependencyFlagBits(extensions: *const Extensions, item: *const vk.VkDependencyFlagBits) bool {
     var valid_bits: u32 = 0 |
         vk.VK_DEPENDENCY_BY_REGION_BIT;
+    if (extensions.device.VK_KHR_multiview)
+        valid_bits |= vk.VK_DEPENDENCY_VIEW_LOCAL_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_DEPENDENCY_DEVICE_GROUP_BIT_KHR;
     if (extensions.device.VK_EXT_attachment_feedback_loop_layout)
         valid_bits |= vk.VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance8)
@@ -21504,14 +23731,18 @@ pub fn check_enum_VkSemaphoreType(extensions: *const Extensions, item: *const vk
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_SEMAPHORE_TYPE_BINARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_timeline_semaphore and item.* == vk.VK_SEMAPHORE_TYPE_TIMELINE_KHR)
+        return true;
     return false;
 }
 
 pub fn check_bitmask_VkSemaphoreWaitFlagBits(extensions: *const Extensions, item: *const vk.VkSemaphoreWaitFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_SEMAPHORE_WAIT_ANY_BIT;
+    if (extensions.device.VK_KHR_timeline_semaphore)
+        valid_bits |= vk.VK_SEMAPHORE_WAIT_ANY_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -21530,7 +23761,14 @@ pub fn check_enum_VkPresentModeKHR(extensions: *const Extensions, item: *const v
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_shared_presentable_image and item.* == vk.VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shared_presentable_image and item.* == vk.VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR)
+        return true;
+    if (extensions.device.VK_EXT_present_mode_fifo_latest_ready and item.* == vk.VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
+        return true;
+    if (extensions.device.VK_KHR_present_mode_fifo_latest_ready and item.* == vk.VK_PRESENT_MODE_FIFO_LATEST_READY_KHR)
+        return true;
     return false;
 }
 
@@ -21539,7 +23777,34 @@ pub fn check_enum_VkColorSpaceKHR(extensions: *const Extensions, item: *const vk
     const max = vk.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_BT709_LINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_BT709_NONLINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_BT2020_LINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_HDR10_ST2084_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_DOLBYVISION_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_HDR10_HLG_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_PASS_THROUGH_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_swapchain_colorspace and item.* == vk.VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT)
+        return true;
     return false;
 }
 
@@ -21619,7 +23884,14 @@ pub fn check_enum_VkTimeDomainKHR(extensions: *const Extensions, item: *const vk
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_calibrated_timestamps and item.* == vk.VK_TIME_DOMAIN_DEVICE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_calibrated_timestamps and item.* == vk.VK_TIME_DOMAIN_CLOCK_MONOTONIC_EXT)
+        return true;
+    if (extensions.device.VK_EXT_calibrated_timestamps and item.* == vk.VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT)
+        return true;
+    if (extensions.device.VK_EXT_calibrated_timestamps and item.* == vk.VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_EXT)
+        return true;
     return false;
 }
 
@@ -21709,7 +23981,18 @@ pub fn check_enum_VkDebugReportObjectTypeEXT(extensions: *const Extensions, item
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.instance.VK_EXT_debug_report and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT)
+        return true;
+    if (extensions.instance.VK_EXT_debug_report and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_EXT)
+        return true;
+    if (extensions.device.VK_KHR_descriptor_update_template and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_KHR_EXT)
+        return true;
+    if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR_EXT)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_EXT)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR_EXT)
+        return true;
     return false;
 }
 
@@ -21954,8 +24237,7 @@ pub fn check_enum_VkLayerSettingTypeEXT(extensions: *const Extensions, item: *co
 }
 
 pub fn check_bitmask_VkSubgroupFeatureFlagBits(extensions: *const Extensions, item: *const vk.VkSubgroupFeatureFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_SUBGROUP_FEATURE_BASIC_BIT |
         vk.VK_SUBGROUP_FEATURE_VOTE_BIT |
         vk.VK_SUBGROUP_FEATURE_ARITHMETIC_BIT |
@@ -21964,6 +24246,10 @@ pub fn check_bitmask_VkSubgroupFeatureFlagBits(extensions: *const Extensions, it
         vk.VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT |
         vk.VK_SUBGROUP_FEATURE_CLUSTERED_BIT |
         vk.VK_SUBGROUP_FEATURE_QUAD_BIT;
+    if (extensions.device.VK_KHR_shader_subgroup_rotate)
+        valid_bits |= vk.VK_SUBGROUP_FEATURE_ROTATE_BIT_KHR;
+    if (extensions.device.VK_KHR_shader_subgroup_rotate)
+        valid_bits |= vk.VK_SUBGROUP_FEATURE_ROTATE_CLUSTERED_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22006,7 +24292,8 @@ pub fn check_enum_VkIndirectCommandsTokenTypeNV(extensions: *const Extensions, i
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_MESH_TASKS_NV)
+        return true;
     return false;
 }
 
@@ -22018,10 +24305,16 @@ pub fn check_bitmask_VkPrivateDataSlotCreateFlagBits(extensions: *const Extensio
 
 pub fn check_bitmask_VkDescriptorSetLayoutCreateFlagBits(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutCreateFlagBits) bool {
     var valid_bits: u32 = 0;
+    if (extensions.device.VK_KHR_push_descriptor)
+        valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT;
     if (extensions.device.VK_EXT_descriptor_buffer)
         valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT;
     if (extensions.device.VK_EXT_descriptor_buffer)
         valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT;
+    if (extensions.device.VK_VALVE_mutable_descriptor_type)
+        valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_VALVE;
     if (extensions.device.VK_EXT_mutable_descriptor_type)
         valid_bits |= vk.VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
@@ -22036,6 +24329,20 @@ pub fn check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions: *const Exten
         vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT |
         vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT |
         vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D11_TEXTURE_KMT_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_HEAP_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_D3D12_RESOURCE_BIT_KHR;
     if (extensions.device.VK_EXT_external_memory_dma_buf)
         valid_bits |= vk.VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
     if (extensions.device.VK_EXT_external_memory_host)
@@ -22052,63 +24359,92 @@ pub fn check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions: *const Exten
 }
 
 pub fn check_bitmask_VkExternalMemoryFeatureFlagBits(extensions: *const Extensions, item: *const vk.VkExternalMemoryFeatureFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT |
         vk.VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT |
         vk.VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_memory_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions: *const Extensions, item: *const vk.VkExternalSemaphoreHandleTypeFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D11_FENCE_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_D3D12_FENCE_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkExternalSemaphoreFeatureFlagBits(extensions: *const Extensions, item: *const vk.VkExternalSemaphoreFeatureFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT |
         vk.VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_semaphore_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkSemaphoreImportFlagBits(extensions: *const Extensions, item: *const vk.VkSemaphoreImportFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_SEMAPHORE_IMPORT_TEMPORARY_BIT;
+    if (extensions.device.VK_KHR_external_semaphore)
+        valid_bits |= vk.VK_SEMAPHORE_IMPORT_TEMPORARY_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions: *const Extensions, item: *const vk.VkExternalFenceHandleTypeFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT |
         vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT |
         vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT |
         vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_WIN32_KMT_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkExternalFenceFeatureFlagBits(extensions: *const Extensions, item: *const vk.VkExternalFenceFeatureFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT |
         vk.VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_FEATURE_EXPORTABLE_BIT_KHR;
+    if (extensions.instance.VK_KHR_external_fence_capabilities)
+        valid_bits |= vk.VK_EXTERNAL_FENCE_FEATURE_IMPORTABLE_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkFenceImportFlagBits(extensions: *const Extensions, item: *const vk.VkFenceImportFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_FENCE_IMPORT_TEMPORARY_BIT;
+    if (extensions.device.VK_KHR_external_fence)
+        valid_bits |= vk.VK_FENCE_IMPORT_TEMPORARY_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22156,18 +24492,31 @@ pub fn check_enum_VkDisplayEventTypeEXT(extensions: *const Extensions, item: *co
 }
 
 pub fn check_bitmask_VkPeerMemoryFeatureFlagBits(extensions: *const Extensions, item: *const vk.VkPeerMemoryFeatureFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_PEER_MEMORY_FEATURE_COPY_SRC_BIT |
         vk.VK_PEER_MEMORY_FEATURE_COPY_DST_BIT |
         vk.VK_PEER_MEMORY_FEATURE_GENERIC_SRC_BIT |
         vk.VK_PEER_MEMORY_FEATURE_GENERIC_DST_BIT;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PEER_MEMORY_FEATURE_COPY_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PEER_MEMORY_FEATURE_COPY_DST_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PEER_MEMORY_FEATURE_GENERIC_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_PEER_MEMORY_FEATURE_GENERIC_DST_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkMemoryAllocateFlagBits(extensions: *const Extensions, item: *const vk.VkMemoryAllocateFlagBits) bool {
     var valid_bits: u32 = 0 |
         vk.VK_MEMORY_ALLOCATE_DEVICE_MASK_BIT;
+    if (extensions.device.VK_KHR_device_group)
+        valid_bits |= vk.VK_MEMORY_ALLOCATE_DEVICE_MASK_BIT_KHR;
+    if (extensions.device.VK_KHR_buffer_device_address)
+        valid_bits |= vk.VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+    if (extensions.device.VK_KHR_buffer_device_address)
+        valid_bits |= vk.VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR;
     if (extensions.device.VK_EXT_zero_initialize_device_memory)
         valid_bits |= vk.VK_MEMORY_ALLOCATE_ZERO_INITIALIZE_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
@@ -22193,6 +24542,8 @@ pub fn check_bitmask_VkSwapchainCreateFlagBitsKHR(extensions: *const Extensions,
         valid_bits |= vk.VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR;
     if (extensions.device.VK_KHR_swapchain_mutable_format)
         valid_bits |= vk.VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR;
+    if (extensions.device.VK_EXT_swapchain_maintenance1)
+        valid_bits |= vk.VK_SWAPCHAIN_CREATE_DEFERRED_MEMORY_ALLOCATION_BIT_EXT;
     if (extensions.device.VK_KHR_present_id2)
         valid_bits |= vk.VK_SWAPCHAIN_CREATE_PRESENT_ID_2_BIT_KHR;
     if (extensions.device.VK_KHR_present_wait2)
@@ -22274,7 +24625,10 @@ pub fn check_enum_VkPointClippingBehavior(extensions: *const Extensions, item: *
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY_KHR)
+        return true;
     return false;
 }
 
@@ -22291,7 +24645,14 @@ pub fn check_enum_VkSamplerReductionMode(extensions: *const Extensions, item: *c
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_sampler_filter_minmax and item.* == vk.VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sampler_filter_minmax and item.* == vk.VK_SAMPLER_REDUCTION_MODE_MIN_EXT)
+        return true;
+    if (extensions.device.VK_EXT_sampler_filter_minmax and item.* == vk.VK_SAMPLER_REDUCTION_MODE_MAX_EXT)
+        return true;
+    if (extensions.device.VK_QCOM_filter_cubic_clamp and item.* == vk.VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM)
+        return true;
     return false;
 }
 
@@ -22306,7 +24667,10 @@ pub fn check_enum_VkTessellationDomainOrigin(extensions: *const Extensions, item
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT_KHR)
+        return true;
+    if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT_KHR)
+        return true;
     return false;
 }
 
@@ -22327,7 +24691,16 @@ pub fn check_enum_VkSamplerYcbcrModelConversion(extensions: *const Extensions, i
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR)
+        return true;
     return false;
 }
 
@@ -22342,7 +24715,10 @@ pub fn check_enum_VkSamplerYcbcrRange(extensions: *const Extensions, item: *cons
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_RANGE_ITU_FULL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR)
+        return true;
     return false;
 }
 
@@ -22357,7 +24733,10 @@ pub fn check_enum_VkChromaLocation(extensions: *const Extensions, item: *const v
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_CHROMA_LOCATION_COSITED_EVEN_KHR)
+        return true;
+    if (extensions.device.VK_KHR_sampler_ycbcr_conversion and item.* == vk.VK_CHROMA_LOCATION_MIDPOINT_KHR)
+        return true;
     return false;
 }
 
@@ -22453,7 +24832,22 @@ pub fn check_enum_VkQueueGlobalPriority(extensions: *const Extensions, item: *co
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_LOW_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_MEDIUM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_HIGH_EXT)
+        return true;
+    if (extensions.device.VK_EXT_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_REALTIME_EXT)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_LOW_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_MEDIUM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_HIGH_KHR)
+        return true;
+    if (extensions.device.VK_KHR_global_priority and item.* == vk.VK_QUEUE_GLOBAL_PRIORITY_REALTIME_KHR)
+        return true;
     return false;
 }
 
@@ -22495,12 +24889,19 @@ pub fn check_enum_VkConservativeRasterizationModeEXT(extensions: *const Extensio
 }
 
 pub fn check_bitmask_VkDescriptorBindingFlagBits(extensions: *const Extensions, item: *const vk.VkDescriptorBindingFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
         vk.VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT |
         vk.VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
         vk.VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT_EXT;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT_EXT;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT_EXT;
+    if (extensions.device.VK_EXT_descriptor_indexing)
+        valid_bits |= vk.VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22592,7 +24993,30 @@ pub fn check_enum_VkDriverId(extensions: *const Extensions, item: *const vk.VkDr
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_AMD_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_AMD_OPEN_SOURCE_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_MESA_RADV_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_NVIDIA_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_INTEL_PROPRIETARY_WINDOWS_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_IMAGINATION_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_QUALCOMM_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_ARM_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_GOOGLE_SWIFTSHADER_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_GGP_PROPRIETARY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_driver_properties and item.* == vk.VK_DRIVER_ID_BROADCOM_PROPRIETARY_KHR)
+        return true;
     return false;
 }
 
@@ -22604,13 +25028,22 @@ pub fn check_bitmask_VkConditionalRenderingFlagBitsEXT(extensions: *const Extens
 }
 
 pub fn check_bitmask_VkResolveModeFlagBits(extensions: *const Extensions, item: *const vk.VkResolveModeFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_RESOLVE_MODE_NONE |
         vk.VK_RESOLVE_MODE_SAMPLE_ZERO_BIT |
         vk.VK_RESOLVE_MODE_AVERAGE_BIT |
         vk.VK_RESOLVE_MODE_MIN_BIT |
         vk.VK_RESOLVE_MODE_MAX_BIT;
+    if (extensions.device.VK_KHR_depth_stencil_resolve)
+        valid_bits |= vk.VK_RESOLVE_MODE_NONE_KHR;
+    if (extensions.device.VK_KHR_depth_stencil_resolve)
+        valid_bits |= vk.VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
+    if (extensions.device.VK_KHR_depth_stencil_resolve)
+        valid_bits |= vk.VK_RESOLVE_MODE_AVERAGE_BIT_KHR;
+    if (extensions.device.VK_KHR_depth_stencil_resolve)
+        valid_bits |= vk.VK_RESOLVE_MODE_MIN_BIT_KHR;
+    if (extensions.device.VK_KHR_depth_stencil_resolve)
+        valid_bits |= vk.VK_RESOLVE_MODE_MAX_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22678,7 +25111,11 @@ pub fn check_bitmask_VkGeometryInstanceFlagBitsKHR(extensions: *const Extensions
     if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_GEOMETRY_INSTANCE_FORCE_OPACITY_MICROMAP_2_STATE_BIT_EXT;
     if (extensions.device.VK_EXT_opacity_micromap)
+        valid_bits |= vk.VK_GEOMETRY_INSTANCE_FORCE_OPACITY_MICROMAP_2_STATE_EXT;
+    if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_GEOMETRY_INSTANCE_DISABLE_OPACITY_MICROMAPS_BIT_EXT;
+    if (extensions.device.VK_EXT_opacity_micromap)
+        valid_bits |= vk.VK_GEOMETRY_INSTANCE_DISABLE_OPACITY_MICROMAPS_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22700,11 +25137,19 @@ pub fn check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions: *const 
     if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_UPDATE_BIT_EXT;
     if (extensions.device.VK_EXT_opacity_micromap)
+        valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_UPDATE_EXT;
+    if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DISABLE_OPACITY_MICROMAPS_BIT_EXT;
     if (extensions.device.VK_EXT_opacity_micromap)
+        valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DISABLE_OPACITY_MICROMAPS_EXT;
+    if (extensions.device.VK_EXT_opacity_micromap)
         valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_DATA_UPDATE_BIT_EXT;
+    if (extensions.device.VK_EXT_opacity_micromap)
+        valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_DATA_UPDATE_EXT;
     if (extensions.device.VK_KHR_ray_tracing_position_fetch)
         valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DATA_ACCESS_BIT_KHR;
+    if (extensions.device.VK_KHR_ray_tracing_position_fetch)
+        valid_bits |= vk.VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DATA_ACCESS_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22883,8 +25328,9 @@ pub fn check_enum_VkMemoryOverallocationBehaviorAMD(extensions: *const Extension
 }
 
 pub fn check_bitmask_VkFramebufferCreateFlagBits(extensions: *const Extensions, item: *const vk.VkFramebufferCreateFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0;
+    var valid_bits: u32 = 0;
+    if (extensions.device.VK_KHR_imageless_framebuffer)
+        valid_bits |= vk.VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -22906,11 +25352,16 @@ pub fn check_bitmask_VkDeviceDiagnosticsConfigFlagBitsNV(extensions: *const Exte
 }
 
 pub fn check_bitmask_VkPipelineCreationFeedbackFlagBits(extensions: *const Extensions, item: *const vk.VkPipelineCreationFeedbackFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT |
         vk.VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT |
         vk.VK_PIPELINE_CREATION_FEEDBACK_BASE_PIPELINE_ACCELERATION_BIT;
+    if (extensions.device.VK_EXT_pipeline_creation_feedback)
+        valid_bits |= vk.VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT_EXT;
+    if (extensions.device.VK_EXT_pipeline_creation_feedback)
+        valid_bits |= vk.VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT_EXT;
+    if (extensions.device.VK_EXT_pipeline_creation_feedback)
+        valid_bits |= vk.VK_PIPELINE_CREATION_FEEDBACK_BASE_PIPELINE_ACCELERATION_BIT_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -23129,7 +25580,12 @@ pub fn check_enum_VkShaderFloatControlsIndependence(extensions: *const Extension
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_shader_float_controls and item.* == vk.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_float_controls and item.* == vk.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL_KHR)
+        return true;
+    if (extensions.device.VK_KHR_shader_float_controls and item.* == vk.VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE_KHR)
+        return true;
     return false;
 }
 
@@ -23167,7 +25623,22 @@ pub fn check_enum_VkLineRasterizationMode(extensions: *const Extensions, item: *
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT)
+        return true;
+    if (extensions.device.VK_EXT_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_DEFAULT_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_RECTANGULAR_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_BRESENHAM_KHR)
+        return true;
+    if (extensions.device.VK_KHR_line_rasterization and item.* == vk.VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_KHR)
+        return true;
     return false;
 }
 
@@ -23243,6 +25714,16 @@ pub fn check_bitmask_VkToolPurposeFlagBits(extensions: *const Extensions, item: 
         vk.VK_TOOL_PURPOSE_TRACING_BIT |
         vk.VK_TOOL_PURPOSE_ADDITIONAL_FEATURES_BIT |
         vk.VK_TOOL_PURPOSE_MODIFYING_FEATURES_BIT;
+    if (extensions.device.VK_EXT_tooling_info)
+        valid_bits |= vk.VK_TOOL_PURPOSE_VALIDATION_BIT_EXT;
+    if (extensions.device.VK_EXT_tooling_info)
+        valid_bits |= vk.VK_TOOL_PURPOSE_PROFILING_BIT_EXT;
+    if (extensions.device.VK_EXT_tooling_info)
+        valid_bits |= vk.VK_TOOL_PURPOSE_TRACING_BIT_EXT;
+    if (extensions.device.VK_EXT_tooling_info)
+        valid_bits |= vk.VK_TOOL_PURPOSE_ADDITIONAL_FEATURES_BIT_EXT;
+    if (extensions.device.VK_EXT_tooling_info)
+        valid_bits |= vk.VK_TOOL_PURPOSE_MODIFYING_FEATURES_BIT_EXT;
     if (extensions.device.VK_EXT_tooling_info)
         valid_bits |= vk.VK_TOOL_PURPOSE_DEBUG_REPORTING_BIT_EXT;
     if (extensions.device.VK_EXT_tooling_info)
@@ -23409,6 +25890,48 @@ pub fn check_bitmask_VkAccessFlagBits2(extensions: *const Extensions, item: *con
     if (extensions.device.VK_QCOM_tile_shading)
         valid_bits |= vk.VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_NONE_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_INDEX_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_UNIFORM_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADER_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADER_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_TRANSFER_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_TRANSFER_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_HOST_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_HOST_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_MEMORY_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_MEMORY_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADER_SAMPLED_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADER_STORAGE_READ_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_TRANSFORM_FEEDBACK_WRITE_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT;
@@ -23417,15 +25940,25 @@ pub fn check_bitmask_VkAccessFlagBits2(extensions: *const Extensions, item: *con
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_CONDITIONAL_RENDERING_READ_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_COMMAND_PREPROCESS_READ_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_COMMAND_PREPROCESS_WRITE_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_COMMAND_PREPROCESS_READ_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_COMMAND_PREPROCESS_WRITE_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_SHADING_RATE_IMAGE_READ_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_ACCELERATION_STRUCTURE_READ_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_ACCESS_2_ACCELERATION_STRUCTURE_WRITE_BIT_NV;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_ACCESS_2_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
@@ -23474,19 +26007,83 @@ pub fn check_bitmask_VkPipelineStageFlagBits2(extensions: *const Extensions, ite
     if (extensions.device.VK_KHR_video_encode_queue)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_VIDEO_ENCODE_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_NONE_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_HOST_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_COPY_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_RESOLVE_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_BLIT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_CLEAR_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_PRE_RASTERIZATION_SHADERS_BIT_KHR;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_TRANSFORM_FEEDBACK_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_CONDITIONAL_RENDERING_BIT_EXT;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_COMMAND_PREPROCESS_BIT_NV;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_COMMAND_PREPROCESS_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_SHADING_RATE_IMAGE_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR;
     if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_NV;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_PIPELINE_STAGE_2_MESH_SHADER_BIT_NV;
     if (extensions.device.VK_KHR_synchronization2)
         valid_bits |= vk.VK_PIPELINE_STAGE_2_TASK_SHADER_BIT_EXT;
     if (extensions.device.VK_KHR_synchronization2)
@@ -23499,15 +26096,17 @@ pub fn check_bitmask_VkPipelineStageFlagBits2(extensions: *const Extensions, ite
 }
 
 pub fn check_bitmask_VkSubmitFlagBits(extensions: *const Extensions, item: *const vk.VkSubmitFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_SUBMIT_PROTECTED_BIT;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_SUBMIT_PROTECTED_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
 pub fn check_bitmask_VkEventCreateFlagBits(extensions: *const Extensions, item: *const vk.VkEventCreateFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0;
+    var valid_bits: u32 = 0;
+    if (extensions.device.VK_KHR_synchronization2)
+        valid_bits |= vk.VK_EVENT_CREATE_DEVICE_ONLY_BIT_KHR;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -23781,7 +26380,8 @@ pub fn check_enum_VkQueryResultStatusKHR(extensions: *const Extensions, item: *c
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_QUERY_RESULT_STATUS_INSUFFICIENT_BITSTREAM_BUFFER_RANGE_KHR)
+        return true;
     return false;
 }
 
@@ -23953,10 +26553,13 @@ pub fn check_bitmask_VkVideoEncodeH264RateControlFlagBitsKHR(extensions: *const 
 }
 
 pub fn check_bitmask_VkHostImageCopyFlagBits(extensions: *const Extensions, item: *const vk.VkHostImageCopyFlagBits) bool {
-    _ = extensions;
-    const valid_bits: u32 = 0 |
+    var valid_bits: u32 = 0 |
         vk.VK_HOST_IMAGE_COPY_MEMCPY_BIT |
         vk.VK_HOST_IMAGE_COPY_MEMCPY;
+    if (extensions.device.VK_EXT_host_image_copy)
+        valid_bits |= vk.VK_HOST_IMAGE_COPY_MEMCPY_BIT_EXT;
+    if (extensions.device.VK_EXT_host_image_copy)
+        valid_bits |= vk.VK_HOST_IMAGE_COPY_MEMCPY_EXT;
     return (item.* & ~valid_bits) == 0;
 }
 
@@ -24043,10 +26646,66 @@ pub fn check_bitmask_VkFormatFeatureFlagBits2(extensions: *const Extensions, ite
         valid_bits |= vk.VK_FORMAT_FEATURE_2_FRAGMENT_DENSITY_MAP_BIT_EXT;
     if (extensions.device.VK_KHR_fragment_shading_rate)
         valid_bits |= vk.VK_FORMAT_FEATURE_2_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_EXT_host_image_copy)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT_EXT;
     if (extensions.device.VK_KHR_video_encode_queue)
         valid_bits |= vk.VK_FORMAT_FEATURE_2_VIDEO_ENCODE_INPUT_BIT_KHR;
     if (extensions.device.VK_KHR_video_encode_queue)
         valid_bits |= vk.VK_FORMAT_FEATURE_2_VIDEO_ENCODE_DPB_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_IMAGE_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_IMAGE_ATOMIC_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_UNIFORM_TEXEL_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_TEXEL_BUFFER_ATOMIC_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_VERTEX_BUFFER_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_COLOR_ATTACHMENT_BLEND_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_DEPTH_STENCIL_ATTACHMENT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_BLIT_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_BLIT_DST_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_TRANSFER_SRC_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_TRANSFER_DST_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_MIDPOINT_CHROMA_SAMPLES_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_DISJOINT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_COSITED_CHROMA_SAMPLES_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_MINMAX_BIT_KHR;
+    if (extensions.device.VK_KHR_format_feature_flags2)
+        valid_bits |= vk.VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT;
     if (extensions.device.VK_QCOM_image_processing)
         valid_bits |= vk.VK_FORMAT_FEATURE_2_WEIGHT_IMAGE_BIT_QCOM;
     if (extensions.device.VK_QCOM_image_processing)
@@ -24067,6 +26726,14 @@ pub fn check_bitmask_VkRenderingFlagBits(extensions: *const Extensions, item: *c
         vk.VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT |
         vk.VK_RENDERING_SUSPENDING_BIT |
         vk.VK_RENDERING_RESUMING_BIT;
+    if (extensions.device.VK_KHR_dynamic_rendering)
+        valid_bits |= vk.VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT_KHR;
+    if (extensions.device.VK_KHR_dynamic_rendering)
+        valid_bits |= vk.VK_RENDERING_SUSPENDING_BIT_KHR;
+    if (extensions.device.VK_KHR_dynamic_rendering)
+        valid_bits |= vk.VK_RENDERING_RESUMING_BIT_KHR;
+    if (extensions.device.VK_EXT_nested_command_buffer)
+        valid_bits |= vk.VK_RENDERING_CONTENTS_INLINE_BIT_EXT;
     if (extensions.device.VK_EXT_legacy_dithering)
         valid_bits |= vk.VK_RENDERING_ENABLE_LEGACY_DITHERING_BIT_EXT;
     if (extensions.device.VK_KHR_maintenance7)
@@ -24303,7 +26970,14 @@ pub fn check_enum_VkPipelineRobustnessBufferBehavior(extensions: *const Extensio
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DISABLED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2_EXT)
+        return true;
     return false;
 }
 
@@ -24322,7 +26996,14 @@ pub fn check_enum_VkPipelineRobustnessImageBehavior(extensions: *const Extension
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DEVICE_DEFAULT_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DISABLED_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_ROBUST_IMAGE_ACCESS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_pipeline_robustness and item.* == vk.VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_ROBUST_IMAGE_ACCESS_2_EXT)
+        return true;
     return false;
 }
 
@@ -24611,7 +27292,12 @@ pub fn check_enum_VkIndirectCommandsTokenTypeEXT(extensions: *const Extensions, 
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_MESH_TASKS_EXT)
+        return true;
+    if (extensions.device.VK_EXT_mesh_shader and item.* == vk.VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_MESH_TASKS_COUNT_EXT)
+        return true;
+    if (extensions.device.VK_KHR_ray_tracing_maintenance1 and item.* == vk.VK_INDIRECT_COMMANDS_TOKEN_TYPE_TRACE_RAYS2_EXT)
+        return true;
     return false;
 }
 
@@ -24715,7 +27401,12 @@ pub fn check_enum_VkComponentTypeKHR(extensions: *const Extensions, item: *const
     );
     if (min <= item.* and item.* <= max)
         return true;
-    _ = extensions;
+    if (extensions.device.VK_KHR_shader_bfloat16 and item.* == vk.VK_COMPONENT_TYPE_BFLOAT16_KHR)
+        return true;
+    if (extensions.device.VK_EXT_shader_float8 and item.* == vk.VK_COMPONENT_TYPE_FLOAT8_E4M3_EXT)
+        return true;
+    if (extensions.device.VK_EXT_shader_float8 and item.* == vk.VK_COMPONENT_TYPE_FLOAT8_E5M2_EXT)
+        return true;
     return false;
 }
 
