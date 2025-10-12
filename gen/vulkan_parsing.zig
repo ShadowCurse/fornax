@@ -101,6 +101,14 @@ pub const Database = struct {
     pub fn all_extensions(self: *const Self) AllExtensionsIterator {
         return .{ .db = self };
     }
+
+    pub fn enum_by_name(self: *const Self, name: []const u8) ?*const Enum {
+        for (self.enums.items) |*e| {
+            if (std.mem.eql(u8, e.name, name))
+                return e;
+        }
+        return null;
+    }
 };
 
 pub const Extensions = struct {
@@ -130,8 +138,9 @@ pub const Extension = struct {
         };
 
         pub const Enum = struct {
-            name: []const u8,
-            extends: []const u8,
+            name: []const u8 = &.{},
+            extends: []const u8 = &.{},
+            alias: ?[]const u8 = null,
         };
 
         pub fn format(self: *const Require, writer: anytype) !void {
@@ -184,25 +193,23 @@ pub fn parse_extension_require(alloc: Allocator, original_parser: *xml.Parser) !
     }
 
     var items: std.ArrayListUnmanaged(Extension.Require.Item) = .empty;
-    while (parser.element_start()) |es| {
+    outer: while (parser.element_start()) |es| {
         if (std.mem.eql(u8, es, "enum")) {
-            const first_attr = parser.attribute() orelse return null;
-            if (std.mem.eql(u8, first_attr.name, "extends") or
-                std.mem.eql(u8, first_attr.name, "offset") or
-                std.mem.eql(u8, first_attr.name, "value") or
-                std.mem.eql(u8, first_attr.name, "alias") or
-                std.mem.eql(u8, first_attr.name, "name") or
-                std.mem.eql(u8, first_attr.name, "api"))
-            {
-                _ = parser.skip_attributes();
-                continue;
+            var e: Extension.Require.Enum = .{};
+            while (parser.attribute()) |attr| {
+                if (std.mem.eql(u8, attr.name, "value") or
+                    std.mem.eql(u8, attr.name, "api"))
+                {
+                    _ = parser.skip_attributes();
+                    continue :outer;
+                } else if (std.mem.eql(u8, attr.name, "extends")) {
+                    e.extends = attr.value;
+                } else if (std.mem.eql(u8, attr.name, "name")) {
+                    e.name = attr.value;
+                } else if (std.mem.eql(u8, attr.name, "alias")) {
+                    e.alias = attr.value;
+                }
             }
-            var e: Extension.Require.Enum = undefined;
-            const extends = parser.attribute() orelse return null;
-            e.extends = extends.value;
-            const name = parser.attribute() orelse return null;
-            e.name = name.value;
-            _ = parser.skip_attributes();
             try items.append(alloc, .{ .@"enum" = e });
         } else if (std.mem.eql(u8, es, "type")) {
             const name = parser.attribute() orelse return null;
@@ -231,9 +238,9 @@ test "parse_extension_require" {
             \\    <comment>comment</comment>
             \\    <enum value="1" name="A"/>
             \\    <enum value="&quot;B&quot;" name="A"/>
-            \\    <enum offset="0" extends="A" dir="-" name="A"/>
-            \\    <enum bitpos="0" extends="A" name="A"/>
-            \\    <type name="A"/>
+            \\    <enum offset="0" extends="A" dir="-" name="B"/>
+            \\    <enum bitpos="0" extends="C" name="D" alias="E"/>
+            \\    <type name="F"/>
             \\    <command name="A"/>
             \\    <feature name="A" struct="A"/>
             \\</require>----
@@ -242,37 +249,52 @@ test "parse_extension_require" {
         var parser: xml.Parser = .init(text);
         const r = (try parse_extension_require(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = r;
-        // std.log.err("{f}", .{r});
+        const expected: Extension.Require = .{
+            .depends = null,
+            .items = &.{
+                .{ .@"enum" = .{ .name = "B", .extends = "A", .alias = null } },
+                .{ .@"enum" = .{ .name = "D", .extends = "C", .alias = "E" } },
+                .{ .type = "F" },
+            },
+        };
+        try std.testing.expectEqual(expected.depends, r.depends);
+        try std.testing.expectEqualDeep(expected.items, r.items);
     }
     {
         const text =
-            \\<require depends="A">
+            \\<require depends="AAA">
             \\    <comment>comment</comment>
             \\    <enum value="1" name="A"/>
             \\    <enum value="&quot;B&quot;" name="A"/>
-            \\    <enum offset="0" extends="A" dir="-" name="A"/>
-            \\    <enum bitpos="0" extends="A" name="A"/>
-            \\    <type name="A"/>
+            \\    <enum offset="0" extends="A" dir="-" name="B"/>
+            \\    <enum bitpos="0" extends="C" name="D" alias="E"/>
+            \\    <type name="F"/>
             \\    <command name="A"/>
             \\    <feature name="A" struct="A"/>
             \\</require>----
         ;
+
         var parser: xml.Parser = .init(text);
         const r = (try parse_extension_require(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = r;
-        // std.log.err("{f}", .{r});
+        const expected: Extension.Require = .{
+            .depends = "AAA",
+            .items = &.{
+                .{ .@"enum" = .{ .name = "B", .extends = "A", .alias = null } },
+                .{ .@"enum" = .{ .name = "D", .extends = "C", .alias = "E" } },
+                .{ .type = "F" },
+            },
+        };
+        try std.testing.expectEqualStrings(expected.depends.?, r.depends.?);
+        try std.testing.expectEqualDeep(expected.items, r.items);
     }
     {
         const text =
             \\<require comment="A"/>----
         ;
         var parser: xml.Parser = .init(text);
-        const r = try parse_extension_require(alloc, &parser);
+        _ = try parse_extension_require(alloc, &parser);
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = r;
-        // std.log.err("{f}", .{r});
     }
 }
 
@@ -414,7 +436,7 @@ test "parse_several_extensions" {
         \\      <require>
         \\      </require>
         \\  </extension>
-        \\  <extension name="B" number="1" type="device" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
+        \\  <extension name="B" number="1" type="instance" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
         \\      <require>
         \\      </require>
         \\  </extension>
@@ -427,7 +449,8 @@ test "parse_several_extensions" {
     var parser: xml.Parser = .init(text);
     const extensions = try parse_extensions(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-    try std.testing.expectEqual(2, extensions.items.len);
+    try std.testing.expectEqual(1, extensions.instance.len);
+    try std.testing.expectEqual(1, extensions.device.len);
 }
 
 pub const Types = struct {
@@ -780,6 +803,7 @@ pub const Enum = struct {
     pub const Item = struct {
         type: enum { value, bitpos },
         name: []const u8,
+        comment: []const u8,
 
         pub fn format(self: *const Item, writer: anytype) !void {
             try writer.print(
@@ -811,6 +835,8 @@ pub fn parse_enum_item(original_parser: *xml.Parser) ?Enum.Item {
             result.type = .bitpos;
         } else if (std.mem.eql(u8, attr.name, "name")) {
             result.name = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "comment")) {
+            result.comment = attr.value;
         }
     }
     original_parser.* = parser;
