@@ -572,6 +572,7 @@ pub const Struct = struct {
         type: []const u8 = &.{},
         value: ?[]const u8 = null,
         len: ?[]const u8 = null,
+        optional: bool = false,
         pub fn format(self: *const Member, writer: anytype) !void {
             try writer.print(
                 "name: {s} type: {s} value: {?s} len: {?s}",
@@ -600,8 +601,13 @@ pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
         while (parser.attribute()) |attr| {
             if (std.mem.eql(u8, attr.name, "len")) {
                 result.len = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "altlen")) {
+                result.len = attr.value;
             } else if (std.mem.eql(u8, attr.name, "values")) {
                 result.value = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "optional")) {
+                if (std.mem.eql(u8, attr.value, "true"))
+                    result.optional = true;
             }
         }
     }
@@ -621,55 +627,74 @@ pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
 }
 
 test "parse_struct_member" {
-    const text0 =
-        \\<member><type>A</type> <name>A</name><comment>AAA</comment></member>----
-    ;
     {
-        var parser: xml.Parser = .init(text0);
+        const text =
+            \\<member><type>T</type> <name>N</name><comment>CCC</comment></member>----
+        ;
+        var parser: xml.Parser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = m;
-        // std.log.err("{f}", .{m});
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+        };
+        try std.testing.expectEqualDeep(expected, m);
     }
-    const text1 =
-        \\<member values="A"><type>A</type> <name>A</name></member>----
-    ;
     {
-        var parser: xml.Parser = .init(text1);
+        const text =
+            \\<member values="V"><type>T</type> <name>N</name></member>----
+        ;
+        var parser: xml.Parser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = m;
-        // std.log.err("{f}", .{m});
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .value = "V",
+        };
+        try std.testing.expectEqualDeep(expected, m);
     }
-    const text2 =
-        \\<member noautovalidity="true" optional="true">const <type>A</type>* <name>A</name><comment>AAA</comment></member>----
-    ;
     {
-        var parser: xml.Parser = .init(text2);
+        const text =
+            \\<member noautovalidity="true" optional="true"> <type>T</type>* <name>N</name><comment>C</comment></member>----
+        ;
+        var parser: xml.Parser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = m;
-        // std.log.err("{f}", .{m});
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .optional = true,
+        };
+        try std.testing.expectEqualDeep(expected, m);
     }
-    const text3 =
-        \\<member optional="true"><type>A</type> <name>A</name></member>----
-    ;
     {
-        var parser: xml.Parser = .init(text3);
+        const text =
+            \\<member optional="true"><type>T</type> <name>N</name></member>----
+        ;
+        var parser: xml.Parser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = m;
-        // std.log.err("{f}", .{m});
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .optional = true,
+        };
+        try std.testing.expectEqualDeep(expected, m);
     }
-    const text4 =
-        \\<member len="A,null-terminated"> <type>A</type> <name>A</name></member>----
-    ;
     {
-        var parser: xml.Parser = .init(text4);
+        const text =
+            \\<member len="null-terminated"> <type>T</type> <name>N</name></member>----
+        ;
+        var parser: xml.Parser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = m;
-        // std.log.err("{f}", .{m});
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .len = "null-terminated",
+        };
+        try std.testing.expectEqualDeep(expected, m);
     }
 }
 
