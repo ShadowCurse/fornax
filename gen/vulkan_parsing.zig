@@ -29,6 +29,10 @@ const IGNORE_SUB_NAMES: []const []const u8 = &.{
     "win32",
     "xcb",
     "xlib",
+    "VK_EXT_application_parameters",
+    "VK_KHR_performance_query",
+    "VK_KHR_portability_subset",
+    "VK_KHR_object_refresh",
 };
 
 pub const Database = struct {

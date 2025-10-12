@@ -9703,7 +9703,7 @@ pub fn check_result(result: vk.VkResult) !void {
     }
 }
 pub const Extensions = struct {
-    instance: packed struct(u26) {
+    instance: packed struct(u25) {
         VK_KHR_surface: bool = false,
         VK_KHR_display: bool = false,
         VK_EXT_debug_report: bool = false,
@@ -9727,11 +9727,10 @@ pub const Extensions = struct {
         VK_EXT_acquire_drm_display: bool = false,
         VK_EXT_directfb_surface: bool = false,
         VK_KHR_portability_enumeration: bool = false,
-        VK_EXT_application_parameters: bool = false,
         VK_KHR_surface_maintenance1: bool = false,
         VK_EXT_layer_settings: bool = false,
     } = .{},
-    device: packed struct(u260) {
+    device: packed struct(u257) {
         VK_KHR_swapchain: bool = false,
         VK_KHR_display_swapchain: bool = false,
         VK_EXT_depth_range_unrestricted: bool = false,
@@ -9775,7 +9774,6 @@ pub const Extensions = struct {
         VK_KHR_shared_presentable_image: bool = false,
         VK_KHR_external_fence: bool = false,
         VK_KHR_external_fence_fd: bool = false,
-        VK_KHR_performance_query: bool = false,
         VK_KHR_maintenance2: bool = false,
         VK_KHR_variable_pointers: bool = false,
         VK_EXT_external_memory_dma_buf: bool = false,
@@ -9801,7 +9799,6 @@ pub const Extensions = struct {
         VK_EXT_validation_cache: bool = false,
         VK_EXT_descriptor_indexing: bool = false,
         VK_EXT_shader_viewport_index_layer: bool = false,
-        VK_KHR_portability_subset: bool = false,
         VK_KHR_maintenance3: bool = false,
         VK_KHR_draw_indirect_count: bool = false,
         VK_EXT_filter_cubic: bool = false,
@@ -9875,7 +9872,6 @@ pub const Extensions = struct {
         VK_EXT_pipeline_creation_cache_control: bool = false,
         VK_KHR_video_encode_queue: bool = false,
         VK_QCOM_render_pass_store_ops: bool = false,
-        VK_KHR_object_refresh: bool = false,
         VK_QCOM_tile_shading: bool = false,
         VK_EXT_metal_objects: bool = false,
         VK_KHR_synchronization2: bool = false,
@@ -10240,12 +10236,6 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_application_parameters")) {
-                self.instance.VK_EXT_application_parameters = true;
-                break;
-            }
-        }
-        for (ie) |ext| {
             if (std.mem.eql(u8, ext, "VK_KHR_surface_maintenance1") and (self.instance.VK_KHR_surface or self.instance.VK_KHR_get_surface_capabilities2)) {
                 self.instance.VK_KHR_surface_maintenance1 = true;
                 break;
@@ -10517,12 +10507,6 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_performance_query") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
-                self.device.VK_KHR_performance_query = true;
-                break;
-            }
-        }
-        for (de) |ext| {
             if (std.mem.eql(u8, ext, "VK_KHR_maintenance2")) {
                 self.device.VK_KHR_maintenance2 = true;
                 break;
@@ -10669,12 +10653,6 @@ pub const Extensions = struct {
         for (de) |ext| {
             if (std.mem.eql(u8, ext, "VK_EXT_shader_viewport_index_layer")) {
                 self.device.VK_EXT_shader_viewport_index_layer = true;
-                break;
-            }
-        }
-        for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_portability_subset") and (self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version)) {
-                self.device.VK_KHR_portability_subset = true;
                 break;
             }
         }
@@ -11113,12 +11091,6 @@ pub const Extensions = struct {
         for (de) |ext| {
             if (std.mem.eql(u8, ext, "VK_QCOM_render_pass_store_ops")) {
                 self.device.VK_QCOM_render_pass_store_ops = true;
-                break;
-            }
-        }
-        for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_object_refresh")) {
-                self.device.VK_KHR_object_refresh = true;
                 break;
             }
         }
@@ -19674,8 +19646,6 @@ pub fn check_enum_VkQueryType(extensions: *const Extensions, item: *const vk.VkQ
         return true;
     if (extensions.device.VK_EXT_transform_feedback and item.* == vk.VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT)
         return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR)
-        return true;
     if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_COMPACTED_SIZE_KHR)
         return true;
     if (extensions.device.VK_KHR_acceleration_structure and item.* == vk.VK_QUERY_TYPE_ACCELERATION_STRUCTURE_SERIALIZATION_SIZE_KHR)
@@ -20946,8 +20916,6 @@ pub fn check_enum_VkStructureType(extensions: *const Extensions, item: *const vk
         return true;
     if (extensions.instance.VK_EXT_directfb_surface and item.* == vk.VK_STRUCTURE_TYPE_DIRECTFB_SURFACE_CREATE_INFO_EXT)
         return true;
-    if (extensions.instance.VK_EXT_application_parameters and item.* == vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT)
-        return true;
     if (extensions.instance.VK_KHR_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR)
         return true;
     if (extensions.instance.VK_KHR_surface_maintenance1 and item.* == vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR)
@@ -21238,22 +21206,6 @@ pub fn check_enum_VkStructureType(extensions: *const Extensions, item: *const vk
         return true;
     if (extensions.device.VK_KHR_external_fence_fd and item.* == vk.VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR)
         return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_ACQUIRE_PROFILING_LOCK_INFO_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_DESCRIPTION_KHR)
-        return true;
-    if (extensions.device.VK_KHR_performance_query and item.* == vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR)
-        return true;
     if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES_KHR)
         return true;
     if (extensions.device.VK_KHR_maintenance2 and item.* == vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO_KHR)
@@ -21395,10 +21347,6 @@ pub fn check_enum_VkStructureType(extensions: *const Extensions, item: *const vk
     if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO_EXT)
         return true;
     if (extensions.device.VK_EXT_descriptor_indexing and item.* == vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT_EXT)
-        return true;
-    if (extensions.device.VK_KHR_portability_subset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR)
-        return true;
-    if (extensions.device.VK_KHR_portability_subset and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR)
         return true;
     if (extensions.device.VK_KHR_maintenance3 and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES_KHR)
         return true;
@@ -21727,8 +21675,6 @@ pub fn check_enum_VkStructureType(extensions: *const Extensions, item: *const vk
     if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR)
         return true;
     if (extensions.device.VK_KHR_video_encode_queue and item.* == vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_FEEDBACK_INFO_KHR)
-        return true;
-    if (extensions.device.VK_KHR_object_refresh and item.* == vk.VK_STRUCTURE_TYPE_REFRESH_OBJECT_LIST_KHR)
         return true;
     if (extensions.device.VK_QCOM_tile_shading and item.* == vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM)
         return true;
