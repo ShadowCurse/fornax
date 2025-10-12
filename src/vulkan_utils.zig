@@ -11795,11 +11795,29 @@ pub const Extensions = struct {
 };
 
 pub fn check_VkBaseOutStructure(extensions: *const Extensions, item: *const vk.VkBaseOutStructure) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBaseInStructure(extensions: *const Extensions, item: *const vk.VkBaseInStructure) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOffset2D(extensions: *const Extensions, item: *const vk.VkOffset2D) bool {
@@ -11845,14 +11863,21 @@ pub fn check_VkClearRect(extensions: *const Extensions, item: *const vk.VkClearR
 }
 
 pub fn check_VkComponentMapping(extensions: *const Extensions, item: *const vk.VkComponentMapping) bool {
-    return (check_enum_VkComponentSwizzle(extensions, &item.r) and
-        check_enum_VkComponentSwizzle(extensions, &item.g) and
-        check_enum_VkComponentSwizzle(extensions, &item.b) and
-        check_enum_VkComponentSwizzle(extensions, &item.a));
+    if (!check_enum_VkComponentSwizzle(extensions, @ptrCast(&item.r)))
+        return false;
+    if (!check_enum_VkComponentSwizzle(extensions, @ptrCast(&item.g)))
+        return false;
+    if (!check_enum_VkComponentSwizzle(extensions, @ptrCast(&item.b)))
+        return false;
+    if (!check_enum_VkComponentSwizzle(extensions, @ptrCast(&item.a)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProperties) bool {
-    return (check_enum_VkPhysicalDeviceType(extensions, &item.deviceType));
+    if (!check_enum_VkPhysicalDeviceType(extensions, @ptrCast(&item.deviceType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkExtensionProperties(extensions: *const Extensions, item: *const vk.VkExtensionProperties) bool {
@@ -11868,7 +11893,16 @@ pub fn check_VkLayerProperties(extensions: *const Extensions, item: *const vk.Vk
 }
 
 pub fn check_VkApplicationInfo(extensions: *const Extensions, item: *const vk.VkApplicationInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAllocationCallbacks(extensions: *const Extensions, item: *const vk.VkAllocationCallbacks) bool {
@@ -11878,21 +11912,106 @@ pub fn check_VkAllocationCallbacks(extensions: *const Extensions, item: *const v
 }
 
 pub fn check_VkDeviceQueueCreateInfo(extensions: *const Extensions, item: *const vk.VkDeviceQueueCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceQueueCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceQueueCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO,
+            => if (!check_VkDeviceQueueGlobalPriorityCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceCreateInfo(extensions: *const Extensions, item: *const vk.VkDeviceCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO,
+            => if (!check_VkDevicePrivateDataCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+            => if (!check_VkPhysicalDeviceFeatures2(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_SEMAPHORE_SCI_SYNC_POOL_RESERVATION_CREATE_INFO_NV,
+            => if (!check_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO,
+            => if (!check_VkDeviceGroupDeviceCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT,
+            => if (!check_VkDeviceDeviceMemoryReportCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD,
+            => if (!check_VkDeviceMemoryOverallocationCreateInfoAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR,
+            => if (!check_VkPerformanceQueryReservationInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FAULT_CALLBACK_INFO,
+            => if (!check_VkFaultCallbackInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+            => if (!check_VkDeviceDiagnosticsConfigCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_OBJECT_RESERVATION_CREATE_INFO,
+            => if (!check_VkDeviceObjectReservationCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR,
+            => if (!check_VkDevicePipelineBinaryInternalCacheControlKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV,
+            => if (!check_VkExternalComputeQueueDeviceCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkInstanceCreateInfo(extensions: *const Extensions, item: *const vk.VkInstanceCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkInstanceCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkInstanceCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
+            => if (!check_VkDebugReportCallbackCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT,
+            => if (!check_VkValidationFlagsEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT,
+            => if (!check_VkLayerSettingsCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            => if (!check_VkDebugUtilsMessengerCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG,
+            => if (!check_VkDirectDriverLoadingListLUNARG(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyProperties(extensions: *const Extensions, item: *const vk.VkQueueFamilyProperties) bool {
-    return (check_bitmask_VkQueueFlagBits(extensions, &item.queueFlags));
+    if (!check_bitmask_VkQueueFlagBits(extensions, @ptrCast(&item.queueFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryProperties) bool {
@@ -11902,7 +12021,82 @@ pub fn check_VkPhysicalDeviceMemoryProperties(extensions: *const Extensions, ite
 }
 
 pub fn check_VkMemoryAllocateInfo(extensions: *const Extensions, item: *const vk.VkMemoryAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV,
+            => if (!check_VkDedicatedAllocationMemoryAllocateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV,
+            => if (!check_VkExportMemoryAllocateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+            => if (!check_VkImportMemoryWin32HandleInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+            => if (!check_VkExportMemoryWin32HandleInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_SCI_BUF_INFO_NV,
+            => if (!check_VkExportMemorySciBufInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_SCI_BUF_INFO_NV,
+            => if (!check_VkImportMemorySciBufInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
+            => if (!check_VkExportMemoryAllocateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+            => if (!check_VkImportMemoryWin32HandleInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+            => if (!check_VkExportMemoryWin32HandleInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA,
+            => if (!check_VkImportMemoryZirconHandleInfoFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR,
+            => if (!check_VkImportMemoryFdInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_METAL_HANDLE_INFO_EXT,
+            => if (!check_VkImportMemoryMetalHandleInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+            => if (!check_VkMemoryAllocateFlagsInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
+            => if (!check_VkMemoryDedicatedAllocateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT,
+            => if (!check_VkImportMemoryHostPointerInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID,
+            => if (!check_VkImportAndroidHardwareBufferInfoANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_PRIORITY_ALLOCATE_INFO_EXT,
+            => if (!check_VkMemoryPriorityAllocateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,
+            => if (!check_VkMemoryOpaqueCaptureAddressAllocateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA,
+            => if (!check_VkImportMemoryBufferCollectionFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_METAL_BUFFER_INFO_EXT,
+            => if (!check_VkImportMetalBufferInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX,
+            => if (!check_VkImportScreenBufferInfoQNX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_TENSOR_ARM,
+            => if (!check_VkMemoryDedicatedAllocateInfoTensorARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryRequirements(extensions: *const Extensions, item: *const vk.VkMemoryRequirements) bool {
@@ -11912,8 +12106,11 @@ pub fn check_VkMemoryRequirements(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkSparseImageFormatProperties(extensions: *const Extensions, item: *const vk.VkSparseImageFormatProperties) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask) and
-        check_bitmask_VkSparseImageFormatFlagBits(extensions, &item.flags));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    if (!check_bitmask_VkSparseImageFormatFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSparseImageMemoryRequirements(extensions: *const Extensions, item: *const vk.VkSparseImageMemoryRequirements) bool {
@@ -11923,25 +12120,44 @@ pub fn check_VkSparseImageMemoryRequirements(extensions: *const Extensions, item
 }
 
 pub fn check_VkMemoryType(extensions: *const Extensions, item: *const vk.VkMemoryType) bool {
-    return (check_bitmask_VkMemoryPropertyFlagBits(extensions, &item.propertyFlags));
+    if (!check_bitmask_VkMemoryPropertyFlagBits(extensions, @ptrCast(&item.propertyFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkMemoryHeap(extensions: *const Extensions, item: *const vk.VkMemoryHeap) bool {
-    return (check_bitmask_VkMemoryHeapFlagBits(extensions, &item.flags));
+    if (!check_bitmask_VkMemoryHeapFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkMappedMemoryRange(extensions: *const Extensions, item: *const vk.VkMappedMemoryRange) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFormatProperties(extensions: *const Extensions, item: *const vk.VkFormatProperties) bool {
-    return (check_bitmask_VkFormatFeatureFlagBits(extensions, &item.linearTilingFeatures) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.optimalTilingFeatures) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.bufferFeatures));
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.linearTilingFeatures)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.optimalTilingFeatures)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.bufferFeatures)))
+        return false;
+    return true;
 }
 
 pub fn check_VkImageFormatProperties(extensions: *const Extensions, item: *const vk.VkImageFormatProperties) bool {
-    return (check_bitmask_VkSampleCountFlagBits(extensions, &item.sampleCounts));
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.sampleCounts)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDescriptorBufferInfo(extensions: *const Extensions, item: *const vk.VkDescriptorBufferInfo) bool {
@@ -11951,20 +12167,65 @@ pub fn check_VkDescriptorBufferInfo(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkDescriptorImageInfo(extensions: *const Extensions, item: *const vk.VkDescriptorImageInfo) bool {
-    return (check_enum_VkImageLayout(extensions, &item.imageLayout));
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.imageLayout)))
+        return false;
+    return true;
 }
 
 pub fn check_VkWriteDescriptorSet(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSet) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDescriptorType(extensions, &item.descriptorType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.descriptorType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK,
+            => if (!check_VkWriteDescriptorSetInlineUniformBlock(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
+            => if (!check_VkWriteDescriptorSetAccelerationStructureKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
+            => if (!check_VkWriteDescriptorSetAccelerationStructureNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV,
+            => if (!check_VkWriteDescriptorSetPartitionedAccelerationStructureNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_ARM,
+            => if (!check_VkWriteDescriptorSetTensorARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyDescriptorSet(extensions: *const Extensions, item: *const vk.VkCopyDescriptorSet) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferUsageFlags2CreateInfo(extensions: *const Extensions, item: *const vk.VkBufferUsageFlags2CreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferUsageFlags2CreateInfoKHR(extensions: *const Extensions, item: *const vk.VkBufferUsageFlags2CreateInfoKHR) bool {
@@ -11974,59 +12235,184 @@ pub fn check_VkBufferUsageFlags2CreateInfoKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkBufferCreateInfo(extensions: *const Extensions, item: *const vk.VkBufferCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkBufferCreateFlagBits(extensions, &item.flags) and
-        check_bitmask_VkBufferUsageFlagBits(extensions, &item.usage) and
-        check_enum_VkSharingMode(extensions, &item.sharingMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkBufferCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkBufferUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    if (!check_enum_VkSharingMode(extensions, @ptrCast(&item.sharingMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV,
+            => if (!check_VkDedicatedAllocationBufferCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
+            => if (!check_VkExternalMemoryBufferCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,
+            => if (!check_VkBufferOpaqueCaptureAddressCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,
+            => if (!check_VkBufferDeviceAddressCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_BUFFER_CREATE_INFO_FUCHSIA,
+            => if (!check_VkBufferCollectionBufferCreateInfoFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferViewCreateInfo(extensions: *const Extensions, item: *const vk.VkBufferViewCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageSubresource(extensions: *const Extensions, item: *const vk.VkImageSubresource) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkImageSubresourceLayers(extensions: *const Extensions, item: *const vk.VkImageSubresourceLayers) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkImageSubresourceRange(extensions: *const Extensions, item: *const vk.VkImageSubresourceRange) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkMemoryBarrier(extensions: *const Extensions, item: *const vk.VkMemoryBarrier) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.srcAccessMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.dstAccessMask));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.srcAccessMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.dstAccessMask)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferMemoryBarrier(extensions: *const Extensions, item: *const vk.VkBufferMemoryBarrier) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.srcAccessMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.dstAccessMask));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.srcAccessMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.dstAccessMask)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageMemoryBarrier(extensions: *const Extensions, item: *const vk.VkImageMemoryBarrier) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.srcAccessMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.dstAccessMask) and
-        check_enum_VkImageLayout(extensions, &item.oldLayout) and
-        check_enum_VkImageLayout(extensions, &item.newLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.srcAccessMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.dstAccessMask)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.oldLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.newLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCreateInfo(extensions: *const Extensions, item: *const vk.VkImageCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkImageType(extensions, &item.imageType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.samples) and
-        check_enum_VkImageTiling(extensions, &item.tiling) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.usage) and
-        check_enum_VkSharingMode(extensions, &item.sharingMode) and
-        check_enum_VkImageLayout(extensions, &item.initialLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkImageType(extensions, @ptrCast(&item.imageType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.samples)))
+        return false;
+    if (!check_enum_VkImageTiling(extensions, @ptrCast(&item.tiling)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    if (!check_enum_VkSharingMode(extensions, @ptrCast(&item.sharingMode)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.initialLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV,
+            => if (!check_VkDedicatedAllocationImageCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV,
+            => if (!check_VkExternalMemoryImageCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+            => if (!check_VkExternalMemoryImageCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
+            => if (!check_VkImageSwapchainCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
+            => if (!check_VkImageDrmFormatModifierListCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT,
+            => if (!check_VkImageDrmFormatModifierExplicitCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_IMAGE_CREATE_INFO_FUCHSIA,
+            => if (!check_VkBufferCollectionImageCreateInfoFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT,
+            => if (!check_VkImportMetalTextureInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT,
+            => if (!check_VkImportMetalIOSurfaceInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA,
+            => if (!check_VkImageAlignmentControlCreateInfoMESA(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubresourceLayout(extensions: *const Extensions, item: *const vk.VkSubresourceLayout) bool {
@@ -12036,10 +12422,37 @@ pub fn check_VkSubresourceLayout(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkImageViewCreateInfo(extensions: *const Extensions, item: *const vk.VkImageViewCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageViewCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkImageViewType(extensions, &item.viewType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageViewCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkImageViewType(extensions, @ptrCast(&item.viewType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+            => if (!check_VkImageViewUsageCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT,
+            => if (!check_VkImageViewSlicedCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT,
+            => if (!check_VkImageViewASTCDecodeModeEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_MIN_LOD_CREATE_INFO_EXT,
+            => if (!check_VkImageViewMinLodCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM,
+            => if (!check_VkImageViewSampleWeightCreateInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCopy(extensions: *const Extensions, item: *const vk.VkBufferCopy) bool {
@@ -12049,11 +12462,15 @@ pub fn check_VkBufferCopy(extensions: *const Extensions, item: *const vk.VkBuffe
 }
 
 pub fn check_VkSparseMemoryBind(extensions: *const Extensions, item: *const vk.VkSparseMemoryBind) bool {
-    return (check_bitmask_VkSparseMemoryBindFlagBits(extensions, &item.flags));
+    if (!check_bitmask_VkSparseMemoryBindFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSparseImageMemoryBind(extensions: *const Extensions, item: *const vk.VkSparseImageMemoryBind) bool {
-    return (check_bitmask_VkSparseMemoryBindFlagBits(extensions, &item.flags));
+    if (!check_bitmask_VkSparseMemoryBindFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSparseBufferMemoryBindInfo(extensions: *const Extensions, item: *const vk.VkSparseBufferMemoryBindInfo) bool {
@@ -12075,7 +12492,19 @@ pub fn check_VkSparseImageMemoryBindInfo(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkBindSparseInfo(extensions: *const Extensions, item: *const vk.VkBindSparseInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO,
+            => if (!check_VkDeviceGroupBindSparseInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCopy(extensions: *const Extensions, item: *const vk.VkImageCopy) bool {
@@ -12115,30 +12544,82 @@ pub fn check_VkImageResolve(extensions: *const Extensions, item: *const vk.VkIma
 }
 
 pub fn check_VkShaderModuleCreateInfo(extensions: *const Extensions, item: *const vk.VkShaderModuleCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetLayoutBinding(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutBinding) bool {
-    return (check_enum_VkDescriptorType(extensions, &item.descriptorType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.descriptorType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDescriptorSetLayoutCreateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDescriptorSetLayoutCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDescriptorSetLayoutCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+            => if (!check_VkDescriptorSetLayoutBindingFlagsCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorPoolSize(extensions: *const Extensions, item: *const vk.VkDescriptorPoolSize) bool {
-    return (check_enum_VkDescriptorType(extensions, &item.type));
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.type)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDescriptorPoolCreateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorPoolCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDescriptorPoolCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDescriptorPoolCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO,
+            => if (!check_VkDescriptorPoolInlineUniformBlockCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetAllocateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorSetAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+            => if (!check_VkDescriptorSetVariableDescriptorCountAllocateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSpecializationMapEntry(extensions: *const Extensions, item: *const vk.VkSpecializationMapEntry) bool {
@@ -12154,22 +12635,76 @@ pub fn check_VkSpecializationInfo(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkPipelineShaderStageCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineShaderStageCreateFlagBits(extensions, &item.flags) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineShaderStageCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+            => if (!check_VkDebugUtilsObjectNameInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT,
+            => if (!check_VkPipelineShaderStageModuleIdentifierCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_NODE_CREATE_INFO_AMDX,
+            => if (!check_VkPipelineShaderStageNodeCreateInfoAMDX(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkComputePipelineCreateInfo(extensions: *const Extensions, item: *const vk.VkComputePipelineCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV,
+            => if (!check_VkComputePipelineIndirectBufferInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI,
+            => if (!check_VkSubpassShadingPipelineCreateInfoHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkComputePipelineIndirectBufferInfoNV(extensions: *const Extensions, item: *const vk.VkComputePipelineIndirectBufferInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCreateFlags2CreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineCreateFlags2CreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCreateFlags2CreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineCreateFlags2CreateInfoKHR) bool {
@@ -12179,84 +12714,304 @@ pub fn check_VkPipelineCreateFlags2CreateInfoKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkVertexInputBindingDescription(extensions: *const Extensions, item: *const vk.VkVertexInputBindingDescription) bool {
-    return (check_enum_VkVertexInputRate(extensions, &item.inputRate));
+    if (!check_enum_VkVertexInputRate(extensions, @ptrCast(&item.inputRate)))
+        return false;
+    return true;
 }
 
 pub fn check_VkVertexInputAttributeDescription(extensions: *const Extensions, item: *const vk.VkVertexInputAttributeDescription) bool {
-    return (check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineVertexInputStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineVertexInputStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO,
+            => if (!check_VkPipelineVertexInputDivisorStateCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineInputAssemblyStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineInputAssemblyStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPrimitiveTopology(extensions, &item.topology));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPrimitiveTopology(extensions, @ptrCast(&item.topology)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineTessellationStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineTessellationStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO,
+            => if (!check_VkPipelineTessellationDomainOriginStateCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineViewportStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineViewportStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineViewportWScalingStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineViewportSwizzleStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineViewportExclusiveScissorStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineViewportShadingRateImageStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
+            => if (!check_VkPipelineViewportDepthClipControlCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT,
+            => if (!check_VkPipelineViewportDepthClampControlCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPolygonMode(extensions, &item.polygonMode) and
-        check_bitmask_VkCullModeFlagBits(extensions, &item.cullMode) and
-        check_enum_VkFrontFace(extensions, &item.frontFace));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPolygonMode(extensions, @ptrCast(&item.polygonMode)))
+        return false;
+    if (!check_bitmask_VkCullModeFlagBits(extensions, @ptrCast(&item.cullMode)))
+        return false;
+    if (!check_enum_VkFrontFace(extensions, @ptrCast(&item.frontFace)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD,
+            => if (!check_VkPipelineRasterizationStateRasterizationOrderAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineRasterizationConservativeStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT,
+            => if (!check_VkPipelineRasterizationStateStreamCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineRasterizationDepthClipStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO,
+            => if (!check_VkPipelineRasterizationLineStateCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineRasterizationProvokingVertexStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineMultisampleStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineMultisampleStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.rasterizationSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.rasterizationSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineCoverageToColorStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineSampleLocationsStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineCoverageModulationStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineCoverageReductionStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineColorBlendAttachmentState(extensions: *const Extensions, item: *const vk.VkPipelineColorBlendAttachmentState) bool {
-    return (check_enum_VkBlendFactor(extensions, &item.srcColorBlendFactor) and
-        check_enum_VkBlendFactor(extensions, &item.dstColorBlendFactor) and
-        check_enum_VkBlendOp(extensions, &item.colorBlendOp) and
-        check_enum_VkBlendFactor(extensions, &item.srcAlphaBlendFactor) and
-        check_enum_VkBlendFactor(extensions, &item.dstAlphaBlendFactor) and
-        check_enum_VkBlendOp(extensions, &item.alphaBlendOp) and
-        check_bitmask_VkColorComponentFlagBits(extensions, &item.colorWriteMask));
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.srcColorBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.dstColorBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendOp(extensions, @ptrCast(&item.colorBlendOp)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.srcAlphaBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.dstAlphaBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendOp(extensions, @ptrCast(&item.alphaBlendOp)))
+        return false;
+    if (!check_bitmask_VkColorComponentFlagBits(extensions, @ptrCast(&item.colorWriteMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineColorBlendStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineColorBlendStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineColorBlendStateCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkLogicOp(extensions, &item.logicOp));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineColorBlendStateCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkLogicOp(extensions, @ptrCast(&item.logicOp)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineColorBlendAdvancedStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineColorWriteCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineDynamicStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineDynamicStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDynamicState(extensions, &item.pDynamicStates));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.dynamicStateCount) |i| {
+        if (!check_enum_VkDynamicState(extensions, @ptrCast(&item.pDynamicStates[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkStencilOpState(extensions: *const Extensions, item: *const vk.VkStencilOpState) bool {
-    return (check_enum_VkStencilOp(extensions, &item.failOp) and
-        check_enum_VkStencilOp(extensions, &item.passOp) and
-        check_enum_VkStencilOp(extensions, &item.depthFailOp) and
-        check_enum_VkCompareOp(extensions, &item.compareOp));
+    if (!check_enum_VkStencilOp(extensions, @ptrCast(&item.failOp)))
+        return false;
+    if (!check_enum_VkStencilOp(extensions, @ptrCast(&item.passOp)))
+        return false;
+    if (!check_enum_VkStencilOp(extensions, @ptrCast(&item.depthFailOp)))
+        return false;
+    if (!check_enum_VkCompareOp(extensions, @ptrCast(&item.compareOp)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineDepthStencilStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineDepthStencilStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineDepthStencilStateCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkCompareOp(extensions, &item.depthCompareOp));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineDepthStencilStateCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkCompareOp(extensions, @ptrCast(&item.depthCompareOp)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGraphicsPipelineCreateInfo(extensions: *const Extensions, item: *const vk.VkGraphicsPipelineCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+            => if (!check_VkGraphicsPipelineShaderGroupsCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
+            => if (!check_VkPipelineDiscardRectangleStateCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
+            => if (!check_VkPipelineLibraryCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
+            => if (!check_VkPipelineFragmentShadingRateStateCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV,
+            => if (!check_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+            => if (!check_VkPipelineRenderingCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
+            => if (!check_VkGraphicsPipelineLibraryCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
+            => if (!check_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCacheCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineCacheCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCacheCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCacheCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCacheHeaderVersionOne(extensions: *const Extensions, item: *const vk.VkPipelineCacheHeaderVersionOne) bool {
@@ -12284,15 +13039,35 @@ pub fn check_VkPipelineCacheHeaderVersionSafetyCriticalOne(extensions: *const Ex
 }
 
 pub fn check_VkPushConstantRange(extensions: *const Extensions, item: *const vk.VkPushConstantRange) bool {
-    return (check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineBinaryCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineBinaryHandlesInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryHandlesInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineBinaryDataKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryDataKHR) bool {
@@ -12308,66 +13083,234 @@ pub fn check_VkPipelineBinaryKeysAndDataKHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkPipelineBinaryKeyKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryKeyKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineBinaryInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkReleaseCapturedPipelineDataInfoKHR(extensions: *const Extensions, item: *const vk.VkReleaseCapturedPipelineDataInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineBinaryDataInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineBinaryDataInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineLayoutCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineLayoutCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineLayoutCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineLayoutCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerCreateInfo(extensions: *const Extensions, item: *const vk.VkSamplerCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSamplerCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkFilter(extensions, &item.magFilter) and
-        check_enum_VkFilter(extensions, &item.minFilter) and
-        check_enum_VkSamplerMipmapMode(extensions, &item.mipmapMode) and
-        check_enum_VkSamplerAddressMode(extensions, &item.addressModeU) and
-        check_enum_VkSamplerAddressMode(extensions, &item.addressModeV) and
-        check_enum_VkSamplerAddressMode(extensions, &item.addressModeW) and
-        check_enum_VkCompareOp(extensions, &item.compareOp) and
-        check_enum_VkBorderColor(extensions, &item.borderColor));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSamplerCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkFilter(extensions, @ptrCast(&item.magFilter)))
+        return false;
+    if (!check_enum_VkFilter(extensions, @ptrCast(&item.minFilter)))
+        return false;
+    if (!check_enum_VkSamplerMipmapMode(extensions, @ptrCast(&item.mipmapMode)))
+        return false;
+    if (!check_enum_VkSamplerAddressMode(extensions, @ptrCast(&item.addressModeU)))
+        return false;
+    if (!check_enum_VkSamplerAddressMode(extensions, @ptrCast(&item.addressModeV)))
+        return false;
+    if (!check_enum_VkSamplerAddressMode(extensions, @ptrCast(&item.addressModeW)))
+        return false;
+    if (!check_enum_VkCompareOp(extensions, @ptrCast(&item.compareOp)))
+        return false;
+    if (!check_enum_VkBorderColor(extensions, @ptrCast(&item.borderColor)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO,
+            => if (!check_VkSamplerReductionModeCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT,
+            => if (!check_VkSamplerCustomBorderColorCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT,
+            => if (!check_VkSamplerBorderColorComponentMappingCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM,
+            => if (!check_VkSamplerCubicWeightsCreateInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM,
+            => if (!check_VkSamplerBlockMatchWindowCreateInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandPoolCreateInfo(extensions: *const Extensions, item: *const vk.VkCommandPoolCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkCommandPoolCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkCommandPoolCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_COMMAND_POOL_MEMORY_RESERVATION_CREATE_INFO,
+            => if (!check_VkCommandPoolMemoryReservationCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferAllocateInfo(extensions: *const Extensions, item: *const vk.VkCommandBufferAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCommandBufferLevel(extensions, &item.level));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCommandBufferLevel(extensions, @ptrCast(&item.level)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferInheritanceInfo(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkQueryControlFlagBits(extensions, &item.queryFlags) and
-        check_bitmask_VkQueryPipelineStatisticFlagBits(extensions, &item.pipelineStatistics));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkQueryControlFlagBits(extensions, @ptrCast(&item.queryFlags)))
+        return false;
+    if (!check_bitmask_VkQueryPipelineStatisticFlagBits(extensions, @ptrCast(&item.pipelineStatistics)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT,
+            => if (!check_VkCommandBufferInheritanceConditionalRenderingInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM,
+            => if (!check_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV,
+            => if (!check_VkCommandBufferInheritanceViewportScissorInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO,
+            => if (!check_VkCommandBufferInheritanceRenderingInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM,
+            => if (!check_VkTileMemoryBindInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferBeginInfo(extensions: *const Extensions, item: *const vk.VkCommandBufferBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkCommandBufferUsageFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkCommandBufferUsageFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO,
+            => if (!check_VkDeviceGroupCommandBufferBeginInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassBeginInfo(extensions: *const Extensions, item: *const vk.VkRenderPassBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT,
+            => if (!check_VkRenderPassSampleLocationsBeginInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO,
+            => if (!check_VkRenderPassAttachmentBeginInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM,
+            => if (!check_VkRenderPassTransformBeginInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClearDepthStencilValue(extensions: *const Extensions, item: *const vk.VkClearDepthStencilValue) bool {
@@ -12377,51 +13320,119 @@ pub fn check_VkClearDepthStencilValue(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkClearAttachment(extensions: *const Extensions, item: *const vk.VkClearAttachment) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkAttachmentDescription(extensions: *const Extensions, item: *const vk.VkAttachmentDescription) bool {
-    return (check_bitmask_VkAttachmentDescriptionFlagBits(extensions, &item.flags) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.samples) and
-        check_enum_VkAttachmentLoadOp(extensions, &item.loadOp) and
-        check_enum_VkAttachmentStoreOp(extensions, &item.storeOp) and
-        check_enum_VkAttachmentLoadOp(extensions, &item.stencilLoadOp) and
-        check_enum_VkAttachmentStoreOp(extensions, &item.stencilStoreOp) and
-        check_enum_VkImageLayout(extensions, &item.initialLayout) and
-        check_enum_VkImageLayout(extensions, &item.finalLayout));
+    if (!check_bitmask_VkAttachmentDescriptionFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.samples)))
+        return false;
+    if (!check_enum_VkAttachmentLoadOp(extensions, @ptrCast(&item.loadOp)))
+        return false;
+    if (!check_enum_VkAttachmentStoreOp(extensions, @ptrCast(&item.storeOp)))
+        return false;
+    if (!check_enum_VkAttachmentLoadOp(extensions, @ptrCast(&item.stencilLoadOp)))
+        return false;
+    if (!check_enum_VkAttachmentStoreOp(extensions, @ptrCast(&item.stencilStoreOp)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.initialLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.finalLayout)))
+        return false;
+    return true;
 }
 
 pub fn check_VkAttachmentReference(extensions: *const Extensions, item: *const vk.VkAttachmentReference) bool {
-    return (check_enum_VkImageLayout(extensions, &item.layout));
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.layout)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSubpassDescription(extensions: *const Extensions, item: *const vk.VkSubpassDescription) bool {
-    return (check_bitmask_VkSubpassDescriptionFlagBits(extensions, &item.flags) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_bitmask_VkSubpassDescriptionFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSubpassDependency(extensions: *const Extensions, item: *const vk.VkSubpassDependency) bool {
-    return (check_bitmask_VkPipelineStageFlagBits(extensions, &item.srcStageMask) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.dstStageMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.srcAccessMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.dstAccessMask) and
-        check_bitmask_VkDependencyFlagBits(extensions, &item.dependencyFlags));
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.srcStageMask)))
+        return false;
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.dstStageMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.srcAccessMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.dstAccessMask)))
+        return false;
+    if (!check_bitmask_VkDependencyFlagBits(extensions, @ptrCast(&item.dependencyFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkRenderPassCreateInfo(extensions: *const Extensions, item: *const vk.VkRenderPassCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkRenderPassCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkRenderPassCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
+            => if (!check_VkRenderPassMultiviewCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
+            => if (!check_VkRenderPassInputAttachmentAspectCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkEventCreateInfo(extensions: *const Extensions, item: *const vk.VkEventCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkEventCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkEventCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFenceCreateInfo(extensions: *const Extensions, item: *const vk.VkFenceCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFenceCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFenceCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO,
+            => if (!check_VkExportFenceCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR,
+            => if (!check_VkExportFenceWin32HandleInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_SCI_SYNC_INFO_NV,
+            => if (!check_VkExportFenceSciSyncInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFeatures) bool {
@@ -12443,19 +13454,80 @@ pub fn check_VkPhysicalDeviceLimits(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkSemaphoreCreateInfo(extensions: *const Extensions, item: *const vk.VkSemaphoreCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+            => if (!check_VkExportSemaphoreCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR,
+            => if (!check_VkExportSemaphoreWin32HandleInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_SCI_SYNC_INFO_NV,
+            => if (!check_VkExportSemaphoreSciSyncInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_SCI_SYNC_CREATE_INFO_NV,
+            => if (!check_VkSemaphoreSciSyncCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV,
+            => if (!check_VkQueryLowLatencySupportNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryPoolCreateInfo(extensions: *const Extensions, item: *const vk.VkQueryPoolCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkQueryPoolCreateFlagBits(extensions, &item.flags) and
-        check_enum_VkQueryType(extensions, &item.queryType) and
-        check_bitmask_VkQueryPipelineStatisticFlagBits(extensions, &item.pipelineStatistics));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkQueryPoolCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkQueryType(extensions, @ptrCast(&item.queryType)))
+        return false;
+    if (!check_bitmask_VkQueryPipelineStatisticFlagBits(extensions, @ptrCast(&item.pipelineStatistics)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR,
+            => if (!check_VkQueryPoolPerformanceCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_QUERY_CREATE_INFO_INTEL,
+            => if (!check_VkQueryPoolPerformanceQueryCreateInfoINTEL(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+            => if (!check_VkVideoProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR,
+            => if (!check_VkQueryPoolVideoEncodeFeedbackCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFramebufferCreateInfo(extensions: *const Extensions, item: *const vk.VkFramebufferCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFramebufferCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFramebufferCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
+            => if (!check_VkFramebufferAttachmentsCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrawIndirectCommand(extensions: *const Extensions, item: *const vk.VkDrawIndirectCommand) bool {
@@ -12489,12 +13561,38 @@ pub fn check_VkMultiDrawIndexedInfoEXT(extensions: *const Extensions, item: *con
 }
 
 pub fn check_VkSubmitInfo(extensions: *const Extensions, item: *const vk.VkSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.pWaitDstStageMask));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.waitSemaphoreCount) |i| {
+        if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.pWaitDstStageMask[i]))) 
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR,
+            => if (!check_VkD3D12FenceSubmitInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO,
+            => if (!check_VkDeviceGroupSubmitInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO,
+            => if (!check_VkProtectedSubmitInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC,
+            => if (!check_VkAmigoProfilingSubmitInfoSEC(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPropertiesKHR(extensions: *const Extensions, item: *const vk.VkDisplayPropertiesKHR) bool {
-    return (check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.supportedTransforms));
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.supportedTransforms)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDisplayPlanePropertiesKHR(extensions: *const Extensions, item: *const vk.VkDisplayPlanePropertiesKHR) bool {
@@ -12516,201 +13614,636 @@ pub fn check_VkDisplayModePropertiesKHR(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkDisplayModeCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDisplayModeCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPlaneCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkDisplayPlaneCapabilitiesKHR) bool {
-    return (check_bitmask_VkDisplayPlaneAlphaFlagBitsKHR(extensions, &item.supportedAlpha));
+    if (!check_bitmask_VkDisplayPlaneAlphaFlagBitsKHR(extensions, @ptrCast(&item.supportedAlpha)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDisplaySurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDisplaySurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.transform) and
-        check_bitmask_VkDisplayPlaneAlphaFlagBitsKHR(extensions, &item.alphaMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.transform)))
+        return false;
+    if (!check_bitmask_VkDisplayPlaneAlphaFlagBitsKHR(extensions, @ptrCast(&item.alphaMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_STEREO_CREATE_INFO_NV,
+            => if (!check_VkDisplaySurfaceStereoCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplaySurfaceStereoCreateInfoNV(extensions: *const Extensions, item: *const vk.VkDisplaySurfaceStereoCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDisplaySurfaceStereoTypeNV(extensions, &item.stereoType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDisplaySurfaceStereoTypeNV(extensions, @ptrCast(&item.stereoType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPresentInfoKHR(extensions: *const Extensions, item: *const vk.VkDisplayPresentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilitiesKHR) bool {
-    return (check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.supportedTransforms) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.currentTransform) and
-        check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, &item.supportedCompositeAlpha) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.supportedUsageFlags));
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.supportedTransforms)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.currentTransform)))
+        return false;
+    if (!check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, @ptrCast(&item.supportedCompositeAlpha)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.supportedUsageFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkAndroidSurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkAndroidSurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkViSurfaceCreateInfoNN(extensions: *const Extensions, item: *const vk.VkViSurfaceCreateInfoNN) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWaylandSurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkWaylandSurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWin32SurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkWin32SurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkXlibSurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkXlibSurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkXcbSurfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkXcbSurfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDirectFBSurfaceCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDirectFBSurfaceCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImagePipeSurfaceCreateInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkImagePipeSurfaceCreateInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkStreamDescriptorSurfaceCreateInfoGGP(extensions: *const Extensions, item: *const vk.VkStreamDescriptorSurfaceCreateInfoGGP) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkScreenSurfaceCreateInfoQNX(extensions: *const Extensions, item: *const vk.VkScreenSurfaceCreateInfoQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceFormatKHR(extensions: *const Extensions, item: *const vk.VkSurfaceFormatKHR) bool {
-    return (check_enum_VkFormat(extensions, &item.format) and
-        check_enum_VkColorSpaceKHR(extensions, &item.colorSpace));
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_enum_VkColorSpaceKHR(extensions, @ptrCast(&item.colorSpace)))
+        return false;
+    return true;
 }
 
 pub fn check_VkSwapchainCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkSwapchainCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSwapchainCreateFlagBitsKHR(extensions, &item.flags) and
-        check_enum_VkFormat(extensions, &item.imageFormat) and
-        check_enum_VkColorSpaceKHR(extensions, &item.imageColorSpace) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.imageUsage) and
-        check_enum_VkSharingMode(extensions, &item.imageSharingMode) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.preTransform) and
-        check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, &item.compositeAlpha) and
-        check_enum_VkPresentModeKHR(extensions, &item.presentMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSwapchainCreateFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.imageFormat)))
+        return false;
+    if (!check_enum_VkColorSpaceKHR(extensions, @ptrCast(&item.imageColorSpace)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.imageUsage)))
+        return false;
+    if (!check_enum_VkSharingMode(extensions, @ptrCast(&item.imageSharingMode)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.preTransform)))
+        return false;
+    if (!check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, @ptrCast(&item.compositeAlpha)))
+        return false;
+    if (!check_enum_VkPresentModeKHR(extensions, @ptrCast(&item.presentMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT,
+            => if (!check_VkSwapchainCounterCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
+            => if (!check_VkDeviceGroupSwapchainCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_DISPLAY_NATIVE_HDR_CREATE_INFO_AMD,
+            => if (!check_VkSwapchainDisplayNativeHdrCreateInfoAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV,
+            => if (!check_VkSwapchainPresentBarrierCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR,
+            => if (!check_VkSwapchainPresentModesCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR,
+            => if (!check_VkSwapchainPresentScalingCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_LATENCY_CREATE_INFO_NV,
+            => if (!check_VkSwapchainLatencyCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentInfoKHR(extensions: *const Extensions, item: *const vk.VkPresentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkResult(extensions, &item.pResults));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.swapchainCount) |i| {
+        if (!check_enum_VkResult(extensions, @ptrCast(&item.pResults[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR,
+            => if (!check_VkDisplayPresentInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
+            => if (!check_VkPresentRegionsKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR,
+            => if (!check_VkDeviceGroupPresentInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PRESENT_ID_KHR,
+            => if (!check_VkPresentIdKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PRESENT_ID_2_KHR,
+            => if (!check_VkPresentId2KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
+            => if (!check_VkPresentTimesInfoGOOGLE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
+            => if (!check_VkPresentFrameTokenGGP(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR,
+            => if (!check_VkSwapchainPresentFenceInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR,
+            => if (!check_VkSwapchainPresentModeInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SET_PRESENT_CONFIG_NV,
+            => if (!check_VkSetPresentConfigNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugReportCallbackCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugReportCallbackCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDebugReportFlagBitsEXT(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDebugReportFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkValidationFlagsEXT(extensions: *const Extensions, item: *const vk.VkValidationFlagsEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkValidationCheckEXT(extensions, &item.pDisabledValidationChecks));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.disabledValidationCheckCount) |i| {
+        if (!check_enum_VkValidationCheckEXT(extensions, @ptrCast(&item.pDisabledValidationChecks[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkValidationFeaturesEXT(extensions: *const Extensions, item: *const vk.VkValidationFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkValidationFeatureEnableEXT(extensions, &item.pEnabledValidationFeatures) and
-        check_enum_VkValidationFeatureDisableEXT(extensions, &item.pDisabledValidationFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.enabledValidationFeatureCount) |i| {
+        if (!check_enum_VkValidationFeatureEnableEXT(extensions, @ptrCast(&item.pEnabledValidationFeatures[i])))
+            return false;
+    }
+    for (0..item.disabledValidationFeatureCount) |i| {
+        if (!check_enum_VkValidationFeatureDisableEXT(extensions, @ptrCast(&item.pDisabledValidationFeatures[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLayerSettingsCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkLayerSettingsCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLayerSettingEXT(extensions: *const Extensions, item: *const vk.VkLayerSettingEXT) bool {
-    return (check_enum_VkLayerSettingTypeEXT(extensions, &item.type));
+    if (!check_enum_VkLayerSettingTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    return true;
 }
 
 pub fn check_VkApplicationParametersEXT(extensions: *const Extensions, item: *const vk.VkApplicationParametersEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationStateRasterizationOrderAMD(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationStateRasterizationOrderAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkRasterizationOrderAMD(extensions, &item.rasterizationOrder));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkRasterizationOrderAMD(extensions, @ptrCast(&item.rasterizationOrder)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugMarkerObjectNameInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugMarkerObjectNameInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDebugReportObjectTypeEXT(extensions, &item.objectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDebugReportObjectTypeEXT(extensions, @ptrCast(&item.objectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugMarkerObjectTagInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugMarkerObjectTagInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDebugReportObjectTypeEXT(extensions, &item.objectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDebugReportObjectTypeEXT(extensions, @ptrCast(&item.objectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugMarkerMarkerInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugMarkerMarkerInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDedicatedAllocationImageCreateInfoNV(extensions: *const Extensions, item: *const vk.VkDedicatedAllocationImageCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDedicatedAllocationBufferCreateInfoNV(extensions: *const Extensions, item: *const vk.VkDedicatedAllocationBufferCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDedicatedAllocationMemoryAllocateInfoNV(extensions: *const Extensions, item: *const vk.VkDedicatedAllocationMemoryAllocateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalImageFormatPropertiesNV(extensions: *const Extensions, item: *const vk.VkExternalImageFormatPropertiesNV) bool {
-    return (check_bitmask_VkExternalMemoryFeatureFlagBitsNV(extensions, &item.externalMemoryFeatures) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, &item.exportFromImportedHandleTypes) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, &item.compatibleHandleTypes));
+    if (!check_bitmask_VkExternalMemoryFeatureFlagBitsNV(extensions, @ptrCast(&item.externalMemoryFeatures)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, @ptrCast(&item.exportFromImportedHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, @ptrCast(&item.compatibleHandleTypes)))
+        return false;
+    return true;
 }
 
 pub fn check_VkExternalMemoryImageCreateInfoNV(extensions: *const Extensions, item: *const vk.VkExternalMemoryImageCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMemoryAllocateInfoNV(extensions: *const Extensions, item: *const vk.VkExportMemoryAllocateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryWin32HandleInfoNV(extensions: *const Extensions, item: *const vk.VkImportMemoryWin32HandleInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBitsNV(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMemoryWin32HandleInfoNV(extensions: *const Extensions, item: *const vk.VkExportMemoryWin32HandleInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMemorySciBufInfoNV(extensions: *const Extensions, item: *const vk.VkExportMemorySciBufInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemorySciBufInfoNV(extensions: *const Extensions, item: *const vk.VkImportMemorySciBufInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetSciBufInfoNV(extensions: *const Extensions, item: *const vk.VkMemoryGetSciBufInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemorySciBufPropertiesNV(extensions: *const Extensions, item: *const vk.VkMemorySciBufPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalMemorySciBufFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalSciBufFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalSciBufFeaturesNV) bool {
@@ -12720,19 +14253,55 @@ pub fn check_VkPhysicalDeviceExternalSciBufFeaturesNV(extensions: *const Extensi
 }
 
 pub fn check_VkWin32KeyedMutexAcquireReleaseInfoNV(extensions: *const Extensions, item: *const vk.VkWin32KeyedMutexAcquireReleaseInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDevicePrivateDataCreateInfo(extensions: *const Extensions, item: *const vk.VkDevicePrivateDataCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDevicePrivateDataCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDevicePrivateDataCreateInfoEXT) bool {
@@ -12742,7 +14311,16 @@ pub fn check_VkDevicePrivateDataCreateInfoEXT(extensions: *const Extensions, ite
 }
 
 pub fn check_VkPrivateDataSlotCreateInfo(extensions: *const Extensions, item: *const vk.VkPrivateDataSlotCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPrivateDataSlotCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPrivateDataSlotCreateInfoEXT) bool {
@@ -12752,7 +14330,16 @@ pub fn check_VkPrivateDataSlotCreateInfoEXT(extensions: *const Extensions, item:
 }
 
 pub fn check_VkPhysicalDevicePrivateDataFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePrivateDataFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePrivateDataFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePrivateDataFeaturesEXT) bool {
@@ -12762,15 +14349,42 @@ pub fn check_VkPhysicalDevicePrivateDataFeaturesEXT(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkStridedDeviceAddressNV(extensions: *const Extensions, item: *const vk.VkStridedDeviceAddressNV) bool {
@@ -12780,7 +14394,16 @@ pub fn check_VkStridedDeviceAddressNV(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(extensions: *const Extensions, item: *const vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV) bool {
@@ -12826,41 +14449,119 @@ pub fn check_VkClusterAccelerationStructureInstantiateClusterInfoNV(extensions: 
 }
 
 pub fn check_VkClusterAccelerationStructureClustersBottomLevelInputNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureClustersBottomLevelInputNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClusterAccelerationStructureTriangleClusterInputNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureTriangleClusterInputNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.vertexFormat));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.vertexFormat)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClusterAccelerationStructureMoveObjectsInputNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureMoveObjectsInputNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkClusterAccelerationStructureTypeNV(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkClusterAccelerationStructureTypeNV(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClusterAccelerationStructureInputInfoNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureInputInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, &item.flags) and
-        check_enum_VkClusterAccelerationStructureOpTypeNV(extensions, &item.opType) and
-        check_enum_VkClusterAccelerationStructureOpModeNV(extensions, &item.opMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkClusterAccelerationStructureOpTypeNV(extensions, @ptrCast(&item.opType)))
+        return false;
+    if (!check_enum_VkClusterAccelerationStructureOpModeNV(extensions, @ptrCast(&item.opMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkClusterAccelerationStructureCommandsInfoNV(extensions: *const Extensions, item: *const vk.VkClusterAccelerationStructureCommandsInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkClusterAccelerationStructureAddressResolutionFlagBitsNV(extensions, &item.addressResolutionFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkClusterAccelerationStructureAddressResolutionFlagBitsNV(extensions, @ptrCast(&item.addressResolutionFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiDrawPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiDrawPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGraphicsShaderGroupCreateInfoNV(extensions: *const Extensions, item: *const vk.VkGraphicsShaderGroupCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGraphicsPipelineShaderGroupsCreateInfoNV(extensions: *const Extensions, item: *const vk.VkGraphicsPipelineShaderGroupsCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindShaderGroupIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkBindShaderGroupIndirectCommandNV) bool {
@@ -12870,7 +14571,9 @@ pub fn check_VkBindShaderGroupIndirectCommandNV(extensions: *const Extensions, i
 }
 
 pub fn check_VkBindIndexBufferIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkBindIndexBufferIndirectCommandNV) bool {
-    return (check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkBindVertexBufferIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkBindVertexBufferIndirectCommandNV) bool {
@@ -12892,32 +14595,88 @@ pub fn check_VkIndirectCommandsStreamNV(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkIndirectCommandsLayoutTokenNV(extensions: *const Extensions, item: *const vk.VkIndirectCommandsLayoutTokenNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkIndirectCommandsTokenTypeNV(extensions, &item.tokenType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.pushconstantShaderStageFlags) and
-        check_bitmask_VkIndirectStateFlagBitsNV(extensions, &item.indirectStateFlags) and
-        check_enum_VkIndexType(extensions, &item.pIndexTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkIndirectCommandsTokenTypeNV(extensions, @ptrCast(&item.tokenType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.pushconstantShaderStageFlags)))
+        return false;
+    if (!check_bitmask_VkIndirectStateFlagBitsNV(extensions, @ptrCast(&item.indirectStateFlags)))
+        return false;
+    for (0..item.indexTypeCount) |i| {
+        if (!check_enum_VkIndexType(extensions, @ptrCast(&item.pIndexTypes[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectCommandsLayoutCreateInfoNV(extensions: *const Extensions, item: *const vk.VkIndirectCommandsLayoutCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkIndirectCommandsLayoutUsageFlagBitsNV(extensions, &item.flags) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkIndirectCommandsLayoutUsageFlagBitsNV(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsInfoNV(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsMemoryRequirementsInfoNV(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsMemoryRequirementsInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineIndirectDeviceAddressInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineIndirectDeviceAddressInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindPipelineIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkBindPipelineIndirectCommandNV) bool {
@@ -12927,7 +14686,16 @@ pub fn check_VkBindPipelineIndirectCommandNV(extensions: *const Extensions, item
 }
 
 pub fn check_VkPhysicalDeviceFeatures2(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFeatures2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFeatures2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFeatures2KHR) bool {
@@ -12937,7 +14705,343 @@ pub fn check_VkPhysicalDeviceFeatures2KHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkPhysicalDeviceProperties2(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceMultiDrawPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES,
+            => if (!check_VkPhysicalDevicePushDescriptorProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES,
+            => if (!check_VkPhysicalDeviceDriverProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+            => if (!check_VkPhysicalDeviceIDProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES,
+            => if (!check_VkPhysicalDeviceMultiviewProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceDiscardRectanglePropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX,
+            => if (!check_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES,
+            => if (!check_VkPhysicalDeviceSubgroupProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES,
+            => if (!check_VkPhysicalDevicePointClippingProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES,
+            => if (!check_VkPhysicalDeviceProtectedMemoryProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES,
+            => if (!check_VkPhysicalDeviceSamplerFilterMinmaxProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceSampleLocationsPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES,
+            => if (!check_VkPhysicalDeviceInlineUniformBlockProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES,
+            => if (!check_VkPhysicalDeviceMaintenance3Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES,
+            => if (!check_VkPhysicalDeviceMaintenance4Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES,
+            => if (!check_VkPhysicalDeviceMaintenance5Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES,
+            => if (!check_VkPhysicalDeviceMaintenance6Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance7PropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_LIST_KHR,
+            => if (!check_VkPhysicalDeviceLayeredApiPropertiesListKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance9PropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES,
+            => if (!check_VkPhysicalDeviceFloatControlsProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceExternalMemoryHostPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceConservativeRasterizationPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD,
+            => if (!check_VkPhysicalDeviceShaderCorePropertiesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD,
+            => if (!check_VkPhysicalDeviceShaderCoreProperties2AMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES,
+            => if (!check_VkPhysicalDeviceDescriptorIndexingProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES,
+            => if (!check_VkPhysicalDeviceTimelineSemaphoreProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVertexAttributeDivisorProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDevicePCIBusInfoPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES,
+            => if (!check_VkPhysicalDeviceDepthStencilResolveProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceTransformFeedbackPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceMemoryDecompressionPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceShadingRateImagePropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceMeshShaderPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceMeshShaderPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceAccelerationStructurePropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMap2PropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDevicePerformanceQueryPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES,
+            => if (!check_VkPhysicalDeviceTexelBufferAlignmentProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES,
+            => if (!check_VkPhysicalDeviceSubgroupSizeControlProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_PROPERTIES_HUAWEI,
+            => if (!check_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_PROPERTIES_HUAWEI,
+            => if (!check_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES,
+            => if (!check_VkPhysicalDeviceLineRasterizationProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVulkan11Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVulkan12Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVulkan13Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVulkan14Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceCustomBorderColorPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicState3PropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+            => if (!check_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceRobustness2PropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDevicePortabilitySubsetPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShadingRatePropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES,
+            => if (!check_VkPhysicalDeviceHostImageCopyProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_PROPERTIES,
+            => if (!check_VkPhysicalDeviceVulkanSC10Properties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceProvokingVertexPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceDescriptorBufferPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_DENSITY_MAP_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES,
+            => if (!check_VkPhysicalDeviceShaderIntegerDotProductProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceDrmPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDevicePipelineBinaryPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceOpacityMicromapPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceDisplacementMicromapPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES,
+            => if (!check_VkPhysicalDevicePipelineRobustnessProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessingPropertiesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceOpticalFlowPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceShaderCorePropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceShaderObjectPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceShaderTileImagePropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_PROPERTIES_AMDX,
+            => if (!check_VkPhysicalDeviceShaderEnqueuePropertiesAMDX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM,
+            => if (!check_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessing2PropertiesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT,
+            => if (!check_VkPhysicalDeviceLayeredDriverPropertiesMSFT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_PROPERTIES_ANDROID,
+            => if (!check_VkPhysicalDeviceExternalFormatResolvePropertiesANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceSchedulingControlsPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceRenderPassStripedPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceMapMemoryPlacedPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA,
+            => if (!check_VkPhysicalDeviceImageAlignmentControlPropertiesMESA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeVectorPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM,
+            => if (!check_VkPhysicalDeviceTileShadingPropertiesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_COMPUTE_QUEUE_PROPERTIES_NV,
+            => if (!check_VkPhysicalDeviceExternalComputeQueuePropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceTensorPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_PROPERTIES_ARM,
+            => if (!check_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProperties2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProperties2KHR) bool {
@@ -12947,7 +15051,31 @@ pub fn check_VkPhysicalDeviceProperties2KHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkFormatProperties2(extensions: *const Extensions, item: *const vk.VkFormatProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
+            => if (!check_VkDrmFormatModifierPropertiesListEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SUBPASS_RESOLVE_PERFORMANCE_QUERY_EXT,
+            => if (!check_VkSubpassResolvePerformanceQueryEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3,
+            => if (!check_VkFormatProperties3(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT,
+            => if (!check_VkDrmFormatModifierPropertiesList2EXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TENSOR_FORMAT_PROPERTIES_ARM,
+            => if (!check_VkTensorFormatPropertiesARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFormatProperties2KHR(extensions: *const Extensions, item: *const vk.VkFormatProperties2KHR) bool {
@@ -12957,7 +15085,34 @@ pub fn check_VkFormatProperties2KHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkImageFormatProperties2(extensions: *const Extensions, item: *const vk.VkImageFormatProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES,
+            => if (!check_VkExternalImageFormatProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES,
+            => if (!check_VkSamplerYcbcrConversionImageFormatProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD,
+            => if (!check_VkTextureLODGatherFormatPropertiesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID,
+            => if (!check_VkAndroidHardwareBufferUsageANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT,
+            => if (!check_VkFilterCubicImageViewImageFormatPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY,
+            => if (!check_VkHostImageCopyDevicePerformanceQuery(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageFormatProperties2KHR(extensions: *const Extensions, item: *const vk.VkImageFormatProperties2KHR) bool {
@@ -12967,12 +15122,35 @@ pub fn check_VkImageFormatProperties2KHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkPhysicalDeviceImageFormatInfo2(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageFormatInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_enum_VkImageType(extensions, &item.type) and
-        check_enum_VkImageTiling(extensions, &item.tiling) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.usage) and
-        check_bitmask_VkImageCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_enum_VkImageType(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_enum_VkImageTiling(extensions, @ptrCast(&item.tiling)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    if (!check_bitmask_VkImageCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
+            => if (!check_VkPhysicalDeviceExternalImageFormatInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
+            => if (!check_VkPhysicalDeviceImageDrmFormatModifierInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT,
+            => if (!check_VkPhysicalDeviceImageViewImageFormatInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageFormatInfo2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageFormatInfo2KHR) bool {
@@ -12982,7 +15160,34 @@ pub fn check_VkPhysicalDeviceImageFormatInfo2KHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkQueueFamilyProperties2(extensions: *const Extensions, item: *const vk.VkQueueFamilyProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_OWNERSHIP_TRANSFER_PROPERTIES_KHR,
+            => if (!check_VkQueueFamilyOwnershipTransferPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES,
+            => if (!check_VkQueueFamilyGlobalPriorityProperties(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV,
+            => if (!check_VkQueueFamilyCheckpointPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV,
+            => if (!check_VkQueueFamilyCheckpointProperties2NV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR,
+            => if (!check_VkQueueFamilyVideoPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR,
+            => if (!check_VkQueueFamilyQueryResultStatusPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyProperties2KHR(extensions: *const Extensions, item: *const vk.VkQueueFamilyProperties2KHR) bool {
@@ -12992,7 +15197,19 @@ pub fn check_VkQueueFamilyProperties2KHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkPhysicalDeviceMemoryProperties2(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT,
+            => if (!check_VkPhysicalDeviceMemoryBudgetPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryProperties2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryProperties2KHR) bool {
@@ -13002,7 +15219,16 @@ pub fn check_VkPhysicalDeviceMemoryProperties2KHR(extensions: *const Extensions,
 }
 
 pub fn check_VkSparseImageFormatProperties2(extensions: *const Extensions, item: *const vk.VkSparseImageFormatProperties2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSparseImageFormatProperties2KHR(extensions: *const Extensions, item: *const vk.VkSparseImageFormatProperties2KHR) bool {
@@ -13012,12 +15238,26 @@ pub fn check_VkSparseImageFormatProperties2KHR(extensions: *const Extensions, it
 }
 
 pub fn check_VkPhysicalDeviceSparseImageFormatInfo2(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSparseImageFormatInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_enum_VkImageType(extensions, &item.type) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.samples) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.usage) and
-        check_enum_VkImageTiling(extensions, &item.tiling));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_enum_VkImageType(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.samples)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    if (!check_enum_VkImageTiling(extensions, @ptrCast(&item.tiling)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSparseImageFormatInfo2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSparseImageFormatInfo2KHR) bool {
@@ -13027,7 +15267,16 @@ pub fn check_VkPhysicalDeviceSparseImageFormatInfo2KHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDevicePushDescriptorProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePushDescriptorProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePushDescriptorPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePushDescriptorPropertiesKHR) bool {
@@ -13049,8 +15298,18 @@ pub fn check_VkConformanceVersionKHR(extensions: *const Extensions, item: *const
 }
 
 pub fn check_VkPhysicalDeviceDriverProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDriverProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDriverId(extensions, &item.driverID));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDriverId(extensions, @ptrCast(&item.driverID)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDriverPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDriverPropertiesKHR) bool {
@@ -13060,7 +15319,16 @@ pub fn check_VkPhysicalDeviceDriverPropertiesKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkPresentRegionsKHR(extensions: *const Extensions, item: *const vk.VkPresentRegionsKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentRegionKHR(extensions: *const Extensions, item: *const vk.VkPresentRegionKHR) bool {
@@ -13076,7 +15344,16 @@ pub fn check_VkRectLayerKHR(extensions: *const Extensions, item: *const vk.VkRec
 }
 
 pub fn check_VkPhysicalDeviceVariablePointersFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVariablePointersFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVariablePointersFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVariablePointersFeaturesKHR) bool {
@@ -13098,9 +15375,13 @@ pub fn check_VkPhysicalDeviceVariablePointerFeatures(extensions: *const Extensio
 }
 
 pub fn check_VkExternalMemoryProperties(extensions: *const Extensions, item: *const vk.VkExternalMemoryProperties) bool {
-    return (check_bitmask_VkExternalMemoryFeatureFlagBits(extensions, &item.externalMemoryFeatures) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.exportFromImportedHandleTypes) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.compatibleHandleTypes));
+    if (!check_bitmask_VkExternalMemoryFeatureFlagBits(extensions, @ptrCast(&item.externalMemoryFeatures)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.exportFromImportedHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.compatibleHandleTypes)))
+        return false;
+    return true;
 }
 
 pub fn check_VkExternalMemoryPropertiesKHR(extensions: *const Extensions, item: *const vk.VkExternalMemoryPropertiesKHR) bool {
@@ -13110,8 +15391,18 @@ pub fn check_VkExternalMemoryPropertiesKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkPhysicalDeviceExternalImageFormatInfo(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalImageFormatInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalImageFormatInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalImageFormatInfoKHR) bool {
@@ -13121,7 +15412,16 @@ pub fn check_VkPhysicalDeviceExternalImageFormatInfoKHR(extensions: *const Exten
 }
 
 pub fn check_VkExternalImageFormatProperties(extensions: *const Extensions, item: *const vk.VkExternalImageFormatProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalImageFormatPropertiesKHR(extensions: *const Extensions, item: *const vk.VkExternalImageFormatPropertiesKHR) bool {
@@ -13131,10 +15431,22 @@ pub fn check_VkExternalImageFormatPropertiesKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkPhysicalDeviceExternalBufferInfo(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalBufferInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkBufferCreateFlagBits(extensions, &item.flags) and
-        check_bitmask_VkBufferUsageFlagBits(extensions, &item.usage) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkBufferCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkBufferUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalBufferInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalBufferInfoKHR) bool {
@@ -13144,7 +15456,16 @@ pub fn check_VkPhysicalDeviceExternalBufferInfoKHR(extensions: *const Extensions
 }
 
 pub fn check_VkExternalBufferProperties(extensions: *const Extensions, item: *const vk.VkExternalBufferProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalBufferPropertiesKHR(extensions: *const Extensions, item: *const vk.VkExternalBufferPropertiesKHR) bool {
@@ -13154,7 +15475,16 @@ pub fn check_VkExternalBufferPropertiesKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkPhysicalDeviceIDProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceIDProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceIDPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceIDPropertiesKHR) bool {
@@ -13164,8 +15494,18 @@ pub fn check_VkPhysicalDeviceIDPropertiesKHR(extensions: *const Extensions, item
 }
 
 pub fn check_VkExternalMemoryImageCreateInfo(extensions: *const Extensions, item: *const vk.VkExternalMemoryImageCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalMemoryImageCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkExternalMemoryImageCreateInfoKHR) bool {
@@ -13175,8 +15515,18 @@ pub fn check_VkExternalMemoryImageCreateInfoKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkExternalMemoryBufferCreateInfo(extensions: *const Extensions, item: *const vk.VkExternalMemoryBufferCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalMemoryBufferCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkExternalMemoryBufferCreateInfoKHR) bool {
@@ -13186,8 +15536,18 @@ pub fn check_VkExternalMemoryBufferCreateInfoKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkExportMemoryAllocateInfo(extensions: *const Extensions, item: *const vk.VkExportMemoryAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMemoryAllocateInfoKHR(extensions: *const Extensions, item: *const vk.VkExportMemoryAllocateInfoKHR) bool {
@@ -13197,72 +15557,216 @@ pub fn check_VkExportMemoryAllocateInfoKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkImportMemoryWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkImportMemoryWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMemoryWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkExportMemoryWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryZirconHandleInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkImportMemoryZirconHandleInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryZirconHandlePropertiesFUCHSIA(extensions: *const Extensions, item: *const vk.VkMemoryZirconHandlePropertiesFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetZirconHandleInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkMemoryGetZirconHandleInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryWin32HandlePropertiesKHR(extensions: *const Extensions, item: *const vk.VkMemoryWin32HandlePropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryGetWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryFdInfoKHR(extensions: *const Extensions, item: *const vk.VkImportMemoryFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryFdPropertiesKHR(extensions: *const Extensions, item: *const vk.VkMemoryFdPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetFdInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryGetFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWin32KeyedMutexAcquireReleaseInfoKHR(extensions: *const Extensions, item: *const vk.VkWin32KeyedMutexAcquireReleaseInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryMetalHandleInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMemoryMetalHandleInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryMetalHandlePropertiesEXT(extensions: *const Extensions, item: *const vk.VkMemoryMetalHandlePropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetMetalHandleInfoEXT(extensions: *const Extensions, item: *const vk.VkMemoryGetMetalHandleInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalSemaphoreInfo(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalSemaphoreInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalSemaphoreInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalSemaphoreInfoKHR) bool {
@@ -13272,10 +15776,22 @@ pub fn check_VkPhysicalDeviceExternalSemaphoreInfoKHR(extensions: *const Extensi
 }
 
 pub fn check_VkExternalSemaphoreProperties(extensions: *const Extensions, item: *const vk.VkExternalSemaphoreProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.exportFromImportedHandleTypes) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.compatibleHandleTypes) and
-        check_bitmask_VkExternalSemaphoreFeatureFlagBits(extensions, &item.externalSemaphoreFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.exportFromImportedHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.compatibleHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreFeatureFlagBits(extensions, @ptrCast(&item.externalSemaphoreFeatures)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalSemaphorePropertiesKHR(extensions: *const Extensions, item: *const vk.VkExternalSemaphorePropertiesKHR) bool {
@@ -13285,8 +15801,18 @@ pub fn check_VkExternalSemaphorePropertiesKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkExportSemaphoreCreateInfo(extensions: *const Extensions, item: *const vk.VkExportSemaphoreCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportSemaphoreCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkExportSemaphoreCreateInfoKHR) bool {
@@ -13296,49 +15822,140 @@ pub fn check_VkExportSemaphoreCreateInfoKHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkImportSemaphoreWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkImportSemaphoreWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSemaphoreImportFlagBits(extensions, &item.flags) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSemaphoreImportFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportSemaphoreWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkExportSemaphoreWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkD3D12FenceSubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkD3D12FenceSubmitInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreGetWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreGetWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportSemaphoreFdInfoKHR(extensions: *const Extensions, item: *const vk.VkImportSemaphoreFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSemaphoreImportFlagBits(extensions, &item.flags) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSemaphoreImportFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreGetFdInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreGetFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportSemaphoreZirconHandleInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkImportSemaphoreZirconHandleInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSemaphoreImportFlagBits(extensions, &item.flags) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSemaphoreImportFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreGetZirconHandleInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkSemaphoreGetZirconHandleInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalFenceInfo(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalFenceInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalFenceInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalFenceInfoKHR) bool {
@@ -13348,10 +15965,22 @@ pub fn check_VkPhysicalDeviceExternalFenceInfoKHR(extensions: *const Extensions,
 }
 
 pub fn check_VkExternalFenceProperties(extensions: *const Extensions, item: *const vk.VkExternalFenceProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.exportFromImportedHandleTypes) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.compatibleHandleTypes) and
-        check_bitmask_VkExternalFenceFeatureFlagBits(extensions, &item.externalFenceFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.exportFromImportedHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.compatibleHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalFenceFeatureFlagBits(extensions, @ptrCast(&item.externalFenceFeatures)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalFencePropertiesKHR(extensions: *const Extensions, item: *const vk.VkExternalFencePropertiesKHR) bool {
@@ -13361,8 +15990,18 @@ pub fn check_VkExternalFencePropertiesKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkExportFenceCreateInfo(extensions: *const Extensions, item: *const vk.VkExportFenceCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportFenceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkExportFenceCreateInfoKHR) bool {
@@ -13372,87 +16011,261 @@ pub fn check_VkExportFenceCreateInfoKHR(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkImportFenceWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkImportFenceWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFenceImportFlagBits(extensions, &item.flags) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFenceImportFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportFenceWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkExportFenceWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFenceGetWin32HandleInfoKHR(extensions: *const Extensions, item: *const vk.VkFenceGetWin32HandleInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportFenceFdInfoKHR(extensions: *const Extensions, item: *const vk.VkImportFenceFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFenceImportFlagBits(extensions, &item.flags) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFenceImportFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFenceGetFdInfoKHR(extensions: *const Extensions, item: *const vk.VkFenceGetFdInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportFenceSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkExportFenceSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportFenceSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkImportFenceSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFenceGetSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkFenceGetSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalFenceHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportSemaphoreSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkExportSemaphoreSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportSemaphoreSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkImportSemaphoreSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreGetSciSyncInfoNV(extensions: *const Extensions, item: *const vk.VkSemaphoreGetSciSyncInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSciSyncAttributesInfoNV(extensions: *const Extensions, item: *const vk.VkSciSyncAttributesInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSciSyncClientTypeNV(extensions, &item.clientType) and
-        check_enum_VkSciSyncPrimitiveTypeNV(extensions, &item.primitiveType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSciSyncClientTypeNV(extensions, @ptrCast(&item.clientType)))
+        return false;
+    if (!check_enum_VkSciSyncPrimitiveTypeNV(extensions, @ptrCast(&item.primitiveType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalSciSyncFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalSciSyncFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalSciSync2FeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalSciSync2FeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreSciSyncPoolCreateInfoNV(extensions: *const Extensions, item: *const vk.VkSemaphoreSciSyncPoolCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreSciSyncCreateInfoNV(extensions: *const Extensions, item: *const vk.VkSemaphoreSciSyncCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(extensions: *const Extensions, item: *const vk.VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewFeaturesKHR) bool {
@@ -13462,7 +16275,16 @@ pub fn check_VkPhysicalDeviceMultiviewFeaturesKHR(extensions: *const Extensions,
 }
 
 pub fn check_VkPhysicalDeviceMultiviewProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewPropertiesKHR) bool {
@@ -13472,7 +16294,16 @@ pub fn check_VkPhysicalDeviceMultiviewPropertiesKHR(extensions: *const Extension
 }
 
 pub fn check_VkRenderPassMultiviewCreateInfo(extensions: *const Extensions, item: *const vk.VkRenderPassMultiviewCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassMultiviewCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderPassMultiviewCreateInfoKHR) bool {
@@ -13482,36 +16313,99 @@ pub fn check_VkRenderPassMultiviewCreateInfoKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkSurfaceCapabilities2EXT(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilities2EXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.supportedTransforms) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.currentTransform) and
-        check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, &item.supportedCompositeAlpha) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.supportedUsageFlags) and
-        check_bitmask_VkSurfaceCounterFlagBitsEXT(extensions, &item.supportedSurfaceCounters));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.supportedTransforms)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.currentTransform)))
+        return false;
+    if (!check_bitmask_VkCompositeAlphaFlagBitsKHR(extensions, @ptrCast(&item.supportedCompositeAlpha)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.supportedUsageFlags)))
+        return false;
+    if (!check_bitmask_VkSurfaceCounterFlagBitsEXT(extensions, @ptrCast(&item.supportedSurfaceCounters)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPowerInfoEXT(extensions: *const Extensions, item: *const vk.VkDisplayPowerInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDisplayPowerStateEXT(extensions, &item.powerState));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDisplayPowerStateEXT(extensions, @ptrCast(&item.powerState)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceEventInfoEXT(extensions: *const Extensions, item: *const vk.VkDeviceEventInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDeviceEventTypeEXT(extensions, &item.deviceEvent));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDeviceEventTypeEXT(extensions, @ptrCast(&item.deviceEvent)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayEventInfoEXT(extensions: *const Extensions, item: *const vk.VkDisplayEventInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDisplayEventTypeEXT(extensions, &item.displayEvent));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDisplayEventTypeEXT(extensions, @ptrCast(&item.displayEvent)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainCounterCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSwapchainCounterCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceCounterFlagBitsEXT(extensions, &item.surfaceCounters));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceCounterFlagBitsEXT(extensions, @ptrCast(&item.surfaceCounters)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceGroupProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGroupProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceGroupPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGroupPropertiesKHR) bool {
@@ -13521,8 +16415,18 @@ pub fn check_VkPhysicalDeviceGroupPropertiesKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkMemoryAllocateFlagsInfo(extensions: *const Extensions, item: *const vk.VkMemoryAllocateFlagsInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkMemoryAllocateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkMemoryAllocateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryAllocateFlagsInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryAllocateFlagsInfoKHR) bool {
@@ -13532,7 +16436,19 @@ pub fn check_VkMemoryAllocateFlagsInfoKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkBindBufferMemoryInfo(extensions: *const Extensions, item: *const vk.VkBindBufferMemoryInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO,
+            => if (!check_VkBindBufferMemoryDeviceGroupInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindBufferMemoryInfoKHR(extensions: *const Extensions, item: *const vk.VkBindBufferMemoryInfoKHR) bool {
@@ -13542,7 +16458,16 @@ pub fn check_VkBindBufferMemoryInfoKHR(extensions: *const Extensions, item: *con
 }
 
 pub fn check_VkBindBufferMemoryDeviceGroupInfo(extensions: *const Extensions, item: *const vk.VkBindBufferMemoryDeviceGroupInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindBufferMemoryDeviceGroupInfoKHR(extensions: *const Extensions, item: *const vk.VkBindBufferMemoryDeviceGroupInfoKHR) bool {
@@ -13552,7 +16477,25 @@ pub fn check_VkBindBufferMemoryDeviceGroupInfoKHR(extensions: *const Extensions,
 }
 
 pub fn check_VkBindImageMemoryInfo(extensions: *const Extensions, item: *const vk.VkBindImageMemoryInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO,
+            => if (!check_VkBindImageMemoryDeviceGroupInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
+            => if (!check_VkBindImageMemorySwapchainInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO,
+            => if (!check_VkBindImagePlaneMemoryInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindImageMemoryInfoKHR(extensions: *const Extensions, item: *const vk.VkBindImageMemoryInfoKHR) bool {
@@ -13562,7 +16505,16 @@ pub fn check_VkBindImageMemoryInfoKHR(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkBindImageMemoryDeviceGroupInfo(extensions: *const Extensions, item: *const vk.VkBindImageMemoryDeviceGroupInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindImageMemoryDeviceGroupInfoKHR(extensions: *const Extensions, item: *const vk.VkBindImageMemoryDeviceGroupInfoKHR) bool {
@@ -13572,7 +16524,16 @@ pub fn check_VkBindImageMemoryDeviceGroupInfoKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkDeviceGroupRenderPassBeginInfo(extensions: *const Extensions, item: *const vk.VkDeviceGroupRenderPassBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupRenderPassBeginInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupRenderPassBeginInfoKHR) bool {
@@ -13582,7 +16543,16 @@ pub fn check_VkDeviceGroupRenderPassBeginInfoKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkDeviceGroupCommandBufferBeginInfo(extensions: *const Extensions, item: *const vk.VkDeviceGroupCommandBufferBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupCommandBufferBeginInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupCommandBufferBeginInfoKHR) bool {
@@ -13592,7 +16562,16 @@ pub fn check_VkDeviceGroupCommandBufferBeginInfoKHR(extensions: *const Extension
 }
 
 pub fn check_VkDeviceGroupSubmitInfo(extensions: *const Extensions, item: *const vk.VkDeviceGroupSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupSubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupSubmitInfoKHR) bool {
@@ -13602,7 +16581,16 @@ pub fn check_VkDeviceGroupSubmitInfoKHR(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkDeviceGroupBindSparseInfo(extensions: *const Extensions, item: *const vk.VkDeviceGroupBindSparseInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupBindSparseInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupBindSparseInfoKHR) bool {
@@ -13612,29 +16600,85 @@ pub fn check_VkDeviceGroupBindSparseInfoKHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkDeviceGroupPresentCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupPresentCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, &item.modes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, @ptrCast(&item.modes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageSwapchainCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkImageSwapchainCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindImageMemorySwapchainInfoKHR(extensions: *const Extensions, item: *const vk.VkBindImageMemorySwapchainInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAcquireNextImageInfoKHR(extensions: *const Extensions, item: *const vk.VkAcquireNextImageInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupPresentInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupPresentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupDeviceCreateInfo(extensions: *const Extensions, item: *const vk.VkDeviceGroupDeviceCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceGroupDeviceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupDeviceCreateInfoKHR) bool {
@@ -13644,12 +16688,24 @@ pub fn check_VkDeviceGroupDeviceCreateInfoKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkDeviceGroupSwapchainCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceGroupSwapchainCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, &item.modes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceGroupPresentModeFlagBitsKHR(extensions, @ptrCast(&item.modes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorUpdateTemplateEntry(extensions: *const Extensions, item: *const vk.VkDescriptorUpdateTemplateEntry) bool {
-    return (check_enum_VkDescriptorType(extensions, &item.descriptorType));
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.descriptorType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDescriptorUpdateTemplateEntryKHR(extensions: *const Extensions, item: *const vk.VkDescriptorUpdateTemplateEntryKHR) bool {
@@ -13659,9 +16715,20 @@ pub fn check_VkDescriptorUpdateTemplateEntryKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkDescriptorUpdateTemplateCreateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorUpdateTemplateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDescriptorUpdateTemplateType(extensions, &item.templateType) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDescriptorUpdateTemplateType(extensions, @ptrCast(&item.templateType)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorUpdateTemplateCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDescriptorUpdateTemplateCreateInfoKHR) bool {
@@ -13677,31 +16744,94 @@ pub fn check_VkXYColorEXT(extensions: *const Extensions, item: *const vk.VkXYCol
 }
 
 pub fn check_VkPhysicalDevicePresentIdFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentIdFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentIdKHR(extensions: *const Extensions, item: *const vk.VkPresentIdKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentId2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentId2FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentId2KHR(extensions: *const Extensions, item: *const vk.VkPresentId2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentWait2InfoKHR(extensions: *const Extensions, item: *const vk.VkPresentWait2InfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentWaitFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentWaitFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentWait2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentWait2FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkHdrMetadataEXT(extensions: *const Extensions, item: *const vk.VkHdrMetadataEXT) bool {
@@ -13711,15 +16841,42 @@ pub fn check_VkHdrMetadataEXT(extensions: *const Extensions, item: *const vk.VkH
 }
 
 pub fn check_VkHdrVividDynamicMetadataHUAWEI(extensions: *const Extensions, item: *const vk.VkHdrVividDynamicMetadataHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayNativeHdrSurfaceCapabilitiesAMD(extensions: *const Extensions, item: *const vk.VkDisplayNativeHdrSurfaceCapabilitiesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainDisplayNativeHdrCreateInfoAMD(extensions: *const Extensions, item: *const vk.VkSwapchainDisplayNativeHdrCreateInfoAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRefreshCycleDurationGOOGLE(extensions: *const Extensions, item: *const vk.VkRefreshCycleDurationGOOGLE) bool {
@@ -13735,7 +16892,16 @@ pub fn check_VkPastPresentationTimingGOOGLE(extensions: *const Extensions, item:
 }
 
 pub fn check_VkPresentTimesInfoGOOGLE(extensions: *const Extensions, item: *const vk.VkPresentTimesInfoGOOGLE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentTimeGOOGLE(extensions: *const Extensions, item: *const vk.VkPresentTimeGOOGLE) bool {
@@ -13745,15 +16911,42 @@ pub fn check_VkPresentTimeGOOGLE(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkIOSSurfaceCreateInfoMVK(extensions: *const Extensions, item: *const vk.VkIOSSurfaceCreateInfoMVK) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMacOSSurfaceCreateInfoMVK(extensions: *const Extensions, item: *const vk.VkMacOSSurfaceCreateInfoMVK) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMetalSurfaceCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkMetalSurfaceCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkViewportWScalingNV(extensions: *const Extensions, item: *const vk.VkViewportWScalingNV) bool {
@@ -13763,35 +16956,88 @@ pub fn check_VkViewportWScalingNV(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkPipelineViewportWScalingStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineViewportWScalingStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkViewportSwizzleNV(extensions: *const Extensions, item: *const vk.VkViewportSwizzleNV) bool {
-    return (check_enum_VkViewportCoordinateSwizzleNV(extensions, &item.x) and
-        check_enum_VkViewportCoordinateSwizzleNV(extensions, &item.y) and
-        check_enum_VkViewportCoordinateSwizzleNV(extensions, &item.z) and
-        check_enum_VkViewportCoordinateSwizzleNV(extensions, &item.w));
+    if (!check_enum_VkViewportCoordinateSwizzleNV(extensions, @ptrCast(&item.x)))
+        return false;
+    if (!check_enum_VkViewportCoordinateSwizzleNV(extensions, @ptrCast(&item.y)))
+        return false;
+    if (!check_enum_VkViewportCoordinateSwizzleNV(extensions, @ptrCast(&item.z)))
+        return false;
+    if (!check_enum_VkViewportCoordinateSwizzleNV(extensions, @ptrCast(&item.w)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineViewportSwizzleStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineViewportSwizzleStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDiscardRectanglePropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineDiscardRectangleStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineDiscardRectangleStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDiscardRectangleModeEXT(extensions, &item.discardRectangleMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDiscardRectangleModeEXT(extensions, @ptrCast(&item.discardRectangleMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkInputAttachmentAspectReference(extensions: *const Extensions, item: *const vk.VkInputAttachmentAspectReference) bool {
-    return (check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkInputAttachmentAspectReferenceKHR(extensions: *const Extensions, item: *const vk.VkInputAttachmentAspectReferenceKHR) bool {
@@ -13801,7 +17047,16 @@ pub fn check_VkInputAttachmentAspectReferenceKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkRenderPassInputAttachmentAspectCreateInfo(extensions: *const Extensions, item: *const vk.VkRenderPassInputAttachmentAspectCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassInputAttachmentAspectCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderPassInputAttachmentAspectCreateInfoKHR) bool {
@@ -13811,48 +17066,184 @@ pub fn check_VkRenderPassInputAttachmentAspectCreateInfoKHR(extensions: *const E
 }
 
 pub fn check_VkPhysicalDeviceSurfaceInfo2KHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSurfaceInfo2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR,
+            => if (!check_VkSurfacePresentModeKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilities2KHR(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilities2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DISPLAY_NATIVE_HDR_SURFACE_CAPABILITIES_AMD,
+            => if (!check_VkDisplayNativeHdrSurfaceCapabilitiesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR,
+            => if (!check_VkSharedPresentSurfaceCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR,
+            => if (!check_VkSurfaceProtectedCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_FULL_SCREEN_EXCLUSIVE_EXT,
+            => if (!check_VkSurfaceCapabilitiesFullScreenExclusiveEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_BARRIER_NV,
+            => if (!check_VkSurfaceCapabilitiesPresentBarrierNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_ID_2_KHR,
+            => if (!check_VkSurfaceCapabilitiesPresentId2KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR,
+            => if (!check_VkSurfaceCapabilitiesPresentWait2KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR,
+            => if (!check_VkSurfacePresentScalingCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR,
+            => if (!check_VkSurfacePresentModeCompatibilityKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_LATENCY_SURFACE_CAPABILITIES_NV,
+            => if (!check_VkLatencySurfaceCapabilitiesNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceFormat2KHR(extensions: *const Extensions, item: *const vk.VkSurfaceFormat2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayProperties2KHR(extensions: *const Extensions, item: *const vk.VkDisplayProperties2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPlaneProperties2KHR(extensions: *const Extensions, item: *const vk.VkDisplayPlaneProperties2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayModeProperties2KHR(extensions: *const Extensions, item: *const vk.VkDisplayModeProperties2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_STEREO_PROPERTIES_NV,
+            => if (!check_VkDisplayModeStereoPropertiesNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayModeStereoPropertiesNV(extensions: *const Extensions, item: *const vk.VkDisplayModeStereoPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPlaneInfo2KHR(extensions: *const Extensions, item: *const vk.VkDisplayPlaneInfo2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDisplayPlaneCapabilities2KHR(extensions: *const Extensions, item: *const vk.VkDisplayPlaneCapabilities2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSharedPresentSurfaceCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkSharedPresentSurfaceCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.sharedPresentSupportedUsageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.sharedPresentSupportedUsageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevice16BitStorageFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevice16BitStorageFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevice16BitStorageFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevice16BitStorageFeaturesKHR) bool {
@@ -13862,13 +17253,33 @@ pub fn check_VkPhysicalDevice16BitStorageFeaturesKHR(extensions: *const Extensio
 }
 
 pub fn check_VkPhysicalDeviceSubgroupProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubgroupProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.supportedStages) and
-        check_bitmask_VkSubgroupFeatureFlagBits(extensions, &item.supportedOperations));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.supportedStages)))
+        return false;
+    if (!check_bitmask_VkSubgroupFeatureFlagBits(extensions, @ptrCast(&item.supportedOperations)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR) bool {
@@ -13878,7 +17289,16 @@ pub fn check_VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR(extensions: 
 }
 
 pub fn check_VkBufferMemoryRequirementsInfo2(extensions: *const Extensions, item: *const vk.VkBufferMemoryRequirementsInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferMemoryRequirementsInfo2KHR(extensions: *const Extensions, item: *const vk.VkBufferMemoryRequirementsInfo2KHR) bool {
@@ -13888,7 +17308,16 @@ pub fn check_VkBufferMemoryRequirementsInfo2KHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkDeviceBufferMemoryRequirements(extensions: *const Extensions, item: *const vk.VkDeviceBufferMemoryRequirements) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceBufferMemoryRequirementsKHR(extensions: *const Extensions, item: *const vk.VkDeviceBufferMemoryRequirementsKHR) bool {
@@ -13898,7 +17327,19 @@ pub fn check_VkDeviceBufferMemoryRequirementsKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkImageMemoryRequirementsInfo2(extensions: *const Extensions, item: *const vk.VkImageMemoryRequirementsInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
+            => if (!check_VkImagePlaneMemoryRequirementsInfo(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageMemoryRequirementsInfo2KHR(extensions: *const Extensions, item: *const vk.VkImageMemoryRequirementsInfo2KHR) bool {
@@ -13908,7 +17349,16 @@ pub fn check_VkImageMemoryRequirementsInfo2KHR(extensions: *const Extensions, it
 }
 
 pub fn check_VkImageSparseMemoryRequirementsInfo2(extensions: *const Extensions, item: *const vk.VkImageSparseMemoryRequirementsInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageSparseMemoryRequirementsInfo2KHR(extensions: *const Extensions, item: *const vk.VkImageSparseMemoryRequirementsInfo2KHR) bool {
@@ -13918,8 +17368,18 @@ pub fn check_VkImageSparseMemoryRequirementsInfo2KHR(extensions: *const Extensio
 }
 
 pub fn check_VkDeviceImageMemoryRequirements(extensions: *const Extensions, item: *const vk.VkDeviceImageMemoryRequirements) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.planeAspect));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.planeAspect)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceImageMemoryRequirementsKHR(extensions: *const Extensions, item: *const vk.VkDeviceImageMemoryRequirementsKHR) bool {
@@ -13929,7 +17389,22 @@ pub fn check_VkDeviceImageMemoryRequirementsKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkMemoryRequirements2(extensions: *const Extensions, item: *const vk.VkMemoryRequirements2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS,
+            => if (!check_VkMemoryDedicatedRequirements(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM,
+            => if (!check_VkTileMemoryRequirementsQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryRequirements2KHR(extensions: *const Extensions, item: *const vk.VkMemoryRequirements2KHR) bool {
@@ -13939,7 +17414,16 @@ pub fn check_VkMemoryRequirements2KHR(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkSparseImageMemoryRequirements2(extensions: *const Extensions, item: *const vk.VkSparseImageMemoryRequirements2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSparseImageMemoryRequirements2KHR(extensions: *const Extensions, item: *const vk.VkSparseImageMemoryRequirements2KHR) bool {
@@ -13949,8 +17433,18 @@ pub fn check_VkSparseImageMemoryRequirements2KHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkPhysicalDevicePointClippingProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePointClippingProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPointClippingBehavior(extensions, &item.pointClippingBehavior));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPointClippingBehavior(extensions, @ptrCast(&item.pointClippingBehavior)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePointClippingPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePointClippingPropertiesKHR) bool {
@@ -13960,7 +17454,16 @@ pub fn check_VkPhysicalDevicePointClippingPropertiesKHR(extensions: *const Exten
 }
 
 pub fn check_VkMemoryDedicatedRequirements(extensions: *const Extensions, item: *const vk.VkMemoryDedicatedRequirements) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryDedicatedRequirementsKHR(extensions: *const Extensions, item: *const vk.VkMemoryDedicatedRequirementsKHR) bool {
@@ -13970,7 +17473,16 @@ pub fn check_VkMemoryDedicatedRequirementsKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkMemoryDedicatedAllocateInfo(extensions: *const Extensions, item: *const vk.VkMemoryDedicatedAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryDedicatedAllocateInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryDedicatedAllocateInfoKHR) bool {
@@ -13980,12 +17492,31 @@ pub fn check_VkMemoryDedicatedAllocateInfoKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkImageViewUsageCreateInfo(extensions: *const Extensions, item: *const vk.VkImageViewUsageCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.usage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewSlicedCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkImageViewSlicedCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewUsageCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkImageViewUsageCreateInfoKHR) bool {
@@ -13995,8 +17526,18 @@ pub fn check_VkImageViewUsageCreateInfoKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkPipelineTessellationDomainOriginStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineTessellationDomainOriginStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkTessellationDomainOrigin(extensions, &item.domainOrigin));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkTessellationDomainOrigin(extensions, @ptrCast(&item.domainOrigin)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineTessellationDomainOriginStateCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineTessellationDomainOriginStateCreateInfoKHR) bool {
@@ -14006,7 +17547,16 @@ pub fn check_VkPipelineTessellationDomainOriginStateCreateInfoKHR(extensions: *c
 }
 
 pub fn check_VkSamplerYcbcrConversionInfo(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerYcbcrConversionInfoKHR(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionInfoKHR) bool {
@@ -14016,13 +17566,31 @@ pub fn check_VkSamplerYcbcrConversionInfoKHR(extensions: *const Extensions, item
 }
 
 pub fn check_VkSamplerYcbcrConversionCreateInfo(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_enum_VkSamplerYcbcrModelConversion(extensions, &item.ycbcrModel) and
-        check_enum_VkSamplerYcbcrRange(extensions, &item.ycbcrRange) and
-        check_enum_VkChromaLocation(extensions, &item.xChromaOffset) and
-        check_enum_VkChromaLocation(extensions, &item.yChromaOffset) and
-        check_enum_VkFilter(extensions, &item.chromaFilter));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrModelConversion(extensions, @ptrCast(&item.ycbcrModel)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrRange(extensions, @ptrCast(&item.ycbcrRange)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.xChromaOffset)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.yChromaOffset)))
+        return false;
+    if (!check_enum_VkFilter(extensions, @ptrCast(&item.chromaFilter)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM,
+            => if (!check_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerYcbcrConversionCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionCreateInfoKHR) bool {
@@ -14032,8 +17600,18 @@ pub fn check_VkSamplerYcbcrConversionCreateInfoKHR(extensions: *const Extensions
 }
 
 pub fn check_VkBindImagePlaneMemoryInfo(extensions: *const Extensions, item: *const vk.VkBindImagePlaneMemoryInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.planeAspect));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.planeAspect)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindImagePlaneMemoryInfoKHR(extensions: *const Extensions, item: *const vk.VkBindImagePlaneMemoryInfoKHR) bool {
@@ -14043,8 +17621,18 @@ pub fn check_VkBindImagePlaneMemoryInfoKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkImagePlaneMemoryRequirementsInfo(extensions: *const Extensions, item: *const vk.VkImagePlaneMemoryRequirementsInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.planeAspect));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.planeAspect)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImagePlaneMemoryRequirementsInfoKHR(extensions: *const Extensions, item: *const vk.VkImagePlaneMemoryRequirementsInfoKHR) bool {
@@ -14054,7 +17642,16 @@ pub fn check_VkImagePlaneMemoryRequirementsInfoKHR(extensions: *const Extensions
 }
 
 pub fn check_VkPhysicalDeviceSamplerYcbcrConversionFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR) bool {
@@ -14064,7 +17661,16 @@ pub fn check_VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR(extensions: *cons
 }
 
 pub fn check_VkSamplerYcbcrConversionImageFormatProperties(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionImageFormatProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerYcbcrConversionImageFormatPropertiesKHR(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionImageFormatPropertiesKHR) bool {
@@ -14074,37 +17680,111 @@ pub fn check_VkSamplerYcbcrConversionImageFormatPropertiesKHR(extensions: *const
 }
 
 pub fn check_VkTextureLODGatherFormatPropertiesAMD(extensions: *const Extensions, item: *const vk.VkTextureLODGatherFormatPropertiesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkConditionalRenderingBeginInfoEXT(extensions: *const Extensions, item: *const vk.VkConditionalRenderingBeginInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkConditionalRenderingFlagBitsEXT(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkConditionalRenderingFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkProtectedSubmitInfo(extensions: *const Extensions, item: *const vk.VkProtectedSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProtectedMemoryFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProtectedMemoryFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProtectedMemoryProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProtectedMemoryProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceQueueInfo2(extensions: *const Extensions, item: *const vk.VkDeviceQueueInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceQueueCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceQueueCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCoverageToColorStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineCoverageToColorStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSamplerFilterMinmaxProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSamplerFilterMinmaxProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT) bool {
@@ -14120,8 +17800,18 @@ pub fn check_VkSampleLocationEXT(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkSampleLocationsInfoEXT(extensions: *const Extensions, item: *const vk.VkSampleLocationsInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.sampleLocationsPerPixel));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.sampleLocationsPerPixel)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentSampleLocationsEXT(extensions: *const Extensions, item: *const vk.VkAttachmentSampleLocationsEXT) bool {
@@ -14137,25 +17827,72 @@ pub fn check_VkSubpassSampleLocationsEXT(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkRenderPassSampleLocationsBeginInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassSampleLocationsBeginInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineSampleLocationsStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineSampleLocationsStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSampleLocationsPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSampleLocationsPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.sampleLocationSampleCounts));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.sampleLocationSampleCounts)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMultisamplePropertiesEXT(extensions: *const Extensions, item: *const vk.VkMultisamplePropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerReductionModeCreateInfo(extensions: *const Extensions, item: *const vk.VkSamplerReductionModeCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSamplerReductionMode(extensions, &item.reductionMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSamplerReductionMode(extensions, @ptrCast(&item.reductionMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerReductionModeCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSamplerReductionModeCreateInfoEXT) bool {
@@ -14165,24 +17902,70 @@ pub fn check_VkSamplerReductionModeCreateInfoEXT(extensions: *const Extensions, 
 }
 
 pub fn check_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiDrawFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiDrawFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineColorBlendAdvancedStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkBlendOverlapEXT(extensions, &item.blendOverlap));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkBlendOverlapEXT(extensions, @ptrCast(&item.blendOverlap)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceInlineUniformBlockFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInlineUniformBlockFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceInlineUniformBlockFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInlineUniformBlockFeaturesEXT) bool {
@@ -14192,7 +17975,16 @@ pub fn check_VkPhysicalDeviceInlineUniformBlockFeaturesEXT(extensions: *const Ex
 }
 
 pub fn check_VkPhysicalDeviceInlineUniformBlockProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInlineUniformBlockProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceInlineUniformBlockPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInlineUniformBlockPropertiesEXT) bool {
@@ -14202,7 +17994,16 @@ pub fn check_VkPhysicalDeviceInlineUniformBlockPropertiesEXT(extensions: *const 
 }
 
 pub fn check_VkWriteDescriptorSetInlineUniformBlock(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetInlineUniformBlock) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteDescriptorSetInlineUniformBlockEXT(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetInlineUniformBlockEXT) bool {
@@ -14212,7 +18013,16 @@ pub fn check_VkWriteDescriptorSetInlineUniformBlockEXT(extensions: *const Extens
 }
 
 pub fn check_VkDescriptorPoolInlineUniformBlockCreateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorPoolInlineUniformBlockCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfoEXT) bool {
@@ -14222,13 +18032,35 @@ pub fn check_VkDescriptorPoolInlineUniformBlockCreateInfoEXT(extensions: *const 
 }
 
 pub fn check_VkPipelineCoverageModulationStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineCoverageModulationStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCoverageModulationModeNV(extensions, &item.coverageModulationMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCoverageModulationModeNV(extensions, @ptrCast(&item.coverageModulationMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageFormatListCreateInfo(extensions: *const Extensions, item: *const vk.VkImageFormatListCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.pViewFormats));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.viewFormatCount) |i| {
+        if (!check_enum_VkFormat(extensions, @ptrCast(&item.pViewFormats[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageFormatListCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkImageFormatListCreateInfoKHR) bool {
@@ -14238,15 +18070,42 @@ pub fn check_VkImageFormatListCreateInfoKHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkValidationCacheCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkValidationCacheCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkShaderModuleValidationCacheCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkShaderModuleValidationCacheCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance3Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance3Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance3PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance3PropertiesKHR) bool {
@@ -14256,7 +18115,16 @@ pub fn check_VkPhysicalDeviceMaintenance3PropertiesKHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceMaintenance4Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance4Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance4FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance4FeaturesKHR) bool {
@@ -14266,7 +18134,16 @@ pub fn check_VkPhysicalDeviceMaintenance4FeaturesKHR(extensions: *const Extensio
 }
 
 pub fn check_VkPhysicalDeviceMaintenance4Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance4Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance4PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance4PropertiesKHR) bool {
@@ -14276,7 +18153,16 @@ pub fn check_VkPhysicalDeviceMaintenance4PropertiesKHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceMaintenance5Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance5Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance5FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance5FeaturesKHR) bool {
@@ -14286,7 +18172,16 @@ pub fn check_VkPhysicalDeviceMaintenance5FeaturesKHR(extensions: *const Extensio
 }
 
 pub fn check_VkPhysicalDeviceMaintenance5Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance5Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance5PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance5PropertiesKHR) bool {
@@ -14296,7 +18191,16 @@ pub fn check_VkPhysicalDeviceMaintenance5PropertiesKHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceMaintenance6Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance6Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance6FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance6FeaturesKHR) bool {
@@ -14306,7 +18210,16 @@ pub fn check_VkPhysicalDeviceMaintenance6FeaturesKHR(extensions: *const Extensio
 }
 
 pub fn check_VkPhysicalDeviceMaintenance6Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance6Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance6PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance6PropertiesKHR) bool {
@@ -14316,48 +18229,148 @@ pub fn check_VkPhysicalDeviceMaintenance6PropertiesKHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceMaintenance7FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance7FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance7PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance7PropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLayeredApiPropertiesListKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLayeredApiPropertiesListKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLayeredApiPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLayeredApiPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPhysicalDeviceLayeredApiKHR(extensions, &item.layeredAPI));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPhysicalDeviceLayeredApiKHR(extensions, @ptrCast(&item.layeredAPI)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_VULKAN_PROPERTIES_KHR,
+            => if (!check_VkPhysicalDeviceLayeredApiVulkanPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLayeredApiVulkanPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLayeredApiVulkanPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance8FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance8FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance9FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance9FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMaintenance9PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMaintenance9PropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDefaultVertexAttributeValueKHR(extensions, &item.defaultVertexAttributeValue));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDefaultVertexAttributeValueKHR(extensions, @ptrCast(&item.defaultVertexAttributeValue)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyOwnershipTransferPropertiesKHR(extensions: *const Extensions, item: *const vk.VkQueueFamilyOwnershipTransferPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingAreaInfo(extensions: *const Extensions, item: *const vk.VkRenderingAreaInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.pColorAttachmentFormats) and
-        check_enum_VkFormat(extensions, &item.depthAttachmentFormat) and
-        check_enum_VkFormat(extensions, &item.stencilAttachmentFormat));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.colorAttachmentCount) |i| {
+        if (!check_enum_VkFormat(extensions, @ptrCast(&item.pColorAttachmentFormats[i])))
+            return false;
+    }
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.depthAttachmentFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.stencilAttachmentFormat)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingAreaInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingAreaInfoKHR) bool {
@@ -14367,7 +18380,19 @@ pub fn check_VkRenderingAreaInfoKHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkDescriptorSetLayoutSupport(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutSupport) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT,
+            => if (!check_VkDescriptorSetVariableDescriptorCountLayoutSupport(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetLayoutSupportKHR(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutSupportKHR) bool {
@@ -14377,7 +18402,16 @@ pub fn check_VkDescriptorSetLayoutSupportKHR(extensions: *const Extensions, item
 }
 
 pub fn check_VkPhysicalDeviceShaderDrawParametersFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderDrawParametersFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderDrawParameterFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderDrawParameterFeatures) bool {
@@ -14387,7 +18421,16 @@ pub fn check_VkPhysicalDeviceShaderDrawParameterFeatures(extensions: *const Exte
 }
 
 pub fn check_VkPhysicalDeviceShaderFloat16Int8Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderFloat16Int8Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderFloat16Int8FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderFloat16Int8FeaturesKHR) bool {
@@ -14403,9 +18446,20 @@ pub fn check_VkPhysicalDeviceFloat16Int8FeaturesKHR(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceFloatControlsProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFloatControlsProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkShaderFloatControlsIndependence(extensions, &item.denormBehaviorIndependence) and
-        check_enum_VkShaderFloatControlsIndependence(extensions, &item.roundingModeIndependence));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkShaderFloatControlsIndependence(extensions, @ptrCast(&item.denormBehaviorIndependence)))
+        return false;
+    if (!check_enum_VkShaderFloatControlsIndependence(extensions, @ptrCast(&item.roundingModeIndependence)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFloatControlsPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFloatControlsPropertiesKHR) bool {
@@ -14415,7 +18469,16 @@ pub fn check_VkPhysicalDeviceFloatControlsPropertiesKHR(extensions: *const Exten
 }
 
 pub fn check_VkPhysicalDeviceHostQueryResetFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostQueryResetFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceHostQueryResetFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostQueryResetFeaturesEXT) bool {
@@ -14431,16 +18494,44 @@ pub fn check_VkNativeBufferUsage2ANDROID(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkNativeBufferANDROID(extensions: *const Extensions, item: *const vk.VkNativeBufferANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainImageCreateInfoANDROID(extensions: *const Extensions, item: *const vk.VkSwapchainImageCreateInfoANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSwapchainImageUsageFlagBitsANDROID(extensions, &item.usage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSwapchainImageUsageFlagBitsANDROID(extensions, @ptrCast(&item.usage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentationPropertiesANDROID(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentationPropertiesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkShaderResourceUsageAMD(extensions: *const Extensions, item: *const vk.VkShaderResourceUsageAMD) bool {
@@ -14450,12 +18541,24 @@ pub fn check_VkShaderResourceUsageAMD(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkShaderStatisticsInfoAMD(extensions: *const Extensions, item: *const vk.VkShaderStatisticsInfoAMD) bool {
-    return (check_bitmask_VkShaderStageFlagBits(extensions, &item.shaderStageMask));
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.shaderStageMask)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDeviceQueueGlobalPriorityCreateInfo(extensions: *const Extensions, item: *const vk.VkDeviceQueueGlobalPriorityCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkQueueGlobalPriority(extensions, &item.globalPriority));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkQueueGlobalPriority(extensions, @ptrCast(&item.globalPriority)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceQueueGlobalPriorityCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceQueueGlobalPriorityCreateInfoKHR) bool {
@@ -14471,7 +18574,16 @@ pub fn check_VkDeviceQueueGlobalPriorityCreateInfoEXT(extensions: *const Extensi
 }
 
 pub fn check_VkPhysicalDeviceGlobalPriorityQueryFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR) bool {
@@ -14487,8 +18599,20 @@ pub fn check_VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT(extensions: *const E
 }
 
 pub fn check_VkQueueFamilyGlobalPriorityProperties(extensions: *const Extensions, item: *const vk.VkQueueFamilyGlobalPriorityProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkQueueGlobalPriority(extensions, &item.priorities));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.priorityCount) |i| {
+        if (!check_enum_VkQueueGlobalPriority(extensions, @ptrCast(&item.priorities[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyGlobalPriorityPropertiesKHR(extensions: *const Extensions, item: *const vk.VkQueueFamilyGlobalPriorityPropertiesKHR) bool {
@@ -14504,63 +18628,191 @@ pub fn check_VkQueueFamilyGlobalPriorityPropertiesEXT(extensions: *const Extensi
 }
 
 pub fn check_VkDebugUtilsObjectNameInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugUtilsObjectNameInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkObjectType(extensions, &item.objectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkObjectType(extensions, @ptrCast(&item.objectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugUtilsObjectTagInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugUtilsObjectTagInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkObjectType(extensions, &item.objectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkObjectType(extensions, @ptrCast(&item.objectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugUtilsLabelEXT(extensions: *const Extensions, item: *const vk.VkDebugUtilsLabelEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugUtilsMessengerCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDebugUtilsMessengerCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDebugUtilsMessageSeverityFlagBitsEXT(extensions, &item.messageSeverity) and
-        check_bitmask_VkDebugUtilsMessageTypeFlagBitsEXT(extensions, &item.messageType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDebugUtilsMessageSeverityFlagBitsEXT(extensions, @ptrCast(&item.messageSeverity)))
+        return false;
+    if (!check_bitmask_VkDebugUtilsMessageTypeFlagBitsEXT(extensions, @ptrCast(&item.messageType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDebugUtilsMessengerCallbackDataEXT(extensions: *const Extensions, item: *const vk.VkDebugUtilsMessengerCallbackDataEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_ADDRESS_BINDING_CALLBACK_DATA_EXT,
+            => if (!check_VkDeviceAddressBindingCallbackDataEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceMemoryReportFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceDeviceMemoryReportCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDeviceDeviceMemoryReportCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceMemoryReportCallbackDataEXT(extensions: *const Extensions, item: *const vk.VkDeviceMemoryReportCallbackDataEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDeviceMemoryReportEventTypeEXT(extensions, &item.type) and
-        check_enum_VkObjectType(extensions, &item.objectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDeviceMemoryReportEventTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_enum_VkObjectType(extensions, @ptrCast(&item.objectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryHostPointerInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMemoryHostPointerInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryHostPointerPropertiesEXT(extensions: *const Extensions, item: *const vk.VkMemoryHostPointerPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalMemoryHostPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalMemoryHostPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceConservativeRasterizationPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceConservativeRasterizationPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCalibratedTimestampInfoKHR(extensions: *const Extensions, item: *const vk.VkCalibratedTimestampInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkTimeDomainKHR(extensions, &item.timeDomain));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkTimeDomainKHR(extensions, @ptrCast(&item.timeDomain)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCalibratedTimestampInfoEXT(extensions: *const Extensions, item: *const vk.VkCalibratedTimestampInfoEXT) bool {
@@ -14570,21 +18822,59 @@ pub fn check_VkCalibratedTimestampInfoEXT(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkPhysicalDeviceShaderCorePropertiesAMD(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderCorePropertiesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderCoreProperties2AMD(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderCoreProperties2AMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderCorePropertiesFlagBitsAMD(extensions, &item.shaderCoreFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderCorePropertiesFlagBitsAMD(extensions, @ptrCast(&item.shaderCoreFeatures)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationConservativeStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationConservativeStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkConservativeRasterizationModeEXT(extensions, &item.conservativeRasterizationMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkConservativeRasterizationModeEXT(extensions, @ptrCast(&item.conservativeRasterizationMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorIndexingFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorIndexingFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorIndexingFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorIndexingFeaturesEXT) bool {
@@ -14594,7 +18884,16 @@ pub fn check_VkPhysicalDeviceDescriptorIndexingFeaturesEXT(extensions: *const Ex
 }
 
 pub fn check_VkPhysicalDeviceDescriptorIndexingProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorIndexingProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorIndexingPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorIndexingPropertiesEXT) bool {
@@ -14604,8 +18903,20 @@ pub fn check_VkPhysicalDeviceDescriptorIndexingPropertiesEXT(extensions: *const 
 }
 
 pub fn check_VkDescriptorSetLayoutBindingFlagsCreateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDescriptorBindingFlagBits(extensions, &item.pBindingFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.bindingCount) |i| {
+        if (!check_bitmask_VkDescriptorBindingFlagBits(extensions, @ptrCast(&item.pBindingFlags[i]))) 
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetLayoutBindingFlagsCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT) bool {
@@ -14615,7 +18926,16 @@ pub fn check_VkDescriptorSetLayoutBindingFlagsCreateInfoEXT(extensions: *const E
 }
 
 pub fn check_VkDescriptorSetVariableDescriptorCountAllocateInfo(extensions: *const Extensions, item: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetVariableDescriptorCountAllocateInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfoEXT) bool {
@@ -14625,7 +18945,16 @@ pub fn check_VkDescriptorSetVariableDescriptorCountAllocateInfoEXT(extensions: *
 }
 
 pub fn check_VkDescriptorSetVariableDescriptorCountLayoutSupport(extensions: *const Extensions, item: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupport) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetVariableDescriptorCountLayoutSupportEXT(extensions: *const Extensions, item: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupportEXT) bool {
@@ -14635,16 +18964,37 @@ pub fn check_VkDescriptorSetVariableDescriptorCountLayoutSupportEXT(extensions: 
 }
 
 pub fn check_VkAttachmentDescription2(extensions: *const Extensions, item: *const vk.VkAttachmentDescription2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAttachmentDescriptionFlagBits(extensions, &item.flags) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.samples) and
-        check_enum_VkAttachmentLoadOp(extensions, &item.loadOp) and
-        check_enum_VkAttachmentStoreOp(extensions, &item.storeOp) and
-        check_enum_VkAttachmentLoadOp(extensions, &item.stencilLoadOp) and
-        check_enum_VkAttachmentStoreOp(extensions, &item.stencilStoreOp) and
-        check_enum_VkImageLayout(extensions, &item.initialLayout) and
-        check_enum_VkImageLayout(extensions, &item.finalLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAttachmentDescriptionFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.samples)))
+        return false;
+    if (!check_enum_VkAttachmentLoadOp(extensions, @ptrCast(&item.loadOp)))
+        return false;
+    if (!check_enum_VkAttachmentStoreOp(extensions, @ptrCast(&item.storeOp)))
+        return false;
+    if (!check_enum_VkAttachmentLoadOp(extensions, @ptrCast(&item.stencilLoadOp)))
+        return false;
+    if (!check_enum_VkAttachmentStoreOp(extensions, @ptrCast(&item.stencilStoreOp)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.initialLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.finalLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT,
+            => if (!check_VkAttachmentDescriptionStencilLayout(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentDescription2KHR(extensions: *const Extensions, item: *const vk.VkAttachmentDescription2KHR) bool {
@@ -14654,9 +19004,23 @@ pub fn check_VkAttachmentDescription2KHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkAttachmentReference2(extensions: *const Extensions, item: *const vk.VkAttachmentReference2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.layout) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.aspectMask));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.layout)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.aspectMask)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT,
+            => if (!check_VkAttachmentReferenceStencilLayout(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentReference2KHR(extensions: *const Extensions, item: *const vk.VkAttachmentReference2KHR) bool {
@@ -14666,9 +19030,29 @@ pub fn check_VkAttachmentReference2KHR(extensions: *const Extensions, item: *con
 }
 
 pub fn check_VkSubpassDescription2(extensions: *const Extensions, item: *const vk.VkSubpassDescription2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSubpassDescriptionFlagBits(extensions, &item.flags) and
-        check_enum_VkPipelineBindPoint(extensions, &item.pipelineBindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSubpassDescriptionFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkPipelineBindPoint(extensions, @ptrCast(&item.pipelineBindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+            => if (!check_VkSubpassDescriptionDepthStencilResolve(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
+            => if (!check_VkFragmentShadingRateAttachmentInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT,
+            => if (!check_VkRenderPassSubpassFeedbackCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassDescription2KHR(extensions: *const Extensions, item: *const vk.VkSubpassDescription2KHR) bool {
@@ -14678,12 +19062,29 @@ pub fn check_VkSubpassDescription2KHR(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkSubpassDependency2(extensions: *const Extensions, item: *const vk.VkSubpassDependency2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.srcStageMask) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.dstStageMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.srcAccessMask) and
-        check_bitmask_VkAccessFlagBits(extensions, &item.dstAccessMask) and
-        check_bitmask_VkDependencyFlagBits(extensions, &item.dependencyFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.srcStageMask)))
+        return false;
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.dstStageMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.srcAccessMask)))
+        return false;
+    if (!check_bitmask_VkAccessFlagBits(extensions, @ptrCast(&item.dstAccessMask)))
+        return false;
+    if (!check_bitmask_VkDependencyFlagBits(extensions, @ptrCast(&item.dependencyFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
+            => if (!check_VkMemoryBarrier2(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassDependency2KHR(extensions: *const Extensions, item: *const vk.VkSubpassDependency2KHR) bool {
@@ -14693,8 +19094,21 @@ pub fn check_VkSubpassDependency2KHR(extensions: *const Extensions, item: *const
 }
 
 pub fn check_VkRenderPassCreateInfo2(extensions: *const Extensions, item: *const vk.VkRenderPassCreateInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkRenderPassCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkRenderPassCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
+            => if (!check_VkRenderPassCreationFeedbackCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassCreateInfo2KHR(extensions: *const Extensions, item: *const vk.VkRenderPassCreateInfo2KHR) bool {
@@ -14704,8 +19118,18 @@ pub fn check_VkRenderPassCreateInfo2KHR(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkSubpassBeginInfo(extensions: *const Extensions, item: *const vk.VkSubpassBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSubpassContents(extensions, &item.contents));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSubpassContents(extensions, @ptrCast(&item.contents)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassBeginInfoKHR(extensions: *const Extensions, item: *const vk.VkSubpassBeginInfoKHR) bool {
@@ -14715,7 +19139,16 @@ pub fn check_VkSubpassBeginInfoKHR(extensions: *const Extensions, item: *const v
 }
 
 pub fn check_VkSubpassEndInfo(extensions: *const Extensions, item: *const vk.VkSubpassEndInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassEndInfoKHR(extensions: *const Extensions, item: *const vk.VkSubpassEndInfoKHR) bool {
@@ -14725,7 +19158,16 @@ pub fn check_VkSubpassEndInfoKHR(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkPhysicalDeviceTimelineSemaphoreFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTimelineSemaphoreFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTimelineSemaphoreFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTimelineSemaphoreFeaturesKHR) bool {
@@ -14735,7 +19177,16 @@ pub fn check_VkPhysicalDeviceTimelineSemaphoreFeaturesKHR(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDeviceTimelineSemaphoreProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTimelineSemaphoreProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTimelineSemaphorePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTimelineSemaphorePropertiesKHR) bool {
@@ -14745,8 +19196,18 @@ pub fn check_VkPhysicalDeviceTimelineSemaphorePropertiesKHR(extensions: *const E
 }
 
 pub fn check_VkSemaphoreTypeCreateInfo(extensions: *const Extensions, item: *const vk.VkSemaphoreTypeCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSemaphoreType(extensions, &item.semaphoreType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSemaphoreType(extensions, @ptrCast(&item.semaphoreType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreTypeCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreTypeCreateInfoKHR) bool {
@@ -14756,7 +19217,16 @@ pub fn check_VkSemaphoreTypeCreateInfoKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkTimelineSemaphoreSubmitInfo(extensions: *const Extensions, item: *const vk.VkTimelineSemaphoreSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTimelineSemaphoreSubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkTimelineSemaphoreSubmitInfoKHR) bool {
@@ -14766,8 +19236,18 @@ pub fn check_VkTimelineSemaphoreSubmitInfoKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkSemaphoreWaitInfo(extensions: *const Extensions, item: *const vk.VkSemaphoreWaitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSemaphoreWaitFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSemaphoreWaitFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreWaitInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreWaitInfoKHR) bool {
@@ -14777,7 +19257,16 @@ pub fn check_VkSemaphoreWaitInfoKHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkSemaphoreSignalInfo(extensions: *const Extensions, item: *const vk.VkSemaphoreSignalInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreSignalInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreSignalInfoKHR) bool {
@@ -14805,7 +19294,16 @@ pub fn check_VkVertexInputBindingDivisorDescriptionEXT(extensions: *const Extens
 }
 
 pub fn check_VkPipelineVertexInputDivisorStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineVertexInputDivisorStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineVertexInputDivisorStateCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineVertexInputDivisorStateCreateInfoKHR) bool {
@@ -14821,11 +19319,29 @@ pub fn check_VkPipelineVertexInputDivisorStateCreateInfoEXT(extensions: *const E
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeDivisorProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeDivisorProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR) bool {
@@ -14835,45 +19351,141 @@ pub fn check_VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR(extensions: *co
 }
 
 pub fn check_VkPhysicalDevicePCIBusInfoPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePCIBusInfoPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportAndroidHardwareBufferInfoANDROID(extensions: *const Extensions, item: *const vk.VkImportAndroidHardwareBufferInfoANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAndroidHardwareBufferUsageANDROID(extensions: *const Extensions, item: *const vk.VkAndroidHardwareBufferUsageANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAndroidHardwareBufferPropertiesANDROID(extensions: *const Extensions, item: *const vk.VkAndroidHardwareBufferPropertiesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID,
+            => if (!check_VkAndroidHardwareBufferFormatPropertiesANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_2_ANDROID,
+            => if (!check_VkAndroidHardwareBufferFormatProperties2ANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_RESOLVE_PROPERTIES_ANDROID,
+            => if (!check_VkAndroidHardwareBufferFormatResolvePropertiesANDROID(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryGetAndroidHardwareBufferInfoANDROID(extensions: *const Extensions, item: *const vk.VkMemoryGetAndroidHardwareBufferInfoANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAndroidHardwareBufferFormatPropertiesANDROID(extensions: *const Extensions, item: *const vk.VkAndroidHardwareBufferFormatPropertiesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.formatFeatures) and
-        check_enum_VkSamplerYcbcrModelConversion(extensions, &item.suggestedYcbcrModel) and
-        check_enum_VkSamplerYcbcrRange(extensions, &item.suggestedYcbcrRange) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedXChromaOffset) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedYChromaOffset));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.formatFeatures)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrModelConversion(extensions, @ptrCast(&item.suggestedYcbcrModel)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrRange(extensions, @ptrCast(&item.suggestedYcbcrRange)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedXChromaOffset)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedYChromaOffset)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferInheritanceConditionalRenderingInfoEXT(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalFormatANDROID(extensions: *const Extensions, item: *const vk.VkExternalFormatANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevice8BitStorageFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevice8BitStorageFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevice8BitStorageFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevice8BitStorageFeaturesKHR) bool {
@@ -14883,11 +19495,29 @@ pub fn check_VkPhysicalDevice8BitStorageFeaturesKHR(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceConditionalRenderingFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkanMemoryModelFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkanMemoryModelFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkanMemoryModelFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkanMemoryModelFeaturesKHR) bool {
@@ -14897,7 +19527,16 @@ pub fn check_VkPhysicalDeviceVulkanMemoryModelFeaturesKHR(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDeviceShaderAtomicInt64Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderAtomicInt64Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderAtomicInt64FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderAtomicInt64FeaturesKHR) bool {
@@ -14907,15 +19546,42 @@ pub fn check_VkPhysicalDeviceShaderAtomicInt64FeaturesKHR(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeDivisorFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR) bool {
@@ -14931,19 +19597,50 @@ pub fn check_VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT(extensions: *cons
 }
 
 pub fn check_VkQueueFamilyCheckpointPropertiesNV(extensions: *const Extensions, item: *const vk.VkQueueFamilyCheckpointPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.checkpointExecutionStageMask));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.checkpointExecutionStageMask)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCheckpointDataNV(extensions: *const Extensions, item: *const vk.VkCheckpointDataNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineStageFlagBits(extensions, &item.stage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.stage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDepthStencilResolveProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthStencilResolveProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.supportedDepthResolveModes) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.supportedStencilResolveModes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.supportedDepthResolveModes)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.supportedStencilResolveModes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDepthStencilResolvePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthStencilResolvePropertiesKHR) bool {
@@ -14953,9 +19650,20 @@ pub fn check_VkPhysicalDeviceDepthStencilResolvePropertiesKHR(extensions: *const
 }
 
 pub fn check_VkSubpassDescriptionDepthStencilResolve(extensions: *const Extensions, item: *const vk.VkSubpassDescriptionDepthStencilResolve) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.depthResolveMode) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.stencilResolveMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.depthResolveMode)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.stencilResolveMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassDescriptionDepthStencilResolveKHR(extensions: *const Extensions, item: *const vk.VkSubpassDescriptionDepthStencilResolveKHR) bool {
@@ -14965,48 +19673,148 @@ pub fn check_VkSubpassDescriptionDepthStencilResolveKHR(extensions: *const Exten
 }
 
 pub fn check_VkImageViewASTCDecodeModeEXT(extensions: *const Extensions, item: *const vk.VkImageViewASTCDecodeModeEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.decodeMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.decodeMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceASTCDecodeFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceASTCDecodeFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTransformFeedbackFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTransformFeedbackPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTransformFeedbackPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationStateStreamCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationStateStreamCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExclusiveScissorFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExclusiveScissorFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineViewportExclusiveScissorStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCornerSampledImageFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCornerSampledImageFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceComputeShaderDerivativesFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesNV) bool {
@@ -15016,7 +19824,16 @@ pub fn check_VkPhysicalDeviceComputeShaderDerivativesFeaturesNV(extensions: *con
 }
 
 pub fn check_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV) bool {
@@ -15026,48 +19843,143 @@ pub fn check_VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV(extensions: *co
 }
 
 pub fn check_VkPhysicalDeviceShaderImageFootprintFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkQueueFlagBits(extensions, &item.supportedQueues));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkQueueFlagBits(extensions, @ptrCast(&item.supportedQueues)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryDecompressionFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryDecompressionPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkShadingRatePaletteNV(extensions: *const Extensions, item: *const vk.VkShadingRatePaletteNV) bool {
-    return (check_enum_VkShadingRatePaletteEntryNV(extensions, &item.pShadingRatePaletteEntries));
+    for (0..item.shadingRatePaletteEntryCount) |i| {
+        if (!check_enum_VkShadingRatePaletteEntryNV(extensions, @ptrCast(&item.pShadingRatePaletteEntries[i])))
+            return false;
+    }
+    return true;
 }
 
 pub fn check_VkPipelineViewportShadingRateImageStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineViewportShadingRateImageStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShadingRateImageFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShadingRateImagePropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShadingRateImagePropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInvocationMaskFeaturesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCoarseSampleLocationNV(extensions: *const Extensions, item: *const vk.VkCoarseSampleLocationNV) bool {
@@ -15077,20 +19989,50 @@ pub fn check_VkCoarseSampleLocationNV(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkCoarseSampleOrderCustomNV(extensions: *const Extensions, item: *const vk.VkCoarseSampleOrderCustomNV) bool {
-    return (check_enum_VkShadingRatePaletteEntryNV(extensions, &item.shadingRate));
+    if (!check_enum_VkShadingRatePaletteEntryNV(extensions, @ptrCast(&item.shadingRate)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCoarseSampleOrderTypeNV(extensions, &item.sampleOrderType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCoarseSampleOrderTypeNV(extensions, @ptrCast(&item.sampleOrderType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMeshShaderFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMeshShaderPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMeshShaderPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrawMeshTasksIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkDrawMeshTasksIndirectCommandNV) bool {
@@ -15100,11 +20042,29 @@ pub fn check_VkDrawMeshTasksIndirectCommandNV(extensions: *const Extensions, ite
 }
 
 pub fn check_VkPhysicalDeviceMeshShaderFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMeshShaderPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMeshShaderPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrawMeshTasksIndirectCommandEXT(extensions: *const Extensions, item: *const vk.VkDrawMeshTasksIndirectCommandEXT) bool {
@@ -15114,33 +20074,96 @@ pub fn check_VkDrawMeshTasksIndirectCommandEXT(extensions: *const Extensions, it
 }
 
 pub fn check_VkRayTracingShaderGroupCreateInfoNV(extensions: *const Extensions, item: *const vk.VkRayTracingShaderGroupCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkRayTracingShaderGroupTypeKHR(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkRayTracingShaderGroupTypeKHR(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRayTracingShaderGroupCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkRayTracingShaderGroupCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkRayTracingShaderGroupTypeKHR(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkRayTracingShaderGroupTypeKHR(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRayTracingPipelineCreateInfoNV(extensions: *const Extensions, item: *const vk.VkRayTracingPipelineCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRayTracingPipelineCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkRayTracingPipelineCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV,
+            => if (!check_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeometryTrianglesNV(extensions: *const Extensions, item: *const vk.VkGeometryTrianglesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.vertexFormat) and
-        check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.vertexFormat)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeometryAABBNV(extensions: *const Extensions, item: *const vk.VkGeometryAABBNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeometryDataNV(extensions: *const Extensions, item: *const vk.VkGeometryDataNV) bool {
@@ -15150,58 +20173,178 @@ pub fn check_VkGeometryDataNV(extensions: *const Extensions, item: *const vk.VkG
 }
 
 pub fn check_VkGeometryNV(extensions: *const Extensions, item: *const vk.VkGeometryNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkGeometryTypeKHR(extensions, &item.geometryType) and
-        check_bitmask_VkGeometryFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkGeometryTypeKHR(extensions, @ptrCast(&item.geometryType)))
+        return false;
+    if (!check_bitmask_VkGeometryFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureInfoNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureCreateInfoNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindAccelerationStructureMemoryInfoNV(extensions: *const Extensions, item: *const vk.VkBindAccelerationStructureMemoryInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteDescriptorSetAccelerationStructureKHR(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetAccelerationStructureKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteDescriptorSetAccelerationStructureNV(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetAccelerationStructureNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureMemoryRequirementsInfoNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureMemoryRequirementsInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkAccelerationStructureMemoryRequirementsTypeNV(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkAccelerationStructureMemoryRequirementsTypeNV(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAccelerationStructureFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayQueryFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayQueryFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAccelerationStructurePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAccelerationStructurePropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkStridedDeviceAddressRegionKHR(extensions: *const Extensions, item: *const vk.VkStridedDeviceAddressRegionKHR) bool {
@@ -15223,37 +20366,104 @@ pub fn check_VkTraceRaysIndirectCommand2KHR(extensions: *const Extensions, item:
 }
 
 pub fn check_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrmFormatModifierPropertiesListEXT(extensions: *const Extensions, item: *const vk.VkDrmFormatModifierPropertiesListEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrmFormatModifierPropertiesEXT(extensions: *const Extensions, item: *const vk.VkDrmFormatModifierPropertiesEXT) bool {
-    return (check_bitmask_VkFormatFeatureFlagBits(extensions, &item.drmFormatModifierTilingFeatures));
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.drmFormatModifierTilingFeatures)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageDrmFormatModifierInfoEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageDrmFormatModifierInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSharingMode(extensions, &item.sharingMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSharingMode(extensions, @ptrCast(&item.sharingMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageDrmFormatModifierListCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkImageDrmFormatModifierListCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageDrmFormatModifierExplicitCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkImageDrmFormatModifierExplicitCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageDrmFormatModifierPropertiesEXT(extensions: *const Extensions, item: *const vk.VkImageDrmFormatModifierPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageStencilUsageCreateInfo(extensions: *const Extensions, item: *const vk.VkImageStencilUsageCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.stencilUsage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.stencilUsage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageStencilUsageCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkImageStencilUsageCreateInfoEXT) bool {
@@ -15263,20 +20473,57 @@ pub fn check_VkImageStencilUsageCreateInfoEXT(extensions: *const Extensions, ite
 }
 
 pub fn check_VkDeviceMemoryOverallocationCreateInfoAMD(extensions: *const Extensions, item: *const vk.VkDeviceMemoryOverallocationCreateInfoAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkMemoryOverallocationBehaviorAMD(extensions, &item.overallocationBehavior));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkMemoryOverallocationBehaviorAMD(extensions, @ptrCast(&item.overallocationBehavior)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMap2FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM) bool {
@@ -15286,15 +20533,42 @@ pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM(extensions: *c
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMap2PropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMap2PropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM) bool {
@@ -15304,11 +20578,29 @@ pub fn check_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM(extensions: 
 }
 
 pub fn check_VkRenderPassFragmentDensityMapCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassFragmentDensityMapCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassFragmentDensityMapOffsetEndInfoQCOM(extensions: *const Extensions, item: *const vk.VkSubpassFragmentDensityMapOffsetEndInfoQCOM) bool {
@@ -15318,7 +20610,16 @@ pub fn check_VkSubpassFragmentDensityMapOffsetEndInfoQCOM(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDeviceScalarBlockLayoutFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceScalarBlockLayoutFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceScalarBlockLayoutFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceScalarBlockLayoutFeaturesEXT) bool {
@@ -15328,11 +20629,29 @@ pub fn check_VkPhysicalDeviceScalarBlockLayoutFeaturesEXT(extensions: *const Ext
 }
 
 pub fn check_VkSurfaceProtectedCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkSurfaceProtectedCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR) bool {
@@ -15342,31 +20661,94 @@ pub fn check_VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR(extensions: 
 }
 
 pub fn check_VkPhysicalDeviceDepthClipEnableFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationDepthClipStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryBudgetPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryBudgetPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMemoryPriorityFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMemoryPriorityFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryPriorityAllocateInfoEXT(extensions: *const Extensions, item: *const vk.VkMemoryPriorityAllocateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceBufferDeviceAddressFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceBufferDeviceAddressFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesKHR) bool {
@@ -15376,7 +20758,16 @@ pub fn check_VkPhysicalDeviceBufferDeviceAddressFeaturesKHR(extensions: *const E
 }
 
 pub fn check_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceBufferAddressFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBufferAddressFeaturesEXT) bool {
@@ -15386,7 +20777,16 @@ pub fn check_VkPhysicalDeviceBufferAddressFeaturesEXT(extensions: *const Extensi
 }
 
 pub fn check_VkBufferDeviceAddressInfo(extensions: *const Extensions, item: *const vk.VkBufferDeviceAddressInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferDeviceAddressInfoKHR(extensions: *const Extensions, item: *const vk.VkBufferDeviceAddressInfoKHR) bool {
@@ -15402,7 +20802,16 @@ pub fn check_VkBufferDeviceAddressInfoEXT(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkBufferOpaqueCaptureAddressCreateInfo(extensions: *const Extensions, item: *const vk.VkBufferOpaqueCaptureAddressCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferOpaqueCaptureAddressCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkBufferOpaqueCaptureAddressCreateInfoKHR) bool {
@@ -15412,20 +20821,57 @@ pub fn check_VkBufferOpaqueCaptureAddressCreateInfoKHR(extensions: *const Extens
 }
 
 pub fn check_VkBufferDeviceAddressCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkBufferDeviceAddressCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageViewImageFormatInfoEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageViewImageFormatInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageViewType(extensions, &item.imageViewType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageViewType(extensions, @ptrCast(&item.imageViewType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFilterCubicImageViewImageFormatPropertiesEXT(extensions: *const Extensions, item: *const vk.VkFilterCubicImageViewImageFormatPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImagelessFramebufferFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImagelessFramebufferFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImagelessFramebufferFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImagelessFramebufferFeaturesKHR) bool {
@@ -15435,7 +20881,16 @@ pub fn check_VkPhysicalDeviceImagelessFramebufferFeaturesKHR(extensions: *const 
 }
 
 pub fn check_VkFramebufferAttachmentsCreateInfo(extensions: *const Extensions, item: *const vk.VkFramebufferAttachmentsCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFramebufferAttachmentsCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkFramebufferAttachmentsCreateInfoKHR) bool {
@@ -15445,10 +20900,24 @@ pub fn check_VkFramebufferAttachmentsCreateInfoKHR(extensions: *const Extensions
 }
 
 pub fn check_VkFramebufferAttachmentImageInfo(extensions: *const Extensions, item: *const vk.VkFramebufferAttachmentImageInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageCreateFlagBits(extensions, &item.flags) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.usage) and
-        check_enum_VkFormat(extensions, &item.pViewFormats));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    for (0..item.viewFormatCount) |i| {
+        if (!check_enum_VkFormat(extensions, @ptrCast(&item.pViewFormats[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFramebufferAttachmentImageInfoKHR(extensions: *const Extensions, item: *const vk.VkFramebufferAttachmentImageInfoKHR) bool {
@@ -15458,7 +20927,16 @@ pub fn check_VkFramebufferAttachmentImageInfoKHR(extensions: *const Extensions, 
 }
 
 pub fn check_VkRenderPassAttachmentBeginInfo(extensions: *const Extensions, item: *const vk.VkRenderPassAttachmentBeginInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassAttachmentBeginInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderPassAttachmentBeginInfoKHR) bool {
@@ -15468,7 +20946,16 @@ pub fn check_VkRenderPassAttachmentBeginInfoKHR(extensions: *const Extensions, i
 }
 
 pub fn check_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT) bool {
@@ -15478,37 +20965,104 @@ pub fn check_VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT(extensions: *c
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrixFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrixPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.cooperativeMatrixSupportedStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.cooperativeMatrixSupportedStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCooperativeMatrixPropertiesNV(extensions: *const Extensions, item: *const vk.VkCooperativeMatrixPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewHandleInfoNVX(extensions: *const Extensions, item: *const vk.VkImageViewHandleInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDescriptorType(extensions, &item.descriptorType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.descriptorType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewAddressPropertiesNVX(extensions: *const Extensions, item: *const vk.VkImageViewAddressPropertiesNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPresentFrameTokenGGP(extensions: *const Extensions, item: *const vk.VkPresentFrameTokenGGP) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCreationFeedback(extensions: *const Extensions, item: *const vk.VkPipelineCreationFeedback) bool {
-    return (check_bitmask_VkPipelineCreationFeedbackFlagBits(extensions, &item.flags));
+    if (!check_bitmask_VkPipelineCreationFeedbackFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineCreationFeedbackEXT(extensions: *const Extensions, item: *const vk.VkPipelineCreationFeedbackEXT) bool {
@@ -15518,7 +21072,16 @@ pub fn check_VkPipelineCreationFeedbackEXT(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkPipelineCreationFeedbackCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineCreationFeedbackCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCreationFeedbackCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineCreationFeedbackCreateInfoEXT) bool {
@@ -15528,103 +21091,306 @@ pub fn check_VkPipelineCreationFeedbackCreateInfoEXT(extensions: *const Extensio
 }
 
 pub fn check_VkSurfaceFullScreenExclusiveInfoEXT(extensions: *const Extensions, item: *const vk.VkSurfaceFullScreenExclusiveInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFullScreenExclusiveEXT(extensions, &item.fullScreenExclusive));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFullScreenExclusiveEXT(extensions, @ptrCast(&item.fullScreenExclusive)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceFullScreenExclusiveWin32InfoEXT(extensions: *const Extensions, item: *const vk.VkSurfaceFullScreenExclusiveWin32InfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilitiesFullScreenExclusiveEXT(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilitiesFullScreenExclusiveEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentBarrierFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentBarrierFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilitiesPresentBarrierNV(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilitiesPresentBarrierNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainPresentBarrierCreateInfoNV(extensions: *const Extensions, item: *const vk.VkSwapchainPresentBarrierCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePerformanceQueryFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePerformanceQueryFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePerformanceQueryPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePerformanceQueryPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceCounterKHR(extensions: *const Extensions, item: *const vk.VkPerformanceCounterKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPerformanceCounterUnitKHR(extensions, &item.unit) and
-        check_enum_VkPerformanceCounterScopeKHR(extensions, &item.scope) and
-        check_enum_VkPerformanceCounterStorageKHR(extensions, &item.storage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPerformanceCounterUnitKHR(extensions, @ptrCast(&item.unit)))
+        return false;
+    if (!check_enum_VkPerformanceCounterScopeKHR(extensions, @ptrCast(&item.scope)))
+        return false;
+    if (!check_enum_VkPerformanceCounterStorageKHR(extensions, @ptrCast(&item.storage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceCounterDescriptionKHR(extensions: *const Extensions, item: *const vk.VkPerformanceCounterDescriptionKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPerformanceCounterDescriptionFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPerformanceCounterDescriptionFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryPoolPerformanceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkQueryPoolPerformanceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAcquireProfilingLockInfoKHR(extensions: *const Extensions, item: *const vk.VkAcquireProfilingLockInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAcquireProfilingLockFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAcquireProfilingLockFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceQuerySubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkPerformanceQuerySubmitInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceQueryReservationInfoKHR(extensions: *const Extensions, item: *const vk.VkPerformanceQueryReservationInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkHeadlessSurfaceCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkHeadlessSurfaceCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCoverageReductionModeFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCoverageReductionStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineCoverageReductionStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCoverageReductionModeNV(extensions, &item.coverageReductionMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCoverageReductionModeNV(extensions, @ptrCast(&item.coverageReductionMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFramebufferMixedSamplesCombinationNV(extensions: *const Extensions, item: *const vk.VkFramebufferMixedSamplesCombinationNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCoverageReductionModeNV(extensions, &item.coverageReductionMode) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.rasterizationSamples) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.depthStencilSamples) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.colorSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCoverageReductionModeNV(extensions, @ptrCast(&item.coverageReductionMode)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.rasterizationSamples)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.depthStencilSamples)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.colorSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceValueINTEL(extensions: *const Extensions, item: *const vk.VkPerformanceValueINTEL) bool {
-    return (check_enum_VkPerformanceValueTypeINTEL(extensions, &item.type));
+    if (!check_enum_VkPerformanceValueTypeINTEL(extensions, @ptrCast(&item.type)))
+        return false;
+    return true;
 }
 
 pub fn check_VkInitializePerformanceApiInfoINTEL(extensions: *const Extensions, item: *const vk.VkInitializePerformanceApiInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryPoolPerformanceQueryCreateInfoINTEL(extensions: *const Extensions, item: *const vk.VkQueryPoolPerformanceQueryCreateInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkQueryPoolSamplingModeINTEL(extensions, &item.performanceCountersSampling));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkQueryPoolSamplingModeINTEL(extensions, @ptrCast(&item.performanceCountersSampling)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryPoolCreateInfoINTEL(extensions: *const Extensions, item: *const vk.VkQueryPoolCreateInfoINTEL) bool {
@@ -15634,29 +21400,85 @@ pub fn check_VkQueryPoolCreateInfoINTEL(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkPerformanceMarkerInfoINTEL(extensions: *const Extensions, item: *const vk.VkPerformanceMarkerInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceStreamMarkerInfoINTEL(extensions: *const Extensions, item: *const vk.VkPerformanceStreamMarkerInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceOverrideInfoINTEL(extensions: *const Extensions, item: *const vk.VkPerformanceOverrideInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPerformanceOverrideTypeINTEL(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPerformanceOverrideTypeINTEL(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerformanceConfigurationAcquireInfoINTEL(extensions: *const Extensions, item: *const vk.VkPerformanceConfigurationAcquireInfoINTEL) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPerformanceConfigurationTypeINTEL(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPerformanceConfigurationTypeINTEL(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderClockFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderClockFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceIndexTypeUint8Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceIndexTypeUint8Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceIndexTypeUint8FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceIndexTypeUint8FeaturesKHR) bool {
@@ -15672,19 +21494,55 @@ pub fn check_VkPhysicalDeviceIndexTypeUint8FeaturesEXT(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR) bool {
@@ -15694,12 +21552,31 @@ pub fn check_VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(extensions: 
 }
 
 pub fn check_VkAttachmentReferenceStencilLayout(extensions: *const Extensions, item: *const vk.VkAttachmentReferenceStencilLayout) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.stencilLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.stencilLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentReferenceStencilLayoutKHR(extensions: *const Extensions, item: *const vk.VkAttachmentReferenceStencilLayoutKHR) bool {
@@ -15709,9 +21586,20 @@ pub fn check_VkAttachmentReferenceStencilLayoutKHR(extensions: *const Extensions
 }
 
 pub fn check_VkAttachmentDescriptionStencilLayout(extensions: *const Extensions, item: *const vk.VkAttachmentDescriptionStencilLayout) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.stencilInitialLayout) and
-        check_enum_VkImageLayout(extensions, &item.stencilFinalLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.stencilInitialLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.stencilFinalLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentDescriptionStencilLayoutKHR(extensions: *const Extensions, item: *const vk.VkAttachmentDescriptionStencilLayoutKHR) bool {
@@ -15721,11 +21609,29 @@ pub fn check_VkAttachmentDescriptionStencilLayoutKHR(extensions: *const Extensio
 }
 
 pub fn check_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineInfoEXT) bool {
@@ -15735,25 +21641,72 @@ pub fn check_VkPipelineInfoEXT(extensions: *const Extensions, item: *const vk.Vk
 }
 
 pub fn check_VkPipelineExecutablePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPipelineExecutablePropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineExecutableInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineExecutableInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineExecutableStatisticKHR(extensions: *const Extensions, item: *const vk.VkPipelineExecutableStatisticKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineExecutableStatisticFormatKHR(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineExecutableStatisticFormatKHR(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineExecutableInternalRepresentationKHR(extensions: *const Extensions, item: *const vk.VkPipelineExecutableInternalRepresentationKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT) bool {
@@ -15763,11 +21716,29 @@ pub fn check_VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT(extension
 }
 
 pub fn check_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTexelBufferAlignmentProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTexelBufferAlignmentProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT) bool {
@@ -15777,7 +21748,16 @@ pub fn check_VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT(extensions: *cons
 }
 
 pub fn check_VkPhysicalDeviceSubgroupSizeControlFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubgroupSizeControlFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSubgroupSizeControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubgroupSizeControlFeaturesEXT) bool {
@@ -15787,8 +21767,18 @@ pub fn check_VkPhysicalDeviceSubgroupSizeControlFeaturesEXT(extensions: *const E
 }
 
 pub fn check_VkPhysicalDeviceSubgroupSizeControlProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubgroupSizeControlProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.requiredSubgroupSizeStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.requiredSubgroupSizeStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSubgroupSizeControlPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubgroupSizeControlPropertiesEXT) bool {
@@ -15798,7 +21788,16 @@ pub fn check_VkPhysicalDeviceSubgroupSizeControlPropertiesEXT(extensions: *const
 }
 
 pub fn check_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT) bool {
@@ -15814,19 +21813,55 @@ pub fn check_VkShaderRequiredSubgroupSizeCreateInfoEXT(extensions: *const Extens
 }
 
 pub fn check_VkSubpassShadingPipelineCreateInfoHUAWEI(extensions: *const Extensions, item: *const vk.VkSubpassShadingPipelineCreateInfoHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubpassShadingPropertiesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryOpaqueCaptureAddressAllocateInfo(extensions: *const Extensions, item: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryOpaqueCaptureAddressAllocateInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfoKHR) bool {
@@ -15836,7 +21871,16 @@ pub fn check_VkMemoryOpaqueCaptureAddressAllocateInfoKHR(extensions: *const Exte
 }
 
 pub fn check_VkDeviceMemoryOpaqueCaptureAddressInfo(extensions: *const Extensions, item: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceMemoryOpaqueCaptureAddressInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfoKHR) bool {
@@ -15846,7 +21890,16 @@ pub fn check_VkDeviceMemoryOpaqueCaptureAddressInfoKHR(extensions: *const Extens
 }
 
 pub fn check_VkPhysicalDeviceLineRasterizationFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLineRasterizationFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLineRasterizationFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLineRasterizationFeaturesKHR) bool {
@@ -15862,7 +21915,16 @@ pub fn check_VkPhysicalDeviceLineRasterizationFeaturesEXT(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDeviceLineRasterizationProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLineRasterizationProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLineRasterizationPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLineRasterizationPropertiesKHR) bool {
@@ -15878,8 +21940,18 @@ pub fn check_VkPhysicalDeviceLineRasterizationPropertiesEXT(extensions: *const E
 }
 
 pub fn check_VkPipelineRasterizationLineStateCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationLineStateCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkLineRasterizationMode(extensions, &item.lineRasterizationMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkLineRasterizationMode(extensions, @ptrCast(&item.lineRasterizationMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationLineStateCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationLineStateCreateInfoKHR) bool {
@@ -15895,7 +21967,16 @@ pub fn check_VkPipelineRasterizationLineStateCreateInfoEXT(extensions: *const Ex
 }
 
 pub fn check_VkPhysicalDevicePipelineCreationCacheControlFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT) bool {
@@ -15905,75 +21986,216 @@ pub fn check_VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT(extensions:
 }
 
 pub fn check_VkPhysicalDeviceVulkan11Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan11Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan11Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan11Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.subgroupSupportedStages) and
-        check_bitmask_VkSubgroupFeatureFlagBits(extensions, &item.subgroupSupportedOperations) and
-        check_enum_VkPointClippingBehavior(extensions, &item.pointClippingBehavior));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.subgroupSupportedStages)))
+        return false;
+    if (!check_bitmask_VkSubgroupFeatureFlagBits(extensions, @ptrCast(&item.subgroupSupportedOperations)))
+        return false;
+    if (!check_enum_VkPointClippingBehavior(extensions, @ptrCast(&item.pointClippingBehavior)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan12Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan12Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan12Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan12Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDriverId(extensions, &item.driverID) and
-        check_enum_VkShaderFloatControlsIndependence(extensions, &item.denormBehaviorIndependence) and
-        check_enum_VkShaderFloatControlsIndependence(extensions, &item.roundingModeIndependence) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.supportedDepthResolveModes) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.supportedStencilResolveModes) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.framebufferIntegerColorSampleCounts));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDriverId(extensions, @ptrCast(&item.driverID)))
+        return false;
+    if (!check_enum_VkShaderFloatControlsIndependence(extensions, @ptrCast(&item.denormBehaviorIndependence)))
+        return false;
+    if (!check_enum_VkShaderFloatControlsIndependence(extensions, @ptrCast(&item.roundingModeIndependence)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.supportedDepthResolveModes)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.supportedStencilResolveModes)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.framebufferIntegerColorSampleCounts)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan13Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan13Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan13Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan13Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.requiredSubgroupSizeStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.requiredSubgroupSizeStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan14Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan14Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkan14Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkan14Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessStorageBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessUniformBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessVertexInputs) and
-        check_enum_VkPipelineRobustnessImageBehavior(extensions, &item.defaultRobustnessImages) and
-        check_enum_VkImageLayout(extensions, &item.pCopySrcLayouts) and
-        check_enum_VkImageLayout(extensions, &item.pCopyDstLayouts));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessStorageBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessUniformBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessVertexInputs)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessImageBehavior(extensions, @ptrCast(&item.defaultRobustnessImages)))
+        return false;
+    for (0..item.copySrcLayoutCount) |i| {
+        if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.pCopySrcLayouts[i])))
+            return false;
+    }
+    for (0..item.copyDstLayoutCount) |i| {
+        if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.pCopyDstLayouts[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineCompilerControlCreateInfoAMD(extensions: *const Extensions, item: *const vk.VkPipelineCompilerControlCreateInfoAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCompilerControlFlagBitsAMD(extensions, &item.compilerControlFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCompilerControlFlagBitsAMD(extensions, @ptrCast(&item.compilerControlFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCoherentMemoryFeaturesAMD(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFaultData(extensions: *const Extensions, item: *const vk.VkFaultData) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFaultLevel(extensions, &item.faultLevel) and
-        check_enum_VkFaultType(extensions, &item.faultType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFaultLevel(extensions, @ptrCast(&item.faultLevel)))
+        return false;
+    if (!check_enum_VkFaultType(extensions, @ptrCast(&item.faultType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFaultCallbackInfo(extensions: *const Extensions, item: *const vk.VkFaultCallbackInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceToolProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceToolProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkToolPurposeFlagBits(extensions, &item.purposes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkToolPurposeFlagBits(extensions, @ptrCast(&item.purposes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceToolPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceToolPropertiesEXT) bool {
@@ -15983,67 +22205,206 @@ pub fn check_VkPhysicalDeviceToolPropertiesEXT(extensions: *const Extensions, it
 }
 
 pub fn check_VkSamplerCustomBorderColorCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSamplerCustomBorderColorCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCustomBorderColorPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCustomBorderColorPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCustomBorderColorFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerBorderColorComponentMappingCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSamplerBorderColorComponentMappingCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryTrianglesDataKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryTrianglesDataKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.vertexFormat) and
-        check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.vertexFormat)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_MOTION_TRIANGLES_DATA_NV,
+            => if (!check_VkAccelerationStructureGeometryMotionTrianglesDataNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT,
+            => if (!check_VkAccelerationStructureTrianglesOpacityMicromapEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV,
+            => if (!check_VkAccelerationStructureTrianglesDisplacementMicromapNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryAabbsDataKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryAabbsDataKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryInstancesDataKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryInstancesDataKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.vertexFormat) and
-        check_enum_VkFormat(extensions, &item.radiusFormat) and
-        check_enum_VkIndexType(extensions, &item.indexType) and
-        check_enum_VkRayTracingLssIndexingModeNV(extensions, &item.indexingMode) and
-        check_enum_VkRayTracingLssPrimitiveEndCapsModeNV(extensions, &item.endCapsMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.vertexFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.radiusFormat)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    if (!check_enum_VkRayTracingLssIndexingModeNV(extensions, @ptrCast(&item.indexingMode)))
+        return false;
+    if (!check_enum_VkRayTracingLssPrimitiveEndCapsModeNV(extensions, @ptrCast(&item.endCapsMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometrySpheresDataNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometrySpheresDataNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.vertexFormat) and
-        check_enum_VkFormat(extensions, &item.radiusFormat) and
-        check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.vertexFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.radiusFormat)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkGeometryTypeKHR(extensions, &item.geometryType) and
-        check_bitmask_VkGeometryFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkGeometryTypeKHR(extensions, @ptrCast(&item.geometryType)))
+        return false;
+    if (!check_bitmask_VkGeometryFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV,
+            => if (!check_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_SPHERES_DATA_NV,
+            => if (!check_VkAccelerationStructureGeometrySpheresDataNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureBuildGeometryInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureBuildGeometryInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkAccelerationStructureTypeKHR(extensions, &item.type) and
-        check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, &item.flags) and
-        check_enum_VkBuildAccelerationStructureModeKHR(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkAccelerationStructureTypeKHR(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkBuildAccelerationStructureModeKHR(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureBuildRangeInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureBuildRangeInfoKHR) bool {
@@ -16053,9 +22414,23 @@ pub fn check_VkAccelerationStructureBuildRangeInfoKHR(extensions: *const Extensi
 }
 
 pub fn check_VkAccelerationStructureCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkAccelerationStructureCreateFlagBitsKHR(extensions, &item.createFlags) and
-        check_enum_VkAccelerationStructureTypeKHR(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkAccelerationStructureCreateFlagBitsKHR(extensions, @ptrCast(&item.createFlags)))
+        return false;
+    if (!check_enum_VkAccelerationStructureTypeKHR(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV,
+            => if (!check_VkAccelerationStructureMotionInfoNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAabbPositionsKHR(extensions: *const Extensions, item: *const vk.VkAabbPositionsKHR) bool {
@@ -16095,108 +22470,293 @@ pub fn check_VkAccelerationStructureInstanceNV(extensions: *const Extensions, it
 }
 
 pub fn check_VkAccelerationStructureDeviceAddressInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureDeviceAddressInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureVersionInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureVersionInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyAccelerationStructureInfoKHR(extensions: *const Extensions, item: *const vk.VkCopyAccelerationStructureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyAccelerationStructureModeKHR(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyAccelerationStructureModeKHR(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyAccelerationStructureToMemoryInfoKHR(extensions: *const Extensions, item: *const vk.VkCopyAccelerationStructureToMemoryInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyAccelerationStructureModeKHR(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyAccelerationStructureModeKHR(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyMemoryToAccelerationStructureInfoKHR(extensions: *const Extensions, item: *const vk.VkCopyMemoryToAccelerationStructureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyAccelerationStructureModeKHR(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyAccelerationStructureModeKHR(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRayTracingPipelineInterfaceCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkRayTracingPipelineInterfaceCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineLibraryCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineLibraryCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRefreshObjectKHR(extensions: *const Extensions, item: *const vk.VkRefreshObjectKHR) bool {
-    return (check_enum_VkObjectType(extensions, &item.objectType) and
-        check_bitmask_VkRefreshObjectFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkObjectType(extensions, @ptrCast(&item.objectType)))
+        return false;
+    if (!check_bitmask_VkRefreshObjectFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkRefreshObjectListKHR(extensions: *const Extensions, item: *const vk.VkRefreshObjectListKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedDynamicState3PropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedDynamicState3PropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkColorBlendEquationEXT(extensions: *const Extensions, item: *const vk.VkColorBlendEquationEXT) bool {
-    return (check_enum_VkBlendFactor(extensions, &item.srcColorBlendFactor) and
-        check_enum_VkBlendFactor(extensions, &item.dstColorBlendFactor) and
-        check_enum_VkBlendOp(extensions, &item.colorBlendOp) and
-        check_enum_VkBlendFactor(extensions, &item.srcAlphaBlendFactor) and
-        check_enum_VkBlendFactor(extensions, &item.dstAlphaBlendFactor) and
-        check_enum_VkBlendOp(extensions, &item.alphaBlendOp));
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.srcColorBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.dstColorBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendOp(extensions, @ptrCast(&item.colorBlendOp)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.srcAlphaBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendFactor(extensions, @ptrCast(&item.dstAlphaBlendFactor)))
+        return false;
+    if (!check_enum_VkBlendOp(extensions, @ptrCast(&item.alphaBlendOp)))
+        return false;
+    return true;
 }
 
 pub fn check_VkColorBlendAdvancedEXT(extensions: *const Extensions, item: *const vk.VkColorBlendAdvancedEXT) bool {
-    return (check_enum_VkBlendOp(extensions, &item.advancedBlendOp) and
-        check_enum_VkBlendOverlapEXT(extensions, &item.blendOverlap));
+    if (!check_enum_VkBlendOp(extensions, @ptrCast(&item.advancedBlendOp)))
+        return false;
+    if (!check_enum_VkBlendOverlapEXT(extensions, @ptrCast(&item.blendOverlap)))
+        return false;
+    return true;
 }
 
 pub fn check_VkRenderPassTransformBeginInfoQCOM(extensions: *const Extensions, item: *const vk.VkRenderPassTransformBeginInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.transform));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.transform)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyCommandTransformInfoQCOM(extensions: *const Extensions, item: *const vk.VkCopyCommandTransformInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.transform));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.transform)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, &item.transform));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSurfaceTransformFlagBitsKHR(extensions, @ptrCast(&item.transform)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBuildPartitionedAccelerationStructureIndirectCommandNV(extensions: *const Extensions, item: *const vk.VkBuildPartitionedAccelerationStructureIndirectCommandNV) bool {
-    return (check_enum_VkPartitionedAccelerationStructureOpTypeNV(extensions, &item.opType));
+    if (!check_enum_VkPartitionedAccelerationStructureOpTypeNV(extensions, @ptrCast(&item.opType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPartitionedAccelerationStructureFlagsNV(extensions: *const Extensions, item: *const vk.VkPartitionedAccelerationStructureFlagsNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPartitionedAccelerationStructureWriteInstanceDataNV(extensions: *const Extensions, item: *const vk.VkPartitionedAccelerationStructureWriteInstanceDataNV) bool {
-    return (check_bitmask_VkPartitionedAccelerationStructureInstanceFlagBitsNV(extensions, &item.instanceFlags));
+    if (!check_bitmask_VkPartitionedAccelerationStructureInstanceFlagBitsNV(extensions, @ptrCast(&item.instanceFlags)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPartitionedAccelerationStructureUpdateInstanceDataNV(extensions: *const Extensions, item: *const vk.VkPartitionedAccelerationStructureUpdateInstanceDataNV) bool {
@@ -16212,34 +22772,103 @@ pub fn check_VkPartitionedAccelerationStructureWritePartitionTranslationDataNV(e
 }
 
 pub fn check_VkWriteDescriptorSetPartitionedAccelerationStructureNV(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPartitionedAccelerationStructureInstancesInputNV(extensions: *const Extensions, item: *const vk.VkPartitionedAccelerationStructureInstancesInputNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkBuildAccelerationStructureFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_FLAGS_NV,
+            => if (!check_VkPartitionedAccelerationStructureFlagsNV(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBuildPartitionedAccelerationStructureInfoNV(extensions: *const Extensions, item: *const vk.VkBuildPartitionedAccelerationStructureInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceDiagnosticsConfigCreateInfoNV(extensions: *const Extensions, item: *const vk.VkDeviceDiagnosticsConfigCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceDiagnosticsConfigFlagBitsNV(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceDiagnosticsConfigFlagBitsNV(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineOfflineCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineOfflineCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineMatchControl(extensions, &item.matchControl));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineMatchControl(extensions, @ptrCast(&item.matchControl)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR) bool {
@@ -16249,11 +22878,29 @@ pub fn check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR(extensions
 }
 
 pub fn check_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRobustness2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRobustness2FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRobustness2FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT) bool {
@@ -16263,7 +22910,16 @@ pub fn check_VkPhysicalDeviceRobustness2FeaturesEXT(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceRobustness2PropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRobustness2PropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRobustness2PropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRobustness2PropertiesEXT) bool {
@@ -16273,7 +22929,16 @@ pub fn check_VkPhysicalDeviceRobustness2PropertiesEXT(extensions: *const Extensi
 }
 
 pub fn check_VkPhysicalDeviceImageRobustnessFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageRobustnessFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageRobustnessFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT) bool {
@@ -16283,35 +22948,110 @@ pub fn check_VkPhysicalDeviceImageRobustnessFeaturesEXT(extensions: *const Exten
 }
 
 pub fn check_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePortabilitySubsetFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePortabilitySubsetFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePortabilitySubsetPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePortabilitySubsetPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevice4444FormatsFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevice4444FormatsFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubpassShadingFeaturesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_VRS_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCopy2(extensions: *const Extensions, item: *const vk.VkBufferCopy2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCopy2KHR(extensions: *const Extensions, item: *const vk.VkBufferCopy2KHR) bool {
@@ -16321,7 +23061,16 @@ pub fn check_VkBufferCopy2KHR(extensions: *const Extensions, item: *const vk.VkB
 }
 
 pub fn check_VkImageCopy2(extensions: *const Extensions, item: *const vk.VkImageCopy2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCopy2KHR(extensions: *const Extensions, item: *const vk.VkImageCopy2KHR) bool {
@@ -16331,7 +23080,16 @@ pub fn check_VkImageCopy2KHR(extensions: *const Extensions, item: *const vk.VkIm
 }
 
 pub fn check_VkImageBlit2(extensions: *const Extensions, item: *const vk.VkImageBlit2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageBlit2KHR(extensions: *const Extensions, item: *const vk.VkImageBlit2KHR) bool {
@@ -16341,7 +23099,16 @@ pub fn check_VkImageBlit2KHR(extensions: *const Extensions, item: *const vk.VkIm
 }
 
 pub fn check_VkBufferImageCopy2(extensions: *const Extensions, item: *const vk.VkBufferImageCopy2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferImageCopy2KHR(extensions: *const Extensions, item: *const vk.VkBufferImageCopy2KHR) bool {
@@ -16351,7 +23118,16 @@ pub fn check_VkBufferImageCopy2KHR(extensions: *const Extensions, item: *const v
 }
 
 pub fn check_VkImageResolve2(extensions: *const Extensions, item: *const vk.VkImageResolve2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageResolve2KHR(extensions: *const Extensions, item: *const vk.VkImageResolve2KHR) bool {
@@ -16361,7 +23137,16 @@ pub fn check_VkImageResolve2KHR(extensions: *const Extensions, item: *const vk.V
 }
 
 pub fn check_VkCopyBufferInfo2(extensions: *const Extensions, item: *const vk.VkCopyBufferInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyBufferInfo2KHR(extensions: *const Extensions, item: *const vk.VkCopyBufferInfo2KHR) bool {
@@ -16371,9 +23156,20 @@ pub fn check_VkCopyBufferInfo2KHR(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkCopyImageInfo2(extensions: *const Extensions, item: *const vk.VkCopyImageInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyImageInfo2KHR(extensions: *const Extensions, item: *const vk.VkCopyImageInfo2KHR) bool {
@@ -16383,10 +23179,25 @@ pub fn check_VkCopyImageInfo2KHR(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkBlitImageInfo2(extensions: *const Extensions, item: *const vk.VkBlitImageInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout) and
-        check_enum_VkFilter(extensions, &item.filter));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    if (!check_enum_VkFilter(extensions, @ptrCast(&item.filter)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM,
+            => if (!check_VkBlitImageCubicWeightsInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBlitImageInfo2KHR(extensions: *const Extensions, item: *const vk.VkBlitImageInfo2KHR) bool {
@@ -16396,8 +23207,18 @@ pub fn check_VkBlitImageInfo2KHR(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkCopyBufferToImageInfo2(extensions: *const Extensions, item: *const vk.VkCopyBufferToImageInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyBufferToImageInfo2KHR(extensions: *const Extensions, item: *const vk.VkCopyBufferToImageInfo2KHR) bool {
@@ -16407,8 +23228,18 @@ pub fn check_VkCopyBufferToImageInfo2KHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkCopyImageToBufferInfo2(extensions: *const Extensions, item: *const vk.VkCopyImageToBufferInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyImageToBufferInfo2KHR(extensions: *const Extensions, item: *const vk.VkCopyImageToBufferInfo2KHR) bool {
@@ -16418,9 +23249,20 @@ pub fn check_VkCopyImageToBufferInfo2KHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkResolveImageInfo2(extensions: *const Extensions, item: *const vk.VkResolveImageInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkResolveImageInfo2KHR(extensions: *const Extensions, item: *const vk.VkResolveImageInfo2KHR) bool {
@@ -16430,34 +23272,100 @@ pub fn check_VkResolveImageInfo2KHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFragmentShadingRateAttachmentInfoKHR(extensions: *const Extensions, item: *const vk.VkFragmentShadingRateAttachmentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineFragmentShadingRateStateCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineFragmentShadingRateStateCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFragmentShadingRateCombinerOpKHR(extensions, &item.combinerOps));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFragmentShadingRateCombinerOpKHR(extensions, @ptrCast(&item.combinerOps)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShadingRatePropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShadingRatePropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.maxFragmentShadingRateRasterizationSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.maxFragmentShadingRateRasterizationSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShadingRateKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShadingRateKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.sampleCounts));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.sampleCounts)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderTerminateInvocationFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR) bool {
@@ -16467,47 +23375,141 @@ pub fn check_VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR(extensions: *c
 }
 
 pub fn check_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.maxFragmentShadingRateInvocationCount));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.maxFragmentShadingRateInvocationCount)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(extensions: *const Extensions, item: *const vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFragmentShadingRateTypeNV(extensions, &item.shadingRateType) and
-        check_enum_VkFragmentShadingRateNV(extensions, &item.shadingRate) and
-        check_enum_VkFragmentShadingRateCombinerOpKHR(extensions, &item.combinerOps));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFragmentShadingRateTypeNV(extensions, @ptrCast(&item.shadingRateType)))
+        return false;
+    if (!check_enum_VkFragmentShadingRateNV(extensions, @ptrCast(&item.shadingRate)))
+        return false;
+    if (!check_enum_VkFragmentShadingRateCombinerOpKHR(extensions, @ptrCast(&item.combinerOps)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureBuildSizesInfoKHR(extensions: *const Extensions, item: *const vk.VkAccelerationStructureBuildSizesInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE) bool {
@@ -16517,7 +23519,11 @@ pub fn check_VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE(extensions: *con
 }
 
 pub fn check_VkMutableDescriptorTypeListEXT(extensions: *const Extensions, item: *const vk.VkMutableDescriptorTypeListEXT) bool {
-    return (check_enum_VkDescriptorType(extensions, &item.pDescriptorTypes));
+    for (0..item.descriptorTypeCount) |i| {
+        if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.pDescriptorTypes[i])))
+            return false;
+    }
+    return true;
 }
 
 pub fn check_VkMutableDescriptorTypeListVALVE(extensions: *const Extensions, item: *const vk.VkMutableDescriptorTypeListVALVE) bool {
@@ -16527,7 +23533,16 @@ pub fn check_VkMutableDescriptorTypeListVALVE(extensions: *const Extensions, ite
 }
 
 pub fn check_VkMutableDescriptorTypeCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkMutableDescriptorTypeCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMutableDescriptorTypeCreateInfoVALVE(extensions: *const Extensions, item: *const vk.VkMutableDescriptorTypeCreateInfoVALVE) bool {
@@ -16537,76 +23552,229 @@ pub fn check_VkMutableDescriptorTypeCreateInfoVALVE(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceDepthClipControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthClipControlFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkIndirectCommandsInputModeFlagBitsEXT(extensions, &item.supportedIndirectCommandsInputModes) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.supportedIndirectCommandsShaderStages) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.supportedIndirectCommandsShaderStagesPipelineBinding) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.supportedIndirectCommandsShaderStagesShaderBinding));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkIndirectCommandsInputModeFlagBitsEXT(extensions, @ptrCast(&item.supportedIndirectCommandsInputModes)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.supportedIndirectCommandsShaderStages)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.supportedIndirectCommandsShaderStagesPipelineBinding)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.supportedIndirectCommandsShaderStagesShaderBinding)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsPipelineInfoEXT(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsPipelineInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsShaderInfoEXT(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsShaderInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsMemoryRequirementsInfoEXT(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsMemoryRequirementsInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectExecutionSetPipelineInfoEXT(extensions: *const Extensions, item: *const vk.VkIndirectExecutionSetPipelineInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectExecutionSetShaderLayoutInfoEXT(extensions: *const Extensions, item: *const vk.VkIndirectExecutionSetShaderLayoutInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectExecutionSetShaderInfoEXT(extensions: *const Extensions, item: *const vk.VkIndirectExecutionSetShaderInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectExecutionSetCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkIndirectExecutionSetCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkIndirectExecutionSetInfoTypeEXT(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkIndirectExecutionSetInfoTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGeneratedCommandsInfoEXT(extensions: *const Extensions, item: *const vk.VkGeneratedCommandsInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.shaderStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.shaderStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteIndirectExecutionSetPipelineEXT(extensions: *const Extensions, item: *const vk.VkWriteIndirectExecutionSetPipelineEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteIndirectExecutionSetShaderEXT(extensions: *const Extensions, item: *const vk.VkWriteIndirectExecutionSetShaderEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectCommandsLayoutCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkIndirectCommandsLayoutCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkIndirectCommandsLayoutUsageFlagBitsEXT(extensions, &item.flags) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.shaderStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkIndirectCommandsLayoutUsageFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.shaderStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkIndirectCommandsLayoutTokenEXT(extensions: *const Extensions, item: *const vk.VkIndirectCommandsLayoutTokenEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkIndirectCommandsTokenTypeEXT(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkIndirectCommandsTokenTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrawIndirectCountIndirectCommandEXT(extensions: *const Extensions, item: *const vk.VkDrawIndirectCountIndirectCommandEXT) bool {
@@ -16628,11 +23796,15 @@ pub fn check_VkBindVertexBufferIndirectCommandEXT(extensions: *const Extensions,
 }
 
 pub fn check_VkIndirectCommandsIndexBufferTokenEXT(extensions: *const Extensions, item: *const vk.VkIndirectCommandsIndexBufferTokenEXT) bool {
-    return (check_bitmask_VkIndirectCommandsInputModeFlagBitsEXT(extensions, &item.mode));
+    if (!check_bitmask_VkIndirectCommandsInputModeFlagBitsEXT(extensions, @ptrCast(&item.mode)))
+        return false;
+    return true;
 }
 
 pub fn check_VkBindIndexBufferIndirectCommandEXT(extensions: *const Extensions, item: *const vk.VkBindIndexBufferIndirectCommandEXT) bool {
-    return (check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkIndirectCommandsPushConstantTokenEXT(extensions: *const Extensions, item: *const vk.VkIndirectCommandsPushConstantTokenEXT) bool {
@@ -16642,55 +23814,160 @@ pub fn check_VkIndirectCommandsPushConstantTokenEXT(extensions: *const Extension
 }
 
 pub fn check_VkIndirectCommandsExecutionSetTokenEXT(extensions: *const Extensions, item: *const vk.VkIndirectCommandsExecutionSetTokenEXT) bool {
-    return (check_enum_VkIndirectExecutionSetInfoTypeEXT(extensions, &item.type) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.shaderStages));
+    if (!check_enum_VkIndirectExecutionSetInfoTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.shaderStages)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPipelineViewportDepthClipControlCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineViewportDepthClipControlCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDepthClampControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthClampControlFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineViewportDepthClampControlCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineViewportDepthClampControlCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDepthClampModeEXT(extensions, &item.depthClampMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDepthClampModeEXT(extensions, @ptrCast(&item.depthClampMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVertexInputBindingDescription2EXT(extensions: *const Extensions, item: *const vk.VkVertexInputBindingDescription2EXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkVertexInputRate(extensions, &item.inputRate));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkVertexInputRate(extensions, @ptrCast(&item.inputRate)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVertexInputAttributeDescription2EXT(extensions: *const Extensions, item: *const vk.VkVertexInputAttributeDescription2EXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceColorWriteEnableFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineColorWriteCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineColorWriteCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryBarrier2(extensions: *const Extensions, item: *const vk.VkMemoryBarrier2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryBarrier2KHR(extensions: *const Extensions, item: *const vk.VkMemoryBarrier2KHR) bool {
@@ -16700,9 +23977,20 @@ pub fn check_VkMemoryBarrier2KHR(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkImageMemoryBarrier2(extensions: *const Extensions, item: *const vk.VkImageMemoryBarrier2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.oldLayout) and
-        check_enum_VkImageLayout(extensions, &item.newLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.oldLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.newLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageMemoryBarrier2KHR(extensions: *const Extensions, item: *const vk.VkImageMemoryBarrier2KHR) bool {
@@ -16712,7 +24000,16 @@ pub fn check_VkImageMemoryBarrier2KHR(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkBufferMemoryBarrier2(extensions: *const Extensions, item: *const vk.VkBufferMemoryBarrier2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferMemoryBarrier2KHR(extensions: *const Extensions, item: *const vk.VkBufferMemoryBarrier2KHR) bool {
@@ -16722,12 +24019,37 @@ pub fn check_VkBufferMemoryBarrier2KHR(extensions: *const Extensions, item: *con
 }
 
 pub fn check_VkMemoryBarrierAccessFlags3KHR(extensions: *const Extensions, item: *const vk.VkMemoryBarrierAccessFlags3KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDependencyInfo(extensions: *const Extensions, item: *const vk.VkDependencyInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDependencyFlagBits(extensions, &item.dependencyFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDependencyFlagBits(extensions, @ptrCast(&item.dependencyFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_BARRIER_ARM,
+            => if (!check_VkTensorMemoryBarrierARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TENSOR_DEPENDENCY_INFO_ARM,
+            => if (!check_VkTensorDependencyInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDependencyInfoKHR(extensions: *const Extensions, item: *const vk.VkDependencyInfoKHR) bool {
@@ -16737,7 +24059,16 @@ pub fn check_VkDependencyInfoKHR(extensions: *const Extensions, item: *const vk.
 }
 
 pub fn check_VkSemaphoreSubmitInfo(extensions: *const Extensions, item: *const vk.VkSemaphoreSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSemaphoreSubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkSemaphoreSubmitInfoKHR) bool {
@@ -16747,7 +24078,19 @@ pub fn check_VkSemaphoreSubmitInfoKHR(extensions: *const Extensions, item: *cons
 }
 
 pub fn check_VkCommandBufferSubmitInfo(extensions: *const Extensions, item: *const vk.VkCommandBufferSubmitInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM,
+            => if (!check_VkRenderPassStripeSubmitInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferSubmitInfoKHR(extensions: *const Extensions, item: *const vk.VkCommandBufferSubmitInfoKHR) bool {
@@ -16757,8 +24100,18 @@ pub fn check_VkCommandBufferSubmitInfoKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkSubmitInfo2(extensions: *const Extensions, item: *const vk.VkSubmitInfo2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSubmitFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSubmitFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubmitInfo2KHR(extensions: *const Extensions, item: *const vk.VkSubmitInfo2KHR) bool {
@@ -16768,15 +24121,42 @@ pub fn check_VkSubmitInfo2KHR(extensions: *const Extensions, item: *const vk.VkS
 }
 
 pub fn check_VkQueueFamilyCheckpointProperties2NV(extensions: *const Extensions, item: *const vk.VkQueueFamilyCheckpointProperties2NV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCheckpointData2NV(extensions: *const Extensions, item: *const vk.VkCheckpointData2NV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSynchronization2Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSynchronization2Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSynchronization2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSynchronization2FeaturesKHR) bool {
@@ -16786,11 +24166,29 @@ pub fn check_VkPhysicalDeviceSynchronization2FeaturesKHR(extensions: *const Exte
 }
 
 pub fn check_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceHostImageCopyFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostImageCopyFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceHostImageCopyFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostImageCopyFeaturesEXT) bool {
@@ -16800,9 +24198,24 @@ pub fn check_VkPhysicalDeviceHostImageCopyFeaturesEXT(extensions: *const Extensi
 }
 
 pub fn check_VkPhysicalDeviceHostImageCopyProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostImageCopyProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.pCopySrcLayouts) and
-        check_enum_VkImageLayout(extensions, &item.pCopyDstLayouts));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.copySrcLayoutCount) |i| {
+        if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.pCopySrcLayouts[i])))
+            return false;
+    }
+    for (0..item.copyDstLayoutCount) |i| {
+        if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.pCopyDstLayouts[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceHostImageCopyPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHostImageCopyPropertiesEXT) bool {
@@ -16812,7 +24225,16 @@ pub fn check_VkPhysicalDeviceHostImageCopyPropertiesEXT(extensions: *const Exten
 }
 
 pub fn check_VkMemoryToImageCopy(extensions: *const Extensions, item: *const vk.VkMemoryToImageCopy) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryToImageCopyEXT(extensions: *const Extensions, item: *const vk.VkMemoryToImageCopyEXT) bool {
@@ -16822,7 +24244,16 @@ pub fn check_VkMemoryToImageCopyEXT(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkImageToMemoryCopy(extensions: *const Extensions, item: *const vk.VkImageToMemoryCopy) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageToMemoryCopyEXT(extensions: *const Extensions, item: *const vk.VkImageToMemoryCopyEXT) bool {
@@ -16832,9 +24263,20 @@ pub fn check_VkImageToMemoryCopyEXT(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkCopyMemoryToImageInfo(extensions: *const Extensions, item: *const vk.VkCopyMemoryToImageInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkHostImageCopyFlagBits(extensions, &item.flags) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkHostImageCopyFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyMemoryToImageInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyMemoryToImageInfoEXT) bool {
@@ -16844,9 +24286,20 @@ pub fn check_VkCopyMemoryToImageInfoEXT(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkCopyImageToMemoryInfo(extensions: *const Extensions, item: *const vk.VkCopyImageToMemoryInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkHostImageCopyFlagBits(extensions, &item.flags) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkHostImageCopyFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyImageToMemoryInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyImageToMemoryInfoEXT) bool {
@@ -16856,10 +24309,22 @@ pub fn check_VkCopyImageToMemoryInfoEXT(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkCopyImageToImageInfo(extensions: *const Extensions, item: *const vk.VkCopyImageToImageInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkHostImageCopyFlagBits(extensions, &item.flags) and
-        check_enum_VkImageLayout(extensions, &item.srcImageLayout) and
-        check_enum_VkImageLayout(extensions, &item.dstImageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkHostImageCopyFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.srcImageLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.dstImageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyImageToImageInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyImageToImageInfoEXT) bool {
@@ -16869,9 +24334,20 @@ pub fn check_VkCopyImageToImageInfoEXT(extensions: *const Extensions, item: *con
 }
 
 pub fn check_VkHostImageLayoutTransitionInfo(extensions: *const Extensions, item: *const vk.VkHostImageLayoutTransitionInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.oldLayout) and
-        check_enum_VkImageLayout(extensions, &item.newLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.oldLayout)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.newLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkHostImageLayoutTransitionInfoEXT(extensions: *const Extensions, item: *const vk.VkHostImageLayoutTransitionInfoEXT) bool {
@@ -16881,7 +24357,16 @@ pub fn check_VkHostImageLayoutTransitionInfoEXT(extensions: *const Extensions, i
 }
 
 pub fn check_VkSubresourceHostMemcpySize(extensions: *const Extensions, item: *const vk.VkSubresourceHostMemcpySize) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubresourceHostMemcpySizeEXT(extensions: *const Extensions, item: *const vk.VkSubresourceHostMemcpySizeEXT) bool {
@@ -16891,7 +24376,16 @@ pub fn check_VkSubresourceHostMemcpySizeEXT(extensions: *const Extensions, item:
 }
 
 pub fn check_VkHostImageCopyDevicePerformanceQuery(extensions: *const Extensions, item: *const vk.VkHostImageCopyDevicePerformanceQuery) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkHostImageCopyDevicePerformanceQueryEXT(extensions: *const Extensions, item: *const vk.VkHostImageCopyDevicePerformanceQueryEXT) bool {
@@ -16901,60 +24395,187 @@ pub fn check_VkHostImageCopyDevicePerformanceQueryEXT(extensions: *const Extensi
 }
 
 pub fn check_VkPhysicalDeviceVulkanSC10Properties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkanSC10Properties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelinePoolSize(extensions: *const Extensions, item: *const vk.VkPipelinePoolSize) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceObjectReservationCreateInfo(extensions: *const Extensions, item: *const vk.VkDeviceObjectReservationCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandPoolMemoryReservationCreateInfo(extensions: *const Extensions, item: *const vk.VkCommandPoolMemoryReservationCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandPoolMemoryConsumption(extensions: *const Extensions, item: *const vk.VkCommandPoolMemoryConsumption) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVulkanSC10Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVulkanSC10Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLegacyDitheringFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilitiesPresentId2KHR(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilitiesPresentId2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCapabilitiesPresentWait2KHR(extensions: *const Extensions, item: *const vk.VkSurfaceCapabilitiesPresentWait2KHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubpassResolvePerformanceQueryEXT(extensions: *const Extensions, item: *const vk.VkSubpassResolvePerformanceQueryEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMultisampledRenderToSingleSampledInfoEXT(extensions: *const Extensions, item: *const vk.VkMultisampledRenderToSingleSampledInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.rasterizationSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.rasterizationSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineProtectedAccessFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineProtectedAccessFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineProtectedAccessFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineProtectedAccessFeaturesEXT) bool {
@@ -16964,359 +24585,1307 @@ pub fn check_VkPhysicalDevicePipelineProtectedAccessFeaturesEXT(extensions: *con
 }
 
 pub fn check_VkQueueFamilyVideoPropertiesKHR(extensions: *const Extensions, item: *const vk.VkQueueFamilyVideoPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoCodecOperationFlagBitsKHR(extensions, &item.videoCodecOperations));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoCodecOperationFlagBitsKHR(extensions, @ptrCast(&item.videoCodecOperations)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyQueryResultStatusPropertiesKHR(extensions: *const Extensions, item: *const vk.VkQueueFamilyQueryResultStatusPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoProfileListInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoProfileListInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoFormatInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoFormatInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.imageUsage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.imageUsage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoFormatPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoFormatPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkImageCreateFlagBits(extensions, &item.imageCreateFlags) and
-        check_enum_VkImageType(extensions, &item.imageType) and
-        check_enum_VkImageTiling(extensions, &item.imageTiling) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.imageUsageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkImageCreateFlagBits(extensions, @ptrCast(&item.imageCreateFlags)))
+        return false;
+    if (!check_enum_VkImageType(extensions, @ptrCast(&item.imageType)))
+        return false;
+    if (!check_enum_VkImageTiling(extensions, @ptrCast(&item.imageTiling)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.imageUsageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_QUANTIZATION_MAP_PROPERTIES_KHR,
+            => if (!check_VkVideoFormatQuantizationMapPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_H265_QUANTIZATION_MAP_PROPERTIES_KHR,
+            => if (!check_VkVideoFormatH265QuantizationMapPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_AV1_QUANTIZATION_MAP_PROPERTIES_KHR,
+            => if (!check_VkVideoFormatAV1QuantizationMapPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeQuantizationMapCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeQuantizationMapCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264QuantizationMapCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264QuantizationMapCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265QuantizationMapCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265QuantizationMapCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1QuantizationMapCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1QuantizationMapCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoFormatQuantizationMapPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoFormatQuantizationMapPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoFormatH265QuantizationMapPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoFormatH265QuantizationMapPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH265CtbSizeFlagBitsKHR(extensions, &item.compatibleCtbSizes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265CtbSizeFlagBitsKHR(extensions, @ptrCast(&item.compatibleCtbSizes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoFormatAV1QuantizationMapPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoFormatAV1QuantizationMapPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeAV1SuperblockSizeFlagBitsKHR(extensions, &item.compatibleSuperblockSizes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1SuperblockSizeFlagBitsKHR(extensions, @ptrCast(&item.compatibleSuperblockSizes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoCodecOperationFlagBitsKHR(extensions, &item.videoCodecOperation) and
-        check_bitmask_VkVideoChromaSubsamplingFlagBitsKHR(extensions, &item.chromaSubsampling) and
-        check_bitmask_VkVideoComponentBitDepthFlagBitsKHR(extensions, &item.lumaBitDepth) and
-        check_bitmask_VkVideoComponentBitDepthFlagBitsKHR(extensions, &item.chromaBitDepth));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoCodecOperationFlagBitsKHR(extensions, @ptrCast(&item.videoCodecOperation)))
+        return false;
+    if (!check_bitmask_VkVideoChromaSubsamplingFlagBitsKHR(extensions, @ptrCast(&item.chromaSubsampling)))
+        return false;
+    if (!check_bitmask_VkVideoComponentBitDepthFlagBitsKHR(extensions, @ptrCast(&item.lumaBitDepth)))
+        return false;
+    if (!check_bitmask_VkVideoComponentBitDepthFlagBitsKHR(extensions, @ptrCast(&item.chromaBitDepth)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoCapabilityFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoCapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeQuantizationMapCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUANTIZATION_MAP_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeH264QuantizationMapCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUANTIZATION_MAP_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeH265QuantizationMapCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUANTIZATION_MAP_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeAV1QuantizationMapCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+            => if (!check_VkVideoDecodeCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR,
+            => if (!check_VkVideoDecodeH264CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_CAPABILITIES_KHR,
+            => if (!check_VkVideoDecodeH265CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_CAPABILITIES_KHR,
+            => if (!check_VkVideoDecodeVP9CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR,
+            => if (!check_VkVideoDecodeAV1CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeH264CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeH265CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeAV1CapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_CAPABILITIES_KHR,
+            => if (!check_VkVideoEncodeIntraRefreshCapabilitiesKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoSessionMemoryRequirementsKHR(extensions: *const Extensions, item: *const vk.VkVideoSessionMemoryRequirementsKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindVideoSessionMemoryInfoKHR(extensions: *const Extensions, item: *const vk.VkBindVideoSessionMemoryInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoPictureResourceInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoPictureResourceInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoReferenceSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoReferenceSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoDecodeH264DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoDecodeH265DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoEncodeH264DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoEncodeH265DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_DPB_SLOT_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1DpbSlotInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_INTRA_REFRESH_INFO_KHR,
+            => if (!check_VkVideoReferenceIntraRefreshInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoDecodeCapabilityFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoDecodeCapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeUsageInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeUsageInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoDecodeUsageFlagBitsKHR(extensions, &item.videoUsageHints));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoDecodeUsageFlagBitsKHR(extensions, @ptrCast(&item.videoUsageHints)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_INLINE_SESSION_PARAMETERS_INFO_KHR,
+            => if (!check_VkVideoDecodeH264InlineSessionParametersInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+            => if (!check_VkVideoDecodeH264PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_INLINE_SESSION_PARAMETERS_INFO_KHR,
+            => if (!check_VkVideoDecodeH265InlineSessionParametersInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PICTURE_INFO_KHR,
+            => if (!check_VkVideoDecodeH265PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PICTURE_INFO_KHR,
+            => if (!check_VkVideoDecodeVP9PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_INLINE_SESSION_PARAMETERS_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1InlineSessionParametersInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoMaintenance1FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoMaintenance2FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoInlineQueryInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoInlineQueryInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoDecodeH264PictureLayoutFlagBitsKHR(extensions, &item.pictureLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoDecodeH264PictureLayoutFlagBitsKHR(extensions, @ptrCast(&item.pictureLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264SessionParametersAddInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264SessionParametersAddInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264InlineSessionParametersInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264InlineSessionParametersInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH264DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH264DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265SessionParametersAddInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265SessionParametersAddInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265InlineSessionParametersInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265InlineSessionParametersInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeH265DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeH265DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoDecodeVP9FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeVP9ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeVP9ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeVP9CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeVP9CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeVP9PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeVP9PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1InlineSessionParametersInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1InlineSessionParametersInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoDecodeAV1DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoDecodeAV1DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoSessionCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoSessionCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoSessionCreateFlagBitsKHR(extensions, &item.flags) and
-        check_enum_VkFormat(extensions, &item.pictureFormat) and
-        check_enum_VkFormat(extensions, &item.referencePictureFormat));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoSessionCreateFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.pictureFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.referencePictureFormat)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeH264SessionCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeH265SessionCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1SessionCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_INTRA_REFRESH_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeSessionIntraRefreshCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoSessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoSessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoSessionParametersCreateFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoSessionParametersCreateFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoDecodeH264SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoDecodeH265SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeH264SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeH265SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoSessionParametersUpdateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoSessionParametersUpdateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+            => if (!check_VkVideoDecodeH264SessionParametersAddInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR,
+            => if (!check_VkVideoDecodeH265SessionParametersAddInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+            => if (!check_VkVideoEncodeH264SessionParametersAddInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR,
+            => if (!check_VkVideoEncodeH265SessionParametersAddInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeSessionParametersGetInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeSessionParametersGetInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_GET_INFO_KHR,
+            => if (!check_VkVideoEncodeH264SessionParametersGetInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_GET_INFO_KHR,
+            => if (!check_VkVideoEncodeH265SessionParametersGetInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeSessionParametersFeedbackInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeSessionParametersFeedbackInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_FEEDBACK_INFO_KHR,
+            => if (!check_VkVideoEncodeH264SessionParametersFeedbackInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_FEEDBACK_INFO_KHR,
+            => if (!check_VkVideoEncodeH265SessionParametersFeedbackInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoBeginCodingInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoBeginCodingInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_GOP_REMAINING_FRAME_INFO_KHR,
+            => if (!check_VkVideoEncodeH264GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_GOP_REMAINING_FRAME_INFO_KHR,
+            => if (!check_VkVideoEncodeH265GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_GOP_REMAINING_FRAME_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEndCodingInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEndCodingInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoCodingControlInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoCodingControlInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoCodingControlFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoCodingControlFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeUsageInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeUsageInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeUsageFlagBitsKHR(extensions, &item.videoUsageHints) and
-        check_bitmask_VkVideoEncodeContentFlagBitsKHR(extensions, &item.videoContentHints) and
-        check_enum_VkVideoEncodeTuningModeKHR(extensions, &item.tuningMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeUsageFlagBitsKHR(extensions, @ptrCast(&item.videoUsageHints)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeContentFlagBitsKHR(extensions, @ptrCast(&item.videoContentHints)))
+        return false;
+    if (!check_enum_VkVideoEncodeTuningModeKHR(extensions, @ptrCast(&item.tuningMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR,
+            => if (!check_VkVideoEncodeQuantizationMapInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PICTURE_INFO_KHR,
+            => if (!check_VkVideoEncodeH264PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR,
+            => if (!check_VkVideoEncodeH265PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PICTURE_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1PictureInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_INFO_KHR,
+            => if (!check_VkVideoEncodeIntraRefreshInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeQuantizationMapInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeQuantizationMapInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryPoolVideoEncodeFeedbackCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkQueryPoolVideoEncodeFeedbackCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeFeedbackFlagBitsKHR(extensions, &item.encodeFeedbackFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeFeedbackFlagBitsKHR(extensions, @ptrCast(&item.encodeFeedbackFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeQualityLevelInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeQualityLevelInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeQualityLevelPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeQualityLevelPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, &item.preferredRateControlMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, @ptrCast(&item.preferredRateControlMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUALITY_LEVEL_PROPERTIES_KHR,
+            => if (!check_VkVideoEncodeH264QualityLevelPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUALITY_LEVEL_PROPERTIES_KHR,
+            => if (!check_VkVideoEncodeH265QualityLevelPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUALITY_LEVEL_PROPERTIES_KHR,
+            => if (!check_VkVideoEncodeAV1QualityLevelPropertiesKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeRateControlInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeRateControlInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, &item.rateControlMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, @ptrCast(&item.rateControlMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeRateControlLayerInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeRateControlLayerInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_LAYER_INFO_KHR,
+            => if (!check_VkVideoEncodeH264RateControlLayerInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_KHR,
+            => if (!check_VkVideoEncodeH265RateControlLayerInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_LAYER_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1RateControlLayerInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeCapabilityFlagBitsKHR(extensions, &item.flags) and
-        check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, &item.rateControlModes) and
-        check_bitmask_VkVideoEncodeFeedbackFlagBitsKHR(extensions, &item.supportedEncodeFeedbackFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeCapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeRateControlModeFlagBitsKHR(extensions, @ptrCast(&item.rateControlModes)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeFeedbackFlagBitsKHR(extensions, @ptrCast(&item.supportedEncodeFeedbackFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH264CapabilityFlagBitsKHR(extensions, &item.flags) and
-        check_bitmask_VkVideoEncodeH264StdFlagBitsKHR(extensions, &item.stdSyntaxFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH264CapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH264StdFlagBitsKHR(extensions, @ptrCast(&item.stdSyntaxFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264QualityLevelPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264QualityLevelPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH264RateControlFlagBitsKHR(extensions, &item.preferredRateControlFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH264RateControlFlagBitsKHR(extensions, @ptrCast(&item.preferredRateControlFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264SessionCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264SessionCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264SessionParametersAddInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264SessionParametersAddInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264SessionParametersGetInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264SessionParametersGetInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264SessionParametersFeedbackInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264SessionParametersFeedbackInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264NaluSliceInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264NaluSliceInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264RateControlInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264RateControlInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH264RateControlFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH264RateControlFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264QpKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264QpKHR) bool {
@@ -17332,57 +25901,171 @@ pub fn check_VkVideoEncodeH264FrameSizeKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkVideoEncodeH264GopRemainingFrameInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264GopRemainingFrameInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH264RateControlLayerInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH264RateControlLayerInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH265CapabilityFlagBitsKHR(extensions, &item.flags) and
-        check_bitmask_VkVideoEncodeH265CtbSizeFlagBitsKHR(extensions, &item.ctbSizes) and
-        check_bitmask_VkVideoEncodeH265TransformBlockSizeFlagBitsKHR(extensions, &item.transformBlockSizes) and
-        check_bitmask_VkVideoEncodeH265StdFlagBitsKHR(extensions, &item.stdSyntaxFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265CapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265CtbSizeFlagBitsKHR(extensions, @ptrCast(&item.ctbSizes)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265TransformBlockSizeFlagBitsKHR(extensions, @ptrCast(&item.transformBlockSizes)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265StdFlagBitsKHR(extensions, @ptrCast(&item.stdSyntaxFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265QualityLevelPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265QualityLevelPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH265RateControlFlagBitsKHR(extensions, &item.preferredRateControlFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265RateControlFlagBitsKHR(extensions, @ptrCast(&item.preferredRateControlFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265SessionCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265SessionCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265SessionParametersAddInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265SessionParametersAddInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265SessionParametersGetInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265SessionParametersGetInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265SessionParametersFeedbackInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265SessionParametersFeedbackInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265NaluSliceSegmentInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265NaluSliceSegmentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265RateControlInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265RateControlInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeH265RateControlFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeH265RateControlFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265QpKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265QpKHR) bool {
@@ -17398,62 +26081,186 @@ pub fn check_VkVideoEncodeH265FrameSizeKHR(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkVideoEncodeH265GopRemainingFrameInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265GopRemainingFrameInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265RateControlLayerInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265RateControlLayerInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeH265DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeH265DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1CapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1CapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeAV1CapabilityFlagBitsKHR(extensions, &item.flags) and
-        check_bitmask_VkVideoEncodeAV1SuperblockSizeFlagBitsKHR(extensions, &item.superblockSizes) and
-        check_bitmask_VkVideoEncodeAV1StdFlagBitsKHR(extensions, &item.stdSyntaxFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1CapabilityFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1SuperblockSizeFlagBitsKHR(extensions, @ptrCast(&item.superblockSizes)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1StdFlagBitsKHR(extensions, @ptrCast(&item.stdSyntaxFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1QualityLevelPropertiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1QualityLevelPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeAV1RateControlFlagBitsKHR(extensions, &item.preferredRateControlFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1RateControlFlagBitsKHR(extensions, @ptrCast(&item.preferredRateControlFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoEncodeAV1FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1SessionCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1SessionCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1SessionParametersCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1SessionParametersCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1DpbSlotInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1DpbSlotInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1PictureInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1PictureInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkVideoEncodeAV1PredictionModeKHR(extensions, &item.predictionMode) and
-        check_enum_VkVideoEncodeAV1RateControlGroupKHR(extensions, &item.rateControlGroup));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkVideoEncodeAV1PredictionModeKHR(extensions, @ptrCast(&item.predictionMode)))
+        return false;
+    if (!check_enum_VkVideoEncodeAV1RateControlGroupKHR(extensions, @ptrCast(&item.rateControlGroup)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1ProfileInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1ProfileInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1RateControlInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1RateControlInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeAV1RateControlFlagBitsKHR(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeAV1RateControlFlagBitsKHR(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1QIndexKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1QIndexKHR) bool {
@@ -17469,133 +26276,427 @@ pub fn check_VkVideoEncodeAV1FrameSizeKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkVideoEncodeAV1GopRemainingFrameInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1GopRemainingFrameInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeAV1RateControlLayerInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeAV1RateControlLayerInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferInheritanceViewportScissorInfoNV(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceViewportScissorInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProvokingVertexFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProvokingVertexFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceProvokingVertexPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceProvokingVertexPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRasterizationProvokingVertexStateCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkProvokingVertexModeEXT(extensions, &item.provokingVertexMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkProvokingVertexModeEXT(extensions, @ptrCast(&item.provokingVertexMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeIntraRefreshCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeIntraRefreshCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeIntraRefreshModeFlagBitsKHR(extensions, &item.intraRefreshModes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeIntraRefreshModeFlagBitsKHR(extensions, @ptrCast(&item.intraRefreshModes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeSessionIntraRefreshCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeSessionIntraRefreshCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkVideoEncodeIntraRefreshModeFlagBitsKHR(extensions, &item.intraRefreshMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkVideoEncodeIntraRefreshModeFlagBitsKHR(extensions, @ptrCast(&item.intraRefreshMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoEncodeIntraRefreshInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoEncodeIntraRefreshInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkVideoReferenceIntraRefreshInfoKHR(extensions: *const Extensions, item: *const vk.VkVideoReferenceIntraRefreshInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCuModuleCreateInfoNVX(extensions: *const Extensions, item: *const vk.VkCuModuleCreateInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_CU_MODULE_TEXTURING_MODE_CREATE_INFO_NVX,
+            => if (!check_VkCuModuleTexturingModeCreateInfoNVX(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCuModuleTexturingModeCreateInfoNVX(extensions: *const Extensions, item: *const vk.VkCuModuleTexturingModeCreateInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCuFunctionCreateInfoNVX(extensions: *const Extensions, item: *const vk.VkCuFunctionCreateInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCuLaunchInfoNVX(extensions: *const Extensions, item: *const vk.VkCuLaunchInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorBufferFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorBufferPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorBufferPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorAddressInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorAddressInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorBufferBindingInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorBufferBindingInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkBufferUsageFlagBits(extensions, &item.usage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkBufferUsageFlagBits(extensions, @ptrCast(&item.usage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT,
+            => if (!check_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(extensions: *const Extensions, item: *const vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorGetInfoEXT(extensions: *const Extensions, item: *const vk.VkDescriptorGetInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDescriptorType(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDescriptorType(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_TENSOR_INFO_ARM,
+            => if (!check_VkDescriptorGetTensorInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCaptureDescriptorDataInfoEXT(extensions: *const Extensions, item: *const vk.VkBufferCaptureDescriptorDataInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCaptureDescriptorDataInfoEXT(extensions: *const Extensions, item: *const vk.VkImageCaptureDescriptorDataInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewCaptureDescriptorDataInfoEXT(extensions: *const Extensions, item: *const vk.VkImageViewCaptureDescriptorDataInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerCaptureDescriptorDataInfoEXT(extensions: *const Extensions, item: *const vk.VkSamplerCaptureDescriptorDataInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureCaptureDescriptorDataInfoEXT(extensions: *const Extensions, item: *const vk.VkAccelerationStructureCaptureDescriptorDataInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkOpaqueCaptureDescriptorDataCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderIntegerDotProductFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR) bool {
@@ -17605,7 +26706,16 @@ pub fn check_VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR(extensions: *con
 }
 
 pub fn check_VkPhysicalDeviceShaderIntegerDotProductProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderIntegerDotProductProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR) bool {
@@ -17615,35 +26725,107 @@ pub fn check_VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR(extensions: *c
 }
 
 pub fn check_VkPhysicalDeviceDrmPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDrmPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingValidationFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingValidationFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureGeometryMotionTrianglesDataNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureGeometryMotionTrianglesDataNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureMotionInfoNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureMotionInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSRTDataNV(extensions: *const Extensions, item: *const vk.VkSRTDataNV) bool {
@@ -17665,80 +26847,235 @@ pub fn check_VkAccelerationStructureMatrixMotionInstanceNV(extensions: *const Ex
 }
 
 pub fn check_VkAccelerationStructureMotionInstanceNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureMotionInstanceNV) bool {
-    return (check_enum_VkAccelerationStructureMotionInstanceTypeNV(extensions, &item.type));
+    if (!check_enum_VkAccelerationStructureMotionInstanceTypeNV(extensions, @ptrCast(&item.type)))
+        return false;
+    return true;
 }
 
 pub fn check_VkMemoryGetRemoteAddressInfoNV(extensions: *const Extensions, item: *const vk.VkMemoryGetRemoteAddressInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMemoryBufferCollectionFUCHSIA(extensions: *const Extensions, item: *const vk.VkImportMemoryBufferCollectionFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCollectionImageCreateInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferCollectionImageCreateInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCollectionBufferCreateInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferCollectionBufferCreateInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCollectionCreateInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferCollectionCreateInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCollectionPropertiesFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferCollectionPropertiesFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.formatFeatures) and
-        check_enum_VkSamplerYcbcrModelConversion(extensions, &item.suggestedYcbcrModel) and
-        check_enum_VkSamplerYcbcrRange(extensions, &item.suggestedYcbcrRange) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedXChromaOffset) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedYChromaOffset));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.formatFeatures)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrModelConversion(extensions, @ptrCast(&item.suggestedYcbcrModel)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrRange(extensions, @ptrCast(&item.suggestedYcbcrRange)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedXChromaOffset)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedYChromaOffset)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferConstraintsInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferConstraintsInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.requiredFormatFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.requiredFormatFeatures)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSysmemColorSpaceFUCHSIA(extensions: *const Extensions, item: *const vk.VkSysmemColorSpaceFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageFormatConstraintsInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkImageFormatConstraintsInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.requiredFormatFeatures));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.requiredFormatFeatures)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageConstraintsInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkImageConstraintsInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageConstraintsInfoFlagBitsFUCHSIA(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageConstraintsInfoFlagBitsFUCHSIA(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBufferCollectionConstraintsInfoFUCHSIA(extensions: *const Extensions, item: *const vk.VkBufferCollectionConstraintsInfoFUCHSIA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCudaModuleCreateInfoNV(extensions: *const Extensions, item: *const vk.VkCudaModuleCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCudaFunctionCreateInfoNV(extensions: *const Extensions, item: *const vk.VkCudaFunctionCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCudaLaunchInfoNV(extensions: *const Extensions, item: *const vk.VkCudaLaunchInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFormatProperties3(extensions: *const Extensions, item: *const vk.VkFormatProperties3) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFormatProperties3KHR(extensions: *const Extensions, item: *const vk.VkFormatProperties3KHR) bool {
@@ -17748,7 +27085,16 @@ pub fn check_VkFormatProperties3KHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkDrmFormatModifierPropertiesList2EXT(extensions: *const Extensions, item: *const vk.VkDrmFormatModifierPropertiesList2EXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDrmFormatModifierProperties2EXT(extensions: *const Extensions, item: *const vk.VkDrmFormatModifierProperties2EXT) bool {
@@ -17758,19 +27104,47 @@ pub fn check_VkDrmFormatModifierProperties2EXT(extensions: *const Extensions, it
 }
 
 pub fn check_VkAndroidHardwareBufferFormatProperties2ANDROID(extensions: *const Extensions, item: *const vk.VkAndroidHardwareBufferFormatProperties2ANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_enum_VkSamplerYcbcrModelConversion(extensions, &item.suggestedYcbcrModel) and
-        check_enum_VkSamplerYcbcrRange(extensions, &item.suggestedYcbcrRange) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedXChromaOffset) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedYChromaOffset));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrModelConversion(extensions, @ptrCast(&item.suggestedYcbcrModel)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrRange(extensions, @ptrCast(&item.suggestedYcbcrRange)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedXChromaOffset)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedYChromaOffset)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRenderingCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineRenderingCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.pColorAttachmentFormats) and
-        check_enum_VkFormat(extensions, &item.depthAttachmentFormat) and
-        check_enum_VkFormat(extensions, &item.stencilAttachmentFormat));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.colorAttachmentCount) |i| {
+        if (!check_enum_VkFormat(extensions, @ptrCast(&item.pColorAttachmentFormats[i])))
+            return false;
+    }
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.depthAttachmentFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.stencilAttachmentFormat)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRenderingCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkPipelineRenderingCreateInfoKHR) bool {
@@ -17780,8 +27154,24 @@ pub fn check_VkPipelineRenderingCreateInfoKHR(extensions: *const Extensions, ite
 }
 
 pub fn check_VkRenderingInfo(extensions: *const Extensions, item: *const vk.VkRenderingInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkRenderingFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkRenderingFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
+            => if (!check_VkRenderingFragmentShadingRateAttachmentInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT,
+            => if (!check_VkRenderingFragmentDensityMapAttachmentInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingInfoKHR) bool {
@@ -17791,16 +27181,42 @@ pub fn check_VkRenderingInfoKHR(extensions: *const Extensions, item: *const vk.V
 }
 
 pub fn check_VkRenderingEndInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderingEndInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingAttachmentInfo(extensions: *const Extensions, item: *const vk.VkRenderingAttachmentInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.imageLayout) and
-        check_bitmask_VkResolveModeFlagBits(extensions, &item.resolveMode) and
-        check_enum_VkImageLayout(extensions, &item.resolveImageLayout) and
-        check_enum_VkAttachmentLoadOp(extensions, &item.loadOp) and
-        check_enum_VkAttachmentStoreOp(extensions, &item.storeOp));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.imageLayout)))
+        return false;
+    if (!check_bitmask_VkResolveModeFlagBits(extensions, @ptrCast(&item.resolveMode)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.resolveImageLayout)))
+        return false;
+    if (!check_enum_VkAttachmentLoadOp(extensions, @ptrCast(&item.loadOp)))
+        return false;
+    if (!check_enum_VkAttachmentStoreOp(extensions, @ptrCast(&item.storeOp)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_FEEDBACK_LOOP_INFO_EXT,
+            => if (!check_VkAttachmentFeedbackLoopInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingAttachmentInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingAttachmentInfoKHR) bool {
@@ -17810,17 +27226,46 @@ pub fn check_VkRenderingAttachmentInfoKHR(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkRenderingFragmentShadingRateAttachmentInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingFragmentShadingRateAttachmentInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.imageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.imageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingFragmentDensityMapAttachmentInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderingFragmentDensityMapAttachmentInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkImageLayout(extensions, &item.imageLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkImageLayout(extensions, @ptrCast(&item.imageLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDynamicRenderingFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDynamicRenderingFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDynamicRenderingFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDynamicRenderingFeaturesKHR) bool {
@@ -17830,12 +27275,28 @@ pub fn check_VkPhysicalDeviceDynamicRenderingFeaturesKHR(extensions: *const Exte
 }
 
 pub fn check_VkCommandBufferInheritanceRenderingInfo(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceRenderingInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkRenderingFlagBits(extensions, &item.flags) and
-        check_enum_VkFormat(extensions, &item.pColorAttachmentFormats) and
-        check_enum_VkFormat(extensions, &item.depthAttachmentFormat) and
-        check_enum_VkFormat(extensions, &item.stencilAttachmentFormat) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.rasterizationSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkRenderingFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    for (0..item.colorAttachmentCount) |i| {
+        if (!check_enum_VkFormat(extensions, @ptrCast(&item.pColorAttachmentFormats[i])))
+            return false;
+    }
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.depthAttachmentFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.stencilAttachmentFormat)))
+        return false;
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.rasterizationSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCommandBufferInheritanceRenderingInfoKHR(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceRenderingInfoKHR) bool {
@@ -17845,9 +27306,22 @@ pub fn check_VkCommandBufferInheritanceRenderingInfoKHR(extensions: *const Exten
 }
 
 pub fn check_VkAttachmentSampleCountInfoAMD(extensions: *const Extensions, item: *const vk.VkAttachmentSampleCountInfoAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.pColorAttachmentSamples) and
-        check_bitmask_VkSampleCountFlagBits(extensions, &item.depthStencilAttachmentSamples));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.colorAttachmentCount) |i| {
+        if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.pColorAttachmentSamples[i])))
+            return false;
+    }
+    if (!check_bitmask_VkSampleCountFlagBits(extensions, @ptrCast(&item.depthStencilAttachmentSamples)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAttachmentSampleCountInfoNV(extensions: *const Extensions, item: *const vk.VkAttachmentSampleCountInfoNV) bool {
@@ -17857,19 +27331,55 @@ pub fn check_VkAttachmentSampleCountInfoNV(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkMultiviewPerViewAttributesInfoNVX(extensions: *const Extensions, item: *const vk.VkMultiviewPerViewAttributesInfoNVX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageViewMinLodFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageViewMinLodFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageViewMinLodCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkImageViewMinLodCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM) bool {
@@ -17879,92 +27389,288 @@ pub fn check_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM(exten
 }
 
 pub fn check_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineBinaryFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineBinaryFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDevicePipelineBinaryInternalCacheControlKHR(extensions: *const Extensions, item: *const vk.VkDevicePipelineBinaryInternalCacheControlKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineBinaryPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineBinaryPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGraphicsPipelineLibraryCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkGraphicsPipelineLibraryCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkGraphicsPipelineLibraryFlagBitsEXT(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkGraphicsPipelineLibraryFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetBindingReferenceVALVE(extensions: *const Extensions, item: *const vk.VkDescriptorSetBindingReferenceVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorSetLayoutHostMappingInfoVALVE(extensions: *const Extensions, item: *const vk.VkDescriptorSetLayoutHostMappingInfoVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceNestedCommandBufferFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceNestedCommandBufferPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineShaderStageModuleIdentifierCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageModuleIdentifierCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkShaderModuleIdentifierEXT(extensions: *const Extensions, item: *const vk.VkShaderModuleIdentifierEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCompressionControlEXT(extensions: *const Extensions, item: *const vk.VkImageCompressionControlEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageCompressionFlagBitsEXT(extensions, &item.flags) and
-        check_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, &item.pFixedRateFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageCompressionFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    for (0..item.compressionControlPlaneCount) |i| {
+        if (!check_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, @ptrCast(&item.pFixedRateFlags[i]))) 
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageCompressionControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageCompressionControlFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageCompressionPropertiesEXT(extensions: *const Extensions, item: *const vk.VkImageCompressionPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageCompressionFlagBitsEXT(extensions, &item.imageCompressionFlags) and
-        check_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, &item.imageCompressionFixedRateFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageCompressionFlagBitsEXT(extensions, @ptrCast(&item.imageCompressionFlags)))
+        return false;
+    if (!check_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, @ptrCast(&item.imageCompressionFixedRateFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageSubresource2(extensions: *const Extensions, item: *const vk.VkImageSubresource2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageSubresource2KHR(extensions: *const Extensions, item: *const vk.VkImageSubresource2KHR) bool {
@@ -17980,7 +27686,19 @@ pub fn check_VkImageSubresource2EXT(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkSubresourceLayout2(extensions: *const Extensions, item: *const vk.VkSubresourceLayout2) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE,
+            => if (!check_VkSubresourceHostMemcpySize(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSubresourceLayout2KHR(extensions: *const Extensions, item: *const vk.VkSubresourceLayout2KHR) bool {
@@ -17996,7 +27714,16 @@ pub fn check_VkSubresourceLayout2EXT(extensions: *const Extensions, item: *const
 }
 
 pub fn check_VkRenderPassCreationControlEXT(extensions: *const Extensions, item: *const vk.VkRenderPassCreationControlEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassCreationFeedbackInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassCreationFeedbackInfoEXT) bool {
@@ -18006,55 +27733,155 @@ pub fn check_VkRenderPassCreationFeedbackInfoEXT(extensions: *const Extensions, 
 }
 
 pub fn check_VkRenderPassCreationFeedbackCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassCreationFeedbackCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassSubpassFeedbackInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassSubpassFeedbackInfoEXT) bool {
-    return (check_enum_VkSubpassMergeStatusEXT(extensions, &item.subpassMergeStatus));
+    if (!check_enum_VkSubpassMergeStatusEXT(extensions, @ptrCast(&item.subpassMergeStatus)))
+        return false;
+    return true;
 }
 
 pub fn check_VkRenderPassSubpassFeedbackCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkRenderPassSubpassFeedbackCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMicromapBuildInfoEXT(extensions: *const Extensions, item: *const vk.VkMicromapBuildInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkMicromapTypeEXT(extensions, &item.type) and
-        check_bitmask_VkBuildMicromapFlagBitsEXT(extensions, &item.flags) and
-        check_enum_VkBuildMicromapModeEXT(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkMicromapTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    if (!check_bitmask_VkBuildMicromapFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkBuildMicromapModeEXT(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMicromapCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkMicromapCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkMicromapCreateFlagBitsEXT(extensions, &item.createFlags) and
-        check_enum_VkMicromapTypeEXT(extensions, &item.type));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkMicromapCreateFlagBitsEXT(extensions, @ptrCast(&item.createFlags)))
+        return false;
+    if (!check_enum_VkMicromapTypeEXT(extensions, @ptrCast(&item.type)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMicromapVersionInfoEXT(extensions: *const Extensions, item: *const vk.VkMicromapVersionInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyMicromapInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyMicromapInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyMicromapModeEXT(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyMicromapModeEXT(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyMicromapToMemoryInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyMicromapToMemoryInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyMicromapModeEXT(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyMicromapModeEXT(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyMemoryToMicromapInfoEXT(extensions: *const Extensions, item: *const vk.VkCopyMemoryToMicromapInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCopyMicromapModeEXT(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCopyMicromapModeEXT(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMicromapBuildSizesInfoEXT(extensions: *const Extensions, item: *const vk.VkMicromapBuildSizesInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMicromapUsageEXT(extensions: *const Extensions, item: *const vk.VkMicromapUsageEXT) bool {
@@ -18070,106 +27897,347 @@ pub fn check_VkMicromapTriangleEXT(extensions: *const Extensions, item: *const v
 }
 
 pub fn check_VkPhysicalDeviceOpacityMicromapFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceOpacityMicromapPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceOpacityMicromapPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureTrianglesOpacityMicromapEXT(extensions: *const Extensions, item: *const vk.VkAccelerationStructureTrianglesOpacityMicromapEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDisplacementMicromapFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDisplacementMicromapFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDisplacementMicromapPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDisplacementMicromapPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAccelerationStructureTrianglesDisplacementMicromapNV(extensions: *const Extensions, item: *const vk.VkAccelerationStructureTrianglesDisplacementMicromapNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.displacementBiasAndScaleFormat) and
-        check_enum_VkFormat(extensions, &item.displacementVectorFormat) and
-        check_enum_VkIndexType(extensions, &item.indexType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.displacementBiasAndScaleFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.displacementVectorFormat)))
+        return false;
+    if (!check_enum_VkIndexType(extensions, @ptrCast(&item.indexType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelinePropertiesIdentifierEXT(extensions: *const Extensions, item: *const vk.VkPipelinePropertiesIdentifierEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelinePropertiesFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalMemoryAcquireUnmodifiedEXT(extensions: *const Extensions, item: *const vk.VkExternalMemoryAcquireUnmodifiedEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalObjectCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalObjectCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExportMetalObjectTypeFlagBitsEXT(extensions, &item.exportObjectType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExportMetalObjectTypeFlagBitsEXT(extensions, @ptrCast(&item.exportObjectType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalObjectsInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalObjectsInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_DEVICE_INFO_EXT,
+            => if (!check_VkExportMetalDeviceInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_QUEUE_INFO_EXT,
+            => if (!check_VkExportMetalCommandQueueInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_BUFFER_INFO_EXT,
+            => if (!check_VkExportMetalBufferInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_TEXTURE_INFO_EXT,
+            => if (!check_VkExportMetalTextureInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_IO_SURFACE_INFO_EXT,
+            => if (!check_VkExportMetalIOSurfaceInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_SHARED_EVENT_INFO_EXT,
+            => if (!check_VkExportMetalSharedEventInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalDeviceInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalDeviceInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalCommandQueueInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalCommandQueueInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalBufferInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalBufferInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMetalBufferInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMetalBufferInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalTextureInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalTextureInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.plane));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.plane)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMetalTextureInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMetalTextureInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageAspectFlagBits(extensions, &item.plane));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageAspectFlagBits(extensions, @ptrCast(&item.plane)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalIOSurfaceInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalIOSurfaceInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMetalIOSurfaceInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMetalIOSurfaceInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExportMetalSharedEventInfoEXT(extensions: *const Extensions, item: *const vk.VkExportMetalSharedEventInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportMetalSharedEventInfoEXT(extensions: *const Extensions, item: *const vk.VkImportMetalSharedEventInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineRobustnessFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineRobustnessFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineRobustnessFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineRobustnessFeaturesEXT) bool {
@@ -18179,11 +28247,24 @@ pub fn check_VkPhysicalDevicePipelineRobustnessFeaturesEXT(extensions: *const Ex
 }
 
 pub fn check_VkPipelineRobustnessCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineRobustnessCreateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.storageBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.uniformBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.vertexInputs) and
-        check_enum_VkPipelineRobustnessImageBehavior(extensions, &item.images));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.storageBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.uniformBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.vertexInputs)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessImageBehavior(extensions, @ptrCast(&item.images)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineRobustnessCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkPipelineRobustnessCreateInfoEXT) bool {
@@ -18193,11 +28274,24 @@ pub fn check_VkPipelineRobustnessCreateInfoEXT(extensions: *const Extensions, it
 }
 
 pub fn check_VkPhysicalDevicePipelineRobustnessProperties(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineRobustnessProperties) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessStorageBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessUniformBuffers) and
-        check_enum_VkPipelineRobustnessBufferBehavior(extensions, &item.defaultRobustnessVertexInputs) and
-        check_enum_VkPipelineRobustnessImageBehavior(extensions, &item.defaultRobustnessImages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessStorageBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessUniformBuffers)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessBufferBehavior(extensions, @ptrCast(&item.defaultRobustnessVertexInputs)))
+        return false;
+    if (!check_enum_VkPipelineRobustnessImageBehavior(extensions, @ptrCast(&item.defaultRobustnessImages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineRobustnessPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineRobustnessPropertiesEXT) bool {
@@ -18207,39 +28301,120 @@ pub fn check_VkPhysicalDevicePipelineRobustnessPropertiesEXT(extensions: *const 
 }
 
 pub fn check_VkImageViewSampleWeightCreateInfoQCOM(extensions: *const Extensions, item: *const vk.VkImageViewSampleWeightCreateInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageProcessingFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageProcessingPropertiesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageProcessingPropertiesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTilePropertiesFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTilePropertiesQCOM(extensions: *const Extensions, item: *const vk.VkTilePropertiesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTileMemoryBindInfoQCOM(extensions: *const Extensions, item: *const vk.VkTileMemoryBindInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAmigoProfilingFeaturesSEC(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAmigoProfilingFeaturesSEC) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAmigoProfilingSubmitInfoSEC(extensions: *const Extensions, item: *const vk.VkAmigoProfilingSubmitInfoSEC) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDepthClampZeroOneFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesEXT) bool {
@@ -18249,48 +28424,133 @@ pub fn check_VkPhysicalDeviceDepthClampZeroOneFeaturesEXT(extensions: *const Ext
 }
 
 pub fn check_VkAttachmentFeedbackLoopInfoEXT(extensions: *const Extensions, item: *const vk.VkAttachmentFeedbackLoopInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceAddressBindingReportFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAddressBindingReportFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceAddressBindingCallbackDataEXT(extensions: *const Extensions, item: *const vk.VkDeviceAddressBindingCallbackDataEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkDeviceAddressBindingFlagBitsEXT(extensions, &item.flags) and
-        check_enum_VkDeviceAddressBindingTypeEXT(extensions, &item.bindingType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkDeviceAddressBindingFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_enum_VkDeviceAddressBindingTypeEXT(extensions, @ptrCast(&item.bindingType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceOpticalFlowFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceOpticalFlowPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceOpticalFlowPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, &item.supportedOutputGridSizes) and
-        check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, &item.supportedHintGridSizes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, @ptrCast(&item.supportedOutputGridSizes)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, @ptrCast(&item.supportedHintGridSizes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOpticalFlowImageFormatInfoNV(extensions: *const Extensions, item: *const vk.VkOpticalFlowImageFormatInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkOpticalFlowUsageFlagBitsNV(extensions, &item.usage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowUsageFlagBitsNV(extensions, @ptrCast(&item.usage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOpticalFlowImageFormatPropertiesNV(extensions: *const Extensions, item: *const vk.VkOpticalFlowImageFormatPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOpticalFlowSessionCreateInfoNV(extensions: *const Extensions, item: *const vk.VkOpticalFlowSessionCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.imageFormat) and
-        check_enum_VkFormat(extensions, &item.flowVectorFormat) and
-        check_enum_VkFormat(extensions, &item.costFormat) and
-        check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, &item.outputGridSize) and
-        check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, &item.hintGridSize) and
-        check_enum_VkOpticalFlowPerformanceLevelNV(extensions, &item.performanceLevel) and
-        check_bitmask_VkOpticalFlowSessionCreateFlagBitsNV(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.imageFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.flowVectorFormat)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.costFormat)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, @ptrCast(&item.outputGridSize)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowGridSizeFlagBitsNV(extensions, @ptrCast(&item.hintGridSize)))
+        return false;
+    if (!check_enum_VkOpticalFlowPerformanceLevelNV(extensions, @ptrCast(&item.performanceLevel)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowSessionCreateFlagBitsNV(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOpticalFlowSessionCreatePrivateDataInfoNV(extensions: *const Extensions, item: *const vk.VkOpticalFlowSessionCreatePrivateDataInfoNV) bool {
@@ -18300,16 +28560,37 @@ pub fn check_VkOpticalFlowSessionCreatePrivateDataInfoNV(extensions: *const Exte
 }
 
 pub fn check_VkOpticalFlowExecuteInfoNV(extensions: *const Extensions, item: *const vk.VkOpticalFlowExecuteInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkOpticalFlowExecuteFlagBitsNV(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkOpticalFlowExecuteFlagBitsNV(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFaultFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFaultFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceFaultAddressInfoEXT(extensions: *const Extensions, item: *const vk.VkDeviceFaultAddressInfoEXT) bool {
-    return (check_enum_VkDeviceFaultAddressTypeEXT(extensions, &item.addressType));
+    if (!check_enum_VkDeviceFaultAddressTypeEXT(extensions, @ptrCast(&item.addressType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkDeviceFaultVendorInfoEXT(extensions: *const Extensions, item: *const vk.VkDeviceFaultVendorInfoEXT) bool {
@@ -18319,11 +28600,29 @@ pub fn check_VkDeviceFaultVendorInfoEXT(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkDeviceFaultCountsEXT(extensions: *const Extensions, item: *const vk.VkDeviceFaultCountsEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceFaultInfoEXT(extensions: *const Extensions, item: *const vk.VkDeviceFaultInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceFaultVendorBinaryHeaderVersionOneEXT(extensions: *const Extensions, item: *const vk.VkDeviceFaultVendorBinaryHeaderVersionOneEXT) bool {
@@ -18333,16 +28632,44 @@ pub fn check_VkDeviceFaultVendorBinaryHeaderVersionOneEXT(extensions: *const Ext
 }
 
 pub fn check_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDepthBiasInfoEXT(extensions: *const Extensions, item: *const vk.VkDepthBiasInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDepthBiasRepresentationInfoEXT(extensions: *const Extensions, item: *const vk.VkDepthBiasRepresentationInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDepthBiasRepresentationEXT(extensions, &item.depthBiasRepresentation));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDepthBiasRepresentationEXT(extensions, @ptrCast(&item.depthBiasRepresentation)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDecompressMemoryRegionNV(extensions: *const Extensions, item: *const vk.VkDecompressMemoryRegionNV) bool {
@@ -18352,29 +28679,85 @@ pub fn check_VkDecompressMemoryRegionNV(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFrameBoundaryEXT(extensions: *const Extensions, item: *const vk.VkFrameBoundaryEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkFrameBoundaryFlagBitsEXT(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkFrameBoundaryFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFrameBoundaryFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFrameBoundaryFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfacePresentModeKHR(extensions: *const Extensions, item: *const vk.VkSurfacePresentModeKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPresentModeKHR(extensions, &item.presentMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPresentModeKHR(extensions, @ptrCast(&item.presentMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfacePresentModeEXT(extensions: *const Extensions, item: *const vk.VkSurfacePresentModeEXT) bool {
@@ -18384,10 +28767,22 @@ pub fn check_VkSurfacePresentModeEXT(extensions: *const Extensions, item: *const
 }
 
 pub fn check_VkSurfacePresentScalingCapabilitiesKHR(extensions: *const Extensions, item: *const vk.VkSurfacePresentScalingCapabilitiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPresentScalingFlagBitsKHR(extensions, &item.supportedPresentScaling) and
-        check_bitmask_VkPresentGravityFlagBitsKHR(extensions, &item.supportedPresentGravityX) and
-        check_bitmask_VkPresentGravityFlagBitsKHR(extensions, &item.supportedPresentGravityY));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPresentScalingFlagBitsKHR(extensions, @ptrCast(&item.supportedPresentScaling)))
+        return false;
+    if (!check_bitmask_VkPresentGravityFlagBitsKHR(extensions, @ptrCast(&item.supportedPresentGravityX)))
+        return false;
+    if (!check_bitmask_VkPresentGravityFlagBitsKHR(extensions, @ptrCast(&item.supportedPresentGravityY)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfacePresentScalingCapabilitiesEXT(extensions: *const Extensions, item: *const vk.VkSurfacePresentScalingCapabilitiesEXT) bool {
@@ -18397,8 +28792,20 @@ pub fn check_VkSurfacePresentScalingCapabilitiesEXT(extensions: *const Extension
 }
 
 pub fn check_VkSurfacePresentModeCompatibilityKHR(extensions: *const Extensions, item: *const vk.VkSurfacePresentModeCompatibilityKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPresentModeKHR(extensions, &item.pPresentModes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.presentModeCount) |i| {
+        if (!check_enum_VkPresentModeKHR(extensions, @ptrCast(&item.pPresentModes[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfacePresentModeCompatibilityEXT(extensions: *const Extensions, item: *const vk.VkSurfacePresentModeCompatibilityEXT) bool {
@@ -18408,7 +28815,16 @@ pub fn check_VkSurfacePresentModeCompatibilityEXT(extensions: *const Extensions,
 }
 
 pub fn check_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT) bool {
@@ -18418,7 +28834,16 @@ pub fn check_VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT(extensions: *const
 }
 
 pub fn check_VkSwapchainPresentFenceInfoKHR(extensions: *const Extensions, item: *const vk.VkSwapchainPresentFenceInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainPresentFenceInfoEXT(extensions: *const Extensions, item: *const vk.VkSwapchainPresentFenceInfoEXT) bool {
@@ -18428,7 +28853,16 @@ pub fn check_VkSwapchainPresentFenceInfoEXT(extensions: *const Extensions, item:
 }
 
 pub fn check_VkSwapchainPresentModesCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkSwapchainPresentModesCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainPresentModesCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSwapchainPresentModesCreateInfoEXT) bool {
@@ -18438,8 +28872,20 @@ pub fn check_VkSwapchainPresentModesCreateInfoEXT(extensions: *const Extensions,
 }
 
 pub fn check_VkSwapchainPresentModeInfoKHR(extensions: *const Extensions, item: *const vk.VkSwapchainPresentModeInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPresentModeKHR(extensions, &item.pPresentModes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.swapchainCount) |i| {
+        if (!check_enum_VkPresentModeKHR(extensions, @ptrCast(&item.pPresentModes[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainPresentModeInfoEXT(extensions: *const Extensions, item: *const vk.VkSwapchainPresentModeInfoEXT) bool {
@@ -18449,10 +28895,22 @@ pub fn check_VkSwapchainPresentModeInfoEXT(extensions: *const Extensions, item: 
 }
 
 pub fn check_VkSwapchainPresentScalingCreateInfoKHR(extensions: *const Extensions, item: *const vk.VkSwapchainPresentScalingCreateInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPresentScalingFlagBitsKHR(extensions, &item.scalingBehavior) and
-        check_bitmask_VkPresentGravityFlagBitsKHR(extensions, &item.presentGravityX) and
-        check_bitmask_VkPresentGravityFlagBitsKHR(extensions, &item.presentGravityY));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPresentScalingFlagBitsKHR(extensions, @ptrCast(&item.scalingBehavior)))
+        return false;
+    if (!check_bitmask_VkPresentGravityFlagBitsKHR(extensions, @ptrCast(&item.presentGravityX)))
+        return false;
+    if (!check_bitmask_VkPresentGravityFlagBitsKHR(extensions, @ptrCast(&item.presentGravityY)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainPresentScalingCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkSwapchainPresentScalingCreateInfoEXT) bool {
@@ -18462,7 +28920,16 @@ pub fn check_VkSwapchainPresentScalingCreateInfoEXT(extensions: *const Extension
 }
 
 pub fn check_VkReleaseSwapchainImagesInfoKHR(extensions: *const Extensions, item: *const vk.VkReleaseSwapchainImagesInfoKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkReleaseSwapchainImagesInfoEXT(extensions: *const Extensions, item: *const vk.VkReleaseSwapchainImagesInfoEXT) bool {
@@ -18472,47 +28939,141 @@ pub fn check_VkReleaseSwapchainImagesInfoEXT(extensions: *const Extensions, item
 }
 
 pub fn check_VkPhysicalDeviceDepthBiasControlFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkRayTracingInvocationReorderModeNV(extensions, &item.rayTracingInvocationReorderReorderingHint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkRayTracingInvocationReorderModeNV(extensions, @ptrCast(&item.rayTracingInvocationReorderReorderingHint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkImageUsageFlagBits(extensions, &item.extendedSparseImageUsageFlags) and
-        check_bitmask_VkBufferUsageFlagBits(extensions, &item.extendedSparseBufferUsageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkImageUsageFlagBits(extensions, @ptrCast(&item.extendedSparseImageUsageFlags)))
+        return false;
+    if (!check_bitmask_VkBufferUsageFlagBits(extensions, @ptrCast(&item.extendedSparseBufferUsageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDirectDriverLoadingInfoLUNARG(extensions: *const Extensions, item: *const vk.VkDirectDriverLoadingInfoLUNARG) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDirectDriverLoadingListLUNARG(extensions: *const Extensions, item: *const vk.VkDirectDriverLoadingListLUNARG) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDirectDriverLoadingModeLUNARG(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDirectDriverLoadingModeLUNARG(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceImageSubresourceInfo(extensions: *const Extensions, item: *const vk.VkDeviceImageSubresourceInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceImageSubresourceInfoKHR(extensions: *const Extensions, item: *const vk.VkDeviceImageSubresourceInfoKHR) bool {
@@ -18522,24 +29083,73 @@ pub fn check_VkDeviceImageSubresourceInfoKHR(extensions: *const Extensions, item
 }
 
 pub fn check_VkPhysicalDeviceShaderCorePropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderCorePropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(extensions: *const Extensions, item: *const vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueryLowLatencySupportNV(extensions: *const Extensions, item: *const vk.VkQueryLowLatencySupportNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryMapInfo(extensions: *const Extensions, item: *const vk.VkMemoryMapInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkMemoryMapFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkMemoryMapFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT,
+            => if (!check_VkMemoryMapPlacedInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryMapInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryMapInfoKHR) bool {
@@ -18549,8 +29159,18 @@ pub fn check_VkMemoryMapInfoKHR(extensions: *const Extensions, item: *const vk.V
 }
 
 pub fn check_VkMemoryUnmapInfo(extensions: *const Extensions, item: *const vk.VkMemoryUnmapInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkMemoryUnmapFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkMemoryUnmapFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryUnmapInfoKHR(extensions: *const Extensions, item: *const vk.VkMemoryUnmapInfoKHR) bool {
@@ -18560,92 +29180,274 @@ pub fn check_VkMemoryUnmapInfoKHR(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkPhysicalDeviceShaderObjectFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderObjectPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderObjectPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkShaderCreateInfoEXT(extensions: *const Extensions, item: *const vk.VkShaderCreateInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderCreateFlagBitsEXT(extensions, &item.flags) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stage) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.nextStage) and
-        check_enum_VkShaderCodeTypeEXT(extensions, &item.codeType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderCreateFlagBitsEXT(extensions, @ptrCast(&item.flags)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stage)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.nextStage)))
+        return false;
+    if (!check_enum_VkShaderCodeTypeEXT(extensions, @ptrCast(&item.codeType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderTileImageFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderTileImageFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderTileImagePropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderTileImagePropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImportScreenBufferInfoQNX(extensions: *const Extensions, item: *const vk.VkImportScreenBufferInfoQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkScreenBufferPropertiesQNX(extensions: *const Extensions, item: *const vk.VkScreenBufferPropertiesQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SCREEN_BUFFER_FORMAT_PROPERTIES_QNX,
+            => if (!check_VkScreenBufferFormatPropertiesQNX(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkScreenBufferFormatPropertiesQNX(extensions: *const Extensions, item: *const vk.VkScreenBufferFormatPropertiesQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format) and
-        check_bitmask_VkFormatFeatureFlagBits(extensions, &item.formatFeatures) and
-        check_enum_VkSamplerYcbcrModelConversion(extensions, &item.suggestedYcbcrModel) and
-        check_enum_VkSamplerYcbcrRange(extensions, &item.suggestedYcbcrRange) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedXChromaOffset) and
-        check_enum_VkChromaLocation(extensions, &item.suggestedYChromaOffset));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    if (!check_bitmask_VkFormatFeatureFlagBits(extensions, @ptrCast(&item.formatFeatures)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrModelConversion(extensions, @ptrCast(&item.suggestedYcbcrModel)))
+        return false;
+    if (!check_enum_VkSamplerYcbcrRange(extensions, @ptrCast(&item.suggestedYcbcrRange)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedXChromaOffset)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.suggestedYChromaOffset)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalFormatQNX(extensions: *const Extensions, item: *const vk.VkExternalFormatQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCooperativeMatrixPropertiesKHR(extensions: *const Extensions, item: *const vk.VkCooperativeMatrixPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.AType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.BType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.CType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.ResultType) and
-        check_enum_VkScopeKHR(extensions, &item.scope));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.AType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.BType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.CType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.ResultType)))
+        return false;
+    if (!check_enum_VkScopeKHR(extensions, @ptrCast(&item.scope)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.cooperativeMatrixSupportedStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.cooperativeMatrixSupportedStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderEnqueuePropertiesAMDX(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderEnqueuePropertiesAMDX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderEnqueueFeaturesAMDX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExecutionGraphPipelineCreateInfoAMDX(extensions: *const Extensions, item: *const vk.VkExecutionGraphPipelineCreateInfoAMDX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkPipelineCreateFlagBits(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkPipelineCreateFlagBits(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineShaderStageNodeCreateInfoAMDX(extensions: *const Extensions, item: *const vk.VkPipelineShaderStageNodeCreateInfoAMDX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExecutionGraphPipelineScratchSizeAMDX(extensions: *const Extensions, item: *const vk.VkExecutionGraphPipelineScratchSizeAMDX) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDispatchGraphInfoAMDX(extensions: *const Extensions, item: *const vk.VkDispatchGraphInfoAMDX) bool {
@@ -18661,38 +29463,113 @@ pub fn check_VkDispatchGraphCountInfoAMDX(extensions: *const Extensions, item: *
 }
 
 pub fn check_VkPhysicalDeviceAntiLagFeaturesAMD(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceAntiLagFeaturesAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAntiLagDataAMD(extensions: *const Extensions, item: *const vk.VkAntiLagDataAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkAntiLagModeAMD(extensions, &item.mode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkAntiLagModeAMD(extensions, @ptrCast(&item.mode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAntiLagPresentationInfoAMD(extensions: *const Extensions, item: *const vk.VkAntiLagPresentationInfoAMD) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkAntiLagStageAMD(extensions, &item.stage));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkAntiLagStageAMD(extensions, @ptrCast(&item.stage)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindMemoryStatus(extensions: *const Extensions, item: *const vk.VkBindMemoryStatus) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkResult(extensions, &item.pResult));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkResult(extensions, @ptrCast(&item.pResult)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTileMemorySizeInfoQCOM(extensions: *const Extensions, item: *const vk.VkTileMemorySizeInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTileMemoryRequirementsQCOM(extensions: *const Extensions, item: *const vk.VkTileMemoryRequirementsQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindMemoryStatusKHR(extensions: *const Extensions, item: *const vk.VkBindMemoryStatusKHR) bool {
@@ -18702,8 +29579,18 @@ pub fn check_VkBindMemoryStatusKHR(extensions: *const Extensions, item: *const v
 }
 
 pub fn check_VkBindDescriptorSetsInfo(extensions: *const Extensions, item: *const vk.VkBindDescriptorSetsInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindDescriptorSetsInfoKHR(extensions: *const Extensions, item: *const vk.VkBindDescriptorSetsInfoKHR) bool {
@@ -18713,8 +29600,18 @@ pub fn check_VkBindDescriptorSetsInfoKHR(extensions: *const Extensions, item: *c
 }
 
 pub fn check_VkPushConstantsInfo(extensions: *const Extensions, item: *const vk.VkPushConstantsInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPushConstantsInfoKHR(extensions: *const Extensions, item: *const vk.VkPushConstantsInfoKHR) bool {
@@ -18724,8 +29621,18 @@ pub fn check_VkPushConstantsInfoKHR(extensions: *const Extensions, item: *const 
 }
 
 pub fn check_VkPushDescriptorSetInfo(extensions: *const Extensions, item: *const vk.VkPushDescriptorSetInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPushDescriptorSetInfoKHR(extensions: *const Extensions, item: *const vk.VkPushDescriptorSetInfoKHR) bool {
@@ -18735,7 +29642,16 @@ pub fn check_VkPushDescriptorSetInfoKHR(extensions: *const Extensions, item: *co
 }
 
 pub fn check_VkPushDescriptorSetWithTemplateInfo(extensions: *const Extensions, item: *const vk.VkPushDescriptorSetWithTemplateInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPushDescriptorSetWithTemplateInfoKHR(extensions: *const Extensions, item: *const vk.VkPushDescriptorSetWithTemplateInfoKHR) bool {
@@ -18745,175 +29661,549 @@ pub fn check_VkPushDescriptorSetWithTemplateInfoKHR(extensions: *const Extension
 }
 
 pub fn check_VkSetDescriptorBufferOffsetsInfoEXT(extensions: *const Extensions, item: *const vk.VkSetDescriptorBufferOffsetsInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindDescriptorBufferEmbeddedSamplersInfoEXT(extensions: *const Extensions, item: *const vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.stageFlags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.stageFlags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCubicClampFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCubicClampFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(extensions: *const Extensions, item: *const vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCubicWeightsFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerCubicWeightsCreateInfoQCOM(extensions: *const Extensions, item: *const vk.VkSamplerCubicWeightsCreateInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCubicFilterWeightsQCOM(extensions, &item.cubicWeights));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCubicFilterWeightsQCOM(extensions, @ptrCast(&item.cubicWeights)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBlitImageCubicWeightsInfoQCOM(extensions: *const Extensions, item: *const vk.VkBlitImageCubicWeightsInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkCubicFilterWeightsQCOM(extensions, &item.cubicWeights));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkCubicFilterWeightsQCOM(extensions, @ptrCast(&item.cubicWeights)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageProcessing2FeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageProcessing2PropertiesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSamplerBlockMatchWindowCreateInfoQCOM(extensions: *const Extensions, item: *const vk.VkSamplerBlockMatchWindowCreateInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkBlockMatchWindowCompareModeQCOM(extensions, &item.windowCompareMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkBlockMatchWindowCompareModeQCOM(extensions, @ptrCast(&item.windowCompareMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceLayeredDriverPropertiesMSFT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkLayeredDriverUnderlyingApiMSFT(extensions, &item.underlyingAPI));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkLayeredDriverUnderlyingApiMSFT(extensions, @ptrCast(&item.underlyingAPI)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalFormatResolveFeaturesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalFormatResolvePropertiesANDROID(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalFormatResolvePropertiesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkChromaLocation(extensions, &item.externalFormatResolveChromaOffsetX) and
-        check_enum_VkChromaLocation(extensions, &item.externalFormatResolveChromaOffsetY));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.externalFormatResolveChromaOffsetX)))
+        return false;
+    if (!check_enum_VkChromaLocation(extensions, @ptrCast(&item.externalFormatResolveChromaOffsetY)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkAndroidHardwareBufferFormatResolvePropertiesANDROID(extensions: *const Extensions, item: *const vk.VkAndroidHardwareBufferFormatResolvePropertiesANDROID) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.colorAttachmentFormat));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.colorAttachmentFormat)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLatencySleepModeInfoNV(extensions: *const Extensions, item: *const vk.VkLatencySleepModeInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLatencySleepInfoNV(extensions: *const Extensions, item: *const vk.VkLatencySleepInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSetLatencyMarkerInfoNV(extensions: *const Extensions, item: *const vk.VkSetLatencyMarkerInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkLatencyMarkerNV(extensions, &item.marker));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkLatencyMarkerNV(extensions, @ptrCast(&item.marker)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkGetLatencyMarkerInfoNV(extensions: *const Extensions, item: *const vk.VkGetLatencyMarkerInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLatencyTimingsFrameReportNV(extensions: *const Extensions, item: *const vk.VkLatencyTimingsFrameReportNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOutOfBandQueueTypeInfoNV(extensions: *const Extensions, item: *const vk.VkOutOfBandQueueTypeInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkOutOfBandQueueTypeNV(extensions, &item.queueType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkOutOfBandQueueTypeNV(extensions, @ptrCast(&item.queueType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLatencySubmissionPresentIdNV(extensions: *const Extensions, item: *const vk.VkLatencySubmissionPresentIdNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSwapchainLatencyCreateInfoNV(extensions: *const Extensions, item: *const vk.VkSwapchainLatencyCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkLatencySurfaceCapabilitiesNV(extensions: *const Extensions, item: *const vk.VkLatencySurfaceCapabilitiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPresentModeKHR(extensions, &item.pPresentModes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    for (0..item.presentModeCount) |i| {
+        if (!check_enum_VkPresentModeKHR(extensions, @ptrCast(&item.pPresentModes[i])))
+            return false;
+    }
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCudaKernelLaunchFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCudaKernelLaunchPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceQueueShaderCoreControlCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDeviceQueueShaderCoreControlCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSchedulingControlsFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSchedulingControlsFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceSchedulingControlsPropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceSchedulingControlsPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRenderPassStripedFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRenderPassStripedFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRenderPassStripedPropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRenderPassStripedPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassStripeInfoARM(extensions: *const Extensions, item: *const vk.VkRenderPassStripeInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassStripeBeginInfoARM(extensions: *const Extensions, item: *const vk.VkRenderPassStripeBeginInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassStripeSubmitInfoARM(extensions: *const Extensions, item: *const vk.VkRenderPassStripeSubmitInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderSubgroupRotateFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR) bool {
@@ -18923,7 +30213,16 @@ pub fn check_VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR(extensions: *const 
 }
 
 pub fn check_VkPhysicalDeviceShaderExpectAssumeFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderExpectAssumeFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderExpectAssumeFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderExpectAssumeFeaturesKHR) bool {
@@ -18933,7 +30232,16 @@ pub fn check_VkPhysicalDeviceShaderExpectAssumeFeaturesKHR(extensions: *const Ex
 }
 
 pub fn check_VkPhysicalDeviceShaderFloatControls2Features(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderFloatControls2Features) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderFloatControls2FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderFloatControls2FeaturesKHR) bool {
@@ -18943,7 +30251,16 @@ pub fn check_VkPhysicalDeviceShaderFloatControls2FeaturesKHR(extensions: *const 
 }
 
 pub fn check_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR) bool {
@@ -18953,7 +30270,16 @@ pub fn check_VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR(extensions: *c
 }
 
 pub fn check_VkRenderingAttachmentLocationInfo(extensions: *const Extensions, item: *const vk.VkRenderingAttachmentLocationInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingAttachmentLocationInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingAttachmentLocationInfoKHR) bool {
@@ -18963,7 +30289,16 @@ pub fn check_VkRenderingAttachmentLocationInfoKHR(extensions: *const Extensions,
 }
 
 pub fn check_VkRenderingInputAttachmentIndexInfo(extensions: *const Extensions, item: *const vk.VkRenderingInputAttachmentIndexInfo) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderingInputAttachmentIndexInfoKHR(extensions: *const Extensions, item: *const vk.VkRenderingInputAttachmentIndexInfoKHR) bool {
@@ -18973,51 +30308,159 @@ pub fn check_VkRenderingInputAttachmentIndexInfoKHR(extensions: *const Extension
 }
 
 pub fn check_VkPhysicalDeviceShaderQuadControlFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceMapMemoryPlacedPropertiesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceMapMemoryPlacedPropertiesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryMapPlacedInfoEXT(extensions: *const Extensions, item: *const vk.VkMemoryMapPlacedInfoEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderBfloat16FeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceRawAccessChainsFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceImageAlignmentControlPropertiesMESA(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceImageAlignmentControlPropertiesMESA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkImageAlignmentControlCreateInfoMESA(extensions: *const Extensions, item: *const vk.VkImageAlignmentControlCreateInfoMESA) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT) bool {
@@ -19027,7 +30470,16 @@ pub fn check_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT(extensions: *
 }
 
 pub fn check_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDepthClampRangeEXT(extensions: *const Extensions, item: *const vk.VkDepthClampRangeEXT) bool {
@@ -19037,234 +30489,728 @@ pub fn check_VkDepthClampRangeEXT(extensions: *const Extensions, item: *const vk
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCooperativeMatrixFlexibleDimensionsPropertiesNV(extensions: *const Extensions, item: *const vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.AType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.BType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.CType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.ResultType) and
-        check_enum_VkScopeKHR(extensions, &item.scope));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.AType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.BType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.CType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.ResultType)))
+        return false;
+    if (!check_enum_VkScopeKHR(extensions, @ptrCast(&item.scope)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceHdrVividFeaturesHUAWEI(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceHdrVividFeaturesHUAWEI) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeVectorFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCooperativeVectorPropertiesNV(extensions: *const Extensions, item: *const vk.VkCooperativeVectorPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.inputType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.inputInterpretation) and
-        check_enum_VkComponentTypeKHR(extensions, &item.matrixInterpretation) and
-        check_enum_VkComponentTypeKHR(extensions, &item.biasInterpretation) and
-        check_enum_VkComponentTypeKHR(extensions, &item.resultType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.inputType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.inputInterpretation)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.matrixInterpretation)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.biasInterpretation)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.resultType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceCooperativeVectorPropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceCooperativeVectorPropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.cooperativeVectorSupportedStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.cooperativeVectorSupportedStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkConvertCooperativeVectorMatrixInfoNV(extensions: *const Extensions, item: *const vk.VkConvertCooperativeVectorMatrixInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.srcComponentType) and
-        check_enum_VkComponentTypeKHR(extensions, &item.dstComponentType) and
-        check_enum_VkCooperativeVectorMatrixLayoutNV(extensions, &item.srcLayout) and
-        check_enum_VkCooperativeVectorMatrixLayoutNV(extensions, &item.dstLayout));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.srcComponentType)))
+        return false;
+    if (!check_enum_VkComponentTypeKHR(extensions, @ptrCast(&item.dstComponentType)))
+        return false;
+    if (!check_enum_VkCooperativeVectorMatrixLayoutNV(extensions, @ptrCast(&item.srcLayout)))
+        return false;
+    if (!check_enum_VkCooperativeVectorMatrixLayoutNV(extensions, @ptrCast(&item.dstLayout)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTileShadingFeaturesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTileShadingPropertiesQCOM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTileShadingPropertiesQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkRenderPassTileShadingCreateInfoQCOM(extensions: *const Extensions, item: *const vk.VkRenderPassTileShadingCreateInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkTileShadingRenderPassFlagBitsQCOM(extensions, &item.flags));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkTileShadingRenderPassFlagBitsQCOM(extensions, @ptrCast(&item.flags)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerTileBeginInfoQCOM(extensions: *const Extensions, item: *const vk.VkPerTileBeginInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPerTileEndInfoQCOM(extensions: *const Extensions, item: *const vk.VkPerTileEndInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDispatchTileInfoQCOM(extensions: *const Extensions, item: *const vk.VkDispatchTileInfoQCOM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(extensions: *const Extensions, item: *const vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSetPresentConfigNV(extensions: *const Extensions, item: *const vk.VkSetPresentConfigNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePresentMeteringFeaturesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePresentMeteringFeaturesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalComputeQueueDeviceCreateInfoNV(extensions: *const Extensions, item: *const vk.VkExternalComputeQueueDeviceCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalComputeQueueCreateInfoNV(extensions: *const Extensions, item: *const vk.VkExternalComputeQueueCreateInfoNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalComputeQueueDataParamsNV(extensions: *const Extensions, item: *const vk.VkExternalComputeQueueDataParamsNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalComputeQueuePropertiesNV(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceFormatPackFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceFormatPackFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorDescriptionARM(extensions: *const Extensions, item: *const vk.VkTensorDescriptionARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkTensorTilingARM(extensions, &item.tiling) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkTensorTilingARM(extensions, @ptrCast(&item.tiling)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorCreateInfoARM(extensions: *const Extensions, item: *const vk.VkTensorCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkSharingMode(extensions, &item.sharingMode));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkSharingMode(extensions, @ptrCast(&item.sharingMode)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM,
+            => if (!check_VkExternalMemoryTensorCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorViewCreateInfoARM(extensions: *const Extensions, item: *const vk.VkTensorViewCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkFormat(extensions, &item.format));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkFormat(extensions, @ptrCast(&item.format)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorMemoryRequirementsInfoARM(extensions: *const Extensions, item: *const vk.VkTensorMemoryRequirementsInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindTensorMemoryInfoARM(extensions: *const Extensions, item: *const vk.VkBindTensorMemoryInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkWriteDescriptorSetTensorARM(extensions: *const Extensions, item: *const vk.VkWriteDescriptorSetTensorARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorFormatPropertiesARM(extensions: *const Extensions, item: *const vk.VkTensorFormatPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTensorPropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTensorPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkShaderStageFlagBits(extensions, &item.shaderTensorSupportedStages));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkShaderStageFlagBits(extensions, @ptrCast(&item.shaderTensorSupportedStages)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorMemoryBarrierARM(extensions: *const Extensions, item: *const vk.VkTensorMemoryBarrierARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorDependencyInfoARM(extensions: *const Extensions, item: *const vk.VkTensorDependencyInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceTensorFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceTensorFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDeviceTensorMemoryRequirementsARM(extensions: *const Extensions, item: *const vk.VkDeviceTensorMemoryRequirementsARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkCopyTensorInfoARM(extensions: *const Extensions, item: *const vk.VkCopyTensorInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorCopyARM(extensions: *const Extensions, item: *const vk.VkTensorCopyARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkMemoryDedicatedAllocateInfoTensorARM(extensions: *const Extensions, item: *const vk.VkMemoryDedicatedAllocateInfoTensorARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorCaptureDescriptorDataInfoARM(extensions: *const Extensions, item: *const vk.VkTensorCaptureDescriptorDataInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkTensorViewCaptureDescriptorDataInfoARM(extensions: *const Extensions, item: *const vk.VkTensorViewCaptureDescriptorDataInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDescriptorGetTensorInfoARM(extensions: *const Extensions, item: *const vk.VkDescriptorGetTensorInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkFrameBoundaryTensorsARM(extensions: *const Extensions, item: *const vk.VkFrameBoundaryTensorsARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceExternalTensorInfoARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceExternalTensorInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalTensorPropertiesARM(extensions: *const Extensions, item: *const vk.VkExternalTensorPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkExternalMemoryTensorCreateInfoARM(extensions: *const Extensions, item: *const vk.VkExternalMemoryTensorCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.handleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.handleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceShaderFloat8FeaturesEXT(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkOHSurfaceCreateInfoOHOS(extensions: *const Extensions, item: *const vk.VkOHSurfaceCreateInfoOHOS) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkSurfaceCreateInfoOHOS(extensions: *const Extensions, item: *const vk.VkSurfaceCreateInfoOHOS) bool {
@@ -19274,103 +31220,316 @@ pub fn check_VkSurfaceCreateInfoOHOS(extensions: *const Extensions, item: *const
 }
 
 pub fn check_VkPhysicalDeviceDataGraphFeaturesARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDataGraphFeaturesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineConstantARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineConstantARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM,
+            => if (!check_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineResourceInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineResourceInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineCompilerControlCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineCompilerControlCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphPipelineCompilerControlCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphPipelineShaderModuleCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphPipelineIdentifierCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineShaderModuleCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineShaderModuleCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineSessionCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineSessionCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineSessionBindPointRequirementsInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineSessionBindPointRequirementARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineSessionBindPointRequirementARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, &item.bindPoint) and
-        check_enum_VkDataGraphPipelineSessionBindPointTypeARM(extensions, &item.bindPointType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, @ptrCast(&item.bindPoint)))
+        return false;
+    if (!check_enum_VkDataGraphPipelineSessionBindPointTypeARM(extensions, @ptrCast(&item.bindPointType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineSessionMemoryRequirementsInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, &item.bindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, @ptrCast(&item.bindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkBindDataGraphPipelineSessionMemoryInfoARM(extensions: *const Extensions, item: *const vk.VkBindDataGraphPipelineSessionMemoryInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, &item.bindPoint));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDataGraphPipelineSessionBindPointARM(extensions, @ptrCast(&item.bindPoint)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelinePropertyQueryResultARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelinePropertyQueryResultARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkDataGraphPipelinePropertyARM(extensions, &item.property));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkDataGraphPipelinePropertyARM(extensions, @ptrCast(&item.property)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineIdentifierCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineIdentifierCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphPipelineDispatchInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphPipelineDispatchInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDataGraphProcessingEngineARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDataGraphProcessingEngineARM) bool {
-    return (check_enum_VkPhysicalDeviceDataGraphProcessingEngineTypeARM(extensions, &item.type));
+    if (!check_enum_VkPhysicalDeviceDataGraphProcessingEngineTypeARM(extensions, @ptrCast(&item.type)))
+        return false;
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceDataGraphOperationSupportARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceDataGraphOperationSupportARM) bool {
-    return (check_enum_VkPhysicalDeviceDataGraphOperationTypeARM(extensions, &item.operationType));
+    if (!check_enum_VkPhysicalDeviceDataGraphOperationTypeARM(extensions, @ptrCast(&item.operationType)))
+        return false;
+    return true;
 }
 
 pub fn check_VkQueueFamilyDataGraphPropertiesARM(extensions: *const Extensions, item: *const vk.VkQueueFamilyDataGraphPropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_enum_VkPhysicalDeviceDataGraphProcessingEngineTypeARM(extensions, &item.engineType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_enum_VkPhysicalDeviceDataGraphProcessingEngineTypeARM(extensions, @ptrCast(&item.engineType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkQueueFamilyDataGraphProcessingEnginePropertiesARM(extensions: *const Extensions, item: *const vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType) and
-        check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, &item.foreignSemaphoreHandleTypes) and
-        check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, &item.foreignMemoryHandleTypes));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    if (!check_bitmask_VkExternalSemaphoreHandleTypeFlagBits(extensions, @ptrCast(&item.foreignSemaphoreHandleTypes)))
+        return false;
+    if (!check_bitmask_VkExternalMemoryHandleTypeFlagBits(extensions, @ptrCast(&item.foreignMemoryHandleTypes)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkDataGraphProcessingEngineCreateInfoARM(extensions: *const Extensions, item: *const vk.VkDataGraphProcessingEngineCreateInfoARM) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(extensions: *const Extensions, item: *const vk.VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC) bool {
-    return (check_enum_VkStructureType(extensions, &item.sType));
+    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
+        return false;
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        switch (next.sType) {
+            else => return false,
+        }
+    }
+    return true;
 }
 
 pub fn check_enum_VkImageLayout(extensions: *const Extensions, item: *const vk.VkImageLayout) bool {

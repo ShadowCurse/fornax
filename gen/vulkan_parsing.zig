@@ -592,6 +592,13 @@ pub const Struct = struct {
         );
         for (self.members) |*field| try writer.print("{f}\n", .{field});
     }
+
+    pub fn stype(self: *const Struct) ?[]const u8 {
+        for (self.members) |*member| {
+            if (std.mem.eql(u8, member.name, "sType")) return member.value;
+        }
+        return null;
+    }
 };
 
 pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
@@ -619,7 +626,6 @@ pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
     parser.skip_to_specific_element_start("type");
     result.type = parser.text() orelse return null;
     parser.skip_to_specific_element_end("type");
-
     parser.skip_to_specific_element_start("name");
     result.name = parser.text() orelse return null;
     parser.skip_to_specific_element_end("name");

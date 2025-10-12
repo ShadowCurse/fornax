@@ -2223,52 +2223,55 @@ fn write_extension_type(
         \\
     );
 
-    for (db.types.structs) |s| {
+    for (db.types.structs) |*s| {
         try write_fmt(file, alloc,
             \\
             \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
             \\
         , .{ s.name, s.name });
-        var tmp: std.ArrayListUnmanaged(u8) = .empty;
-        var writer = tmp.writer(alloc);
         var checked_members: u32 = 0;
+        var has_pnext: bool = false;
         for (s.members) |m| {
-            if (checked_members == 0) {
-                for (db.enums.items) |e| {
-                    if (std.mem.eql(u8, e.name, m.type)) {
-                        checked_members += 1;
-                        try writer.print(
-                            \\(check_{t}_{s}(extensions, &item.{s})
+            if (std.mem.eql(u8, m.name, "pNext")) has_pnext = true;
+            for (db.enums.items) |e| {
+                if (std.mem.eql(u8, e.name, m.type)) {
+                    checked_members += 1;
+                    if (m.len) |len| {
+                        try write_fmt(file, alloc,
+                            \\    for (0..item.{s}) |i| {{
+                            \\        if (!check_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
+                            \\            return false;
+                            \\    }}
+                            \\
+                        , .{ len, e.type, e.name, m.name });
+                        break;
+                    } else {
+                        try write_fmt(file, alloc,
+                            \\    if (!check_{t}_{s}(extensions, @ptrCast(&item.{s})))
+                            \\        return false;
+                            \\
                         , .{ e.type, e.name, m.name });
                         break;
                     }
                 }
-                for (db.types.bitmasks) |b| {
-                    if (std.mem.eql(u8, m.type, b.type_name)) {
-                        checked_members += 1;
-                        try writer.print(
-                            \\(check_bitmask_{s}(extensions, &item.{s})
-                        , .{ b.enum_name, m.name });
+            }
+            for (db.types.bitmasks) |b| {
+                if (std.mem.eql(u8, m.type, b.type_name)) {
+                    checked_members += 1;
+                    if (m.len) |len| {
+                        try write_fmt(file, alloc,
+                            \\    for (0..item.{s}) |i| {{
+                            \\        if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
+                            \\            return false;
+                            \\    }}
+                            \\
+                        , .{ len, b.enum_name, m.name });
                         break;
-                    }
-                }
-            } else {
-                for (db.enums.items) |e| {
-                    if (std.mem.eql(u8, e.name, m.type)) {
-                        checked_members += 1;
-                        try writer.print(
-                            \\ and
-                            \\        check_{t}_{s}(extensions, &item.{s})
-                        , .{ e.type, e.name, m.name });
-                        break;
-                    }
-                }
-                for (db.types.bitmasks) |b| {
-                    if (std.mem.eql(u8, m.type, b.type_name)) {
-                        checked_members += 1;
-                        try writer.print(
-                            \\ and
-                            \\        check_bitmask_{s}(extensions, &item.{s})
+                    } else {
+                        try write_fmt(file, alloc,
+                            \\    if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s})))
+                            \\        return false;
+                            \\
                         , .{ b.enum_name, m.name });
                         break;
                     }
@@ -2279,16 +2282,44 @@ fn write_extension_type(
             _ = try file.write(
                 \\    _ = extensions;
                 \\    _ = item;
-                \\    return true;
-                \\}
                 \\
-            )
-        else {
+            );
+        if (has_pnext) {
             try write_fmt(file, alloc,
-                \\    return {s});
+                \\    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+                \\    while (pnext) |next| {{
+                \\        pnext = next.pNext;
+                \\        switch (next.sType) {{
+                \\
+            , .{});
+            for (db.types.structs) |*ss| {
+                if (ss.extends) |extends| {
+                    if (ss.stype()) |stype| {
+                        if (std.mem.eql(u8, extends, s.name)) {
+                            try write_fmt(file, alloc,
+                                \\            vk.{[stype]s},
+                                \\            => if (!check_{[type]s}(extensions, @ptrCast(next)))
+                                \\                return false,
+                                \\
+                            , .{ .stype = stype, .type = ss.name });
+                        }
+                    }
+                }
+            }
+            try write_fmt(file, alloc,
+                \\            else => return false,
+                \\        }}
+                \\    }}
+                \\    return true;
                 \\}}
                 \\
-            , .{tmp.items});
+            , .{});
+        } else {
+            try write_fmt(file, alloc,
+                \\    return true;
+                \\}}
+                \\
+            , .{});
         }
     }
     for (db.enums.items) |e| {
