@@ -1392,13 +1392,23 @@ pub fn gen() !void {
     const header = std.fmt.comptimePrint(HEADER, .{@src().file});
     _ = try file.write(header);
 
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: vkp.Database = try .init(
+        std.heap.page_allocator,
+        "thirdparty/Vulkan-Headers/registry/vk.xml",
+    );
+
     _ = try file.write(STRUCT_SIZE);
     _ = try file.write(PRINT_STRUCT);
 
-    try write_print_chain(&file, &CHAIN_TYPES);
-    try write_chain_size(&file, &CHAIN_TYPES);
+    try write_print_chain(alloc, &file, &CHAIN_TYPES);
+    _ = arena.reset(.retain_capacity);
+    try write_chain_size(alloc, &file, &CHAIN_TYPES);
+    _ = arena.reset(.retain_capacity);
 
-    try write_check_result(&file, &.{
+    try write_check_result(alloc, &file, &.{
         "VK_NOT_READY",
         "VK_TIMEOUT",
         "VK_EVENT_SET",
@@ -1448,7 +1458,9 @@ pub fn gen() !void {
         "VK_PIPELINE_BINARY_MISSING_KHR",
         "VK_ERROR_NOT_ENOUGH_SPACE_KHR",
     });
-    try write_extension_type(&file);
+    _ = arena.reset(.retain_capacity);
+    try write_extension_type(alloc, &file, &db);
+    _ = arena.reset(.retain_capacity);
 }
 
 const STRUCT_SIZE =
@@ -1875,12 +1887,10 @@ fn write_fmt(
 }
 
 fn write_print_chain(
+    alloc: Allocator,
     file: *const std.fs.File,
     stypes: []const struct { u32, []const u8 },
 ) !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const alloc = arena.allocator();
-
     _ = try file.write(
         \\pub fn print_chain(chain: anytype) void {
         \\    var current: ?*const anyopaque = chain;
@@ -1892,8 +1902,6 @@ fn write_print_chain(
 
     var seen_values: std.ArrayListUnmanaged(u32) = .empty;
     for (stypes) |tuple| {
-        defer _ = arena.reset(.retain_capacity);
-
         const value, const stype = tuple;
         if (std.mem.indexOfScalar(u32, seen_values.items, value) == null)
             try seen_values.append(std.heap.page_allocator, value)
@@ -1930,12 +1938,10 @@ fn write_print_chain(
 }
 
 fn write_chain_size(
+    alloc: Allocator,
     file: *const std.fs.File,
     stypes: []const struct { u32, []const u8 },
 ) !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const alloc = arena.allocator();
-
     _ = try file.write(
         \\pub fn chain_size(chain: anytype) usize {
         \\    var size: usize = 0;
@@ -1948,8 +1954,6 @@ fn write_chain_size(
 
     var seen_values: std.ArrayListUnmanaged(u32) = .empty;
     for (stypes) |tuple| {
-        defer _ = arena.reset(.retain_capacity);
-
         const value, const stype = tuple;
         if (std.mem.indexOfScalar(u32, seen_values.items, value) == null)
             try seen_values.append(std.heap.page_allocator, value)
@@ -1986,10 +1990,11 @@ fn write_chain_size(
     );
 }
 
-fn write_check_result(file: *const std.fs.File, errors: []const []const u8) !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const alloc = arena.allocator();
-
+fn write_check_result(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    errors: []const []const u8,
+) !void {
     _ = try file.write(
         \\pub fn check_result(result: vk.VkResult) !void {
         \\    switch (result) {
@@ -1997,8 +2002,6 @@ fn write_check_result(file: *const std.fs.File, errors: []const []const u8) !voi
         \\
     );
     for (errors) |err| {
-        defer _ = arena.reset(.retain_capacity);
-
         const line = try std.fmt.allocPrint(
             alloc,
             \\        vk.{s} => {{
@@ -2087,11 +2090,11 @@ fn write_depends(
     _ = try file.write(")");
 }
 
-fn write_extension_type(file: *const std.fs.File) !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const alloc = arena.allocator();
-    const db: vkp.Database = try .init(alloc, "thirdparty/Vulkan-Headers/registry/vk.xml");
-
+fn write_extension_type(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    db: *const vkp.Database,
+) !void {
     try write_fmt(
         file,
         alloc,
