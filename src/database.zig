@@ -398,6 +398,8 @@ pub const Entry = struct {
     };
     pub fn create(
         self: *Entry,
+        comptime PARSE: type,
+        comptime CREATE: type,
         tmp_alloc: Allocator,
         db: *Database,
         vk_device: vk.VkDevice,
@@ -426,7 +428,7 @@ pub const Entry = struct {
             };
         }
 
-        self.create_inner(tmp_alloc, db, vk_device) catch |err| {
+        self.create_inner(PARSE, CREATE, tmp_alloc, db, vk_device) catch |err| {
             log.debug(
                 @src(),
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
@@ -441,6 +443,8 @@ pub const Entry = struct {
 
     fn create_inner(
         self: *Entry,
+        comptime PARSE: type,
+        comptime CREATE: type,
         tmp_alloc: Allocator,
         db: *Database,
         vk_device: vk.VkDevice,
@@ -455,21 +459,21 @@ pub const Entry = struct {
             dep.ptr_to_handle.?.* = dep.entry.handle;
         }
         switch (self.tag) {
-            .sampler => self.handle = try vulkan.create_vk_sampler(
+            .sampler => self.handle = try CREATE.create_vk_sampler(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .descriptor_set_layout => self.handle = try vulkan.create_descriptor_set_layout(
+            .descriptor_set_layout => self.handle = try CREATE.create_descriptor_set_layout(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .pipeline_layout => self.handle = try vulkan.create_pipeline_layout(
+            .pipeline_layout => self.handle = try CREATE.create_pipeline_layout(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
             .shader_module => {
                 const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
-                const result = try parsing.parse_shader_module(
+                const result = try PARSE.parse_shader_module(
                     tmp_alloc,
                     tmp_alloc,
                     db,
@@ -477,24 +481,24 @@ pub const Entry = struct {
                 );
                 try self.check_version_and_hash(result);
 
-                self.handle = try vulkan.create_shader_module(
+                self.handle = try CREATE.create_shader_module(
                     vk_device,
                     @ptrCast(result.create_info),
                 );
             },
-            .render_pass => self.handle = try vulkan.create_render_pass(
+            .render_pass => self.handle = try CREATE.create_render_pass(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .graphics_pipeline => self.handle = try vulkan.create_graphics_pipeline(
+            .graphics_pipeline => self.handle = try CREATE.create_graphics_pipeline(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .compute_pipeline => self.handle = try vulkan.create_compute_pipeline(
+            .compute_pipeline => self.handle = try CREATE.create_compute_pipeline(
                 vk_device,
                 @ptrCast(self.create_info),
             ),
-            .raytracing_pipeline => self.handle = try vulkan.create_raytracing_pipeline(
+            .raytracing_pipeline => self.handle = try CREATE.create_raytracing_pipeline(
                 vk_device,
                 @ptrCast(self.create_info),
             ),

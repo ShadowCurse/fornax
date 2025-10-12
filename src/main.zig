@@ -589,9 +589,14 @@ var created_compute_failures: std.atomic.Value(u32) = .init(0);
 var created_raytracing_failures: std.atomic.Value(u32) = .init(0);
 
 pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
-    create_inner(context, root_entries) catch unreachable;
+    create_inner(parsing, vulkan, context, root_entries) catch unreachable;
 }
-pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
+pub fn create_inner(
+    comptime PARSE: type,
+    comptime CREATE: type,
+    context: *ThreadContext,
+    root_entries: []RootEntry,
+) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const start = try std.time.Instant.now();
     const start_count = root_entries.len;
@@ -612,7 +617,7 @@ pub fn create_inner(context: *ThreadContext, root_entries: []RootEntry) !void {
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (curr_entry.create(tmp_alloc, context.db, context.vk_device)) {
+            switch (curr_entry.create(PARSE, CREATE, tmp_alloc, context.db, context.vk_device)) {
                 .dependencies => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
