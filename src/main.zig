@@ -176,6 +176,12 @@ pub fn main() !void {
         parsed_application_info.device_features2,
         args.enable_validation,
     );
+    const extensions: vu.Extensions = try .init(
+        tmp_alloc,
+        instance.api_version,
+        instance.all_extension_names,
+        device.all_extension_names,
+    );
     _ = tmp_arena.reset(.free_all);
 
     var thread_pool: ThreadPool = undefined;
@@ -187,6 +193,7 @@ pub fn main() !void {
         shared_alloc,
         args.num_threads,
         &progress_root,
+        &extensions,
         &db,
         device.device,
     );
@@ -341,6 +348,7 @@ pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
     shared_alloc: Allocator,
     progress: *std.Progress.Node,
+    extensions: *const vu.Extensions,
     db: *Database,
     vk_device: vk.VkDevice,
 };
@@ -350,6 +358,7 @@ pub fn init_thread_contexts(
     shared_alloc: Allocator,
     num_threads: ?u32,
     progress: *std.Progress.Node,
+    extensions: *const vu.Extensions,
     db: *Database,
     vk_device: vk.VkDevice,
 ) ![]align(64) ThreadContext {
@@ -365,6 +374,7 @@ pub fn init_thread_contexts(
             .arena = .init(std.heap.page_allocator),
             .shared_alloc = shared_alloc,
             .progress = progress,
+            .extensions = extensions,
             .db = db,
             .vk_device = vk_device,
         };
@@ -470,6 +480,7 @@ pub fn parse_inner(
                 shared_alloc,
                 alloc,
                 tmp_alloc,
+                context.extensions,
                 context.db,
             )) {
                 .parsed => {
@@ -741,6 +752,7 @@ test "parse" {
         .arena = .init(alloc),
         .shared_alloc = alloc,
         .progress = &progress,
+        .extensions = &.{},
         .db = &db,
         .vk_device = undefined,
     };

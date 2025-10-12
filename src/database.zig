@@ -11,6 +11,7 @@ const miniz = @import("miniz");
 const log = @import("log.zig");
 const parsing = @import("parsing.zig");
 const vulkan = @import("vulkan.zig");
+const vu = @import("vulkan_utils.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -191,6 +192,7 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
+        extensions: *const vu.Extensions,
         db: *Database,
     ) ParseResult {
         if (@cmpxchgWeak(Status, &self.status, .not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
@@ -226,6 +228,7 @@ pub const Entry = struct {
                 dependency_alloc,
                 entry_alloc,
                 tmp_alloc,
+                extensions,
                 db,
                 payload,
             ) catch |err| {
@@ -272,6 +275,7 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
+        extensions: *const vu.Extensions,
         db: *Database,
         payload: []const u8,
     ) !void {
@@ -280,6 +284,8 @@ pub const Entry = struct {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
+                if (!vu.check_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info)))
+                    return error.CheckFailedVkSamplerCreateInfo;
             },
             .descriptor_set_layout => {
                 const result = try PARSE.parse_descriptor_set_layout(
@@ -289,11 +295,19 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
+                if (!vu.check_VkDescriptorSetLayoutCreateInfo(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkDescriptorSetLayoutCreateInfo;
             },
             .pipeline_layout => {
                 const result =
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
+                if (!vu.check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkPipelineLayoutCreateInfo;
             },
             .render_pass => {
                 const result = try PARSE.parse_render_pass(
@@ -304,6 +318,10 @@ pub const Entry = struct {
                 );
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
+                if (!vu.check_VkRenderPassCreateInfo(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkRenderPassCreateInfo;
             },
             .graphics_pipeline => {
                 const result = try PARSE.parse_graphics_pipeline(
@@ -313,6 +331,10 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
+                if (!vu.check_VkGraphicsPipelineCreateInfo(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkGraphicsPipelineCreateInfo;
             },
             .compute_pipeline => {
                 const result = try PARSE.parse_compute_pipeline(
@@ -322,6 +344,10 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
+                if (!vu.check_VkComputePipelineCreateInfo(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkComputePipelineCreateInfo;
             },
             .raytracing_pipeline => {
                 const result = try PARSE.parse_raytracing_pipeline(
@@ -331,6 +357,10 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
+                if (!vu.check_VkRayTracingPipelineCreateInfoKHR(extensions, @ptrCast(
+                    result.create_info,
+                )))
+                    return error.CheckFailedVkRayTracingPipelineCreateInfoKHR;
             },
             else => {},
         }
