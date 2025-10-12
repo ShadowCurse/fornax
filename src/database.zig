@@ -533,36 +533,52 @@ pub const Entry = struct {
             return;
 
         for (self.dependencies) |dep| {
-            const old_value = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
-            log.assert(
-                @src(),
-                old_value != 0,
-                "Attempt to destroy object {t} hash: 0x{x:0>16} second time",
-                .{ dep.entry.tag, dep.entry.hash },
-            );
-            if (old_value == 1) {
-                switch (dep.entry.tag) {
-                    .application_info => {},
-                    .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(dep.entry.handle)),
-                    .descriptor_set_layout => vulkan.destroy_descriptor_set_layout(
-                        vk_device,
-                        @ptrCast(dep.entry.handle),
-                    ),
-                    .pipeline_layout => vulkan.destroy_pipeline_layout(
-                        vk_device,
-                        @ptrCast(dep.entry.handle),
-                    ),
-                    .shader_module,
-                    => vulkan.destroy_shader_module(vk_device, @ptrCast(dep.entry.handle)),
-                    .render_pass,
-                    => vulkan.destroy_render_pass(vk_device, @ptrCast(dep.entry.handle)),
-                    .graphics_pipeline,
-                    .compute_pipeline,
-                    .raytracing_pipeline,
-                    => vulkan.destroy_pipeline(vk_device, @ptrCast(dep.entry.handle)),
-                    .application_blob_link => {},
-                }
-            }
+            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
+            dep.entry.destroy(vk_device);
+        }
+    }
+
+    pub fn destroy(self: *Entry, vk_device: vk.VkDevice) void {
+        const status = @atomicLoad(Status, &self.status, .seq_cst);
+        if (status != .created) return;
+
+        const dependent_by = @atomicLoad(u32, &self.dependent_by, .seq_cst);
+        if (dependent_by != 0) return;
+
+        if (@cmpxchgWeak(
+            bool,
+            &self.dependencies_destroyed,
+            false,
+            true,
+            .seq_cst,
+            .seq_cst,
+        ) != null)
+            return;
+
+        switch (self.tag) {
+            .application_info => {},
+            .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
+            .descriptor_set_layout => vulkan.destroy_descriptor_set_layout(
+                vk_device,
+                @ptrCast(self.handle),
+            ),
+            .pipeline_layout => vulkan.destroy_pipeline_layout(
+                vk_device,
+                @ptrCast(self.handle),
+            ),
+            .shader_module,
+            => vulkan.destroy_shader_module(vk_device, @ptrCast(self.handle)),
+            .render_pass,
+            => vulkan.destroy_render_pass(vk_device, @ptrCast(self.handle)),
+            .graphics_pipeline,
+            .compute_pipeline,
+            .raytracing_pipeline,
+            => vulkan.destroy_pipeline(vk_device, @ptrCast(self.handle)),
+            .application_blob_link => {},
+        }
+        for (self.dependencies) |dep| {
+            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
+            dep.entry.destroy(vk_device);
         }
     }
 };

@@ -628,7 +628,7 @@ pub fn create_inner(
                 .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
                 .created => {
                     counters.getPtr(curr_entry.tag).* += 1;
-                    curr_entry.destroy_dependencies(context.vk_device);
+                    curr_entry.destroy(context.vk_device);
                 },
                 .invalid => {
                     curr_entry.destroy_dependencies(context.vk_device);
