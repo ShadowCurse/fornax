@@ -35,6 +35,12 @@ const IGNORE_SUB_NAMES: []const []const u8 = &.{
     "VK_KHR_object_refresh",
 };
 
+// Ignore list for structs
+const IGNORE_STRUCTS: []const []const u8 = &.{
+    "VkPipelineOfflineCreateInfo",
+    "VkExternalFormatANDROID",
+};
+
 pub const Database = struct {
     types: Types,
     extensions: Extensions,
@@ -58,7 +64,7 @@ pub const Database = struct {
                         _ = parser.next();
                         continue;
                     } else if (std.mem.eql(u8, es, "types")) {
-                        types = try parse_types(alloc, &parser);
+                        types = try parse_types(alloc, &parser, IGNORE_STRUCTS);
                     } else if (std.mem.eql(u8, es, "extensions")) {
                         extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
                     } else if (std.mem.eql(u8, es, "enums")) {
@@ -772,7 +778,11 @@ test "parse_single_struct" {
     }
 }
 
-pub fn parse_types(alloc: Allocator, parser: *xml.Parser) !Types {
+pub fn parse_types(
+    alloc: Allocator,
+    parser: *xml.Parser,
+    ignore_structs: []const []const u8,
+) !Types {
     if (!parser.check_peek_element_start("types")) return .{};
 
     _ = parser.element_start();
@@ -781,12 +791,14 @@ pub fn parse_types(alloc: Allocator, parser: *xml.Parser) !Types {
     var basetypes: std.ArrayListUnmanaged(Basetype) = .empty;
     var bitmasks: std.ArrayListUnmanaged(Bitmask) = .empty;
     var structs: std.ArrayListUnmanaged(Struct) = .empty;
-    while (true) {
+    loop: while (true) {
         if (parse_basetype(parser)) |v| {
             try basetypes.append(alloc, v);
         } else if (parse_bitmask(parser)) |v| {
             try bitmasks.append(alloc, v);
         } else if (try parse_struct(alloc, parser)) |v| {
+            for (ignore_structs) |ignore|
+                if (std.mem.eql(u8, ignore, v.name)) continue :loop;
             try structs.append(alloc, v);
         } else {
             parser.skip_current_element();
@@ -823,7 +835,7 @@ test "parse_types" {
     const alloc = arena.allocator();
 
     var parser: xml.Parser = .init(text);
-    const types = try parse_types(alloc, &parser);
+    const types = try parse_types(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     try std.testing.expectEqual(2, types.structs.len);
     try std.testing.expectEqual(1, types.bitmasks.len);

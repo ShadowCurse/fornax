@@ -11899,6 +11899,9 @@ pub fn check_VkApplicationInfo(extensions: *const Extensions, item: *const vk.Vk
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT,
+            => if (!check_VkApplicationParametersEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -11923,6 +11926,9 @@ pub fn check_VkDeviceQueueCreateInfo(extensions: *const Extensions, item: *const
             vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO,
             => if (!check_VkDeviceQueueGlobalPriorityCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+            => if (!check_VkDeviceQueueShaderCoreControlCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -11936,41 +11942,746 @@ pub fn check_VkDeviceCreateInfo(extensions: *const Extensions, item: *const vk.V
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT,
+            => if (!check_VkApplicationParametersEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO,
             => if (!check_VkDevicePrivateDataCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
+            => if (!check_VkPhysicalDevicePrivateDataFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
             => if (!check_VkPhysicalDeviceFeatures2(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
+            => if (!check_VkPhysicalDeviceVariablePointersFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalSciSyncFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalSciSync2FeaturesNV(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_SEMAPHORE_SCI_SYNC_POOL_RESERVATION_CREATE_INFO_NV,
             => if (!check_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+            => if (!check_VkPhysicalDeviceMultiviewFeatures(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO,
             => if (!check_VkDeviceGroupDeviceCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentIdFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentId2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentWaitFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentWait2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
+            => if (!check_VkPhysicalDevice16BitStorageFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
+            => if (!check_VkPhysicalDeviceSamplerYcbcrConversionFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
+            => if (!check_VkPhysicalDeviceProtectedMemoryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMultiDrawFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+            => if (!check_VkPhysicalDeviceInlineUniformBlockFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance4Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance5Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance6Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance7FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance8FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance9FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderDrawParametersFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderFloat16Int8Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
+            => if (!check_VkPhysicalDeviceHostQueryResetFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES,
+            => if (!check_VkPhysicalDeviceGlobalPriorityQueryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT,
             => if (!check_VkDeviceDeviceMemoryReportCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+            => if (!check_VkPhysicalDeviceDescriptorIndexingFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+            => if (!check_VkPhysicalDeviceTimelineSemaphoreFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
+            => if (!check_VkPhysicalDevice8BitStorageFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceConditionalRenderingFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkanMemoryModelFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderAtomicInt64Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES,
+            => if (!check_VkPhysicalDeviceVertexAttributeDivisorFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceASTCDecodeFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceTransformFeedbackFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExclusiveScissorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCornerSampledImageFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderImageFootprintFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceMemoryDecompressionFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShadingRateImageFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceMeshShaderFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMeshShaderFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceAccelerationStructureFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayQueryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD,
             => if (!check_VkDeviceMemoryOverallocationCreateInfoAMD(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+            => if (!check_VkPhysicalDeviceScalarBlockLayoutFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
+            => if (!check_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClipEnableFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMemoryPriorityFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            => if (!check_VkPhysicalDeviceBufferDeviceAddressFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
+            => if (!check_VkPhysicalDeviceImagelessFramebufferFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
+            => if (!check_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePresentBarrierFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePerformanceQueryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR,
             => if (!check_VkPerformanceQueryReservationInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCoverageReductionModeFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
+            => if (!check_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderClockFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
+            => if (!check_VkPhysicalDeviceIndexTypeUint8Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
+            => if (!check_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES,
+            => if (!check_VkPhysicalDeviceSubgroupSizeControlFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES,
+            => if (!check_VkPhysicalDeviceLineRasterizationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineCreationCacheControlFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan11Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan12Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan13Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan14Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceCoherentMemoryFeaturesAMD(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_FAULT_CALLBACK_INFO,
             => if (!check_VkFaultCallbackInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceCustomBorderColorFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
             => if (!check_VkDeviceDiagnosticsConfigCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
+            => if (!check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRobustness2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+            => if (!check_VkPhysicalDeviceImageRobustnessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePortabilitySubsetFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDevice4444FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderTerminateInvocationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClipControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClampControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceColorWriteEnableFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+            => if (!check_VkPhysicalDeviceSynchronization2Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES,
+            => if (!check_VkPhysicalDeviceHostImageCopyFeatures(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_OBJECT_RESERVATION_CREATE_INFO,
             => if (!check_VkDeviceObjectReservationCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkanSC10Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceLegacyDitheringFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineProtectedAccessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_DECODE_VP9_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceProvokingVertexFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDescriptorBufferFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderIntegerDotProductFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingValidationFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            => if (!check_VkPhysicalDeviceDynamicRenderingFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageViewMinLodFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePipelineBinaryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR,
             => if (!check_VkDevicePipelineBinaryInternalCacheControlKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE,
+            => if (!check_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageCompressionControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceOpacityMicromapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDisplacementMicromapFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePipelinePropertiesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineRobustnessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessingFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTilePropertiesFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC,
+            => if (!check_VkPhysicalDeviceAmigoProfilingFeaturesSEC(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAddressBindingReportFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceOpticalFlowFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFaultFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFrameBoundaryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthBiasControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderObjectFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderTileImageFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX,
+            => if (!check_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_FEATURES_AMDX,
+            => if (!check_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceAntiLagFeaturesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceCubicClampFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceCubicWeightsFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessing2FeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
+            => if (!check_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+            => if (!check_VkDeviceQueueShaderCoreControlCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceSchedulingControlsFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
+            => if (!check_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceRenderPassStripedFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+            => if (!check_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderSubgroupRotateFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderExpectAssumeFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderFloatControls2Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES,
+            => if (!check_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderQuadControlFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderBfloat16FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRawAccessChainsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
+            => if (!check_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceHdrVividFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeVectorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTileShadingFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePresentMeteringFeaturesNV(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV,
             => if (!check_VkExternalComputeQueueDeviceCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceFormatPackFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceTensorFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderFloat8FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceDataGraphFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC,
+            => if (!check_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -11993,11 +12704,17 @@ pub fn check_VkInstanceCreateInfo(extensions: *const Extensions, item: *const vk
             vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT,
             => if (!check_VkValidationFlagsEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+            => if (!check_VkValidationFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT,
             => if (!check_VkLayerSettingsCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
             => if (!check_VkDebugUtilsMessengerCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG,
             => if (!check_VkDirectDriverLoadingListLUNARG(extensions, @ptrCast(next)))
@@ -12083,6 +12800,9 @@ pub fn check_VkMemoryAllocateInfo(extensions: *const Extensions, item: *const vk
                 return false,
             vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA,
             => if (!check_VkImportMemoryBufferCollectionFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMPORT_METAL_BUFFER_INFO_EXT,
             => if (!check_VkImportMetalBufferInfoEXT(extensions, @ptrCast(next)))
@@ -12247,6 +12967,9 @@ pub fn check_VkBufferCreateInfo(extensions: *const Extensions, item: *const vk.V
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkBufferUsageFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV,
             => if (!check_VkDedicatedAllocationBufferCreateInfoNV(extensions, @ptrCast(next)))
                 return false,
@@ -12258,6 +12981,12 @@ pub fn check_VkBufferCreateInfo(extensions: *const Extensions, item: *const vk.V
                 return false,
             vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,
             => if (!check_VkBufferDeviceAddressCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+            => if (!check_VkVideoProfileListInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_BUFFER_CREATE_INFO_FUCHSIA,
             => if (!check_VkBufferCollectionBufferCreateInfoFUCHSIA(extensions, @ptrCast(next)))
@@ -12277,6 +13006,12 @@ pub fn check_VkBufferViewCreateInfo(extensions: *const Extensions, item: *const 
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkBufferUsageFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12329,6 +13064,12 @@ pub fn check_VkBufferMemoryBarrier(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+            => if (!check_VkMemoryBarrierAccessFlags3KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+            => if (!check_VkExternalMemoryAcquireUnmodifiedEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12350,6 +13091,15 @@ pub fn check_VkImageMemoryBarrier(extensions: *const Extensions, item: *const vk
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT,
+            => if (!check_VkSampleLocationsInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+            => if (!check_VkMemoryBarrierAccessFlags3KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+            => if (!check_VkExternalMemoryAcquireUnmodifiedEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12391,20 +13141,44 @@ pub fn check_VkImageCreateInfo(extensions: *const Extensions, item: *const vk.Vk
             vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
             => if (!check_VkImageSwapchainCreateInfoKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+            => if (!check_VkImageFormatListCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
             => if (!check_VkImageDrmFormatModifierListCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT,
             => if (!check_VkImageDrmFormatModifierExplicitCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO,
+            => if (!check_VkImageStencilUsageCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+            => if (!check_VkVideoProfileListInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_IMAGE_CREATE_INFO_FUCHSIA,
             => if (!check_VkBufferCollectionImageCreateInfoFUCHSIA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+            => if (!check_VkImageCompressionControlEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT,
             => if (!check_VkImportMetalTextureInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT,
             => if (!check_VkImportMetalIOSurfaceInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+            => if (!check_VkOpticalFlowImageFormatInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
+            => if (!check_VkExternalFormatQNX(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA,
             => if (!check_VkImageAlignmentControlCreateInfoMESA(extensions, @ptrCast(next)))
@@ -12440,11 +13214,20 @@ pub fn check_VkImageViewCreateInfo(extensions: *const Extensions, item: *const v
             vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT,
             => if (!check_VkImageViewSlicedCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO,
+            => if (!check_VkSamplerYcbcrConversionInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT,
             => if (!check_VkImageViewASTCDecodeModeEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_MIN_LOD_CREATE_INFO_EXT,
             => if (!check_VkImageViewMinLodCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM,
             => if (!check_VkImageViewSampleWeightCreateInfoQCOM(extensions, @ptrCast(next)))
@@ -12501,6 +13284,15 @@ pub fn check_VkBindSparseInfo(extensions: *const Extensions, item: *const vk.VkB
             vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO,
             => if (!check_VkDeviceGroupBindSparseInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+            => if (!check_VkTimelineSemaphoreSubmitInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+            => if (!check_VkFrameBoundaryEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+            => if (!check_VkFrameBoundaryTensorsARM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12550,6 +13342,12 @@ pub fn check_VkShaderModuleCreateInfo(extensions: *const Extensions, item: *cons
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+            => if (!check_VkValidationFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT,
+            => if (!check_VkShaderModuleValidationCacheCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12576,6 +13374,9 @@ pub fn check_VkDescriptorSetLayoutCreateInfo(extensions: *const Extensions, item
             vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
             => if (!check_VkDescriptorSetLayoutBindingFlagsCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+            => if (!check_VkMutableDescriptorTypeCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12599,6 +13400,12 @@ pub fn check_VkDescriptorPoolCreateInfo(extensions: *const Extensions, item: *co
         switch (next.sType) {
             vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO,
             => if (!check_VkDescriptorPoolInlineUniformBlockCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+            => if (!check_VkMutableDescriptorTypeCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphProcessingEngineCreateInfoARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -12645,11 +13452,23 @@ pub fn check_VkPipelineShaderStageCreateInfo(extensions: *const Extensions, item
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            => if (!check_VkShaderModuleCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT,
+            => if (!check_VkShaderModuleValidationCacheCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
             => if (!check_VkDebugUtilsObjectNameInfoEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+            => if (!check_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT,
             => if (!check_VkPipelineShaderStageModuleIdentifierCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+            => if (!check_VkPipelineRobustnessCreateInfo(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_NODE_CREATE_INFO_AMDX,
             => if (!check_VkPipelineShaderStageNodeCreateInfoAMDX(extensions, @ptrCast(next)))
@@ -12672,8 +13491,23 @@ pub fn check_VkComputePipelineCreateInfo(extensions: *const Extensions, item: *c
             vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV,
             => if (!check_VkComputePipelineIndirectBufferInfoNV(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkPipelineCreateFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+            => if (!check_VkPipelineBinaryInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI,
             => if (!check_VkSubpassShadingPipelineCreateInfoHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+            => if (!check_VkPipelineCompilerControlCreateInfoAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+            => if (!check_VkPipelineRobustnessCreateInfo(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -12837,6 +13671,9 @@ pub fn check_VkPipelineRasterizationStateCreateInfo(extensions: *const Extension
             vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
             => if (!check_VkPipelineRasterizationProvokingVertexStateCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+            => if (!check_VkDepthBiasRepresentationInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -12966,6 +13803,12 @@ pub fn check_VkGraphicsPipelineCreateInfo(extensions: *const Extensions, item: *
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkPipelineCreateFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+            => if (!check_VkPipelineBinaryInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
             => if (!check_VkGraphicsPipelineShaderGroupsCreateInfoNV(extensions, @ptrCast(next)))
                 return false,
@@ -12974,6 +13817,12 @@ pub fn check_VkGraphicsPipelineCreateInfo(extensions: *const Extensions, item: *
                 return false,
             vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV,
             => if (!check_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+            => if (!check_VkPipelineCompilerControlCreateInfoAMD(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
             => if (!check_VkPipelineLibraryCreateInfoKHR(extensions, @ptrCast(next)))
@@ -12987,8 +13836,23 @@ pub fn check_VkGraphicsPipelineCreateInfo(extensions: *const Extensions, item: *
             vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
             => if (!check_VkPipelineRenderingCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+            => if (!check_VkAttachmentSampleCountInfoAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+            => if (!check_VkMultiviewPerViewAttributesInfoNVX(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
             => if (!check_VkGraphicsPipelineLibraryCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+            => if (!check_VkPipelineRobustnessCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+            => if (!check_VkRenderingAttachmentLocationInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+            => if (!check_VkRenderingInputAttachmentIndexInfo(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
             => if (!check_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(extensions, @ptrCast(next)))
@@ -13187,6 +14051,9 @@ pub fn check_VkSamplerCreateInfo(extensions: *const Extensions, item: *const vk.
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO,
+            => if (!check_VkSamplerYcbcrConversionInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO,
             => if (!check_VkSamplerReductionModeCreateInfo(extensions, @ptrCast(next)))
                 return false,
@@ -13195,6 +14062,9 @@ pub fn check_VkSamplerCreateInfo(extensions: *const Extensions, item: *const vk.
                 return false,
             vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT,
             => if (!check_VkSamplerBorderColorComponentMappingCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM,
             => if (!check_VkSamplerCubicWeightsCreateInfoQCOM(extensions, @ptrCast(next)))
@@ -13219,6 +14089,9 @@ pub fn check_VkCommandPoolCreateInfo(extensions: *const Extensions, item: *const
         switch (next.sType) {
             vk.VK_STRUCTURE_TYPE_COMMAND_POOL_MEMORY_RESERVATION_CREATE_INFO,
             => if (!check_VkCommandPoolMemoryReservationCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphProcessingEngineCreateInfoARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -13264,8 +14137,23 @@ pub fn check_VkCommandBufferInheritanceInfo(extensions: *const Extensions, item:
             vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO,
             => if (!check_VkCommandBufferInheritanceRenderingInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+            => if (!check_VkAttachmentSampleCountInfoAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+            => if (!check_VkMultiviewPerViewAttributesInfoNVX(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM,
             => if (!check_VkTileMemoryBindInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+            => if (!check_VkRenderingAttachmentLocationInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+            => if (!check_VkRenderingInputAttachmentIndexInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+            => if (!check_VkRenderPassTileShadingCreateInfoQCOM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -13298,6 +14186,9 @@ pub fn check_VkRenderPassBeginInfo(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
+            => if (!check_VkDeviceGroupRenderPassBeginInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT,
             => if (!check_VkRenderPassSampleLocationsBeginInfoEXT(extensions, @ptrCast(next)))
                 return false,
@@ -13306,6 +14197,12 @@ pub fn check_VkRenderPassBeginInfo(extensions: *const Extensions, item: *const v
                 return false,
             vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM,
             => if (!check_VkRenderPassTransformBeginInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+            => if (!check_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+            => if (!check_VkRenderPassStripeBeginInfoARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -13390,6 +14287,21 @@ pub fn check_VkRenderPassCreateInfo(extensions: *const Extensions, item: *const 
             vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
             => if (!check_VkRenderPassInputAttachmentAspectCreateInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT,
+            => if (!check_VkRenderPassFragmentDensityMapCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+            => if (!check_VkRenderPassCreationControlEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
+            => if (!check_VkRenderPassCreationFeedbackCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+            => if (!check_VkTileMemorySizeInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+            => if (!check_VkRenderPassTileShadingCreateInfoQCOM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -13405,6 +14317,12 @@ pub fn check_VkEventCreateInfo(extensions: *const Extensions, item: *const vk.Vk
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
+            => if (!check_VkImportMetalSharedEventInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -13472,6 +14390,15 @@ pub fn check_VkSemaphoreCreateInfo(extensions: *const Extensions, item: *const v
             vk.VK_STRUCTURE_TYPE_SEMAPHORE_SCI_SYNC_CREATE_INFO_NV,
             => if (!check_VkSemaphoreSciSyncCreateInfoNV(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+            => if (!check_VkSemaphoreTypeCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+            => if (!check_VkExportMetalObjectCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
+            => if (!check_VkImportMetalSharedEventInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV,
             => if (!check_VkQueryLowLatencySupportNV(extensions, @ptrCast(next)))
                 return false,
@@ -13503,8 +14430,35 @@ pub fn check_VkQueryPoolCreateInfo(extensions: *const Extensions, item: *const v
             vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
             => if (!check_VkVideoProfileInfoKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+            => if (!check_VkVideoDecodeUsageInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeH264ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeH265ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeVP9ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+            => if (!check_VkVideoEncodeUsageInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR,
             => if (!check_VkQueryPoolVideoEncodeFeedbackCreateInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeH264ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeH265ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1ProfileInfoKHR(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -13571,6 +14525,12 @@ pub fn check_VkSubmitInfo(extensions: *const Extensions, item: *const vk.VkSubmi
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+            => if (!check_VkWin32KeyedMutexAcquireReleaseInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
+            => if (!check_VkWin32KeyedMutexAcquireReleaseInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR,
             => if (!check_VkD3D12FenceSubmitInfoKHR(extensions, @ptrCast(next)))
                 return false,
@@ -13580,8 +14540,23 @@ pub fn check_VkSubmitInfo(extensions: *const Extensions, item: *const vk.VkSubmi
             vk.VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO,
             => if (!check_VkProtectedSubmitInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+            => if (!check_VkTimelineSemaphoreSubmitInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
+            => if (!check_VkPerformanceQuerySubmitInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC,
             => if (!check_VkAmigoProfilingSubmitInfoSEC(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+            => if (!check_VkFrameBoundaryEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+            => if (!check_VkLatencySubmissionPresentIdNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+            => if (!check_VkFrameBoundaryTensorsARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -13862,8 +14837,20 @@ pub fn check_VkSwapchainCreateInfoKHR(extensions: *const Extensions, item: *cons
             vk.VK_STRUCTURE_TYPE_SWAPCHAIN_DISPLAY_NATIVE_HDR_CREATE_INFO_AMD,
             => if (!check_VkSwapchainDisplayNativeHdrCreateInfoAMD(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+            => if (!check_VkImageFormatListCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
+            => if (!check_VkSurfaceFullScreenExclusiveInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT,
+            => if (!check_VkSurfaceFullScreenExclusiveWin32InfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV,
             => if (!check_VkSwapchainPresentBarrierCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+            => if (!check_VkImageCompressionControlEXT(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR,
             => if (!check_VkSwapchainPresentModesCreateInfoKHR(extensions, @ptrCast(next)))
@@ -13912,6 +14899,9 @@ pub fn check_VkPresentInfoKHR(extensions: *const Extensions, item: *const vk.VkP
             vk.VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
             => if (!check_VkPresentFrameTokenGGP(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+            => if (!check_VkFrameBoundaryEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR,
             => if (!check_VkSwapchainPresentFenceInfoKHR(extensions, @ptrCast(next)))
                 return false,
@@ -13920,6 +14910,9 @@ pub fn check_VkPresentInfoKHR(extensions: *const Extensions, item: *const vk.VkP
                 return false,
             vk.VK_STRUCTURE_TYPE_SET_PRESENT_CONFIG_NV,
             => if (!check_VkSetPresentConfigNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+            => if (!check_VkFrameBoundaryTensorsARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -14692,6 +15685,705 @@ pub fn check_VkPhysicalDeviceFeatures2(extensions: *const Extensions, item: *con
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
+            => if (!check_VkPhysicalDevicePrivateDataFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
+            => if (!check_VkPhysicalDeviceVariablePointersFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalSciSyncFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalSciSync2FeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+            => if (!check_VkPhysicalDeviceMultiviewFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentIdFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentId2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentWaitFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentWait2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
+            => if (!check_VkPhysicalDevice16BitStorageFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
+            => if (!check_VkPhysicalDeviceSamplerYcbcrConversionFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
+            => if (!check_VkPhysicalDeviceProtectedMemoryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMultiDrawFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+            => if (!check_VkPhysicalDeviceInlineUniformBlockFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance4Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance5Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES,
+            => if (!check_VkPhysicalDeviceMaintenance6Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance7FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance8FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceMaintenance9FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderDrawParametersFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderFloat16Int8Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
+            => if (!check_VkPhysicalDeviceHostQueryResetFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES,
+            => if (!check_VkPhysicalDeviceGlobalPriorityQueryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+            => if (!check_VkPhysicalDeviceDescriptorIndexingFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+            => if (!check_VkPhysicalDeviceTimelineSemaphoreFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
+            => if (!check_VkPhysicalDevice8BitStorageFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceConditionalRenderingFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkanMemoryModelFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderAtomicInt64Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES,
+            => if (!check_VkPhysicalDeviceVertexAttributeDivisorFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceASTCDecodeFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceTransformFeedbackFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExclusiveScissorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCornerSampledImageFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderImageFootprintFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceMemoryDecompressionFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShadingRateImageFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceMeshShaderFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMeshShaderFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceAccelerationStructureFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayQueryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+            => if (!check_VkPhysicalDeviceScalarBlockLayoutFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
+            => if (!check_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClipEnableFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMemoryPriorityFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+            => if (!check_VkPhysicalDeviceBufferDeviceAddressFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
+            => if (!check_VkPhysicalDeviceImagelessFramebufferFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
+            => if (!check_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePresentBarrierFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePerformanceQueryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCoverageReductionModeFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
+            => if (!check_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderClockFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
+            => if (!check_VkPhysicalDeviceIndexTypeUint8Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
+            => if (!check_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES,
+            => if (!check_VkPhysicalDeviceSubgroupSizeControlFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES,
+            => if (!check_VkPhysicalDeviceLineRasterizationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineCreationCacheControlFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan11Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan12Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan13Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkan14Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceCoherentMemoryFeaturesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceCustomBorderColorFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
+            => if (!check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRobustness2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+            => if (!check_VkPhysicalDeviceImageRobustnessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePortabilitySubsetFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDevice4444FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderTerminateInvocationFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClipControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthClampControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceColorWriteEnableFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+            => if (!check_VkPhysicalDeviceSynchronization2Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES,
+            => if (!check_VkPhysicalDeviceHostImageCopyFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_FEATURES,
+            => if (!check_VkPhysicalDeviceVulkanSC10Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceLegacyDitheringFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineProtectedAccessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_DECODE_VP9_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceProvokingVertexFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDescriptorBufferFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderIntegerDotProductFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingValidationFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+            => if (!check_VkPhysicalDeviceDynamicRenderingFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageViewMinLodFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePipelineBinaryFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE,
+            => if (!check_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageCompressionControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceOpacityMicromapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDisplacementMicromapFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePipelinePropertiesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
+            => if (!check_VkPhysicalDevicePipelineRobustnessFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessingFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTilePropertiesFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC,
+            => if (!check_VkPhysicalDeviceAmigoProfilingFeaturesSEC(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceAddressBindingReportFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceOpticalFlowFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFaultFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
+            => if (!check_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceFrameBoundaryFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceDepthBiasControlFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderObjectFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderTileImageFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX,
+            => if (!check_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_FEATURES_AMDX,
+            => if (!check_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+            => if (!check_VkPhysicalDeviceAntiLagFeaturesAMD(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceCubicClampFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceCubicWeightsFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceImageProcessing2FeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
+            => if (!check_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceSchedulingControlsFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
+            => if (!check_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceRenderPassStripedFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+            => if (!check_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderSubgroupRotateFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderExpectAssumeFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES,
+            => if (!check_VkPhysicalDeviceShaderFloatControls2Features(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES,
+            => if (!check_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderQuadControlFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceShaderBfloat16FeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceRawAccessChainsFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
+            => if (!check_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+            => if (!check_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
+            => if (!check_VkPhysicalDeviceHdrVividFeaturesHUAWEI(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
+            => if (!check_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+            => if (!check_VkPhysicalDeviceCooperativeVectorFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+            => if (!check_VkPhysicalDeviceTileShadingFeaturesQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
+            => if (!check_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+            => if (!check_VkPhysicalDevicePresentMeteringFeaturesNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceFormatPackFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceTensorFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
+            => if (!check_VkPhysicalDeviceShaderFloat8FeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+            => if (!check_VkPhysicalDeviceDataGraphFeaturesARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC,
+            => if (!check_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -15109,6 +16801,9 @@ pub fn check_VkImageFormatProperties2(extensions: *const Extensions, item: *cons
             vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY,
             => if (!check_VkHostImageCopyDevicePerformanceQuery(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+            => if (!check_VkImageCompressionPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -15141,11 +16836,26 @@ pub fn check_VkPhysicalDeviceImageFormatInfo2(extensions: *const Extensions, ite
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
             => if (!check_VkPhysicalDeviceExternalImageFormatInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+            => if (!check_VkImageFormatListCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
             => if (!check_VkPhysicalDeviceImageDrmFormatModifierInfoEXT(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO,
+            => if (!check_VkImageStencilUsageCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT,
             => if (!check_VkPhysicalDeviceImageViewImageFormatInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+            => if (!check_VkVideoProfileListInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+            => if (!check_VkImageCompressionControlEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+            => if (!check_VkOpticalFlowImageFormatInfoNV(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -15443,6 +17153,9 @@ pub fn check_VkPhysicalDeviceExternalBufferInfo(extensions: *const Extensions, i
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkBufferUsageFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -15763,6 +17476,9 @@ pub fn check_VkPhysicalDeviceExternalSemaphoreInfo(extensions: *const Extensions
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+            => if (!check_VkSemaphoreTypeCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -16445,6 +18161,9 @@ pub fn check_VkBindBufferMemoryInfo(extensions: *const Extensions, item: *const 
             vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO,
             => if (!check_VkBindBufferMemoryDeviceGroupInfo(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS,
+            => if (!check_VkBindMemoryStatus(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -16491,6 +18210,9 @@ pub fn check_VkBindImageMemoryInfo(extensions: *const Extensions, item: *const v
                 return false,
             vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO,
             => if (!check_VkBindImagePlaneMemoryInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS,
+            => if (!check_VkBindMemoryStatus(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -17072,6 +18794,12 @@ pub fn check_VkPhysicalDeviceSurfaceInfo2KHR(extensions: *const Extensions, item
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
+            => if (!check_VkSurfaceFullScreenExclusiveInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT,
+            => if (!check_VkSurfaceFullScreenExclusiveWin32InfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR,
             => if (!check_VkSurfacePresentModeKHR(extensions, @ptrCast(next)))
                 return false,
@@ -17131,6 +18859,9 @@ pub fn check_VkSurfaceFormat2KHR(extensions: *const Extensions, item: *const vk.
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+            => if (!check_VkImageCompressionPropertiesEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -17584,6 +19315,9 @@ pub fn check_VkSamplerYcbcrConversionCreateInfo(extensions: *const Extensions, i
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
+            => if (!check_VkExternalFormatQNX(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM,
             => if (!check_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(extensions, @ptrCast(next)))
                 return false,
@@ -19046,6 +20780,12 @@ pub fn check_VkSubpassDescription2(extensions: *const Extensions, item: *const v
             vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
             => if (!check_VkFragmentShadingRateAttachmentInfoKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT,
+            => if (!check_VkMultisampledRenderToSingleSampledInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+            => if (!check_VkRenderPassCreationControlEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT,
             => if (!check_VkRenderPassSubpassFeedbackCreateInfoEXT(extensions, @ptrCast(next)))
                 return false,
@@ -19081,6 +20821,9 @@ pub fn check_VkSubpassDependency2(extensions: *const Extensions, item: *const vk
             vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
             => if (!check_VkMemoryBarrier2(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+            => if (!check_VkMemoryBarrierAccessFlags3KHR(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -19102,8 +20845,20 @@ pub fn check_VkRenderPassCreateInfo2(extensions: *const Extensions, item: *const
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT,
+            => if (!check_VkRenderPassFragmentDensityMapCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+            => if (!check_VkRenderPassCreationControlEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
             => if (!check_VkRenderPassCreationFeedbackCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+            => if (!check_VkTileMemorySizeInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+            => if (!check_VkRenderPassTileShadingCreateInfoQCOM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -19145,6 +20900,9 @@ pub fn check_VkSubpassEndInfo(extensions: *const Extensions, item: *const vk.VkS
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT,
+            => if (!check_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -19450,19 +21208,6 @@ pub fn check_VkAndroidHardwareBufferFormatPropertiesANDROID(extensions: *const E
 }
 
 pub fn check_VkCommandBufferInheritanceConditionalRenderingInfoEXT(extensions: *const Extensions, item: *const vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT) bool {
-    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
-        return false;
-    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
-    while (pnext) |next| {
-        pnext = next.pNext;
-        switch (next.sType) {
-            else => return false,
-        }
-    }
-    return true;
-}
-
-pub fn check_VkExternalFormatANDROID(extensions: *const Extensions, item: *const vk.VkExternalFormatANDROID) bool {
     if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
         return false;
     var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
@@ -20112,6 +21857,12 @@ pub fn check_VkRayTracingPipelineCreateInfoNV(extensions: *const Extensions, ite
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkPipelineCreateFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -20127,8 +21878,20 @@ pub fn check_VkRayTracingPipelineCreateInfoKHR(extensions: *const Extensions, it
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkPipelineCreateFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+            => if (!check_VkPipelineBinaryInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV,
             => if (!check_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+            => if (!check_VkPipelineRobustnessCreateInfo(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -20209,6 +21972,9 @@ pub fn check_VkAccelerationStructureCreateInfoNV(extensions: *const Extensions, 
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -22424,6 +24190,9 @@ pub fn check_VkAccelerationStructureCreateInfoKHR(extensions: *const Extensions,
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV,
             => if (!check_VkAccelerationStructureMotionInfoNV(extensions, @ptrCast(next)))
                 return false,
@@ -22843,21 +24612,6 @@ pub fn check_VkDeviceDiagnosticsConfigCreateInfoNV(extensions: *const Extensions
     return true;
 }
 
-pub fn check_VkPipelineOfflineCreateInfo(extensions: *const Extensions, item: *const vk.VkPipelineOfflineCreateInfo) bool {
-    if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
-        return false;
-    if (!check_enum_VkPipelineMatchControl(extensions, @ptrCast(&item.matchControl)))
-        return false;
-    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
-    while (pnext) |next| {
-        pnext = next.pNext;
-        switch (next.sType) {
-            else => return false,
-        }
-    }
-    return true;
-}
-
 pub fn check_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(extensions: *const Extensions, item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures) bool {
     if (!check_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
         return false;
@@ -23086,6 +24840,9 @@ pub fn check_VkImageBlit2(extensions: *const Extensions, item: *const vk.VkImage
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+            => if (!check_VkCopyCommandTransformInfoQCOM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -23105,6 +24862,9 @@ pub fn check_VkBufferImageCopy2(extensions: *const Extensions, item: *const vk.V
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+            => if (!check_VkCopyCommandTransformInfoQCOM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -23644,6 +25404,12 @@ pub fn check_VkGeneratedCommandsMemoryRequirementsInfoEXT(extensions: *const Ext
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT,
+            => if (!check_VkGeneratedCommandsPipelineInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT,
+            => if (!check_VkGeneratedCommandsShaderInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -23713,6 +25479,12 @@ pub fn check_VkGeneratedCommandsInfoEXT(extensions: *const Extensions, item: *co
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT,
+            => if (!check_VkGeneratedCommandsPipelineInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT,
+            => if (!check_VkGeneratedCommandsShaderInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -23756,6 +25528,9 @@ pub fn check_VkIndirectCommandsLayoutCreateInfoEXT(extensions: *const Extensions
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -23987,6 +25762,15 @@ pub fn check_VkImageMemoryBarrier2(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT,
+            => if (!check_VkSampleLocationsInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+            => if (!check_VkMemoryBarrierAccessFlags3KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+            => if (!check_VkExternalMemoryAcquireUnmodifiedEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -24006,6 +25790,12 @@ pub fn check_VkBufferMemoryBarrier2(extensions: *const Extensions, item: *const 
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+            => if (!check_VkMemoryBarrierAccessFlags3KHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+            => if (!check_VkExternalMemoryAcquireUnmodifiedEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -24108,6 +25898,24 @@ pub fn check_VkSubmitInfo2(extensions: *const Extensions, item: *const vk.VkSubm
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+            => if (!check_VkWin32KeyedMutexAcquireReleaseInfoNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
+            => if (!check_VkWin32KeyedMutexAcquireReleaseInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
+            => if (!check_VkPerformanceQuerySubmitInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+            => if (!check_VkFrameBoundaryEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+            => if (!check_VkLatencySubmissionPresentIdNV(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+            => if (!check_VkFrameBoundaryTensorsARM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -24634,6 +26442,9 @@ pub fn check_VkPhysicalDeviceVideoFormatInfoKHR(extensions: *const Extensions, i
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+            => if (!check_VkVideoProfileListInfoKHR(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -24782,6 +26593,33 @@ pub fn check_VkVideoProfileInfoKHR(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+            => if (!check_VkVideoDecodeUsageInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeH264ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeH265ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeVP9ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR,
+            => if (!check_VkVideoDecodeAV1ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+            => if (!check_VkVideoEncodeUsageInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeH264ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeH265ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PROFILE_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1ProfileInfoKHR(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -24955,6 +26793,9 @@ pub fn check_VkVideoDecodeInfoKHR(extensions: *const Extensions, item: *const vk
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR,
+            => if (!check_VkVideoInlineQueryInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_INLINE_SESSION_PARAMETERS_INFO_KHR,
             => if (!check_VkVideoDecodeH264InlineSessionParametersInfoKHR(extensions, @ptrCast(next)))
                 return false,
@@ -25387,6 +27228,9 @@ pub fn check_VkVideoSessionParametersCreateInfoKHR(extensions: *const Extensions
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR,
             => if (!check_VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+            => if (!check_VkVideoEncodeQualityLevelInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR,
             => if (!check_VkVideoEncodeH264SessionParametersCreateInfoKHR(extensions, @ptrCast(next)))
                 return false,
@@ -25472,11 +27316,23 @@ pub fn check_VkVideoBeginCodingInfoKHR(extensions: *const Extensions, item: *con
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeRateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeH264RateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_GOP_REMAINING_FRAME_INFO_KHR,
             => if (!check_VkVideoEncodeH264GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
                 return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeH265RateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_GOP_REMAINING_FRAME_INFO_KHR,
             => if (!check_VkVideoEncodeH265GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1RateControlInfoKHR(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_GOP_REMAINING_FRAME_INFO_KHR,
             => if (!check_VkVideoEncodeAV1GopRemainingFrameInfoKHR(extensions, @ptrCast(next)))
@@ -25509,6 +27365,21 @@ pub fn check_VkVideoCodingControlInfoKHR(extensions: *const Extensions, item: *c
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+            => if (!check_VkVideoEncodeQualityLevelInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeRateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeH264RateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeH265RateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_INFO_KHR,
+            => if (!check_VkVideoEncodeAV1RateControlInfoKHR(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -25543,6 +27414,9 @@ pub fn check_VkVideoEncodeInfoKHR(extensions: *const Extensions, item: *const vk
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR,
+            => if (!check_VkVideoInlineQueryInfoKHR(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR,
             => if (!check_VkVideoEncodeQuantizationMapInfoKHR(extensions, @ptrCast(next)))
                 return false,
@@ -26568,6 +28442,9 @@ pub fn check_VkDescriptorBufferBindingInfoEXT(extensions: *const Extensions, ite
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+            => if (!check_VkBufferUsageFlags2CreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT,
             => if (!check_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(extensions, @ptrCast(next)))
                 return false,
@@ -27162,11 +29039,32 @@ pub fn check_VkRenderingInfo(extensions: *const Extensions, item: *const vk.VkRe
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
+            => if (!check_VkDeviceGroupRenderPassBeginInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT,
+            => if (!check_VkMultisampledRenderToSingleSampledInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
             => if (!check_VkRenderingFragmentShadingRateAttachmentInfoKHR(extensions, @ptrCast(next)))
                 return false,
             vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT,
             => if (!check_VkRenderingFragmentDensityMapAttachmentInfoEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+            => if (!check_VkMultiviewPerViewAttributesInfoNVX(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+            => if (!check_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+            => if (!check_VkTileMemorySizeInfoQCOM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+            => if (!check_VkRenderPassStripeBeginInfoARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+            => if (!check_VkRenderPassTileShadingCreateInfoQCOM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -27187,6 +29085,9 @@ pub fn check_VkRenderingEndInfoEXT(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT,
+            => if (!check_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -27694,6 +29595,9 @@ pub fn check_VkSubresourceLayout2(extensions: *const Extensions, item: *const vk
         switch (next.sType) {
             vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE,
             => if (!check_VkSubresourceHostMemcpySize(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+            => if (!check_VkImageCompressionPropertiesEXT(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -28651,6 +30555,9 @@ pub fn check_VkDepthBiasInfoEXT(extensions: *const Extensions, item: *const vk.V
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+            => if (!check_VkDepthBiasRepresentationInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29220,6 +31127,12 @@ pub fn check_VkShaderCreateInfoEXT(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+            => if (!check_VkValidationFeaturesEXT(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+            => if (!check_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29418,6 +31331,12 @@ pub fn check_VkExecutionGraphPipelineCreateInfoAMDX(extensions: *const Extension
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+            => if (!check_VkPipelineCompilerControlCreateInfoAMD(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29587,6 +31506,9 @@ pub fn check_VkBindDescriptorSetsInfo(extensions: *const Extensions, item: *cons
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29608,6 +31530,9 @@ pub fn check_VkPushConstantsInfo(extensions: *const Extensions, item: *const vk.
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29629,6 +31554,9 @@ pub fn check_VkPushDescriptorSetInfo(extensions: *const Extensions, item: *const
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29648,6 +31576,9 @@ pub fn check_VkPushDescriptorSetWithTemplateInfo(extensions: *const Extensions, 
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29669,6 +31600,9 @@ pub fn check_VkSetDescriptorBufferOffsetsInfoEXT(extensions: *const Extensions, 
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -29684,6 +31618,9 @@ pub fn check_VkBindDescriptorBufferEmbeddedSamplersInfoEXT(extensions: *const Ex
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            => if (!check_VkPipelineLayoutCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -30884,6 +32821,9 @@ pub fn check_VkTensorCreateInfoARM(extensions: *const Extensions, item: *const v
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM,
             => if (!check_VkExternalMemoryTensorCreateInfoARM(extensions, @ptrCast(next)))
                 return false,
@@ -30902,6 +32842,9 @@ pub fn check_VkTensorViewCreateInfoARM(extensions: *const Extensions, item: *con
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+            => if (!check_VkOpaqueCaptureDescriptorDataCreateInfoEXT(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -31252,6 +33195,9 @@ pub fn check_VkDataGraphPipelineConstantARM(extensions: *const Extensions, item:
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+            => if (!check_VkTensorDescriptionARM(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM,
             => if (!check_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(extensions, @ptrCast(next)))
                 return false,
@@ -31268,6 +33214,9 @@ pub fn check_VkDataGraphPipelineResourceInfoARM(extensions: *const Extensions, i
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+            => if (!check_VkTensorDescriptionARM(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }
@@ -31294,6 +33243,9 @@ pub fn check_VkDataGraphPipelineCreateInfoARM(extensions: *const Extensions, ite
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+            => if (!check_VkPipelineCreationFeedbackCreateInfo(extensions, @ptrCast(next)))
+                return false,
             vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM,
             => if (!check_VkDataGraphPipelineCompilerControlCreateInfoARM(extensions, @ptrCast(next)))
                 return false,
@@ -31302,6 +33254,9 @@ pub fn check_VkDataGraphPipelineCreateInfoARM(extensions: *const Extensions, ite
                 return false,
             vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM,
             => if (!check_VkDataGraphPipelineIdentifierCreateInfoARM(extensions, @ptrCast(next)))
+                return false,
+            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+            => if (!check_VkDataGraphProcessingEngineCreateInfoARM(extensions, @ptrCast(next)))
                 return false,
             else => return false,
         }
@@ -31316,6 +33271,9 @@ pub fn check_VkDataGraphPipelineShaderModuleCreateInfoARM(extensions: *const Ext
     while (pnext) |next| {
         pnext = next.pNext;
         switch (next.sType) {
+            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            => if (!check_VkShaderModuleCreateInfo(extensions, @ptrCast(next)))
+                return false,
             else => return false,
         }
     }

@@ -2295,7 +2295,7 @@ fn write_extension_type(
             for (db.types.structs) |*ss| {
                 if (ss.extends) |extends| {
                     if (ss.stype()) |stype| {
-                        if (std.mem.eql(u8, extends, s.name)) {
+                        if (std.mem.indexOf(u8, extends, s.name) != null) {
                             try write_fmt(file, alloc,
                                 \\            vk.{[stype]s},
                                 \\            => if (!check_{[type]s}(extensions, @ptrCast(next)))
