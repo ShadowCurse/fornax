@@ -2226,7 +2226,7 @@ fn write_extension_type(
     for (db.types.structs) |*s| {
         try write_fmt(file, alloc,
             \\
-            \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
+            \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}, check_pnext: bool) bool {{
             \\
         , .{ s.name, s.name });
         var checked_members: u32 = 0;
@@ -2286,6 +2286,8 @@ fn write_extension_type(
             );
         if (has_pnext) {
             try write_fmt(file, alloc,
+                \\    if (!check_pnext) return true;
+                \\
                 \\    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
                 \\    while (pnext) |next| {{
                 \\        pnext = next.pNext;
@@ -2298,7 +2300,7 @@ fn write_extension_type(
                         if (std.mem.indexOf(u8, extends, s.name) != null) {
                             try write_fmt(file, alloc,
                                 \\            vk.{[stype]s},
-                                \\            => if (!check_{[type]s}(extensions, @ptrCast(next)))
+                                \\            => if (!check_{[type]s}(extensions, @ptrCast(next), false))
                                 \\                return false,
                                 \\
                             , .{ .stype = stype, .type = ss.name });
@@ -2307,15 +2309,19 @@ fn write_extension_type(
                 }
             }
             try write_fmt(file, alloc,
-                \\            else => return false,
+                \\            else => |v| {{
+                \\                log.debug(@src(), "Invalid pNext chain item for {s}: {{d}}", .{{v}});
+                \\                return false;
+                \\            }},
                 \\        }}
                 \\    }}
                 \\    return true;
                 \\}}
                 \\
-            , .{});
+            , .{s.name});
         } else {
             try write_fmt(file, alloc,
+                \\    _ = check_pnext;
                 \\    return true;
                 \\}}
                 \\
