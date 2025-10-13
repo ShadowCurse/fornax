@@ -767,6 +767,7 @@ test "parse" {
         const TestParse = struct {
             const Global = struct {
                 var n: u32 = 0;
+                var gp: vk.VkGraphicsPipelineCreateInfo = .{};
             };
 
             pub const parse_sampler = Dummy.parse;
@@ -791,7 +792,7 @@ test "parse" {
                 return .{
                     .version = 6,
                     .hash = Global.n,
-                    .create_info = undefined,
+                    .create_info = @ptrCast(&Global.gp),
                     .dependencies = dependencies,
                 };
             }
@@ -821,6 +822,7 @@ test "parse" {
         const TestParse = struct {
             const Global = struct {
                 var n: u32 = 0;
+                var gp: vk.VkGraphicsPipelineCreateInfo = .{};
             };
 
             pub const parse_sampler = Dummy.parse;
@@ -859,7 +861,7 @@ test "parse" {
                 return .{
                     .version = 6,
                     .hash = hash,
-                    .create_info = undefined,
+                    .create_info = @ptrCast(&Global.gp),
                     .dependencies = dependencies,
                 };
             }
