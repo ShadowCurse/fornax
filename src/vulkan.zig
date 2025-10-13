@@ -648,15 +648,27 @@ pub fn destroy_shader_module(
 
 pub fn create_render_pass(
     vk_device: vk.VkDevice,
-    create_info: *const vk.VkRenderPassCreateInfo,
+    create_info: *align(8) const anyopaque,
 ) !vk.VkRenderPass {
+    const base_type: *const vk.VkBaseInStructure = @ptrCast(create_info);
     var render_pass: vk.VkRenderPass = undefined;
-    try vu.check_result(vk.vkCreateRenderPass.?(
-        vk_device,
-        create_info,
-        null,
-        &render_pass,
-    ));
+    switch (base_type.sType) {
+        vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        => try vu.check_result(vk.vkCreateRenderPass.?(
+            vk_device,
+            @ptrCast(create_info),
+            null,
+            &render_pass,
+        )),
+        vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+        => try vu.check_result(vk.vkCreateRenderPass2.?(
+            vk_device,
+            @ptrCast(create_info),
+            null,
+            &render_pass,
+        )),
+        else => return error.InvalidCreateInfoForRenderPass,
+    }
     return render_pass;
 }
 
