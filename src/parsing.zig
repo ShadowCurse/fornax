@@ -377,12 +377,11 @@ pub fn parse_render_pass(
     json_str: []const u8,
 ) Error!Result {
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
-    const create_info = try alloc.create(vk.VkRenderPassCreateInfo);
 
     var result: Result = .{
         .version = 0,
         .hash = 0,
-        .create_info = @ptrCast(create_info),
+        .create_info = undefined,
     };
 
     var context: Context = .{
@@ -400,7 +399,16 @@ pub fn parse_render_pass(
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
             result.hash = try std.fmt.parseInt(u64, ss, 16);
+            const create_info = try alloc.create(vk.VkRenderPassCreateInfo);
             try parse_vk_render_pass_create_info(&context, create_info);
+            result.create_info = @ptrCast(create_info);
+        } else if (std.mem.eql(u8, s, "renderPasses2")) {
+            try scanner_object_begin(context.scanner);
+            const ss = try scanner_next_string(context.scanner);
+            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            const create_info = try alloc.create(vk.VkRenderPassCreateInfo2);
+            try parse_vk_render_pass_create_info2(&context, create_info);
+            result.create_info = @ptrCast(create_info);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -768,6 +776,17 @@ fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
     }
 }
 
+fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
+    switch (try scanner.next()) {
+        .array_begin => return true,
+        .array_end => return false,
+        else => |t| {
+            print_unexpected_token(t);
+            return error.InvalidJson;
+        },
+    }
+}
+
 fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
     loop: switch (try scanner.next()) {
         .array_begin => continue :loop try scanner.next(),
@@ -828,7 +847,7 @@ pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
             if ((parsed_field & 1 << i == 0) and std.mem.eql(u8, s, field.name)) {
                 parsed_field |= 1 << i;
                 switch (field.type) {
-                    i16, i32, u32, u64, usize, c_uint => {
+                    i16, u16, i32, u32, u64, usize, c_uint => {
                         const v = try scanner_next_number(context.scanner);
                         @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
                         consumed = true;
@@ -1174,6 +1193,140 @@ pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
     try parse_simple_type(context, obj);
 }
 
+pub fn parse_vk_pipeline_rasterization_line_state_create_info(
+    context: *Context,
+    obj: *vk.VkPipelineRasterizationLineStateCreateInfo,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
+    };
+    try parse_simple_type(context, obj);
+}
+
+pub fn parse_vk_pipeline_robustness_create_info(
+    context: *Context,
+    obj: *vk.VkPipelineRobustnessCreateInfo,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+    };
+    try parse_simple_type(context, obj);
+}
+
+pub fn parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
+    };
+    try parse_simple_type(context, obj);
+}
+
+pub fn parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineViewportDepthClipControlCreateInfoEXT,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
+    };
+    try parse_simple_type(context, obj);
+}
+
+fn parse_vk_mutable_descriptor_type_list_ext(
+    context: *Context,
+    item: *vk.VkMutableDescriptorTypeListEXT,
+) Error!void {
+    item.* = .{};
+    const descriptor_types = try parse_number_array(u32, context);
+    item.pDescriptorTypes = @ptrCast(descriptor_types.ptr);
+    item.descriptorTypeCount = @intCast(descriptor_types.len);
+}
+
+pub fn parse_vk_mutable_descriptor_type_create_info_ext(
+    context: *Context,
+    obj: *vk.VkMutableDescriptorTypeCreateInfoEXT,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+    };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "sType")) {
+            _ = try scanner_next_number(context.scanner);
+        } else if (std.mem.eql(u8, s, "mutableDescriptorTypeLists")) {
+            try scanner_array_begin(context.scanner);
+            var tmp: std.ArrayListUnmanaged(vk.VkMutableDescriptorTypeListEXT) = .empty;
+            while (try scanner_array_next_array(context.scanner)) {
+                var tmp2: std.ArrayListUnmanaged(u32) = .empty;
+                while (try scanner_array_next_number(context.scanner)) |v| {
+                    const number = try std.fmt.parseInt(u32, v, 10);
+                    try tmp2.append(context.tmp_alloc, number);
+                }
+                const final = try context.alloc.dupe(u32, tmp2.items);
+                const obj2: vk.VkMutableDescriptorTypeListEXT = .{
+                    .pDescriptorTypes = @ptrCast(final.ptr),
+                    .descriptorTypeCount = @intCast(final.len),
+                };
+                try tmp.append(context.tmp_alloc, obj2);
+            }
+            const lists = try context.alloc.dupe(vk.VkMutableDescriptorTypeListEXT, tmp.items);
+            obj.pMutableDescriptorTypeLists = @ptrCast(lists.ptr);
+            obj.mutableDescriptorTypeListCount = @intCast(lists.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_mutable_descriptor_type_create_info_ext" {
+    const json =
+        \\{
+        \\  "sType": 69,
+        \\  "mutableDescriptorTypeLists": [
+        \\    [
+        \\      69,
+        \\      70
+        \\    ],
+        \\    [
+        \\      71,
+        \\      72,
+        \\      73
+        \\    ]
+        \\  ]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkMutableDescriptorTypeCreateInfoEXT = undefined;
+    try parse_vk_mutable_descriptor_type_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(2, item.mutableDescriptorTypeListCount);
+    try std.testing.expectEqual(2, item.pMutableDescriptorTypeLists[0].descriptorTypeCount);
+    try std.testing.expectEqual(69, item.pMutableDescriptorTypeLists[0].pDescriptorTypes[0]);
+    try std.testing.expectEqual(70, item.pMutableDescriptorTypeLists[0].pDescriptorTypes[1]);
+    try std.testing.expectEqual(3, item.pMutableDescriptorTypeLists[1].descriptorTypeCount);
+    try std.testing.expectEqual(71, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[0]);
+    try std.testing.expectEqual(72, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[1]);
+    try std.testing.expectEqual(73, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[2]);
+}
+
 pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
     const Inner = struct {
         fn parse_next(
@@ -1301,6 +1454,66 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                     }
                     last_pnext_in_chain.* = @ptrCast(&obj.pNext);
                     try parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR => {
+                    const obj = try c.alloc.create(
+                        vk.VkPipelineRasterizationLineStateCreateInfo,
+                    );
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_vk_pipeline_rasterization_line_state_create_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO => {
+                    const obj = try c.alloc.create(
+                        vk.VkPipelineRobustnessCreateInfo,
+                    );
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_vk_pipeline_robustness_create_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT => {
+                    const obj = try c.alloc.create(
+                        vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT,
+                    );
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT => {
+                    const obj = try c.alloc.create(
+                        vk.VkPipelineViewportDepthClipControlCreateInfoEXT,
+                    );
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT => {
+                    const obj = try c.alloc.create(
+                        vk.VkMutableDescriptorTypeCreateInfoEXT,
+                    );
+                    if (first_in_chain.* == null)
+                        first_in_chain.* = obj;
+                    if (last_pnext_in_chain.*) |lpic| {
+                        lpic.* = obj;
+                    }
+                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                    try parse_vk_mutable_descriptor_type_create_info_ext(c, obj);
                 },
                 else => {
                     log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
@@ -1984,6 +2197,92 @@ test "test_parse_vk_render_pass_create_info" {
     try std.testing.expect(item.pDependencies != null);
 }
 
+fn parse_vk_render_pass_create_info2(
+    context: *Context,
+    item: *vk.VkRenderPassCreateInfo2,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "flags")) {
+            const v = try scanner_next_number(context.scanner);
+            item.flags = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "attachments")) {
+            const attachments = try parse_object_array(
+                vk.VkAttachmentDescription2,
+                parse_vk_attachment_description2,
+                context,
+            );
+            item.pAttachments = @ptrCast(attachments.ptr);
+            item.attachmentCount = @intCast(attachments.len);
+        } else if (std.mem.eql(u8, s, "subpasses")) {
+            const subpasses = try parse_object_array(
+                vk.VkSubpassDescription2,
+                parse_vk_subpass_description2,
+                context,
+            );
+            item.pSubpasses = @ptrCast(subpasses.ptr);
+            item.subpassCount = @intCast(subpasses.len);
+        } else if (std.mem.eql(u8, s, "dependencies")) {
+            const dependencies = try parse_object_array(
+                vk.VkSubpassDependency2,
+                parse_vk_subpass_dependency2,
+                context,
+            );
+            item.pDependencies = @ptrCast(dependencies.ptr);
+            item.dependencyCount = @intCast(dependencies.len);
+        } else if (std.mem.eql(u8, s, "correlatedViewMasks")) {
+            const masks = try parse_number_array(u32, context);
+            item.pCorrelatedViewMasks = @ptrCast(masks.ptr);
+            item.correlatedViewMaskCount = @intCast(masks.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_render_pass_create_info2" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "attachments": [{}],
+        \\  "subpasses": [{}],
+        \\  "dependencies": [{}],
+        \\  "correlatedViewMasks": [69, 69]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRenderPassCreateInfo2 = undefined;
+    try parse_vk_render_pass_create_info2(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(1, item.attachmentCount);
+    try std.testing.expect(item.pAttachments != null);
+    try std.testing.expectEqual(1, item.subpassCount);
+    try std.testing.expect(item.pSubpasses != null);
+    try std.testing.expectEqual(1, item.dependencyCount);
+    try std.testing.expect(item.pDependencies != null);
+    try std.testing.expectEqual(2, item.correlatedViewMaskCount);
+    try std.testing.expectEqual(69, item.pCorrelatedViewMasks[0]);
+    try std.testing.expectEqual(69, item.pCorrelatedViewMasks[1]);
+}
+
 fn parse_vk_subpass_dependency(
     context: *Context,
     item: *vk.VkSubpassDependency,
@@ -2028,6 +2327,57 @@ test "test_parse_vk_subpass_dependency" {
     try std.testing.expectEqual(69, item.dependencyFlags);
 }
 
+fn parse_vk_subpass_dependency2(
+    context: *Context,
+    item: *vk.VkSubpassDependency2,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 };
+    try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_subpass_dependency2" {
+    const json =
+        \\{
+        \\  "srcSubpass": 69,
+        \\  "dstSubpass": 69,
+        \\  "srcStageMask": 69,
+        \\  "dstStageMask": 69,
+        \\  "srcAccessMask": 69,
+        \\  "dstAccessMask": 69,
+        \\  "dependencyFlags": 69,
+        \\  "viewOffset": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSubpassDependency2 = undefined;
+    try parse_vk_subpass_dependency2(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.srcSubpass);
+    try std.testing.expectEqual(69, item.dstSubpass);
+    try std.testing.expectEqual(69, item.srcStageMask);
+    try std.testing.expectEqual(69, item.dstStageMask);
+    try std.testing.expectEqual(69, item.srcAccessMask);
+    try std.testing.expectEqual(69, item.dstAccessMask);
+    try std.testing.expectEqual(69, item.dependencyFlags);
+    try std.testing.expectEqual(69, item.viewOffset);
+}
+
 fn parse_vk_attachment_description(
     context: *Context,
     item: *vk.VkAttachmentDescription,
@@ -2065,6 +2415,59 @@ test "test_parse_vk_attachment_description" {
     var item: vk.VkAttachmentDescription = undefined;
     try parse_vk_attachment_description(&context, &item);
 
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.format);
+    try std.testing.expectEqual(69, item.samples);
+    try std.testing.expectEqual(69, item.loadOp);
+    try std.testing.expectEqual(69, item.storeOp);
+    try std.testing.expectEqual(69, item.stencilLoadOp);
+    try std.testing.expectEqual(69, item.stencilStoreOp);
+    try std.testing.expectEqual(69, item.initialLayout);
+    try std.testing.expectEqual(69, item.finalLayout);
+}
+
+fn parse_vk_attachment_description2(
+    context: *Context,
+    item: *vk.VkAttachmentDescription2,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 };
+    try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_attachment_description2" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "format": 69,
+        \\  "samples": 69,
+        \\  "loadOp": 69,
+        \\  "storeOp": 69,
+        \\  "stencilLoadOp": 69,
+        \\  "stencilStoreOp": 69,
+        \\  "initialLayout": 69,
+        \\  "finalLayout": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkAttachmentDescription2 = undefined;
+    try parse_vk_attachment_description2(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.format);
     try std.testing.expectEqual(69, item.samples);
@@ -2116,11 +2519,7 @@ fn parse_vk_subpass_description(
             try parse_vk_attachment_reference(context, attachment);
             item.pDepthStencilAttachment = attachment;
         } else if (std.mem.eql(u8, s, "preserveAttachments")) {
-            const attachments = try parse_object_array(
-                vk.VkAttachmentReference,
-                parse_vk_attachment_reference,
-                context,
-            );
+            const attachments = try parse_number_array(u32, context);
             item.pPreserveAttachments = @ptrCast(attachments.ptr);
             item.preserveAttachmentCount = @intCast(attachments.len);
         } else {
@@ -2139,7 +2538,7 @@ test "test_parse_vk_subpass_description" {
         \\  "colorAttachments": [{}],
         \\  "resolveAttachments": [{}],
         \\  "depthStencilAttachment": {},
-        \\  "preserveAttachments": [{}]
+        \\  "preserveAttachments": [69, 69]
         \\}
     ;
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -2165,8 +2564,109 @@ test "test_parse_vk_subpass_description" {
     try std.testing.expect(item.pColorAttachments != null);
     try std.testing.expect(item.pResolveAttachments != null);
     try std.testing.expect(item.pDepthStencilAttachment != null);
-    try std.testing.expectEqual(1, item.preserveAttachmentCount);
-    try std.testing.expect(item.pPreserveAttachments != null);
+    try std.testing.expectEqual(2, item.preserveAttachmentCount);
+    try std.testing.expectEqual(69, item.pPreserveAttachments[0]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
+}
+
+fn parse_vk_subpass_description2(
+    context: *Context,
+    item: *vk.VkSubpassDescription2,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "flags")) {
+            const v = try scanner_next_number(context.scanner);
+            item.flags = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "pipelineBindPoint")) {
+            const v = try scanner_next_number(context.scanner);
+            item.pipelineBindPoint = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "viewMask")) {
+            const v = try scanner_next_number(context.scanner);
+            item.viewMask = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "inputAttachments")) {
+            const attachments = try parse_object_array(
+                vk.VkAttachmentReference2,
+                parse_vk_attachment_reference2,
+                context,
+            );
+            item.pInputAttachments = @ptrCast(attachments.ptr);
+            item.inputAttachmentCount = @intCast(attachments.len);
+        } else if (std.mem.eql(u8, s, "colorAttachments")) {
+            const attachments = try parse_object_array(
+                vk.VkAttachmentReference2,
+                parse_vk_attachment_reference2,
+                context,
+            );
+            item.pColorAttachments = @ptrCast(attachments.ptr);
+            item.colorAttachmentCount = @intCast(attachments.len);
+        } else if (std.mem.eql(u8, s, "resolveAttachments")) {
+            const attachments = try parse_object_array(
+                vk.VkAttachmentReference2,
+                parse_vk_attachment_reference2,
+                context,
+            );
+            item.pResolveAttachments = @ptrCast(attachments.ptr);
+        } else if (std.mem.eql(u8, s, "depthStencilAttachment")) {
+            const attachment = try context.alloc.create(vk.VkAttachmentReference2);
+            try parse_vk_attachment_reference2(context, attachment);
+            item.pDepthStencilAttachment = attachment;
+        } else if (std.mem.eql(u8, s, "preserveAttachments")) {
+            const attachments = try parse_number_array(u32, context);
+            item.pPreserveAttachments = @ptrCast(attachments.ptr);
+            item.preserveAttachmentCount = @intCast(attachments.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_subpass_description2" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "pipelineBindPoint": 69,
+        \\  "viewMask": 69,
+        \\  "inputAttachments": [{}],
+        \\  "colorAttachments": [{}],
+        \\  "resolveAttachments": [{}],
+        \\  "depthStencilAttachment": {},
+        \\  "preserveAttachments": [69, 69]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSubpassDescription2 = undefined;
+    try parse_vk_subpass_description2(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2)),
+        item.sType,
+    );
+    try std.testing.expectEqual(null, item.pNext);
+    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, item.viewMask);
+    try std.testing.expectEqual(69, item.pipelineBindPoint);
+    try std.testing.expectEqual(1, item.inputAttachmentCount);
+    try std.testing.expect(item.pInputAttachments != null);
+    try std.testing.expectEqual(1, item.colorAttachmentCount);
+    try std.testing.expect(item.pColorAttachments != null);
+    try std.testing.expect(item.pResolveAttachments != null);
+    try std.testing.expect(item.pDepthStencilAttachment != null);
+    try std.testing.expectEqual(2, item.preserveAttachmentCount);
+    try std.testing.expectEqual(69, item.pPreserveAttachments[0]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
 }
 
 fn parse_vk_attachment_reference(
@@ -2201,6 +2701,46 @@ test "test_parse_vk_attachment_reference" {
 
     try std.testing.expectEqual(69, item.attachment);
     try std.testing.expectEqual(69, item.layout);
+}
+
+fn parse_vk_attachment_reference2(
+    context: *Context,
+    item: *vk.VkAttachmentReference2,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 };
+    try parse_simple_type(context, item);
+}
+
+test "test_parse_vk_attachment_reference2" {
+    const json =
+        \\{
+        \\  "attachment": 69,
+        \\  "layout": 69,
+        \\  "aspectMask": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkAttachmentReference2 = undefined;
+    try parse_vk_attachment_reference2(&context, &item);
+
+    try std.testing.expectEqual(
+        @as(u32, vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2),
+        item.sType,
+    );
+    try std.testing.expectEqual(69, item.attachment);
+    try std.testing.expectEqual(69, item.layout);
+    try std.testing.expectEqual(69, item.aspectMask);
 }
 
 fn parse_vk_graphics_pipeline_create_info(
