@@ -1400,12 +1400,11 @@ pub fn gen() !void {
         "thirdparty/Vulkan-Headers/registry/vk.xml",
     );
 
-    _ = try file.write(STRUCT_SIZE);
     _ = try file.write(PRINT_STRUCT);
 
     try write_print_chain(alloc, &file, &CHAIN_TYPES);
     _ = arena.reset(.retain_capacity);
-    try write_chain_size(alloc, &file, &CHAIN_TYPES);
+    try write_chain_size(alloc, &file, &db);
     _ = arena.reset(.retain_capacity);
 
     try write_check_result(alloc, &file, &db);
@@ -1413,132 +1412,6 @@ pub fn gen() !void {
     try write_extension_type(alloc, &file, &db);
     _ = arena.reset(.retain_capacity);
 }
-
-const STRUCT_SIZE =
-    \\pub fn struct_size(@"struct": anytype) usize {
-    \\    var size: usize = 0;
-    \\    const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
-    \\    const fields = @typeInfo(t).@"struct".fields;
-    \\    inline for (fields) |field| {
-    \\        switch (field.type) {
-    \\            [*c]const u8 => {},
-    \\            [*c]const u32 => {
-    \\                if (@hasField(t, "codeSize"))
-    \\                    size += @field(@"struct", "codeSize");
-    \\            },
-    \\            [*c]const vk.VkDescriptorSetLayoutBinding => {
-    \\                const len = @field(@"struct", "bindingCount");
-    \\                size += @sizeOf(vk.VkDescriptorSetLayoutBinding) * len;
-    \\                var elements: []const vk.VkDescriptorSetLayoutBinding = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkDescriptorSetLayout => {
-    \\                const len = if (@hasField(t, "descriptorSetCount"))
-    \\                    @field(@"struct", "descriptorSetCount")
-    \\                else if (@hasField(t, "setLayoutCount"))
-    \\                    @field(@"struct", "setLayoutCount");
-    \\                size += @sizeOf(*anyopaque) * len;
-    \\            },
-    \\            [*c]const vk.VkPushConstantRange => {
-    \\                const len = @field(@"struct", "pushConstantRangeCount");
-    \\                size += @sizeOf(vk.VkPushConstantRange) * len;
-    \\                var elements: []const vk.VkPushConstantRange = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkAttachmentDescription => {
-    \\                const len = @field(@"struct", "attachmentCount");
-    \\                size += @sizeOf(vk.VkAttachmentDescription) * len;
-    \\                var elements: []const vk.VkAttachmentDescription = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkSubpassDescription => {
-    \\                const len = @field(@"struct", "subpassCount");
-    \\                size += @sizeOf(vk.VkSubpassDescription) * len;
-    \\                var elements: []const vk.VkSubpassDescription = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkAttachmentReference => {
-    \\                const len = if (std.mem.eql(u8, field.name, "pInputAttachments"))
-    \\                    @field(@"struct", "inputAttachmentCount")
-    \\                else if (std.mem.eql(u8, field.name, "pColorAttachments"))
-    \\                    @field(@"struct", "colorAttachmentCount")
-    \\                else if (std.mem.eql(u8, field.name, "pResolveAttachments")) blk: {
-    \\                    if (@field(@"struct", field.name) != null)
-    \\                        break :blk @field(@"struct", "colorAttachmentCount")
-    \\                    else
-    \\                        break :blk 0;
-    \\                } else if (std.mem.eql(u8, field.name, "pDepthStencilAttachment"))
-    \\                    @intFromBool(@field(@"struct", field.name) != null)
-    \\                else if (std.mem.eql(u8, field.name, "pPreserveAttachments"))
-    \\                    @field(@"struct", "preserveAttachmentCount")
-    \\                else
-    \\                    @panic("Cannot find length for the VkAttachmentReference array");
-    \\
-    \\                if (len != 0) {
-    \\                    size += @sizeOf(vk.VkAttachmentReference) * len;
-    \\                    var elements: []const vk.VkAttachmentReference = undefined;
-    \\                    elements.ptr = @field(@"struct", field.name);
-    \\                    elements.len = len;
-    \\                    for (elements) |*binding| size += struct_size(binding);
-    \\                }
-    \\            },
-    \\            [*c]const vk.VkSubpassDependency => {
-    \\                const len = @field(@"struct", "dependencyCount");
-    \\                size += @sizeOf(vk.VkSubpassDependency) * len;
-    \\                var elements: []const vk.VkSubpassDependency = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkPipelineShaderStageCreateInfo => {
-    \\                const len = @field(@"struct", "stageCount");
-    \\                size += @sizeOf(vk.VkPipelineShaderStageCreateInfo) * len;
-    \\                var elements: []const vk.VkPipelineShaderStageCreateInfo = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkSpecializationMapEntry => {
-    \\                const len = @field(@"struct", "mapEntryCount");
-    \\                size += @sizeOf(vk.VkSpecializationMapEntry) * len;
-    \\                var elements: []const vk.VkSpecializationMapEntry = undefined;
-    \\                elements.ptr = @field(@"struct", field.name);
-    \\                elements.len = len;
-    \\                for (elements) |*binding| size += struct_size(binding);
-    \\            },
-    \\            [*c]const vk.VkPipelineVertexInputStateCreateInfo,
-    \\            [*c]const vk.VkPipelineInputAssemblyStateCreateInfo,
-    \\            [*c]const vk.VkPipelineTessellationStateCreateInfo,
-    \\            [*c]const vk.VkPipelineViewportStateCreateInfo,
-    \\            [*c]const vk.VkPipelineRasterizationStateCreateInfo,
-    \\            [*c]const vk.VkPipelineMultisampleStateCreateInfo,
-    \\            [*c]const vk.VkPipelineDepthStencilStateCreateInfo,
-    \\            [*c]const vk.VkPipelineColorBlendStateCreateInfo,
-    \\            [*c]const vk.VkPipelineDynamicStateCreateInfo,
-    \\            [*c]const vk.VkSpecializationInfo,
-    \\            [*c]const vk.VkViewport,
-    \\            [*c]const vk.VkRect2D,
-    \\            => {
-    \\                const element_type = @typeInfo(field.type).pointer.child;
-    \\                const element: ?*const element_type = @field(@"struct", field.name);
-    \\                if (element) |e| size += struct_size(e);
-    \\            },
-    \\            else => size += @sizeOf(field.type),
-    \\        }
-    \\    }
-    \\    return size;
-    \\}
-    \\
-    \\
-;
 
 const PRINT_STRUCT =
     \\pub fn print_struct(@"struct": anytype) void {
@@ -1897,48 +1770,168 @@ fn write_print_chain(
 fn write_chain_size(
     alloc: Allocator,
     file: *const std.fs.File,
-    stypes: []const struct { u32, []const u8 },
+    db: *const vkp.Database,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\pub fn chain_size(chain: anytype) usize {{
-        \\    var size: usize = 0;
-        \\    var current: ?*const anyopaque = chain;
-        \\    while (current) |c| {{
-        \\        const base_struct: *const vk.VkBaseInStructure = @ptrCast(@alignCast(c));
-        \\        switch (base_struct.sType) {{
-        \\
-    , .{});
-
-    var seen_values: std.ArrayListUnmanaged(u32) = .empty;
-    for (stypes) |tuple| {
-        const value, const stype = tuple;
-        if (std.mem.indexOfScalar(u32, seen_values.items, value) == null)
-            try seen_values.append(std.heap.page_allocator, value)
-        else
-            continue;
-
-        const t = try root.get_type(alloc, stype);
+    for (db.types.structs) |@"struct"| {
         w.write(
-            \\            vk.{[stype]s} => {{
-            \\                const nn: *const vk.{[type]s} = @ptrCast(@alignCast(c));
-            \\                size += struct_size(nn);
-            \\                current = nn.pNext;
-            \\            }},
+            \\pub fn size_of_{[name]s}(item: *const vk.{[name]s}, follow_pnext: bool) usize {{
             \\
-        , .{ .stype = stype, .type = t });
+        , .{ .name = @"struct".name });
+
+        var has_pnext: bool = false;
+        var has_size: bool = false;
+        {
+            var output: std.ArrayListUnmanaged(u8) = .empty;
+            var writer = output.writer(alloc);
+            for (@"struct".members) |member| {
+                if (eql(member.name, "pNext")) {
+                    has_pnext = true;
+                    continue;
+                }
+                if (member.pointer) {
+                    if (member.len) |len| {
+                        switch (len) {
+                            .null => {
+                                if (db.is_struct_name(member.type)) {
+                                    try writer.print(
+                                        \\    for (std.mem.span(item.{[name]s})) |*i|
+                                        \\        size += size_of_{[type]s}(i, false);
+                                        \\
+                                    , .{ .type = member.type, .name = member.name });
+                                } else {
+                                    try writer.print(
+                                        \\    for (std.mem.span(item.{[name]s})) |i|
+                                        \\        size += @sizeOf(i);
+                                        \\
+                                    , .{ .name = member.name });
+                                }
+                            },
+                            .member => |m| {
+                                if (@"struct".has_member(m)) {
+                                    if (db.is_struct_name(member.type)) {
+                                        try writer.print(
+                                            \\    for (0..item.{[len]s}) |i|
+                                            \\        size += size_of_{[type]s}(@ptrCast(&item.{[name]s}[i]), false);
+                                            \\
+                                        , .{ .len = m, .type = member.type, .name = member.name });
+                                    } else {
+                                        if (vkp.c_to_zig_type(member.type)) |t| {
+                                            try writer.print(
+                                                \\    for (0..item.{[len]s}) |_|
+                                                \\        size += @sizeOf({[type]s});
+                                                \\
+                                            , .{ .len = m, .type = t });
+                                        } else {
+                                            try writer.print(
+                                                \\    for (0..item.{[len]s}) |_|
+                                                \\        size += @sizeOf(vk.{[type]s});
+                                                \\
+                                            , .{ .len = m, .type = member.type });
+                                        }
+                                    }
+                                }
+                            },
+                        }
+                    } else {
+                        if (db.is_struct_name(member.type)) {
+                            try writer.print(
+                                \\    if (item.{[name]s}) |ptr| size += size_of_{[type]s}(@ptrCast(ptr), false);
+                                \\
+                            , .{ .type = member.type, .name = member.name });
+                        } else {
+                            try writer.print(
+                                \\    if (item.{[name]s}) |ptr| size += @sizeOf(ptr.*);
+                                \\
+                            , .{ .name = member.name });
+                        }
+                    }
+                }
+            }
+            if (output.items.len != 0) {
+                has_size = true;
+                w.write(
+                    \\    var size: usize = 0;
+                    \\
+                    \\{s}
+                    \\
+                , .{output.items});
+            }
+        }
+
+        {
+            var output: std.ArrayListUnmanaged(u8) = .empty;
+            var writer = output.writer(alloc);
+            var used_item: bool = false;
+            if (has_pnext) {
+                try writer.print(
+                    \\    if (follow_pnext) {{
+                    \\        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+                    \\        while (pnext) |next| {{
+                    \\            pnext = next.pNext;
+                    \\            switch (next.sType) {{
+                    \\
+                , .{});
+                for (db.types.structs) |*ss| {
+                    if (ss.extends) |extends| {
+                        if (ss.stype()) |stype| {
+                            if (std.mem.indexOf(u8, extends, @"struct".name) != null) {
+                                used_item = true;
+                                try writer.print(
+                                    \\                vk.{[stype]s},
+                                    \\                => size += size_of_{[type]s}(@ptrCast(next), false),
+                                    \\
+                                , .{ .stype = stype, .type = ss.name });
+                            }
+                        }
+                    }
+                }
+                try writer.print(
+                    \\                else => |v| {{
+                    \\                    log.debug(@src(), "Invalid pNext chain item for {[name]s}: {{d}}", .{{v}});
+                    \\                }},
+                    \\            }}
+                    \\        }}
+                    \\    }}
+                    \\
+                , .{ .name = @"struct".name });
+            }
+
+            if (used_item) {
+                if (!has_size)
+                    w.write(
+                        \\    var size: usize = 0;
+                        \\
+                    , .{});
+                w.write(
+                    \\{s}
+                    \\
+                , .{output.items});
+            } else {
+                if (!has_size)
+                    w.write(
+                        \\    _ = item;
+                        \\
+                    , .{});
+                w.write(
+                    \\    _ = follow_pnext;
+                    \\
+                , .{});
+            }
+            if (has_size)
+                w.write(
+                    \\    return size + @sizeOf(vk.{s});
+                    \\}}
+                    \\
+                , .{@"struct".name})
+            else
+                w.write(
+                    \\    return @sizeOf(vk.{s});
+                    \\}}
+                    \\
+                , .{@"struct".name});
+        }
     }
-    w.write(
-        \\            else => {{
-        \\                log.warn(@src(), "Unknown struct sType: {{d}}", .{{base_struct.sType}});
-        \\                current = base_struct.pNext;
-        \\            }},
-        \\        }}
-        \\    }}
-        \\    return size;
-        \\}}
-        \\
-    , .{});
 }
 
 fn write_check_result(
@@ -2226,13 +2219,32 @@ fn write_extension_type(
                 if (eql(@"enum".name, member.type)) {
                     checked_members += 1;
                     if (member.len) |len| {
-                        w.write(
-                            \\    for (0..item.{s}) |i| {{
-                            \\        if (!check_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
-                            \\            return false;
-                            \\    }}
-                            \\
-                        , .{ len, @"enum".type, @"enum".name, member.name });
+                        switch (len) {
+                            .null => {
+                                w.write(
+                                    \\    for (std.mem.span(item.{[member]s})) |*i| {{
+                                    \\        if (!check_{[type]t}_{[name]s}(extensions, @ptrCast(i)))
+                                    \\            return false;
+                                    \\    }}
+                                    \\
+                                , .{
+                                    .member = member.name,
+                                    .type = @"enum".type,
+                                    .name = @"enum".name,
+                                });
+                            },
+                            .member => |m| {
+                                if (@"struct".has_member(m)) {
+                                    w.write(
+                                        \\    for (0..item.{s}) |i| {{
+                                        \\        if (!check_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
+                                        \\            return false;
+                                        \\    }}
+                                        \\
+                                    , .{ m, @"enum".type, @"enum".name, member.name });
+                                }
+                            },
+                        }
                         break;
                     } else {
                         w.write(
@@ -2248,13 +2260,28 @@ fn write_extension_type(
                 if (eql(member.type, bitmask.type_name)) {
                     checked_members += 1;
                     if (member.len) |len| {
-                        w.write(
-                            \\    for (0..item.{s}) |i| {{
-                            \\        if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
-                            \\            return false;
-                            \\    }}
-                            \\
-                        , .{ len, bitmask.enum_name, member.name });
+                        switch (len) {
+                            .null => {
+                                w.write(
+                                    \\    for (std.mem.span(item.{s})) |*i| {{
+                                    \\        if (!check_bitmask_{s}(extensions, @ptrCast(i))) 
+                                    \\            return false;
+                                    \\    }}
+                                    \\
+                                , .{ bitmask.enum_name, member.name });
+                            },
+                            .member => |m| {
+                                if (@"struct".has_member(m)) {
+                                    w.write(
+                                        \\    for (0..item.{s}) |i| {{
+                                        \\        if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
+                                        \\            return false;
+                                        \\    }}
+                                        \\
+                                    , .{ m, bitmask.enum_name, member.name });
+                                }
+                            },
+                        }
                         break;
                     } else {
                         w.write(

@@ -8,128 +8,6 @@ const vk = @import("volk");
 const log = @import("log.zig");
 
 const Allocator = std.mem.Allocator;
-pub fn struct_size(@"struct": anytype) usize {
-    var size: usize = 0;
-    const t = @typeInfo(@TypeOf(@"struct")).pointer.child;
-    const fields = @typeInfo(t).@"struct".fields;
-    inline for (fields) |field| {
-        switch (field.type) {
-            [*c]const u8 => {},
-            [*c]const u32 => {
-                if (@hasField(t, "codeSize"))
-                    size += @field(@"struct", "codeSize");
-            },
-            [*c]const vk.VkDescriptorSetLayoutBinding => {
-                const len = @field(@"struct", "bindingCount");
-                size += @sizeOf(vk.VkDescriptorSetLayoutBinding) * len;
-                var elements: []const vk.VkDescriptorSetLayoutBinding = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkDescriptorSetLayout => {
-                const len = if (@hasField(t, "descriptorSetCount"))
-                    @field(@"struct", "descriptorSetCount")
-                else if (@hasField(t, "setLayoutCount"))
-                    @field(@"struct", "setLayoutCount");
-                size += @sizeOf(*anyopaque) * len;
-            },
-            [*c]const vk.VkPushConstantRange => {
-                const len = @field(@"struct", "pushConstantRangeCount");
-                size += @sizeOf(vk.VkPushConstantRange) * len;
-                var elements: []const vk.VkPushConstantRange = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkAttachmentDescription => {
-                const len = @field(@"struct", "attachmentCount");
-                size += @sizeOf(vk.VkAttachmentDescription) * len;
-                var elements: []const vk.VkAttachmentDescription = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkSubpassDescription => {
-                const len = @field(@"struct", "subpassCount");
-                size += @sizeOf(vk.VkSubpassDescription) * len;
-                var elements: []const vk.VkSubpassDescription = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkAttachmentReference => {
-                const len = if (std.mem.eql(u8, field.name, "pInputAttachments"))
-                    @field(@"struct", "inputAttachmentCount")
-                else if (std.mem.eql(u8, field.name, "pColorAttachments"))
-                    @field(@"struct", "colorAttachmentCount")
-                else if (std.mem.eql(u8, field.name, "pResolveAttachments")) blk: {
-                    if (@field(@"struct", field.name) != null)
-                        break :blk @field(@"struct", "colorAttachmentCount")
-                    else
-                        break :blk 0;
-                } else if (std.mem.eql(u8, field.name, "pDepthStencilAttachment"))
-                    @intFromBool(@field(@"struct", field.name) != null)
-                else if (std.mem.eql(u8, field.name, "pPreserveAttachments"))
-                    @field(@"struct", "preserveAttachmentCount")
-                else
-                    @panic("Cannot find length for the VkAttachmentReference array");
-
-                if (len != 0) {
-                    size += @sizeOf(vk.VkAttachmentReference) * len;
-                    var elements: []const vk.VkAttachmentReference = undefined;
-                    elements.ptr = @field(@"struct", field.name);
-                    elements.len = len;
-                    for (elements) |*binding| size += struct_size(binding);
-                }
-            },
-            [*c]const vk.VkSubpassDependency => {
-                const len = @field(@"struct", "dependencyCount");
-                size += @sizeOf(vk.VkSubpassDependency) * len;
-                var elements: []const vk.VkSubpassDependency = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkPipelineShaderStageCreateInfo => {
-                const len = @field(@"struct", "stageCount");
-                size += @sizeOf(vk.VkPipelineShaderStageCreateInfo) * len;
-                var elements: []const vk.VkPipelineShaderStageCreateInfo = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkSpecializationMapEntry => {
-                const len = @field(@"struct", "mapEntryCount");
-                size += @sizeOf(vk.VkSpecializationMapEntry) * len;
-                var elements: []const vk.VkSpecializationMapEntry = undefined;
-                elements.ptr = @field(@"struct", field.name);
-                elements.len = len;
-                for (elements) |*binding| size += struct_size(binding);
-            },
-            [*c]const vk.VkPipelineVertexInputStateCreateInfo,
-            [*c]const vk.VkPipelineInputAssemblyStateCreateInfo,
-            [*c]const vk.VkPipelineTessellationStateCreateInfo,
-            [*c]const vk.VkPipelineViewportStateCreateInfo,
-            [*c]const vk.VkPipelineRasterizationStateCreateInfo,
-            [*c]const vk.VkPipelineMultisampleStateCreateInfo,
-            [*c]const vk.VkPipelineDepthStencilStateCreateInfo,
-            [*c]const vk.VkPipelineColorBlendStateCreateInfo,
-            [*c]const vk.VkPipelineDynamicStateCreateInfo,
-            [*c]const vk.VkSpecializationInfo,
-            [*c]const vk.VkViewport,
-            [*c]const vk.VkRect2D,
-            => {
-                const element_type = @typeInfo(field.type).pointer.child;
-                const element: ?*const element_type = @field(@"struct", field.name);
-                if (element) |e| size += struct_size(e);
-            },
-            else => size += @sizeOf(field.type),
-        }
-    }
-    return size;
-}
-
 pub fn print_struct(@"struct": anytype) void {
     print_struct_inner("", @"struct", 0);
 }
@@ -4960,4554 +4838,12581 @@ pub fn print_chain(chain: anytype) void {
         }
     }
 }
-pub fn chain_size(chain: anytype) usize {
+pub fn size_of_VkBaseOutStructure(item: *const vk.VkBaseOutStructure, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBaseOutStructure);
+}
+pub fn size_of_VkBaseInStructure(item: *const vk.VkBaseInStructure, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBaseInStructure);
+}
+pub fn size_of_VkOffset2D(item: *const vk.VkOffset2D, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOffset2D);
+}
+pub fn size_of_VkOffset3D(item: *const vk.VkOffset3D, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOffset3D);
+}
+pub fn size_of_VkExtent2D(item: *const vk.VkExtent2D, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExtent2D);
+}
+pub fn size_of_VkExtent3D(item: *const vk.VkExtent3D, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExtent3D);
+}
+pub fn size_of_VkViewport(item: *const vk.VkViewport, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkViewport);
+}
+pub fn size_of_VkRect2D(item: *const vk.VkRect2D, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRect2D);
+}
+pub fn size_of_VkClearRect(item: *const vk.VkClearRect, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClearRect);
+}
+pub fn size_of_VkComponentMapping(item: *const vk.VkComponentMapping, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkComponentMapping);
+}
+pub fn size_of_VkPhysicalDeviceProperties(item: *const vk.VkPhysicalDeviceProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProperties);
+}
+pub fn size_of_VkExtensionProperties(item: *const vk.VkExtensionProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExtensionProperties);
+}
+pub fn size_of_VkLayerProperties(item: *const vk.VkLayerProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLayerProperties);
+}
+pub fn size_of_VkApplicationInfo(item: *const vk.VkApplicationInfo, follow_pnext: bool) usize {
     var size: usize = 0;
-    var current: ?*const anyopaque = chain;
-    while (current) |c| {
-        const base_struct: *const vk.VkBaseInStructure = @ptrCast(@alignCast(c));
-        switch (base_struct.sType) {
-            vk.VK_STRUCTURE_TYPE_APPLICATION_INFO => {
-                const nn: *const vk.VkApplicationInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO => {
-                const nn: *const vk.VkInstanceCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO => {
-                const nn: *const vk.VkDeviceQueueCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO => {
-                const nn: *const vk.VkDeviceCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBMIT_INFO => {
-                const nn: *const vk.VkSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO => {
-                const nn: *const vk.VkMemoryAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE => {
-                const nn: *const vk.VkMappedMemoryRange = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_SPARSE_INFO => {
-                const nn: *const vk.VkBindSparseInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO => {
-                const nn: *const vk.VkFenceCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO => {
-                const nn: *const vk.VkSemaphoreCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EVENT_CREATE_INFO => {
-                const nn: *const vk.VkEventCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO => {
-                const nn: *const vk.VkQueryPoolCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO => {
-                const nn: *const vk.VkBufferCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO => {
-                const nn: *const vk.VkBufferViewCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO => {
-                const nn: *const vk.VkImageCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO => {
-                const nn: *const vk.VkImageViewCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO => {
-                const nn: *const vk.VkShaderModuleCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineCacheCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineShaderStageCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineVertexInputStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineInputAssemblyStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineTessellationStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineViewportStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineRasterizationStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineMultisampleStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineDepthStencilStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineColorBlendStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineDynamicStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO => {
-                const nn: *const vk.VkGraphicsPipelineCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO => {
-                const nn: *const vk.VkComputePipelineCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO => {
-                const nn: *const vk.VkPipelineLayoutCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO => {
-                const nn: *const vk.VkSamplerCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorSetLayoutCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorPoolCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO => {
-                const nn: *const vk.VkDescriptorSetAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET => {
-                const nn: *const vk.VkWriteDescriptorSet = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET => {
-                const nn: *const vk.VkCopyDescriptorSet = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO => {
-                const nn: *const vk.VkFramebufferCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO => {
-                const nn: *const vk.VkRenderPassCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO => {
-                const nn: *const vk.VkCommandPoolCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO => {
-                const nn: *const vk.VkCommandBufferAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO => {
-                const nn: *const vk.VkCommandBufferInheritanceInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO => {
-                const nn: *const vk.VkCommandBufferBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO => {
-                const nn: *const vk.VkRenderPassBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER => {
-                const nn: *const vk.VkBufferMemoryBarrier = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER => {
-                const nn: *const vk.VkImageMemoryBarrier = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER => {
-                const nn: *const vk.VkMemoryBarrier = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceSubgroupProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_INFO => {
-                const nn: *const vk.VkBindBufferMemoryInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO => {
-                const nn: *const vk.VkBindImageMemoryInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES => {
-                const nn: *const vk.VkPhysicalDevice16BitStorageFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS => {
-                const nn: *const vk.VkMemoryDedicatedRequirements = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO => {
-                const nn: *const vk.VkMemoryDedicatedAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO => {
-                const nn: *const vk.VkMemoryAllocateFlagsInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO => {
-                const nn: *const vk.VkDeviceGroupRenderPassBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO => {
-                const nn: *const vk.VkDeviceGroupCommandBufferBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO => {
-                const nn: *const vk.VkDeviceGroupSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO => {
-                const nn: *const vk.VkDeviceGroupBindSparseInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO => {
-                const nn: *const vk.VkBindBufferMemoryDeviceGroupInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO => {
-                const nn: *const vk.VkBindImageMemoryDeviceGroupInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceGroupProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO => {
-                const nn: *const vk.VkDeviceGroupDeviceCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2 => {
-                const nn: *const vk.VkBufferMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2 => {
-                const nn: *const vk.VkImageMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_SPARSE_MEMORY_REQUIREMENTS_INFO_2 => {
-                const nn: *const vk.VkImageSparseMemoryRequirementsInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2 => {
-                const nn: *const vk.VkMemoryRequirements2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_MEMORY_REQUIREMENTS_2 => {
-                const nn: *const vk.VkSparseImageMemoryRequirements2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 => {
-                const nn: *const vk.VkPhysicalDeviceFeatures2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 => {
-                const nn: *const vk.VkPhysicalDeviceProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2 => {
-                const nn: *const vk.VkFormatProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2 => {
-                const nn: *const vk.VkImageFormatProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2 => {
-                const nn: *const vk.VkPhysicalDeviceImageFormatInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 => {
-                const nn: *const vk.VkQueueFamilyProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 => {
-                const nn: *const vk.VkPhysicalDeviceMemoryProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SPARSE_IMAGE_FORMAT_PROPERTIES_2 => {
-                const nn: *const vk.VkSparseImageFormatProperties2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SPARSE_IMAGE_FORMAT_INFO_2 => {
-                const nn: *const vk.VkPhysicalDeviceSparseImageFormatInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDevicePointClippingProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO => {
-                const nn: *const vk.VkRenderPassInputAttachmentAspectCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO => {
-                const nn: *const vk.VkImageViewUsageCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineTessellationDomainOriginStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO => {
-                const nn: *const vk.VkRenderPassMultiviewCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVariablePointersFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO => {
-                const nn: *const vk.VkProtectedSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceProtectedMemoryFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceProtectedMemoryProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2 => {
-                const nn: *const vk.VkDeviceQueueInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO => {
-                const nn: *const vk.VkSamplerYcbcrConversionCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO => {
-                const nn: *const vk.VkSamplerYcbcrConversionInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO => {
-                const nn: *const vk.VkBindImagePlaneMemoryInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO => {
-                const nn: *const vk.VkImagePlaneMemoryRequirementsInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES => {
-                const nn: *const vk.VkSamplerYcbcrConversionImageFormatProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_UPDATE_TEMPLATE_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorUpdateTemplateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO => {
-                const nn: *const vk.VkPhysicalDeviceExternalImageFormatInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES => {
-                const nn: *const vk.VkExternalImageFormatProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_BUFFER_INFO => {
-                const nn: *const vk.VkPhysicalDeviceExternalBufferInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_BUFFER_PROPERTIES => {
-                const nn: *const vk.VkExternalBufferProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceIDProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO => {
-                const nn: *const vk.VkExternalMemoryBufferCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO => {
-                const nn: *const vk.VkExternalMemoryImageCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO => {
-                const nn: *const vk.VkExportMemoryAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FENCE_INFO => {
-                const nn: *const vk.VkPhysicalDeviceExternalFenceInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_FENCE_PROPERTIES => {
-                const nn: *const vk.VkExternalFenceProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO => {
-                const nn: *const vk.VkExportFenceCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO => {
-                const nn: *const vk.VkExportSemaphoreCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO => {
-                const nn: *const vk.VkPhysicalDeviceExternalSemaphoreInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES => {
-                const nn: *const vk.VkExternalSemaphoreProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance3Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT => {
-                const nn: *const vk.VkDescriptorSetLayoutSupport = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderDrawParametersFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan11Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan11Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan12Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan12Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO => {
-                const nn: *const vk.VkImageFormatListCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 => {
-                const nn: *const vk.VkAttachmentDescription2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 => {
-                const nn: *const vk.VkAttachmentReference2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 => {
-                const nn: *const vk.VkSubpassDescription2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 => {
-                const nn: *const vk.VkSubpassDependency2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 => {
-                const nn: *const vk.VkRenderPassCreateInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO => {
-                const nn: *const vk.VkSubpassBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_END_INFO => {
-                const nn: *const vk.VkSubpassEndInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES => {
-                const nn: *const vk.VkPhysicalDevice8BitStorageFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceDriverProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicInt64Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloat16Int8Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceFloatControlsProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorIndexingFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorIndexingProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO => {
-                const nn: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT => {
-                const nn: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupport = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceDepthStencilResolveProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE => {
-                const nn: *const vk.VkSubpassDescriptionDepthStencilResolve = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceScalarBlockLayoutFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO => {
-                const nn: *const vk.VkImageStencilUsageCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceSamplerFilterMinmaxProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO => {
-                const nn: *const vk.VkSamplerReductionModeCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkanMemoryModelFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceImagelessFramebufferFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO => {
-                const nn: *const vk.VkFramebufferAttachmentsCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO => {
-                const nn: *const vk.VkFramebufferAttachmentImageInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO => {
-                const nn: *const vk.VkRenderPassAttachmentBeginInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT => {
-                const nn: *const vk.VkAttachmentReferenceStencilLayout = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT => {
-                const nn: *const vk.VkAttachmentDescriptionStencilLayout = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceHostQueryResetFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceTimelineSemaphoreFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceTimelineSemaphoreProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO => {
-                const nn: *const vk.VkSemaphoreTypeCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO => {
-                const nn: *const vk.VkTimelineSemaphoreSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO => {
-                const nn: *const vk.VkSemaphoreWaitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO => {
-                const nn: *const vk.VkSemaphoreSignalInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO => {
-                const nn: *const vk.VkBufferDeviceAddressInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO => {
-                const nn: *const vk.VkBufferOpaqueCaptureAddressCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO => {
-                const nn: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO => {
-                const nn: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan13Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan13Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO => {
-                const nn: *const vk.VkPipelineCreationFeedbackCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceToolProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES => {
-                const nn: *const vk.VkPhysicalDevicePrivateDataFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO => {
-                const nn: *const vk.VkDevicePrivateDataCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PRIVATE_DATA_SLOT_CREATE_INFO => {
-                const nn: *const vk.VkPrivateDataSlotCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES => {
-                const nn: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2 => {
-                const nn: *const vk.VkMemoryBarrier2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2 => {
-                const nn: *const vk.VkBufferMemoryBarrier2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 => {
-                const nn: *const vk.VkImageMemoryBarrier2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEPENDENCY_INFO => {
-                const nn: *const vk.VkDependencyInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBMIT_INFO_2 => {
-                const nn: *const vk.VkSubmitInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO => {
-                const nn: *const vk.VkSemaphoreSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO => {
-                const nn: *const vk.VkCommandBufferSubmitInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSynchronization2Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceImageRobustnessFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2 => {
-                const nn: *const vk.VkCopyBufferInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2 => {
-                const nn: *const vk.VkCopyImageInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2 => {
-                const nn: *const vk.VkCopyBufferToImageInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2 => {
-                const nn: *const vk.VkCopyImageToBufferInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2 => {
-                const nn: *const vk.VkBlitImageInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2 => {
-                const nn: *const vk.VkResolveImageInfo2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_COPY_2 => {
-                const nn: *const vk.VkBufferCopy2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_COPY_2 => {
-                const nn: *const vk.VkImageCopy2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_BLIT_2 => {
-                const nn: *const vk.VkImageBlit2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2 => {
-                const nn: *const vk.VkBufferImageCopy2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2 => {
-                const nn: *const vk.VkImageResolve2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceSubgroupSizeControlProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceSubgroupSizeControlFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceInlineUniformBlockFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceInlineUniformBlockProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK => {
-                const nn: *const vk.VkWriteDescriptorSetInlineUniformBlock = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO => {
-                const nn: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_INFO => {
-                const nn: *const vk.VkRenderingInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO => {
-                const nn: *const vk.VkRenderingAttachmentInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO => {
-                const nn: *const vk.VkPipelineRenderingCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceDynamicRenderingFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO => {
-                const nn: *const vk.VkCommandBufferInheritanceRenderingInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceShaderIntegerDotProductProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceTexelBufferAlignmentProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3 => {
-                const nn: *const vk.VkFormatProperties3 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance4Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance4Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS => {
-                const nn: *const vk.VkDeviceBufferMemoryRequirements = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_MEMORY_REQUIREMENTS => {
-                const nn: *const vk.VkDeviceImageMemoryRequirements = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan14Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceVulkan14Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO => {
-                const nn: *const vk.VkDeviceQueueGlobalPriorityCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES => {
-                const nn: *const vk.VkQueueFamilyGlobalPriorityProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloatControls2Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceShaderExpectAssumeFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceLineRasterizationFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineRasterizationLineStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceLineRasterizationProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO => {
-                const nn: *const vk.VkPipelineVertexInputDivisorStateCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceIndexTypeUint8Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_MAP_INFO => {
-                const nn: *const vk.VkMemoryMapInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_UNMAP_INFO => {
-                const nn: *const vk.VkMemoryUnmapInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance5Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance5Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_AREA_INFO => {
-                const nn: *const vk.VkRenderingAreaInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_IMAGE_SUBRESOURCE_INFO => {
-                const nn: *const vk.VkDeviceImageSubresourceInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBRESOURCE_LAYOUT_2 => {
-                const nn: *const vk.VkSubresourceLayout2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_SUBRESOURCE_2 => {
-                const nn: *const vk.VkImageSubresource2 = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO => {
-                const nn: *const vk.VkPipelineCreateFlags2CreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO => {
-                const nn: *const vk.VkBufferUsageFlags2CreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDevicePushDescriptorProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO => {
-                const nn: *const vk.VkRenderingAttachmentLocationInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO => {
-                const nn: *const vk.VkRenderingInputAttachmentIndexInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance6Features = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance6Properties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS => {
-                const nn: *const vk.VkBindMemoryStatus = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO => {
-                const nn: *const vk.VkBindDescriptorSetsInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO => {
-                const nn: *const vk.VkPushConstantsInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO => {
-                const nn: *const vk.VkPushDescriptorSetInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_WITH_TEMPLATE_INFO => {
-                const nn: *const vk.VkPushDescriptorSetWithTemplateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES => {
-                const nn: *const vk.VkPhysicalDevicePipelineProtectedAccessFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO => {
-                const nn: *const vk.VkPipelineRobustnessCreateInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES => {
-                const nn: *const vk.VkPhysicalDevicePipelineRobustnessFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDevicePipelineRobustnessProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES => {
-                const nn: *const vk.VkPhysicalDeviceHostImageCopyFeatures = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES => {
-                const nn: *const vk.VkPhysicalDeviceHostImageCopyProperties = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY => {
-                const nn: *const vk.VkMemoryToImageCopy = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_TO_MEMORY_COPY => {
-                const nn: *const vk.VkImageToMemoryCopy = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO => {
-                const nn: *const vk.VkCopyImageToMemoryInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO => {
-                const nn: *const vk.VkCopyMemoryToImageInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO => {
-                const nn: *const vk.VkHostImageLayoutTransitionInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO => {
-                const nn: *const vk.VkCopyImageToImageInfo = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE => {
-                const nn: *const vk.VkSubresourceHostMemcpySize = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY => {
-                const nn: *const vk.VkHostImageCopyDevicePerformanceQuery = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR => {
-                const nn: *const vk.VkSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR => {
-                const nn: *const vk.VkPresentInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_CAPABILITIES_KHR => {
-                const nn: *const vk.VkDeviceGroupPresentCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR => {
-                const nn: *const vk.VkImageSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR => {
-                const nn: *const vk.VkBindImageMemorySwapchainInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACQUIRE_NEXT_IMAGE_INFO_KHR => {
-                const nn: *const vk.VkAcquireNextImageInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR => {
-                const nn: *const vk.VkDeviceGroupPresentInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR => {
-                const nn: *const vk.VkDeviceGroupSwapchainCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkDisplayModeCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkDisplaySurfaceCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR => {
-                const nn: *const vk.VkDisplayPresentInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT => {
-                const nn: *const vk.VkDebugReportCallbackCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD => {
-                const nn: *const vk.VkPipelineRasterizationStateRasterizationOrderAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT => {
-                const nn: *const vk.VkDebugMarkerObjectNameInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT => {
-                const nn: *const vk.VkDebugMarkerObjectTagInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT => {
-                const nn: *const vk.VkDebugMarkerMarkerInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR => {
-                const nn: *const vk.VkVideoProfileInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR => {
-                const nn: *const vk.VkVideoCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR => {
-                const nn: *const vk.VkVideoPictureResourceInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR => {
-                const nn: *const vk.VkVideoSessionMemoryRequirementsKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR => {
-                const nn: *const vk.VkBindVideoSessionMemoryInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR => {
-                const nn: *const vk.VkVideoSessionCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR => {
-                const nn: *const vk.VkVideoSessionParametersCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_UPDATE_INFO_KHR => {
-                const nn: *const vk.VkVideoSessionParametersUpdateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR => {
-                const nn: *const vk.VkVideoBeginCodingInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR => {
-                const nn: *const vk.VkVideoEndCodingInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR => {
-                const nn: *const vk.VkVideoCodingControlInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR => {
-                const nn: *const vk.VkVideoReferenceSlotInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR => {
-                const nn: *const vk.VkQueueFamilyVideoPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR => {
-                const nn: *const vk.VkVideoProfileListInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoFormatInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR => {
-                const nn: *const vk.VkVideoFormatPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR => {
-                const nn: *const vk.VkQueueFamilyQueryResultStatusPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR => {
-                const nn: *const vk.VkVideoDecodeInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR => {
-                const nn: *const vk.VkVideoDecodeCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR => {
-                const nn: *const vk.VkVideoDecodeUsageInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV => {
-                const nn: *const vk.VkDedicatedAllocationImageCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV => {
-                const nn: *const vk.VkDedicatedAllocationBufferCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV => {
-                const nn: *const vk.VkDedicatedAllocationMemoryAllocateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceTransformFeedbackPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineRasterizationStateStreamCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CU_MODULE_CREATE_INFO_NVX => {
-                const nn: *const vk.VkCuModuleCreateInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CU_FUNCTION_CREATE_INFO_NVX => {
-                const nn: *const vk.VkCuFunctionCreateInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CU_LAUNCH_INFO_NVX => {
-                const nn: *const vk.VkCuLaunchInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CU_MODULE_TEXTURING_MODE_CREATE_INFO_NVX => {
-                const nn: *const vk.VkCuModuleTexturingModeCreateInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_HANDLE_INFO_NVX => {
-                const nn: *const vk.VkImageViewHandleInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ADDRESS_PROPERTIES_NVX => {
-                const nn: *const vk.VkImageViewAddressPropertiesNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD => {
-                const nn: *const vk.VkTextureLODGatherFormatPropertiesAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCornerSampledImageFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV => {
-                const nn: *const vk.VkExternalMemoryImageCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV => {
-                const nn: *const vk.VkExportMemoryAllocateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT => {
-                const nn: *const vk.VkValidationFlagsEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT => {
-                const nn: *const vk.VkImageViewASTCDecodeModeEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceASTCDecodeFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR => {
-                const nn: *const vk.VkImportMemoryFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR => {
-                const nn: *const vk.VkMemoryFdPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR => {
-                const nn: *const vk.VkMemoryGetFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR => {
-                const nn: *const vk.VkImportSemaphoreFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR => {
-                const nn: *const vk.VkSemaphoreGetFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT => {
-                const nn: *const vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CONDITIONAL_RENDERING_BEGIN_INFO_EXT => {
-                const nn: *const vk.VkConditionalRenderingBeginInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR => {
-                const nn: *const vk.VkPresentRegionsKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineViewportWScalingStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_EXT => {
-                const nn: *const vk.VkSurfaceCapabilities2EXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_POWER_INFO_EXT => {
-                const nn: *const vk.VkDisplayPowerInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_EVENT_INFO_EXT => {
-                const nn: *const vk.VkDeviceEventInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_EVENT_INFO_EXT => {
-                const nn: *const vk.VkDisplayEventInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT => {
-                const nn: *const vk.VkSwapchainCounterCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX => {
-                const nn: *const vk.VkMultiviewPerViewAttributesInfoNVX = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineViewportSwizzleStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineDiscardRectangleStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceConservativeRasterizationPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineRasterizationConservativeStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_HDR_METADATA_EXT => {
-                const nn: *const vk.VkHdrMetadataEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG => {
-                const nn: *const vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR => {
-                const nn: *const vk.VkSharedPresentSurfaceCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMPORT_FENCE_FD_INFO_KHR => {
-                const nn: *const vk.VkImportFenceFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FENCE_GET_FD_INFO_KHR => {
-                const nn: *const vk.VkFenceGetFdInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePerformanceQueryFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePerformanceQueryPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkQueryPoolPerformanceCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR => {
-                const nn: *const vk.VkPerformanceQuerySubmitInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACQUIRE_PROFILING_LOCK_INFO_KHR => {
-                const nn: *const vk.VkAcquireProfilingLockInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_KHR => {
-                const nn: *const vk.VkPerformanceCounterKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_COUNTER_DESCRIPTION_KHR => {
-                const nn: *const vk.VkPerformanceCounterDescriptionKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR => {
-                const nn: *const vk.VkPhysicalDeviceSurfaceInfo2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR => {
-                const nn: *const vk.VkSurfaceCapabilities2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR => {
-                const nn: *const vk.VkSurfaceFormat2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_PROPERTIES_2_KHR => {
-                const nn: *const vk.VkDisplayProperties2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_PROPERTIES_2_KHR => {
-                const nn: *const vk.VkDisplayPlaneProperties2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_PROPERTIES_2_KHR => {
-                const nn: *const vk.VkDisplayModeProperties2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_INFO_2_KHR => {
-                const nn: *const vk.VkDisplayPlaneInfo2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_PLANE_CAPABILITIES_2_KHR => {
-                const nn: *const vk.VkDisplayPlaneCapabilities2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT => {
-                const nn: *const vk.VkDebugUtilsObjectNameInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT => {
-                const nn: *const vk.VkDebugUtilsObjectTagInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT => {
-                const nn: *const vk.VkDebugUtilsLabelEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT => {
-                const nn: *const vk.VkDebugUtilsMessengerCallbackDataEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT => {
-                const nn: *const vk.VkDebugUtilsMessengerCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD => {
-                const nn: *const vk.VkAttachmentSampleCountInfoAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT => {
-                const nn: *const vk.VkSampleLocationsInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT => {
-                const nn: *const vk.VkRenderPassSampleLocationsBeginInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineSampleLocationsStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceSampleLocationsPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MULTISAMPLE_PROPERTIES_EXT => {
-                const nn: *const vk.VkMultisamplePropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineCoverageToColorStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR => {
-                const nn: *const vk.VkWriteDescriptorSetAccelerationStructureKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR => {
-                const nn: *const vk.VkAccelerationStructureBuildGeometryInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR => {
-                const nn: *const vk.VkAccelerationStructureDeviceAddressInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_AABBS_DATA_KHR => {
-                const nn: *const vk.VkAccelerationStructureGeometryAabbsDataKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR => {
-                const nn: *const vk.VkAccelerationStructureGeometryInstancesDataKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR => {
-                const nn: *const vk.VkAccelerationStructureGeometryTrianglesDataKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR => {
-                const nn: *const vk.VkAccelerationStructureGeometryKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_VERSION_INFO_KHR => {
-                const nn: *const vk.VkAccelerationStructureVersionInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_INFO_KHR => {
-                const nn: *const vk.VkCopyAccelerationStructureInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_ACCELERATION_STRUCTURE_TO_MEMORY_INFO_KHR => {
-                const nn: *const vk.VkCopyAccelerationStructureToMemoryInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_ACCELERATION_STRUCTURE_INFO_KHR => {
-                const nn: *const vk.VkCopyMemoryToAccelerationStructureInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceAccelerationStructurePropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkAccelerationStructureCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR => {
-                const nn: *const vk.VkAccelerationStructureBuildSizesInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkRayTracingPipelineCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR => {
-                const nn: *const vk.VkRayTracingShaderGroupCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkRayTracingPipelineInterfaceCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayQueryFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineCoverageModulationStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT => {
-                const nn: *const vk.VkDrmFormatModifierPropertiesListEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageDrmFormatModifierInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT => {
-                const nn: *const vk.VkImageDrmFormatModifierListCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT => {
-                const nn: *const vk.VkImageDrmFormatModifierExplicitCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT => {
-                const nn: *const vk.VkImageDrmFormatModifierPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT => {
-                const nn: *const vk.VkDrmFormatModifierPropertiesList2EXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VALIDATION_CACHE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkValidationCacheCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkShaderModuleValidationCacheCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineViewportShadingRateImageStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShadingRateImagePropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV => {
-                const nn: *const vk.VkRayTracingPipelineCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_NV => {
-                const nn: *const vk.VkAccelerationStructureCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GEOMETRY_NV => {
-                const nn: *const vk.VkGeometryNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GEOMETRY_TRIANGLES_NV => {
-                const nn: *const vk.VkGeometryTrianglesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GEOMETRY_AABB_NV => {
-                const nn: *const vk.VkGeometryAABBNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_ACCELERATION_STRUCTURE_MEMORY_INFO_NV => {
-                const nn: *const vk.VkBindAccelerationStructureMemoryInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV => {
-                const nn: *const vk.VkWriteDescriptorSetAccelerationStructureNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_INFO_NV => {
-                const nn: *const vk.VkAccelerationStructureMemoryRequirementsInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_NV => {
-                const nn: *const vk.VkRayTracingShaderGroupCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV => {
-                const nn: *const vk.VkAccelerationStructureInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageViewImageFormatInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT => {
-                const nn: *const vk.VkFilterCubicImageViewImageFormatPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT => {
-                const nn: *const vk.VkImportMemoryHostPointerInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_HOST_POINTER_PROPERTIES_EXT => {
-                const nn: *const vk.VkMemoryHostPointerPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExternalMemoryHostPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderClockFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD => {
-                const nn: *const vk.VkPipelineCompilerControlCreateInfoAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD => {
-                const nn: *const vk.VkPhysicalDeviceShaderCorePropertiesAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD => {
-                const nn: *const vk.VkDeviceMemoryOverallocationCreateInfoAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceExclusiveScissorFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV => {
-                const nn: *const vk.VkCheckpointDataNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV => {
-                const nn: *const vk.VkQueueFamilyCheckpointPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV => {
-                const nn: *const vk.VkQueueFamilyCheckpointProperties2NV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CHECKPOINT_DATA_2_NV => {
-                const nn: *const vk.VkCheckpointData2NV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL => {
-                const nn: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_QUERY_CREATE_INFO_INTEL => {
-                const nn: *const vk.VkQueryPoolPerformanceQueryCreateInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INITIALIZE_PERFORMANCE_API_INFO_INTEL => {
-                const nn: *const vk.VkInitializePerformanceApiInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_MARKER_INFO_INTEL => {
-                const nn: *const vk.VkPerformanceMarkerInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_STREAM_MARKER_INFO_INTEL => {
-                const nn: *const vk.VkPerformanceStreamMarkerInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_OVERRIDE_INFO_INTEL => {
-                const nn: *const vk.VkPerformanceOverrideInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PERFORMANCE_CONFIGURATION_ACQUIRE_INFO_INTEL => {
-                const nn: *const vk.VkPerformanceConfigurationAcquireInfoINTEL = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePCIBusInfoPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT => {
-                const nn: *const vk.VkRenderPassFragmentDensityMapCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT => {
-                const nn: *const vk.VkRenderingFragmentDensityMapAttachmentInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR => {
-                const nn: *const vk.VkFragmentShadingRateAttachmentInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkPipelineFragmentShadingRateStateCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRatePropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR => {
-                const nn: *const vk.VkRenderingFragmentShadingRateAttachmentInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD => {
-                const nn: *const vk.VkPhysicalDeviceShaderCoreProperties2AMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD => {
-                const nn: *const vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMemoryBudgetPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMemoryPriorityFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_PRIORITY_ALLOCATE_INFO_EXT => {
-                const nn: *const vk.VkMemoryPriorityAllocateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR => {
-                const nn: *const vk.VkSurfaceProtectedCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT => {
-                const nn: *const vk.VkBufferDeviceAddressCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT => {
-                const nn: *const vk.VkValidationFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePresentWaitFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_NV => {
-                const nn: *const vk.VkCooperativeMatrixPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineCoverageReductionStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_MIXED_SAMPLES_COMBINATION_NV => {
-                const nn: *const vk.VkFramebufferMixedSamplesCombinationNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceProvokingVertexFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceProvokingVertexPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkHeadlessSurfaceCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_INFO_KHR => {
-                const nn: *const vk.VkPipelineInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_PROPERTIES_KHR => {
-                const nn: *const vk.VkPipelineExecutablePropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INFO_KHR => {
-                const nn: *const vk.VkPipelineExecutableInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_STATISTIC_KHR => {
-                const nn: *const vk.VkPipelineExecutableStatisticKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_EXECUTABLE_INTERNAL_REPRESENTATION_KHR => {
-                const nn: *const vk.VkPipelineExecutableInternalRepresentationKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMapMemoryPlacedPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT => {
-                const nn: *const vk.VkMemoryMapPlacedInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV => {
-                const nn: *const vk.VkGraphicsShaderGroupCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV => {
-                const nn: *const vk.VkGraphicsPipelineShaderGroupsCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV => {
-                const nn: *const vk.VkIndirectCommandsLayoutTokenNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV => {
-                const nn: *const vk.VkIndirectCommandsLayoutCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_NV => {
-                const nn: *const vk.VkGeneratedCommandsInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_NV => {
-                const nn: *const vk.VkGeneratedCommandsMemoryRequirementsInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV => {
-                const nn: *const vk.VkCommandBufferInheritanceViewportScissorInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM => {
-                const nn: *const vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM => {
-                const nn: *const vk.VkRenderPassTransformBeginInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_INFO_EXT => {
-                const nn: *const vk.VkDepthBiasInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT => {
-                const nn: *const vk.VkDepthBiasRepresentationInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDeviceMemoryReportFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT => {
-                const nn: *const vk.VkDeviceDeviceMemoryReportCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_REPORT_CALLBACK_DATA_EXT => {
-                const nn: *const vk.VkDeviceMemoryReportCallbackDataEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT => {
-                const nn: *const vk.VkSamplerCustomBorderColorCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceCustomBorderColorPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR => {
-                const nn: *const vk.VkPipelineLibraryCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDevicePresentBarrierFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_BARRIER_NV => {
-                const nn: *const vk.VkSurfaceCapabilitiesPresentBarrierNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV => {
-                const nn: *const vk.VkSwapchainPresentBarrierCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeRateControlInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeRateControlLayerInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR => {
-                const nn: *const vk.VkVideoEncodeCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeUsageInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR => {
-                const nn: *const vk.VkQueryPoolVideoEncodeFeedbackCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_PROPERTIES_KHR => {
-                const nn: *const vk.VkVideoEncodeQualityLevelPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeQualityLevelInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeSessionParametersGetInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_FEEDBACK_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeSessionParametersFeedbackInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV => {
-                const nn: *const vk.VkDeviceDiagnosticsConfigCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTileShadingPropertiesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM => {
-                const nn: *const vk.VkRenderPassTileShadingCreateInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PER_TILE_BEGIN_INFO_QCOM => {
-                const nn: *const vk.VkPerTileBeginInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PER_TILE_END_INFO_QCOM => {
-                const nn: *const vk.VkPerTileEndInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPATCH_TILE_INFO_QCOM => {
-                const nn: *const vk.VkDispatchTileInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV => {
-                const nn: *const vk.VkQueryLowLatencySupportNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_DENSITY_MAP_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT => {
-                const nn: *const vk.VkDescriptorAddressInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT => {
-                const nn: *const vk.VkDescriptorGetInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUFFER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
-                const nn: *const vk.VkBufferCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
-                const nn: *const vk.VkImageCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
-                const nn: *const vk.VkImageViewCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
-                const nn: *const vk.VkSamplerCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT => {
-                const nn: *const vk.VkOpaqueCaptureDescriptorDataCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_INFO_EXT => {
-                const nn: *const vk.VkDescriptorBufferBindingInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT => {
-                const nn: *const vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CAPTURE_DESCRIPTOR_DATA_INFO_EXT => {
-                const nn: *const vk.VkAccelerationStructureCaptureDescriptorDataInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT => {
-                const nn: *const vk.VkGraphicsPipelineLibraryCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD => {
-                const nn: *const vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV => {
-                const nn: *const vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_MOTION_TRIANGLES_DATA_NV => {
-                const nn: *const vk.VkAccelerationStructureGeometryMotionTrianglesDataNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV => {
-                const nn: *const vk.VkAccelerationStructureMotionInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMeshShaderPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMap2FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMap2PropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM => {
-                const nn: *const vk.VkCopyCommandTransformInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageCompressionControlFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT => {
-                const nn: *const vk.VkImageCompressionControlEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT => {
-                const nn: *const vk.VkImageCompressionPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevice4444FormatsFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFaultFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT => {
-                const nn: *const vk.VkDeviceFaultCountsEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT => {
-                const nn: *const vk.VkDeviceFaultInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT => {
-                const nn: *const vk.VkVertexInputBindingDescription2EXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT => {
-                const nn: *const vk.VkVertexInputAttributeDescription2EXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDrmPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceAddressBindingReportFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_ADDRESS_BINDING_CALLBACK_DATA_EXT => {
-                const nn: *const vk.VkDeviceAddressBindingCallbackDataEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClipControlFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineViewportDepthClipControlCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_GET_REMOTE_ADDRESS_INFO_NV => {
-                const nn: *const vk.VkMemoryGetRemoteAddressInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_PROPERTIES_IDENTIFIER_EXT => {
-                const nn: *const vk.VkPipelinePropertiesIdentifierEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFrameBoundaryFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT => {
-                const nn: *const vk.VkFrameBoundaryEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SUBPASS_RESOLVE_PERFORMANCE_QUERY_EXT => {
-                const nn: *const vk.VkSubpassResolvePerformanceQueryEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT => {
-                const nn: *const vk.VkMultisampledRenderToSingleSampledInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineColorWriteCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMultiDrawFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMultiDrawPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderTileImageFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderTileImagePropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_INFO_EXT => {
-                const nn: *const vk.VkMicromapBuildInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MICROMAP_VERSION_INFO_EXT => {
-                const nn: *const vk.VkMicromapVersionInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_INFO_EXT => {
-                const nn: *const vk.VkCopyMicromapInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_MICROMAP_TO_MEMORY_INFO_EXT => {
-                const nn: *const vk.VkCopyMicromapToMemoryInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_MEMORY_TO_MICROMAP_INFO_EXT => {
-                const nn: *const vk.VkCopyMemoryToMicromapInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceOpacityMicromapPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MICROMAP_CREATE_INFO_EXT => {
-                const nn: *const vk.VkMicromapCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MICROMAP_BUILD_SIZES_INFO_EXT => {
-                const nn: *const vk.VkMicromapBuildSizesInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT => {
-                const nn: *const vk.VkAccelerationStructureTrianglesOpacityMicromapEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT => {
-                const nn: *const vk.VkSamplerBorderColorComponentMappingCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceShaderCorePropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDeviceQueueShaderCoreControlCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceSchedulingControlsFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceSchedulingControlsPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT => {
-                const nn: *const vk.VkImageViewSlicedCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_BINDING_REFERENCE_VALVE => {
-                const nn: *const vk.VkDescriptorSetBindingReferenceVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_HOST_MAPPING_INFO_VALVE => {
-                const nn: *const vk.VkDescriptorSetLayoutHostMappingInfoVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceRenderPassStripedFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceRenderPassStripedPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM => {
-                const nn: *const vk.VkRenderPassStripeBeginInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_INFO_ARM => {
-                const nn: *const vk.VkRenderPassStripeInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM => {
-                const nn: *const vk.VkRenderPassStripeSubmitInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV => {
-                const nn: *const vk.VkComputePipelineIndirectBufferInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_INDIRECT_DEVICE_ADDRESS_INFO_NV => {
-                const nn: *const vk.VkPipelineIndirectDeviceAddressInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV => {
-                const nn: *const vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_SPHERES_DATA_NV => {
-                const nn: *const vk.VkAccelerationStructureGeometrySpheresDataNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessingPropertiesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM => {
-                const nn: *const vk.VkImageViewSampleWeightCreateInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceNestedCommandBufferFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceNestedCommandBufferPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT => {
-                const nn: *const vk.VkExternalMemoryAcquireUnmodifiedEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceExtendedDynamicState3PropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT => {
-                const nn: *const vk.VkRenderPassCreationControlEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT => {
-                const nn: *const vk.VkRenderPassCreationFeedbackCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT => {
-                const nn: *const vk.VkRenderPassSubpassFeedbackCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_INFO_LUNARG => {
-                const nn: *const vk.VkDirectDriverLoadingInfoLUNARG = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG => {
-                const nn: *const vk.VkDirectDriverLoadingListLUNARG = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_CREATE_INFO_ARM => {
-                const nn: *const vk.VkTensorCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_VIEW_CREATE_INFO_ARM => {
-                const nn: *const vk.VkTensorViewCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_TENSOR_MEMORY_INFO_ARM => {
-                const nn: *const vk.VkBindTensorMemoryInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_ARM => {
-                const nn: *const vk.VkWriteDescriptorSetTensorARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceTensorPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_FORMAT_PROPERTIES_ARM => {
-                const nn: *const vk.VkTensorFormatPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM => {
-                const nn: *const vk.VkTensorDescriptionARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_REQUIREMENTS_INFO_ARM => {
-                const nn: *const vk.VkTensorMemoryRequirementsInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_BARRIER_ARM => {
-                const nn: *const vk.VkTensorMemoryBarrierARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceTensorFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_TENSOR_MEMORY_REQUIREMENTS_ARM => {
-                const nn: *const vk.VkDeviceTensorMemoryRequirementsARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COPY_TENSOR_INFO_ARM => {
-                const nn: *const vk.VkCopyTensorInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_COPY_ARM => {
-                const nn: *const vk.VkTensorCopyARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_DEPENDENCY_INFO_ARM => {
-                const nn: *const vk.VkTensorDependencyInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_TENSOR_ARM => {
-                const nn: *const vk.VkMemoryDedicatedAllocateInfoTensorARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_TENSOR_INFO_ARM => {
-                const nn: *const vk.VkPhysicalDeviceExternalTensorInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_TENSOR_PROPERTIES_ARM => {
-                const nn: *const vk.VkExternalTensorPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM => {
-                const nn: *const vk.VkExternalMemoryTensorCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_TENSOR_INFO_ARM => {
-                const nn: *const vk.VkDescriptorGetTensorInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_CAPTURE_DESCRIPTOR_DATA_INFO_ARM => {
-                const nn: *const vk.VkTensorCaptureDescriptorDataInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TENSOR_VIEW_CAPTURE_DESCRIPTOR_DATA_INFO_ARM => {
-                const nn: *const vk.VkTensorViewCaptureDescriptorDataInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM => {
-                const nn: *const vk.VkFrameBoundaryTensorsARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineShaderStageModuleIdentifierCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SHADER_MODULE_IDENTIFIER_EXT => {
-                const nn: *const vk.VkShaderModuleIdentifierEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceOpticalFlowPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV => {
-                const nn: *const vk.VkOpticalFlowImageFormatInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_PROPERTIES_NV => {
-                const nn: *const vk.VkOpticalFlowImageFormatPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV => {
-                const nn: *const vk.VkOpticalFlowSessionCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV => {
-                const nn: *const vk.VkOpticalFlowExecuteInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV => {
-                const nn: *const vk.VkOpticalFlowSessionCreatePrivateDataInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD => {
-                const nn: *const vk.VkPhysicalDeviceAntiLagFeaturesAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ANTI_LAG_DATA_AMD => {
-                const nn: *const vk.VkAntiLagDataAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ANTI_LAG_PRESENTATION_INFO_AMD => {
-                const nn: *const vk.VkAntiLagPresentationInfoAMD = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR => {
-                const nn: *const vk.VkSurfaceCapabilitiesPresentWait2KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePresentWait2FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PRESENT_WAIT_2_INFO_KHR => {
-                const nn: *const vk.VkPresentWait2InfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderObjectPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT => {
-                const nn: *const vk.VkShaderCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePipelineBinaryFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_CREATE_INFO_KHR => {
-                const nn: *const vk.VkPipelineBinaryCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR => {
-                const nn: *const vk.VkPipelineBinaryInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_KEY_KHR => {
-                const nn: *const vk.VkPipelineBinaryKeyKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePipelineBinaryPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RELEASE_CAPTURED_PIPELINE_DATA_INFO_KHR => {
-                const nn: *const vk.VkReleaseCapturedPipelineDataInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_DATA_INFO_KHR => {
-                const nn: *const vk.VkPipelineBinaryDataInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_INFO_KHR => {
-                const nn: *const vk.VkPipelineCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR => {
-                const nn: *const vk.VkDevicePipelineBinaryInternalCacheControlKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_HANDLES_INFO_KHR => {
-                const nn: *const vk.VkPipelineBinaryHandlesInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TILE_PROPERTIES_QCOM => {
-                const nn: *const vk.VkTilePropertiesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC => {
-                const nn: *const vk.VkPhysicalDeviceAmigoProfilingFeaturesSEC = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC => {
-                const nn: *const vk.VkAmigoProfilingSubmitInfoSEC = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR => {
-                const nn: *const vk.VkSurfacePresentModeKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR => {
-                const nn: *const vk.VkSurfacePresentScalingCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR => {
-                const nn: *const vk.VkSurfacePresentModeCompatibilityKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR => {
-                const nn: *const vk.VkSwapchainPresentFenceInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR => {
-                const nn: *const vk.VkSwapchainPresentModesCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR => {
-                const nn: *const vk.VkSwapchainPresentModeInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR => {
-                const nn: *const vk.VkSwapchainPresentScalingCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_KHR => {
-                const nn: *const vk.VkReleaseSwapchainImagesInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeVectorPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COOPERATIVE_VECTOR_PROPERTIES_NV => {
-                const nn: *const vk.VkCooperativeVectorPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CONVERT_COOPERATIVE_VECTOR_MATRIX_INFO_NV => {
-                const nn: *const vk.VkConvertCooperativeVectorMatrixInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT => {
-                const nn: *const vk.VkMutableDescriptorTypeCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT => {
-                const nn: *const vk.VkLayerSettingsCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_PROPERTIES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV => {
-                const nn: *const vk.VkLatencySleepModeInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_LATENCY_SLEEP_INFO_NV => {
-                const nn: *const vk.VkLatencySleepInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SET_LATENCY_MARKER_INFO_NV => {
-                const nn: *const vk.VkSetLatencyMarkerInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GET_LATENCY_MARKER_INFO_NV => {
-                const nn: *const vk.VkGetLatencyMarkerInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_LATENCY_TIMINGS_FRAME_REPORT_NV => {
-                const nn: *const vk.VkLatencyTimingsFrameReportNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_OUT_OF_BAND_QUEUE_TYPE_INFO_NV => {
-                const nn: *const vk.VkOutOfBandQueueTypeInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SWAPCHAIN_LATENCY_CREATE_INFO_NV => {
-                const nn: *const vk.VkSwapchainLatencyCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_LATENCY_SURFACE_CAPABILITIES_NV => {
-                const nn: *const vk.VkLatencySurfaceCapabilitiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_KHR => {
-                const nn: *const vk.VkCooperativeMatrixPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineSessionCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_RESOURCE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineResourceInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_ARM => {
-                const nn: *const vk.VkDataGraphPipelineConstantARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_MEMORY_REQUIREMENTS_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_DATA_GRAPH_PIPELINE_SESSION_MEMORY_INFO_ARM => {
-                const nn: *const vk.VkBindDataGraphPipelineSessionMemoryInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceDataGraphFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineShaderModuleCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_PROPERTY_QUERY_RESULT_ARM => {
-                const nn: *const vk.VkDataGraphPipelinePropertyQueryResultARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineCompilerControlCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENTS_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENT_ARM => {
-                const nn: *const vk.VkDataGraphPipelineSessionBindPointRequirementARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineIdentifierCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_DISPATCH_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineDispatchInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM => {
-                const nn: *const vk.VkDataGraphProcessingEngineCreateInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_PROPERTIES_ARM => {
-                const nn: *const vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_DATA_GRAPH_PROPERTIES_ARM => {
-                const nn: *const vk.VkQueueFamilyDataGraphPropertiesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_QUEUE_FAMILY_DATA_GRAPH_PROCESSING_ENGINE_INFO_ARM => {
-                const nn: *const vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM => {
-                const nn: *const vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM => {
-                const nn: *const vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoMaintenance1FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR => {
-                const nn: *const vk.VkVideoInlineQueryInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM => {
-                const nn: *const vk.VkSamplerBlockMatchWindowCreateInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM => {
-                const nn: *const vk.VkSamplerCubicWeightsCreateInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM => {
-                const nn: *const vk.VkBlitImageCubicWeightsInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM => {
-                const nn: *const vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceCubicClampFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_ATTACHMENT_FEEDBACK_LOOP_INFO_EXT => {
-                const nn: *const vk.VkAttachmentFeedbackLoopInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT => {
-                const nn: *const vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_KHR => {
-                const nn: *const vk.VkCalibratedTimestampInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_SET_DESCRIPTOR_BUFFER_OFFSETS_INFO_EXT => {
-                const nn: *const vk.VkSetDescriptorBufferOffsetsInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_BUFFER_EMBEDDED_SAMPLERS_INFO_EXT => {
-                const nn: *const vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM => {
-                const nn: *const vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM => {
-                const nn: *const vk.VkTileMemoryRequirementsQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM => {
-                const nn: *const vk.VkTileMemoryBindInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM => {
-                const nn: *const vk.VkTileMemorySizeInfoQCOM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_STEREO_CREATE_INFO_NV => {
-                const nn: *const vk.VkDisplaySurfaceStereoCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_STEREO_PROPERTIES_NV => {
-                const nn: *const vk.VkDisplayModeStereoPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_CAPABILITIES_KHR => {
-                const nn: *const vk.VkVideoEncodeIntraRefreshCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_INTRA_REFRESH_CREATE_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeSessionIntraRefreshCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeIntraRefreshInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_INTRA_REFRESH_INFO_KHR => {
-                const nn: *const vk.VkVideoReferenceIntraRefreshInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_CAPABILITIES_KHR => {
-                const nn: *const vk.VkVideoEncodeQuantizationMapCapabilitiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_QUANTIZATION_MAP_PROPERTIES_KHR => {
-                const nn: *const vk.VkVideoFormatQuantizationMapPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeQuantizationMapInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR => {
-                const nn: *const vk.VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV => {
-                const nn: *const vk.VkExternalComputeQueueDeviceCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_CREATE_INFO_NV => {
-                const nn: *const vk.VkExternalComputeQueueCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DATA_PARAMS_NV => {
-                const nn: *const vk.VkExternalComputeQueueDataParamsNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_COMPUTE_QUEUE_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance7FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance7PropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_LIST_KHR => {
-                const nn: *const vk.VkPhysicalDeviceLayeredApiPropertiesListKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceLayeredApiPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_VULKAN_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceLayeredApiVulkanPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceRayTracingValidationFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_CLUSTERS_BOTTOM_LEVEL_INPUT_NV => {
-                const nn: *const vk.VkClusterAccelerationStructureClustersBottomLevelInputNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_TRIANGLE_CLUSTER_INPUT_NV => {
-                const nn: *const vk.VkClusterAccelerationStructureTriangleClusterInputNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_MOVE_OBJECTS_INPUT_NV => {
-                const nn: *const vk.VkClusterAccelerationStructureMoveObjectsInputNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_INPUT_INFO_NV => {
-                const nn: *const vk.VkClusterAccelerationStructureInputInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_CLUSTER_ACCELERATION_STRUCTURE_COMMANDS_INFO_NV => {
-                const nn: *const vk.VkClusterAccelerationStructureCommandsInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV => {
-                const nn: *const vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV => {
-                const nn: *const vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_INSTANCES_INPUT_NV => {
-                const nn: *const vk.VkPartitionedAccelerationStructureInstancesInputNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_BUILD_PARTITIONED_ACCELERATION_STRUCTURE_INFO_NV => {
-                const nn: *const vk.VkBuildPartitionedAccelerationStructureInfoNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_FLAGS_NV => {
-                const nn: *const vk.VkPartitionedAccelerationStructureFlagsNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_MEMORY_REQUIREMENTS_INFO_EXT => {
-                const nn: *const vk.VkGeneratedCommandsMemoryRequirementsInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_CREATE_INFO_EXT => {
-                const nn: *const vk.VkIndirectExecutionSetCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_INFO_EXT => {
-                const nn: *const vk.VkGeneratedCommandsInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_EXT => {
-                const nn: *const vk.VkIndirectCommandsLayoutCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_EXT => {
-                const nn: *const vk.VkIndirectCommandsLayoutTokenEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_PIPELINE_EXT => {
-                const nn: *const vk.VkWriteIndirectExecutionSetPipelineEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_WRITE_INDIRECT_EXECUTION_SET_SHADER_EXT => {
-                const nn: *const vk.VkWriteIndirectExecutionSetShaderEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_PIPELINE_INFO_EXT => {
-                const nn: *const vk.VkIndirectExecutionSetPipelineInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_INFO_EXT => {
-                const nn: *const vk.VkIndirectExecutionSetShaderInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_INDIRECT_EXECUTION_SET_SHADER_LAYOUT_INFO_EXT => {
-                const nn: *const vk.VkIndirectExecutionSetShaderLayoutInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT => {
-                const nn: *const vk.VkGeneratedCommandsPipelineInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT => {
-                const nn: *const vk.VkGeneratedCommandsShaderInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance8FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR => {
-                const nn: *const vk.VkMemoryBarrierAccessFlags3KHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA => {
-                const nn: *const vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA => {
-                const nn: *const vk.VkPhysicalDeviceImageAlignmentControlPropertiesMESA = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA => {
-                const nn: *const vk.VkImageAlignmentControlCreateInfoMESA = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceDepthClampControlFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT => {
-                const nn: *const vk.VkPipelineViewportDepthClampControlCreateInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance9FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceMaintenance9PropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_OWNERSHIP_TRANSFER_PROPERTIES_KHR => {
-                const nn: *const vk.VkQueueFamilyOwnershipTransferPropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceVideoMaintenance2FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_FLEXIBLE_DIMENSIONS_PROPERTIES_NV => {
-                const nn: *const vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_PROPERTIES_NV => {
-                const nn: *const vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM => {
-                const nn: *const vk.VkPhysicalDeviceFormatPackFeaturesARM = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE => {
-                const nn: *const vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRobustness2FeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR => {
-                const nn: *const vk.VkPhysicalDeviceRobustness2PropertiesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT => {
-                const nn: *const vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_RENDERING_END_INFO_EXT => {
-                const nn: *const vk.VkRenderingEndInfoEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT => {
-                const nn: *const vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR => {
-                const nn: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC => {
-                const nn: *const vk.VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC = @ptrCast(@alignCast(c));
-                size += struct_size(nn);
-                current = nn.pNext;
-            },
-            else => {
-                log.warn(@src(), "Unknown struct sType: {d}", .{base_struct.sType});
-                current = base_struct.pNext;
-            },
+
+    for (std.mem.span(item.pApplicationName)) |i|
+        size += @sizeOf(i);
+    for (std.mem.span(item.pEngineName)) |i|
+        size += @sizeOf(i);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT,
+                => size += size_of_VkApplicationParametersEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkApplicationInfo: {d}", .{v});
+                },
+            }
         }
     }
-    return size;
+
+    return size + @sizeOf(vk.VkApplicationInfo);
+}
+pub fn size_of_VkAllocationCallbacks(item: *const vk.VkAllocationCallbacks, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pUserData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAllocationCallbacks);
+}
+pub fn size_of_VkDeviceQueueCreateInfo(item: *const vk.VkDeviceQueueCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueCount) |_|
+        size += @sizeOf(f32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO,
+                => size += size_of_VkDeviceQueueGlobalPriorityCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDeviceQueueCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDeviceQueueCreateInfo);
+}
+pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueCreateInfoCount) |i|
+        size += size_of_VkDeviceQueueCreateInfo(@ptrCast(&item.pQueueCreateInfos[i]), false);
+    for (0..item.enabledLayerCount) |_|
+        size += @sizeOf(u8);
+    for (0..item.enabledExtensionCount) |_|
+        size += @sizeOf(u8);
+    if (item.pEnabledFeatures) |ptr| size += size_of_VkPhysicalDeviceFeatures(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT,
+                => size += size_of_VkApplicationParametersEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO,
+                => size += size_of_VkDevicePrivateDataCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
+                => size += size_of_VkPhysicalDevicePrivateDataFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+                => size += size_of_VkPhysicalDeviceFeatures2(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
+                => size += size_of_VkPhysicalDeviceVariablePointersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_SEMAPHORE_SCI_SYNC_POOL_RESERVATION_CREATE_INFO_NV,
+                => size += size_of_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+                => size += size_of_VkPhysicalDeviceMultiviewFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO,
+                => size += size_of_VkDeviceGroupDeviceCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentIdFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentId2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentWaitFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentWait2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
+                => size += size_of_VkPhysicalDevice16BitStorageFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
+                => size += size_of_VkPhysicalDeviceSamplerYcbcrConversionFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
+                => size += size_of_VkPhysicalDeviceProtectedMemoryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMultiDrawFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+                => size += size_of_VkPhysicalDeviceInlineUniformBlockFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance4Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance5Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance6Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance7FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance8FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance9FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderDrawParametersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderFloat16Int8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
+                => size += size_of_VkPhysicalDeviceHostQueryResetFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES,
+                => size += size_of_VkPhysicalDeviceGlobalPriorityQueryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT,
+                => size += size_of_VkDeviceDeviceMemoryReportCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+                => size += size_of_VkPhysicalDeviceDescriptorIndexingFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+                => size += size_of_VkPhysicalDeviceTimelineSemaphoreFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
+                => size += size_of_VkPhysicalDevice8BitStorageFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceConditionalRenderingFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkanMemoryModelFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderAtomicInt64Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES,
+                => size += size_of_VkPhysicalDeviceVertexAttributeDivisorFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceASTCDecodeFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceTransformFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceAccelerationStructureFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayQueryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD,
+                => size += size_of_VkDeviceMemoryOverallocationCreateInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+                => size += size_of_VkPhysicalDeviceScalarBlockLayoutFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
+                => size += size_of_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClipEnableFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMemoryPriorityFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+                => size += size_of_VkPhysicalDeviceBufferDeviceAddressFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
+                => size += size_of_VkPhysicalDeviceImagelessFramebufferFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
+                => size += size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentBarrierFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR,
+                => size += size_of_VkPerformanceQueryReservationInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
+                => size += size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderClockFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
+                => size += size_of_VkPhysicalDeviceIndexTypeUint8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
+                => size += size_of_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES,
+                => size += size_of_VkPhysicalDeviceSubgroupSizeControlFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceLineRasterizationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineCreationCacheControlFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan11Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan12Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan13Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan14Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FAULT_CALLBACK_INFO,
+                => size += size_of_VkFaultCallbackInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceCustomBorderColorFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+                => size += size_of_VkDeviceDiagnosticsConfigCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
+                => size += size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRobustness2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+                => size += size_of_VkPhysicalDeviceImageRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePortabilitySubsetFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevice4444FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderTerminateInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClipControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClampControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceColorWriteEnableFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceSynchronization2Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES,
+                => size += size_of_VkPhysicalDeviceHostImageCopyFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_OBJECT_RESERVATION_CREATE_INFO,
+                => size += size_of_VkDeviceObjectReservationCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkanSC10Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceLegacyDitheringFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineProtectedAccessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_DECODE_VP9_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceProvokingVertexFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderIntegerDotProductFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePipelineBinaryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_PIPELINE_BINARY_INTERNAL_CACHE_CONTROL_KHR,
+                => size += size_of_VkDevicePipelineBinaryInternalCacheControlKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE,
+                => size += size_of_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageCompressionControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceOpacityMicromapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC,
+                => size += size_of_VkPhysicalDeviceAmigoProfilingFeaturesSEC(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAddressBindingReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFaultFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFrameBoundaryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderObjectFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderTileImageFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX,
+                => size += size_of_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_FEATURES_AMDX,
+                => size += size_of_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceAntiLagFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
+                => size += size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
+                => size += size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+                => size += size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupRotateFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderExpectAssumeFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderFloatControls2Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
+                => size += size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentMeteringFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV,
+                => size += size_of_VkExternalComputeQueueDeviceCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceFormatPackFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDataGraphFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC,
+                => size += size_of_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDeviceCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDeviceCreateInfo);
+}
+pub fn size_of_VkInstanceCreateInfo(item: *const vk.VkInstanceCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pApplicationInfo) |ptr| size += size_of_VkApplicationInfo(@ptrCast(ptr), false);
+    for (0..item.enabledLayerCount) |_|
+        size += @sizeOf(u8);
+    for (0..item.enabledExtensionCount) |_|
+        size += @sizeOf(u8);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
+                => size += size_of_VkDebugReportCallbackCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT,
+                => size += size_of_VkValidationFlagsEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+                => size += size_of_VkValidationFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT,
+                => size += size_of_VkLayerSettingsCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+                => size += size_of_VkDebugUtilsMessengerCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DIRECT_DRIVER_LOADING_LIST_LUNARG,
+                => size += size_of_VkDirectDriverLoadingListLUNARG(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkInstanceCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkInstanceCreateInfo);
+}
+pub fn size_of_VkQueueFamilyProperties(item: *const vk.VkQueueFamilyProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyProperties);
+}
+pub fn size_of_VkPhysicalDeviceMemoryProperties(item: *const vk.VkPhysicalDeviceMemoryProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryProperties);
+}
+pub fn size_of_VkMemoryAllocateInfo(item: *const vk.VkMemoryAllocateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationMemoryAllocateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV,
+                => size += size_of_VkExportMemoryAllocateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+                => size += size_of_VkImportMemoryWin32HandleInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+                => size += size_of_VkExportMemoryWin32HandleInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_SCI_BUF_INFO_NV,
+                => size += size_of_VkExportMemorySciBufInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_SCI_BUF_INFO_NV,
+                => size += size_of_VkImportMemorySciBufInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
+                => size += size_of_VkExportMemoryAllocateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+                => size += size_of_VkImportMemoryWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+                => size += size_of_VkExportMemoryWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA,
+                => size += size_of_VkImportMemoryZirconHandleInfoFUCHSIA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR,
+                => size += size_of_VkImportMemoryFdInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_METAL_HANDLE_INFO_EXT,
+                => size += size_of_VkImportMemoryMetalHandleInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+                => size += size_of_VkMemoryAllocateFlagsInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
+                => size += size_of_VkMemoryDedicatedAllocateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_HOST_POINTER_INFO_EXT,
+                => size += size_of_VkImportMemoryHostPointerInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID,
+                => size += size_of_VkImportAndroidHardwareBufferInfoANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_PRIORITY_ALLOCATE_INFO_EXT,
+                => size += size_of_VkMemoryPriorityAllocateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO,
+                => size += size_of_VkMemoryOpaqueCaptureAddressAllocateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA,
+                => size += size_of_VkImportMemoryBufferCollectionFUCHSIA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_METAL_BUFFER_INFO_EXT,
+                => size += size_of_VkImportMetalBufferInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX,
+                => size += size_of_VkImportScreenBufferInfoQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_TENSOR_ARM,
+                => size += size_of_VkMemoryDedicatedAllocateInfoTensorARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkMemoryAllocateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkMemoryAllocateInfo);
+}
+pub fn size_of_VkMemoryRequirements(item: *const vk.VkMemoryRequirements, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryRequirements);
+}
+pub fn size_of_VkSparseImageFormatProperties(item: *const vk.VkSparseImageFormatProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageFormatProperties);
+}
+pub fn size_of_VkSparseImageMemoryRequirements(item: *const vk.VkSparseImageMemoryRequirements, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageMemoryRequirements);
+}
+pub fn size_of_VkMemoryType(item: *const vk.VkMemoryType, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryType);
+}
+pub fn size_of_VkMemoryHeap(item: *const vk.VkMemoryHeap, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryHeap);
+}
+pub fn size_of_VkMappedMemoryRange(item: *const vk.VkMappedMemoryRange, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMappedMemoryRange);
+}
+pub fn size_of_VkFormatProperties(item: *const vk.VkFormatProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFormatProperties);
+}
+pub fn size_of_VkImageFormatProperties(item: *const vk.VkImageFormatProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageFormatProperties);
+}
+pub fn size_of_VkDescriptorBufferInfo(item: *const vk.VkDescriptorBufferInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorBufferInfo);
+}
+pub fn size_of_VkDescriptorImageInfo(item: *const vk.VkDescriptorImageInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorImageInfo);
+}
+pub fn size_of_VkWriteDescriptorSet(item: *const vk.VkWriteDescriptorSet, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorCount) |i|
+        size += size_of_VkDescriptorImageInfo(@ptrCast(&item.pImageInfo[i]), false);
+    for (0..item.descriptorCount) |i|
+        size += size_of_VkDescriptorBufferInfo(@ptrCast(&item.pBufferInfo[i]), false);
+    for (0..item.descriptorCount) |_|
+        size += @sizeOf(vk.VkBufferView);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_INLINE_UNIFORM_BLOCK,
+                => size += size_of_VkWriteDescriptorSetInlineUniformBlock(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
+                => size += size_of_VkWriteDescriptorSetAccelerationStructureKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
+                => size += size_of_VkWriteDescriptorSetAccelerationStructureNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV,
+                => size += size_of_VkWriteDescriptorSetPartitionedAccelerationStructureNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_ARM,
+                => size += size_of_VkWriteDescriptorSetTensorARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkWriteDescriptorSet: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkWriteDescriptorSet);
+}
+pub fn size_of_VkCopyDescriptorSet(item: *const vk.VkCopyDescriptorSet, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyDescriptorSet);
+}
+pub fn size_of_VkBufferUsageFlags2CreateInfo(item: *const vk.VkBufferUsageFlags2CreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferUsageFlags2CreateInfo);
+}
+pub fn size_of_VkBufferUsageFlags2CreateInfoKHR(item: *const vk.VkBufferUsageFlags2CreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferUsageFlags2CreateInfoKHR);
+}
+pub fn size_of_VkBufferCreateInfo(item: *const vk.VkBufferCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkBufferUsageFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationBufferCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
+                => size += size_of_VkExternalMemoryBufferCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,
+                => size += size_of_VkBufferOpaqueCaptureAddressCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT,
+                => size += size_of_VkBufferDeviceAddressCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+                => size += size_of_VkVideoProfileListInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_BUFFER_CREATE_INFO_FUCHSIA,
+                => size += size_of_VkBufferCollectionBufferCreateInfoFUCHSIA(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkBufferCreateInfo);
+}
+pub fn size_of_VkBufferViewCreateInfo(item: *const vk.VkBufferViewCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkBufferUsageFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferViewCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBufferViewCreateInfo);
+}
+pub fn size_of_VkImageSubresource(item: *const vk.VkImageSubresource, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresource);
+}
+pub fn size_of_VkImageSubresourceLayers(item: *const vk.VkImageSubresourceLayers, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresourceLayers);
+}
+pub fn size_of_VkImageSubresourceRange(item: *const vk.VkImageSubresourceRange, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresourceRange);
+}
+pub fn size_of_VkMemoryBarrier(item: *const vk.VkMemoryBarrier, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryBarrier);
+}
+pub fn size_of_VkBufferMemoryBarrier(item: *const vk.VkBufferMemoryBarrier, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+                => size += size_of_VkMemoryBarrierAccessFlags3KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+                => size += size_of_VkExternalMemoryAcquireUnmodifiedEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferMemoryBarrier: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBufferMemoryBarrier);
+}
+pub fn size_of_VkImageMemoryBarrier(item: *const vk.VkImageMemoryBarrier, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT,
+                => size += size_of_VkSampleLocationsInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+                => size += size_of_VkMemoryBarrierAccessFlags3KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+                => size += size_of_VkExternalMemoryAcquireUnmodifiedEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageMemoryBarrier: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageMemoryBarrier);
+}
+pub fn size_of_VkImageCreateInfo(item: *const vk.VkImageCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationImageCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV,
+                => size += size_of_VkExternalMemoryImageCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+                => size += size_of_VkExternalMemoryImageCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
+                => size += size_of_VkImageSwapchainCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+                => size += size_of_VkImageFormatListCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_LIST_CREATE_INFO_EXT,
+                => size += size_of_VkImageDrmFormatModifierListCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT,
+                => size += size_of_VkImageDrmFormatModifierExplicitCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO,
+                => size += size_of_VkImageStencilUsageCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+                => size += size_of_VkVideoProfileListInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BUFFER_COLLECTION_IMAGE_CREATE_INFO_FUCHSIA,
+                => size += size_of_VkBufferCollectionImageCreateInfoFUCHSIA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+                => size += size_of_VkImageCompressionControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT,
+                => size += size_of_VkImportMetalTextureInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT,
+                => size += size_of_VkImportMetalIOSurfaceInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+                => size += size_of_VkOpticalFlowImageFormatInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
+                => size += size_of_VkExternalFormatQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA,
+                => size += size_of_VkImageAlignmentControlCreateInfoMESA(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkImageCreateInfo);
+}
+pub fn size_of_VkSubresourceLayout(item: *const vk.VkSubresourceLayout, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubresourceLayout);
+}
+pub fn size_of_VkImageViewCreateInfo(item: *const vk.VkImageViewCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+                => size += size_of_VkImageViewUsageCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SLICED_CREATE_INFO_EXT,
+                => size += size_of_VkImageViewSlicedCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO,
+                => size += size_of_VkSamplerYcbcrConversionInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT,
+                => size += size_of_VkImageViewASTCDecodeModeEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_MIN_LOD_CREATE_INFO_EXT,
+                => size += size_of_VkImageViewMinLodCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM,
+                => size += size_of_VkImageViewSampleWeightCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageViewCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageViewCreateInfo);
+}
+pub fn size_of_VkBufferCopy(item: *const vk.VkBufferCopy, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCopy);
+}
+pub fn size_of_VkSparseMemoryBind(item: *const vk.VkSparseMemoryBind, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseMemoryBind);
+}
+pub fn size_of_VkSparseImageMemoryBind(item: *const vk.VkSparseImageMemoryBind, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageMemoryBind);
+}
+pub fn size_of_VkSparseBufferMemoryBindInfo(item: *const vk.VkSparseBufferMemoryBindInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.bindCount) |i|
+        size += size_of_VkSparseMemoryBind(@ptrCast(&item.pBinds[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSparseBufferMemoryBindInfo);
+}
+pub fn size_of_VkSparseImageOpaqueMemoryBindInfo(item: *const vk.VkSparseImageOpaqueMemoryBindInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.bindCount) |i|
+        size += size_of_VkSparseMemoryBind(@ptrCast(&item.pBinds[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSparseImageOpaqueMemoryBindInfo);
+}
+pub fn size_of_VkSparseImageMemoryBindInfo(item: *const vk.VkSparseImageMemoryBindInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.bindCount) |i|
+        size += size_of_VkSparseImageMemoryBind(@ptrCast(&item.pBinds[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSparseImageMemoryBindInfo);
+}
+pub fn size_of_VkBindSparseInfo(item: *const vk.VkBindSparseInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+    for (0..item.bufferBindCount) |i|
+        size += size_of_VkSparseBufferMemoryBindInfo(@ptrCast(&item.pBufferBinds[i]), false);
+    for (0..item.imageOpaqueBindCount) |i|
+        size += size_of_VkSparseImageOpaqueMemoryBindInfo(@ptrCast(&item.pImageOpaqueBinds[i]), false);
+    for (0..item.imageBindCount) |i|
+        size += size_of_VkSparseImageMemoryBindInfo(@ptrCast(&item.pImageBinds[i]), false);
+    for (0..item.signalSemaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_BIND_SPARSE_INFO,
+                => size += size_of_VkDeviceGroupBindSparseInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+                => size += size_of_VkTimelineSemaphoreSubmitInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+                => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBindSparseInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkBindSparseInfo);
+}
+pub fn size_of_VkImageCopy(item: *const vk.VkImageCopy, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageCopy);
+}
+pub fn size_of_VkImageBlit(item: *const vk.VkImageBlit, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageBlit);
+}
+pub fn size_of_VkBufferImageCopy(item: *const vk.VkBufferImageCopy, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferImageCopy);
+}
+pub fn size_of_VkCopyMemoryIndirectCommandNV(item: *const vk.VkCopyMemoryIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryIndirectCommandNV);
+}
+pub fn size_of_VkCopyMemoryToImageIndirectCommandNV(item: *const vk.VkCopyMemoryToImageIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryToImageIndirectCommandNV);
+}
+pub fn size_of_VkImageResolve(item: *const vk.VkImageResolve, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageResolve);
+}
+pub fn size_of_VkShaderModuleCreateInfo(item: *const vk.VkShaderModuleCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+                => size += size_of_VkValidationFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT,
+                => size += size_of_VkShaderModuleValidationCacheCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkShaderModuleCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkShaderModuleCreateInfo);
+}
+pub fn size_of_VkDescriptorSetLayoutBinding(item: *const vk.VkDescriptorSetLayoutBinding, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorCount) |_|
+        size += @sizeOf(vk.VkSampler);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDescriptorSetLayoutBinding);
+}
+pub fn size_of_VkDescriptorSetLayoutCreateInfo(item: *const vk.VkDescriptorSetLayoutCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.bindingCount) |i|
+        size += size_of_VkDescriptorSetLayoutBinding(@ptrCast(&item.pBindings[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                => size += size_of_VkDescriptorSetLayoutBindingFlagsCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+                => size += size_of_VkMutableDescriptorTypeCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorSetLayoutCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDescriptorSetLayoutCreateInfo);
+}
+pub fn size_of_VkDescriptorPoolSize(item: *const vk.VkDescriptorPoolSize, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorPoolSize);
+}
+pub fn size_of_VkDescriptorPoolCreateInfo(item: *const vk.VkDescriptorPoolCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.poolSizeCount) |i|
+        size += size_of_VkDescriptorPoolSize(@ptrCast(&item.pPoolSizes[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_INLINE_UNIFORM_BLOCK_CREATE_INFO,
+                => size += size_of_VkDescriptorPoolInlineUniformBlockCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+                => size += size_of_VkMutableDescriptorTypeCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorPoolCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDescriptorPoolCreateInfo);
+}
+pub fn size_of_VkDescriptorSetAllocateInfo(item: *const vk.VkDescriptorSetAllocateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorSetCount) |_|
+        size += @sizeOf(vk.VkDescriptorSetLayout);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO,
+                => size += size_of_VkDescriptorSetVariableDescriptorCountAllocateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorSetAllocateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDescriptorSetAllocateInfo);
+}
+pub fn size_of_VkSpecializationMapEntry(item: *const vk.VkSpecializationMapEntry, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSpecializationMapEntry);
+}
+pub fn size_of_VkSpecializationInfo(item: *const vk.VkSpecializationInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.mapEntryCount) |i|
+        size += size_of_VkSpecializationMapEntry(@ptrCast(&item.pMapEntries[i]), false);
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSpecializationInfo);
+}
+pub fn size_of_VkPipelineShaderStageCreateInfo(item: *const vk.VkPipelineShaderStageCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+    if (item.pSpecializationInfo) |ptr| size += size_of_VkSpecializationInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                => size += size_of_VkShaderModuleCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SHADER_MODULE_VALIDATION_CACHE_CREATE_INFO_EXT,
+                => size += size_of_VkShaderModuleValidationCacheCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+                => size += size_of_VkDebugUtilsObjectNameInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+                => size += size_of_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_MODULE_IDENTIFIER_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineShaderStageModuleIdentifierCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                => size += size_of_VkPipelineRobustnessCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_NODE_CREATE_INFO_AMDX,
+                => size += size_of_VkPipelineShaderStageNodeCreateInfoAMDX(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineShaderStageCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPipelineShaderStageCreateInfo);
+}
+pub fn size_of_VkComputePipelineCreateInfo(item: *const vk.VkComputePipelineCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV,
+                => size += size_of_VkComputePipelineIndirectBufferInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+                => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI,
+                => size += size_of_VkSubpassShadingPipelineCreateInfoHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+                => size += size_of_VkPipelineCompilerControlCreateInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                => size += size_of_VkPipelineRobustnessCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkComputePipelineCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkComputePipelineCreateInfo);
+}
+pub fn size_of_VkComputePipelineIndirectBufferInfoNV(item: *const vk.VkComputePipelineIndirectBufferInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkComputePipelineIndirectBufferInfoNV);
+}
+pub fn size_of_VkPipelineCreateFlags2CreateInfo(item: *const vk.VkPipelineCreateFlags2CreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreateFlags2CreateInfo);
+}
+pub fn size_of_VkPipelineCreateFlags2CreateInfoKHR(item: *const vk.VkPipelineCreateFlags2CreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreateFlags2CreateInfoKHR);
+}
+pub fn size_of_VkVertexInputBindingDescription(item: *const vk.VkVertexInputBindingDescription, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputBindingDescription);
+}
+pub fn size_of_VkVertexInputAttributeDescription(item: *const vk.VkVertexInputAttributeDescription, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputAttributeDescription);
+}
+pub fn size_of_VkPipelineVertexInputStateCreateInfo(item: *const vk.VkPipelineVertexInputStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.vertexBindingDescriptionCount) |i|
+        size += size_of_VkVertexInputBindingDescription(@ptrCast(&item.pVertexBindingDescriptions[i]), false);
+    for (0..item.vertexAttributeDescriptionCount) |i|
+        size += size_of_VkVertexInputAttributeDescription(@ptrCast(&item.pVertexAttributeDescriptions[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO,
+                => size += size_of_VkPipelineVertexInputDivisorStateCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineVertexInputStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPipelineVertexInputStateCreateInfo);
+}
+pub fn size_of_VkPipelineInputAssemblyStateCreateInfo(item: *const vk.VkPipelineInputAssemblyStateCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineInputAssemblyStateCreateInfo);
+}
+pub fn size_of_VkPipelineTessellationStateCreateInfo(item: *const vk.VkPipelineTessellationStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO,
+                => size += size_of_VkPipelineTessellationDomainOriginStateCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineTessellationStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPipelineTessellationStateCreateInfo);
+}
+pub fn size_of_VkPipelineViewportStateCreateInfo(item: *const vk.VkPipelineViewportStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkViewport(@ptrCast(&item.pViewports[i]), false);
+    for (0..item.scissorCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pScissors[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportWScalingStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportSwizzleStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportExclusiveScissorStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportShadingRateImageStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineViewportDepthClipControlCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineViewportDepthClampControlCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineViewportStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPipelineViewportStateCreateInfo);
+}
+pub fn size_of_VkPipelineRasterizationStateCreateInfo(item: *const vk.VkPipelineRasterizationStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD,
+                => size += size_of_VkPipelineRasterizationStateRasterizationOrderAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineRasterizationConservativeStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineRasterizationStateStreamCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineRasterizationDepthClipStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO,
+                => size += size_of_VkPipelineRasterizationLineStateCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineRasterizationProvokingVertexStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+                => size += size_of_VkDepthBiasRepresentationInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineRasterizationStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPipelineRasterizationStateCreateInfo);
+}
+pub fn size_of_VkPipelineMultisampleStateCreateInfo(item: *const vk.VkPipelineMultisampleStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageToColorStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineSampleLocationsStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageModulationStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageReductionStateCreateInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineMultisampleStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPipelineMultisampleStateCreateInfo);
+}
+pub fn size_of_VkPipelineColorBlendAttachmentState(item: *const vk.VkPipelineColorBlendAttachmentState, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineColorBlendAttachmentState);
+}
+pub fn size_of_VkPipelineColorBlendStateCreateInfo(item: *const vk.VkPipelineColorBlendStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |i|
+        size += size_of_VkPipelineColorBlendAttachmentState(@ptrCast(&item.pAttachments[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineColorBlendAdvancedStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineColorWriteCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPipelineColorBlendStateCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPipelineColorBlendStateCreateInfo);
+}
+pub fn size_of_VkPipelineDynamicStateCreateInfo(item: *const vk.VkPipelineDynamicStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dynamicStateCount) |_|
+        size += @sizeOf(vk.VkDynamicState);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineDynamicStateCreateInfo);
+}
+pub fn size_of_VkStencilOpState(item: *const vk.VkStencilOpState, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkStencilOpState);
+}
+pub fn size_of_VkPipelineDepthStencilStateCreateInfo(item: *const vk.VkPipelineDepthStencilStateCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineDepthStencilStateCreateInfo);
+}
+pub fn size_of_VkGraphicsPipelineCreateInfo(item: *const vk.VkGraphicsPipelineCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    if (item.pVertexInputState) |ptr| size += size_of_VkPipelineVertexInputStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pInputAssemblyState) |ptr| size += size_of_VkPipelineInputAssemblyStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pTessellationState) |ptr| size += size_of_VkPipelineTessellationStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pViewportState) |ptr| size += size_of_VkPipelineViewportStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pRasterizationState) |ptr| size += size_of_VkPipelineRasterizationStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pMultisampleState) |ptr| size += size_of_VkPipelineMultisampleStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pDepthStencilState) |ptr| size += size_of_VkPipelineDepthStencilStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pColorBlendState) |ptr| size += size_of_VkPipelineColorBlendStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pDynamicState) |ptr| size += size_of_VkPipelineDynamicStateCreateInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+                => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+                => size += size_of_VkGraphicsPipelineShaderGroupsCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
+                => size += size_of_VkPipelineDiscardRectangleStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+                => size += size_of_VkPipelineCompilerControlCreateInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
+                => size += size_of_VkPipelineLibraryCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
+                => size += size_of_VkPipelineFragmentShadingRateStateCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+                => size += size_of_VkPipelineRenderingCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+                => size += size_of_VkAttachmentSampleCountInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
+                => size += size_of_VkGraphicsPipelineLibraryCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                => size += size_of_VkPipelineRobustnessCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+                => size += size_of_VkRenderingAttachmentLocationInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+                => size += size_of_VkRenderingInputAttachmentIndexInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
+                => size += size_of_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkGraphicsPipelineCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkGraphicsPipelineCreateInfo);
+}
+pub fn size_of_VkPipelineCacheCreateInfo(item: *const vk.VkPipelineCacheCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.initialDataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineCacheCreateInfo);
+}
+pub fn size_of_VkPipelineCacheHeaderVersionOne(item: *const vk.VkPipelineCacheHeaderVersionOne, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCacheHeaderVersionOne);
+}
+pub fn size_of_VkPipelineCacheStageValidationIndexEntry(item: *const vk.VkPipelineCacheStageValidationIndexEntry, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCacheStageValidationIndexEntry);
+}
+pub fn size_of_VkPipelineCacheSafetyCriticalIndexEntry(item: *const vk.VkPipelineCacheSafetyCriticalIndexEntry, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCacheSafetyCriticalIndexEntry);
+}
+pub fn size_of_VkPipelineCacheHeaderVersionSafetyCriticalOne(item: *const vk.VkPipelineCacheHeaderVersionSafetyCriticalOne, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCacheHeaderVersionSafetyCriticalOne);
+}
+pub fn size_of_VkPushConstantRange(item: *const vk.VkPushConstantRange, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPushConstantRange);
+}
+pub fn size_of_VkPipelineBinaryCreateInfoKHR(item: *const vk.VkPipelineBinaryCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pKeysAndDataInfo) |ptr| size += size_of_VkPipelineBinaryKeysAndDataKHR(@ptrCast(ptr), false);
+    if (item.pPipelineCreateInfo) |ptr| size += size_of_VkPipelineCreateInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineBinaryCreateInfoKHR);
+}
+pub fn size_of_VkPipelineBinaryHandlesInfoKHR(item: *const vk.VkPipelineBinaryHandlesInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.pipelineBinaryCount) |_|
+        size += @sizeOf(vk.VkPipelineBinaryKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineBinaryHandlesInfoKHR);
+}
+pub fn size_of_VkPipelineBinaryDataKHR(item: *const vk.VkPipelineBinaryDataKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineBinaryDataKHR);
+}
+pub fn size_of_VkPipelineBinaryKeysAndDataKHR(item: *const vk.VkPipelineBinaryKeysAndDataKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.binaryCount) |i|
+        size += size_of_VkPipelineBinaryKeyKHR(@ptrCast(&item.pPipelineBinaryKeys[i]), false);
+    for (0..item.binaryCount) |i|
+        size += size_of_VkPipelineBinaryDataKHR(@ptrCast(&item.pPipelineBinaryData[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineBinaryKeysAndDataKHR);
+}
+pub fn size_of_VkPipelineBinaryKeyKHR(item: *const vk.VkPipelineBinaryKeyKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineBinaryKeyKHR);
+}
+pub fn size_of_VkPipelineBinaryInfoKHR(item: *const vk.VkPipelineBinaryInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.binaryCount) |_|
+        size += @sizeOf(vk.VkPipelineBinaryKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineBinaryInfoKHR);
+}
+pub fn size_of_VkReleaseCapturedPipelineDataInfoKHR(item: *const vk.VkReleaseCapturedPipelineDataInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkReleaseCapturedPipelineDataInfoKHR);
+}
+pub fn size_of_VkPipelineBinaryDataInfoKHR(item: *const vk.VkPipelineBinaryDataInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineBinaryDataInfoKHR);
+}
+pub fn size_of_VkPipelineCreateInfoKHR(item: *const vk.VkPipelineCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreateInfoKHR);
+}
+pub fn size_of_VkPipelineLayoutCreateInfo(item: *const vk.VkPipelineLayoutCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.setLayoutCount) |_|
+        size += @sizeOf(vk.VkDescriptorSetLayout);
+    for (0..item.pushConstantRangeCount) |i|
+        size += size_of_VkPushConstantRange(@ptrCast(&item.pPushConstantRanges[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineLayoutCreateInfo);
+}
+pub fn size_of_VkSamplerCreateInfo(item: *const vk.VkSamplerCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO,
+                => size += size_of_VkSamplerYcbcrConversionInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO,
+                => size += size_of_VkSamplerReductionModeCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT,
+                => size += size_of_VkSamplerCustomBorderColorCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT,
+                => size += size_of_VkSamplerBorderColorComponentMappingCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerCubicWeightsCreateInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerBlockMatchWindowCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSamplerCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSamplerCreateInfo);
+}
+pub fn size_of_VkCommandPoolCreateInfo(item: *const vk.VkCommandPoolCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COMMAND_POOL_MEMORY_RESERVATION_CREATE_INFO,
+                => size += size_of_VkCommandPoolMemoryReservationCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCommandPoolCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkCommandPoolCreateInfo);
+}
+pub fn size_of_VkCommandBufferAllocateInfo(item: *const vk.VkCommandBufferAllocateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferAllocateInfo);
+}
+pub fn size_of_VkCommandBufferInheritanceInfo(item: *const vk.VkCommandBufferInheritanceInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT,
+                => size += size_of_VkCommandBufferInheritanceConditionalRenderingInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV,
+                => size += size_of_VkCommandBufferInheritanceViewportScissorInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO,
+                => size += size_of_VkCommandBufferInheritanceRenderingInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+                => size += size_of_VkAttachmentSampleCountInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM,
+                => size += size_of_VkTileMemoryBindInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+                => size += size_of_VkRenderingAttachmentLocationInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+                => size += size_of_VkRenderingInputAttachmentIndexInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCommandBufferInheritanceInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkCommandBufferInheritanceInfo);
+}
+pub fn size_of_VkCommandBufferBeginInfo(item: *const vk.VkCommandBufferBeginInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pInheritanceInfo) |ptr| size += size_of_VkCommandBufferInheritanceInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO,
+                => size += size_of_VkDeviceGroupCommandBufferBeginInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCommandBufferBeginInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkCommandBufferBeginInfo);
+}
+pub fn size_of_VkRenderPassBeginInfo(item: *const vk.VkRenderPassBeginInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.clearValueCount) |_|
+        size += @sizeOf(vk.VkClearValue);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
+                => size += size_of_VkDeviceGroupRenderPassBeginInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_SAMPLE_LOCATIONS_BEGIN_INFO_EXT,
+                => size += size_of_VkRenderPassSampleLocationsBeginInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO,
+                => size += size_of_VkRenderPassAttachmentBeginInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM,
+                => size += size_of_VkRenderPassTransformBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+                => size += size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+                => size += size_of_VkRenderPassStripeBeginInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderPassBeginInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRenderPassBeginInfo);
+}
+pub fn size_of_VkClearDepthStencilValue(item: *const vk.VkClearDepthStencilValue, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClearDepthStencilValue);
+}
+pub fn size_of_VkClearAttachment(item: *const vk.VkClearAttachment, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClearAttachment);
+}
+pub fn size_of_VkAttachmentDescription(item: *const vk.VkAttachmentDescription, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentDescription);
+}
+pub fn size_of_VkAttachmentReference(item: *const vk.VkAttachmentReference, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentReference);
+}
+pub fn size_of_VkSubpassDescription(item: *const vk.VkSubpassDescription, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.inputAttachmentCount) |i|
+        size += size_of_VkAttachmentReference(@ptrCast(&item.pInputAttachments[i]), false);
+    for (0..item.colorAttachmentCount) |i|
+        size += size_of_VkAttachmentReference(@ptrCast(&item.pColorAttachments[i]), false);
+    for (0..item.colorAttachmentCount) |i|
+        size += size_of_VkAttachmentReference(@ptrCast(&item.pResolveAttachments[i]), false);
+    if (item.pDepthStencilAttachment) |ptr| size += size_of_VkAttachmentReference(@ptrCast(ptr), false);
+    for (0..item.preserveAttachmentCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSubpassDescription);
+}
+pub fn size_of_VkSubpassDependency(item: *const vk.VkSubpassDependency, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassDependency);
+}
+pub fn size_of_VkRenderPassCreateInfo(item: *const vk.VkRenderPassCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |i|
+        size += size_of_VkAttachmentDescription(@ptrCast(&item.pAttachments[i]), false);
+    for (0..item.subpassCount) |i|
+        size += size_of_VkSubpassDescription(@ptrCast(&item.pSubpasses[i]), false);
+    for (0..item.dependencyCount) |i|
+        size += size_of_VkSubpassDependency(@ptrCast(&item.pDependencies[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
+                => size += size_of_VkRenderPassMultiviewCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
+                => size += size_of_VkRenderPassInputAttachmentAspectCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT,
+                => size += size_of_VkRenderPassFragmentDensityMapCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+                => size += size_of_VkRenderPassCreationControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
+                => size += size_of_VkRenderPassCreationFeedbackCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderPassCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRenderPassCreateInfo);
+}
+pub fn size_of_VkEventCreateInfo(item: *const vk.VkEventCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
+                => size += size_of_VkImportMetalSharedEventInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkEventCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkEventCreateInfo);
+}
+pub fn size_of_VkFenceCreateInfo(item: *const vk.VkFenceCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_CREATE_INFO,
+                => size += size_of_VkExportFenceCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR,
+                => size += size_of_VkExportFenceWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_SCI_SYNC_INFO_NV,
+                => size += size_of_VkExportFenceSciSyncInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkFenceCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkFenceCreateInfo);
+}
+pub fn size_of_VkPhysicalDeviceFeatures(item: *const vk.VkPhysicalDeviceFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFeatures);
+}
+pub fn size_of_VkPhysicalDeviceSparseProperties(item: *const vk.VkPhysicalDeviceSparseProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSparseProperties);
+}
+pub fn size_of_VkPhysicalDeviceLimits(item: *const vk.VkPhysicalDeviceLimits, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLimits);
+}
+pub fn size_of_VkSemaphoreCreateInfo(item: *const vk.VkSemaphoreCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+                => size += size_of_VkExportSemaphoreCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR,
+                => size += size_of_VkExportSemaphoreWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_SCI_SYNC_INFO_NV,
+                => size += size_of_VkExportSemaphoreSciSyncInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SEMAPHORE_SCI_SYNC_CREATE_INFO_NV,
+                => size += size_of_VkSemaphoreSciSyncCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+                => size += size_of_VkSemaphoreTypeCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
+                => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
+                => size += size_of_VkImportMetalSharedEventInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV,
+                => size += size_of_VkQueryLowLatencySupportNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSemaphoreCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSemaphoreCreateInfo);
+}
+pub fn size_of_VkQueryPoolCreateInfo(item: *const vk.VkQueryPoolCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_CREATE_INFO_KHR,
+                => size += size_of_VkQueryPoolPerformanceCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUERY_POOL_PERFORMANCE_QUERY_CREATE_INFO_INTEL,
+                => size += size_of_VkQueryPoolPerformanceQueryCreateInfoINTEL(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+                => size += size_of_VkVideoDecodeUsageInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeVP9ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+                => size += size_of_VkVideoEncodeUsageInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR,
+                => size += size_of_VkQueryPoolVideoEncodeFeedbackCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1ProfileInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkQueryPoolCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkQueryPoolCreateInfo);
+}
+pub fn size_of_VkFramebufferCreateInfo(item: *const vk.VkFramebufferCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |_|
+        size += @sizeOf(vk.VkImageView);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
+                => size += size_of_VkFramebufferAttachmentsCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkFramebufferCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkFramebufferCreateInfo);
+}
+pub fn size_of_VkDrawIndirectCommand(item: *const vk.VkDrawIndirectCommand, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawIndirectCommand);
+}
+pub fn size_of_VkDrawIndexedIndirectCommand(item: *const vk.VkDrawIndexedIndirectCommand, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawIndexedIndirectCommand);
+}
+pub fn size_of_VkDispatchIndirectCommand(item: *const vk.VkDispatchIndirectCommand, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDispatchIndirectCommand);
+}
+pub fn size_of_VkMultiDrawInfoEXT(item: *const vk.VkMultiDrawInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultiDrawInfoEXT);
+}
+pub fn size_of_VkMultiDrawIndexedInfoEXT(item: *const vk.VkMultiDrawIndexedInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultiDrawIndexedInfoEXT);
+}
+pub fn size_of_VkSubmitInfo(item: *const vk.VkSubmitInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+    for (0..item.waitSemaphoreCount) |_|
+        size += @sizeOf(vk.VkPipelineStageFlags);
+    for (0..item.commandBufferCount) |_|
+        size += @sizeOf(vk.VkCommandBuffer);
+    for (0..item.signalSemaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR,
+                => size += size_of_VkD3D12FenceSubmitInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO,
+                => size += size_of_VkDeviceGroupSubmitInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO,
+                => size += size_of_VkProtectedSubmitInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+                => size += size_of_VkTimelineSemaphoreSubmitInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
+                => size += size_of_VkPerformanceQuerySubmitInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_AMIGO_PROFILING_SUBMIT_INFO_SEC,
+                => size += size_of_VkAmigoProfilingSubmitInfoSEC(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+                => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+                => size += size_of_VkLatencySubmissionPresentIdNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubmitInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkSubmitInfo);
+}
+pub fn size_of_VkDisplayPropertiesKHR(item: *const vk.VkDisplayPropertiesKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.displayName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDisplayPropertiesKHR);
+}
+pub fn size_of_VkDisplayPlanePropertiesKHR(item: *const vk.VkDisplayPlanePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPlanePropertiesKHR);
+}
+pub fn size_of_VkDisplayModeParametersKHR(item: *const vk.VkDisplayModeParametersKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayModeParametersKHR);
+}
+pub fn size_of_VkDisplayModePropertiesKHR(item: *const vk.VkDisplayModePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayModePropertiesKHR);
+}
+pub fn size_of_VkDisplayModeCreateInfoKHR(item: *const vk.VkDisplayModeCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayModeCreateInfoKHR);
+}
+pub fn size_of_VkDisplayPlaneCapabilitiesKHR(item: *const vk.VkDisplayPlaneCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPlaneCapabilitiesKHR);
+}
+pub fn size_of_VkDisplaySurfaceCreateInfoKHR(item: *const vk.VkDisplaySurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_STEREO_CREATE_INFO_NV,
+                => size += size_of_VkDisplaySurfaceStereoCreateInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDisplaySurfaceCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDisplaySurfaceCreateInfoKHR);
+}
+pub fn size_of_VkDisplaySurfaceStereoCreateInfoNV(item: *const vk.VkDisplaySurfaceStereoCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplaySurfaceStereoCreateInfoNV);
+}
+pub fn size_of_VkDisplayPresentInfoKHR(item: *const vk.VkDisplayPresentInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPresentInfoKHR);
+}
+pub fn size_of_VkSurfaceCapabilitiesKHR(item: *const vk.VkSurfaceCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesKHR);
+}
+pub fn size_of_VkAndroidSurfaceCreateInfoKHR(item: *const vk.VkAndroidSurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.window) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAndroidSurfaceCreateInfoKHR);
+}
+pub fn size_of_VkViSurfaceCreateInfoNN(item: *const vk.VkViSurfaceCreateInfoNN, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.window) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkViSurfaceCreateInfoNN);
+}
+pub fn size_of_VkWaylandSurfaceCreateInfoKHR(item: *const vk.VkWaylandSurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.display) |ptr| size += @sizeOf(ptr.*);
+    if (item.surface) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWaylandSurfaceCreateInfoKHR);
+}
+pub fn size_of_VkWin32SurfaceCreateInfoKHR(item: *const vk.VkWin32SurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkWin32SurfaceCreateInfoKHR);
+}
+pub fn size_of_VkXlibSurfaceCreateInfoKHR(item: *const vk.VkXlibSurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.dpy) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkXlibSurfaceCreateInfoKHR);
+}
+pub fn size_of_VkXcbSurfaceCreateInfoKHR(item: *const vk.VkXcbSurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.connection) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkXcbSurfaceCreateInfoKHR);
+}
+pub fn size_of_VkDirectFBSurfaceCreateInfoEXT(item: *const vk.VkDirectFBSurfaceCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.dfb) |ptr| size += @sizeOf(ptr.*);
+    if (item.surface) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDirectFBSurfaceCreateInfoEXT);
+}
+pub fn size_of_VkImagePipeSurfaceCreateInfoFUCHSIA(item: *const vk.VkImagePipeSurfaceCreateInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImagePipeSurfaceCreateInfoFUCHSIA);
+}
+pub fn size_of_VkStreamDescriptorSurfaceCreateInfoGGP(item: *const vk.VkStreamDescriptorSurfaceCreateInfoGGP, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkStreamDescriptorSurfaceCreateInfoGGP);
+}
+pub fn size_of_VkScreenSurfaceCreateInfoQNX(item: *const vk.VkScreenSurfaceCreateInfoQNX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.context) |ptr| size += @sizeOf(ptr.*);
+    if (item.window) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkScreenSurfaceCreateInfoQNX);
+}
+pub fn size_of_VkSurfaceFormatKHR(item: *const vk.VkSurfaceFormatKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceFormatKHR);
+}
+pub fn size_of_VkSwapchainCreateInfoKHR(item: *const vk.VkSwapchainCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_COUNTER_CREATE_INFO_EXT,
+                => size += size_of_VkSwapchainCounterCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
+                => size += size_of_VkDeviceGroupSwapchainCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_DISPLAY_NATIVE_HDR_CREATE_INFO_AMD,
+                => size += size_of_VkSwapchainDisplayNativeHdrCreateInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+                => size += size_of_VkImageFormatListCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
+                => size += size_of_VkSurfaceFullScreenExclusiveInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT,
+                => size += size_of_VkSurfaceFullScreenExclusiveWin32InfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV,
+                => size += size_of_VkSwapchainPresentBarrierCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+                => size += size_of_VkImageCompressionControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR,
+                => size += size_of_VkSwapchainPresentModesCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR,
+                => size += size_of_VkSwapchainPresentScalingCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_LATENCY_CREATE_INFO_NV,
+                => size += size_of_VkSwapchainLatencyCreateInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSwapchainCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkSwapchainCreateInfoKHR);
+}
+pub fn size_of_VkPresentInfoKHR(item: *const vk.VkPresentInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(vk.VkSwapchainKHR);
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(vk.VkResult);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR,
+                => size += size_of_VkDisplayPresentInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
+                => size += size_of_VkPresentRegionsKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_PRESENT_INFO_KHR,
+                => size += size_of_VkDeviceGroupPresentInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PRESENT_ID_KHR,
+                => size += size_of_VkPresentIdKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PRESENT_ID_2_KHR,
+                => size += size_of_VkPresentId2KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
+                => size += size_of_VkPresentTimesInfoGOOGLE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PRESENT_FRAME_TOKEN_GGP,
+                => size += size_of_VkPresentFrameTokenGGP(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+                => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR,
+                => size += size_of_VkSwapchainPresentFenceInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR,
+                => size += size_of_VkSwapchainPresentModeInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SET_PRESENT_CONFIG_NV,
+                => size += size_of_VkSetPresentConfigNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPresentInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPresentInfoKHR);
+}
+pub fn size_of_VkDebugReportCallbackCreateInfoEXT(item: *const vk.VkDebugReportCallbackCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pUserData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugReportCallbackCreateInfoEXT);
+}
+pub fn size_of_VkValidationFlagsEXT(item: *const vk.VkValidationFlagsEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.disabledValidationCheckCount) |_|
+        size += @sizeOf(vk.VkValidationCheckEXT);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkValidationFlagsEXT);
+}
+pub fn size_of_VkValidationFeaturesEXT(item: *const vk.VkValidationFeaturesEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.enabledValidationFeatureCount) |_|
+        size += @sizeOf(vk.VkValidationFeatureEnableEXT);
+    for (0..item.disabledValidationFeatureCount) |_|
+        size += @sizeOf(vk.VkValidationFeatureDisableEXT);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkValidationFeaturesEXT);
+}
+pub fn size_of_VkLayerSettingsCreateInfoEXT(item: *const vk.VkLayerSettingsCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.settingCount) |i|
+        size += size_of_VkLayerSettingEXT(@ptrCast(&item.pSettings[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkLayerSettingsCreateInfoEXT);
+}
+pub fn size_of_VkLayerSettingEXT(item: *const vk.VkLayerSettingEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pLayerName)) |i|
+        size += @sizeOf(i);
+    for (std.mem.span(item.pSettingName)) |i|
+        size += @sizeOf(i);
+    for (0..item.valueCount) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkLayerSettingEXT);
+}
+pub fn size_of_VkApplicationParametersEXT(item: *const vk.VkApplicationParametersEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkApplicationParametersEXT);
+}
+pub fn size_of_VkPipelineRasterizationStateRasterizationOrderAMD(item: *const vk.VkPipelineRasterizationStateRasterizationOrderAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationStateRasterizationOrderAMD);
+}
+pub fn size_of_VkDebugMarkerObjectNameInfoEXT(item: *const vk.VkDebugMarkerObjectNameInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pObjectName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugMarkerObjectNameInfoEXT);
+}
+pub fn size_of_VkDebugMarkerObjectTagInfoEXT(item: *const vk.VkDebugMarkerObjectTagInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tagSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugMarkerObjectTagInfoEXT);
+}
+pub fn size_of_VkDebugMarkerMarkerInfoEXT(item: *const vk.VkDebugMarkerMarkerInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pMarkerName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugMarkerMarkerInfoEXT);
+}
+pub fn size_of_VkDedicatedAllocationImageCreateInfoNV(item: *const vk.VkDedicatedAllocationImageCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationImageCreateInfoNV);
+}
+pub fn size_of_VkDedicatedAllocationBufferCreateInfoNV(item: *const vk.VkDedicatedAllocationBufferCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationBufferCreateInfoNV);
+}
+pub fn size_of_VkDedicatedAllocationMemoryAllocateInfoNV(item: *const vk.VkDedicatedAllocationMemoryAllocateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationMemoryAllocateInfoNV);
+}
+pub fn size_of_VkExternalImageFormatPropertiesNV(item: *const vk.VkExternalImageFormatPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalImageFormatPropertiesNV);
+}
+pub fn size_of_VkExternalMemoryImageCreateInfoNV(item: *const vk.VkExternalMemoryImageCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryImageCreateInfoNV);
+}
+pub fn size_of_VkExportMemoryAllocateInfoNV(item: *const vk.VkExportMemoryAllocateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemoryAllocateInfoNV);
+}
+pub fn size_of_VkImportMemoryWin32HandleInfoNV(item: *const vk.VkImportMemoryWin32HandleInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryWin32HandleInfoNV);
+}
+pub fn size_of_VkExportMemoryWin32HandleInfoNV(item: *const vk.VkExportMemoryWin32HandleInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAttributes) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkExportMemoryWin32HandleInfoNV);
+}
+pub fn size_of_VkExportMemorySciBufInfoNV(item: *const vk.VkExportMemorySciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemorySciBufInfoNV);
+}
+pub fn size_of_VkImportMemorySciBufInfoNV(item: *const vk.VkImportMemorySciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemorySciBufInfoNV);
+}
+pub fn size_of_VkMemoryGetSciBufInfoNV(item: *const vk.VkMemoryGetSciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetSciBufInfoNV);
+}
+pub fn size_of_VkMemorySciBufPropertiesNV(item: *const vk.VkMemorySciBufPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemorySciBufPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(item: *const vk.VkPhysicalDeviceExternalMemorySciBufFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemorySciBufFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciBufFeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciBufFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciBufFeaturesNV);
+}
+pub fn size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(item: *const vk.VkWin32KeyedMutexAcquireReleaseInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWin32KeyedMutexAcquireReleaseInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV);
+}
+pub fn size_of_VkDevicePrivateDataCreateInfo(item: *const vk.VkDevicePrivateDataCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDevicePrivateDataCreateInfo);
+}
+pub fn size_of_VkDevicePrivateDataCreateInfoEXT(item: *const vk.VkDevicePrivateDataCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDevicePrivateDataCreateInfoEXT);
+}
+pub fn size_of_VkPrivateDataSlotCreateInfo(item: *const vk.VkPrivateDataSlotCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPrivateDataSlotCreateInfo);
+}
+pub fn size_of_VkPrivateDataSlotCreateInfoEXT(item: *const vk.VkPrivateDataSlotCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPrivateDataSlotCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDevicePrivateDataFeatures(item: *const vk.VkPhysicalDevicePrivateDataFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePrivateDataFeatures);
+}
+pub fn size_of_VkPhysicalDevicePrivateDataFeaturesEXT(item: *const vk.VkPhysicalDevicePrivateDataFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePrivateDataFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(item: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(item: *const vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV);
+}
+pub fn size_of_VkStridedDeviceAddressNV(item: *const vk.VkStridedDeviceAddressNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkStridedDeviceAddressNV);
+}
+pub fn size_of_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(item: *const vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV(item: *const vk.VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV);
+}
+pub fn size_of_VkClusterAccelerationStructureMoveObjectsInfoNV(item: *const vk.VkClusterAccelerationStructureMoveObjectsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureMoveObjectsInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV(item: *const vk.VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureGetTemplateIndicesInfoNV(item: *const vk.VkClusterAccelerationStructureGetTemplateIndicesInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureGetTemplateIndicesInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildTriangleClusterInfoNV(item: *const vk.VkClusterAccelerationStructureBuildTriangleClusterInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildTriangleClusterInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV(item: *const vk.VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureInstantiateClusterInfoNV(item: *const vk.VkClusterAccelerationStructureInstantiateClusterInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureInstantiateClusterInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureClustersBottomLevelInputNV(item: *const vk.VkClusterAccelerationStructureClustersBottomLevelInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureClustersBottomLevelInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureTriangleClusterInputNV(item: *const vk.VkClusterAccelerationStructureTriangleClusterInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureTriangleClusterInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureMoveObjectsInputNV(item: *const vk.VkClusterAccelerationStructureMoveObjectsInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureMoveObjectsInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureInputInfoNV(item: *const vk.VkClusterAccelerationStructureInputInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureInputInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureCommandsInfoNV(item: *const vk.VkClusterAccelerationStructureCommandsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureCommandsInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceMultiDrawPropertiesEXT(item: *const vk.VkPhysicalDeviceMultiDrawPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiDrawPropertiesEXT);
+}
+pub fn size_of_VkGraphicsShaderGroupCreateInfoNV(item: *const vk.VkGraphicsShaderGroupCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    if (item.pVertexInputState) |ptr| size += size_of_VkPipelineVertexInputStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pTessellationState) |ptr| size += size_of_VkPipelineTessellationStateCreateInfo(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGraphicsShaderGroupCreateInfoNV);
+}
+pub fn size_of_VkGraphicsPipelineShaderGroupsCreateInfoNV(item: *const vk.VkGraphicsPipelineShaderGroupsCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.groupCount) |i|
+        size += size_of_VkGraphicsShaderGroupCreateInfoNV(@ptrCast(&item.pGroups[i]), false);
+    for (0..item.pipelineCount) |_|
+        size += @sizeOf(vk.VkPipeline);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGraphicsPipelineShaderGroupsCreateInfoNV);
+}
+pub fn size_of_VkBindShaderGroupIndirectCommandNV(item: *const vk.VkBindShaderGroupIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindShaderGroupIndirectCommandNV);
+}
+pub fn size_of_VkBindIndexBufferIndirectCommandNV(item: *const vk.VkBindIndexBufferIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindIndexBufferIndirectCommandNV);
+}
+pub fn size_of_VkBindVertexBufferIndirectCommandNV(item: *const vk.VkBindVertexBufferIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindVertexBufferIndirectCommandNV);
+}
+pub fn size_of_VkSetStateFlagsIndirectCommandNV(item: *const vk.VkSetStateFlagsIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetStateFlagsIndirectCommandNV);
+}
+pub fn size_of_VkIndirectCommandsStreamNV(item: *const vk.VkIndirectCommandsStreamNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsStreamNV);
+}
+pub fn size_of_VkIndirectCommandsLayoutTokenNV(item: *const vk.VkIndirectCommandsLayoutTokenNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.indexTypeCount) |_|
+        size += @sizeOf(vk.VkIndexType);
+    for (0..item.indexTypeCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectCommandsLayoutTokenNV);
+}
+pub fn size_of_VkIndirectCommandsLayoutCreateInfoNV(item: *const vk.VkIndirectCommandsLayoutCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tokenCount) |i|
+        size += size_of_VkIndirectCommandsLayoutTokenNV(@ptrCast(&item.pTokens[i]), false);
+    for (0..item.streamCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectCommandsLayoutCreateInfoNV);
+}
+pub fn size_of_VkGeneratedCommandsInfoNV(item: *const vk.VkGeneratedCommandsInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.streamCount) |i|
+        size += size_of_VkIndirectCommandsStreamNV(@ptrCast(&item.pStreams[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGeneratedCommandsInfoNV);
+}
+pub fn size_of_VkGeneratedCommandsMemoryRequirementsInfoNV(item: *const vk.VkGeneratedCommandsMemoryRequirementsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeneratedCommandsMemoryRequirementsInfoNV);
+}
+pub fn size_of_VkPipelineIndirectDeviceAddressInfoNV(item: *const vk.VkPipelineIndirectDeviceAddressInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineIndirectDeviceAddressInfoNV);
+}
+pub fn size_of_VkBindPipelineIndirectCommandNV(item: *const vk.VkBindPipelineIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindPipelineIndirectCommandNV);
+}
+pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeatures2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
+                => size += size_of_VkPhysicalDevicePrivateDataFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
+                => size += size_of_VkPhysicalDeviceVariablePointersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+                => size += size_of_VkPhysicalDeviceMultiviewFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentIdFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentId2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentWaitFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentWait2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES,
+                => size += size_of_VkPhysicalDevice16BitStorageFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES,
+                => size += size_of_VkPhysicalDeviceSamplerYcbcrConversionFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES,
+                => size += size_of_VkPhysicalDeviceProtectedMemoryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMultiDrawFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+                => size += size_of_VkPhysicalDeviceInlineUniformBlockFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance4Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance5Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES,
+                => size += size_of_VkPhysicalDeviceMaintenance6Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance7FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_8_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance8FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance9FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderDrawParametersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderFloat16Int8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES,
+                => size += size_of_VkPhysicalDeviceHostQueryResetFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES,
+                => size += size_of_VkPhysicalDeviceGlobalPriorityQueryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+                => size += size_of_VkPhysicalDeviceDescriptorIndexingFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+                => size += size_of_VkPhysicalDeviceTimelineSemaphoreFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES,
+                => size += size_of_VkPhysicalDevice8BitStorageFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceConditionalRenderingFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkanMemoryModelFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderAtomicInt64Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES,
+                => size += size_of_VkPhysicalDeviceVertexAttributeDivisorFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ASTC_DECODE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceASTCDecodeFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceTransformFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceAccelerationStructureFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayQueryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+                => size += size_of_VkPhysicalDeviceScalarBlockLayoutFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES,
+                => size += size_of_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClipEnableFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PRIORITY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMemoryPriorityFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+                => size += size_of_VkPhysicalDeviceBufferDeviceAddressFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES,
+                => size += size_of_VkPhysicalDeviceImagelessFramebufferFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
+                => size += size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentBarrierFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
+                => size += size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderClockFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
+                => size += size_of_VkPhysicalDeviceIndexTypeUint8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
+                => size += size_of_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DEMOTE_TO_HELPER_INVOCATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES,
+                => size += size_of_VkPhysicalDeviceSubgroupSizeControlFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceLineRasterizationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineCreationCacheControlFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan11Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan12Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan13Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkan14Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceCustomBorderColorFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
+                => size += size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRobustness2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+                => size += size_of_VkPhysicalDeviceImageRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePortabilitySubsetFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevice4444FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderTerminateInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClipControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthClampControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceColorWriteEnableFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceSynchronization2Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES,
+                => size += size_of_VkPhysicalDeviceHostImageCopyFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_FEATURES,
+                => size += size_of_VkPhysicalDeviceVulkanSC10Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceLegacyDitheringFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineProtectedAccessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_MAINTENANCE_2_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_DECODE_VP9_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_QUANTIZATION_MAP_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceProvokingVertexFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_INTRA_REFRESH_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderIntegerDotProductFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePipelineBinaryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_SET_HOST_MAPPING_FEATURES_VALVE,
+                => size += size_of_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageCompressionControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_SWAPCHAIN_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceOpacityMicromapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
+                => size += size_of_VkPhysicalDevicePipelineRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_AMIGO_PROFILING_FEATURES_SEC,
+                => size += size_of_VkPhysicalDeviceAmigoProfilingFeaturesSEC(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceAddressBindingReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFaultFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceFrameBoundaryFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderObjectFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderTileImageFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCREEN_BUFFER_FEATURES_QNX,
+                => size += size_of_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_FEATURES_AMDX,
+                => size += size_of_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceAntiLagFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
+                => size += size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
+                => size += size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+                => size += size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderSubgroupRotateFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EXPECT_ASSUME_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderExpectAssumeFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT_CONTROLS_2_FEATURES,
+                => size += size_of_VkPhysicalDeviceShaderFloatControls2Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES,
+                => size += size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
+                => size += size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+                => size += size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
+                => size += size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentMeteringFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceFormatPackFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDataGraphFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CACHE_INCREMENTAL_MODE_FEATURES_SEC,
+                => size += size_of_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceFeatures2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceFeatures2);
+}
+pub fn size_of_VkPhysicalDeviceFeatures2KHR(item: *const vk.VkPhysicalDeviceFeatures2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFeatures2KHR);
+}
+pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDeviceProperties2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceMultiDrawPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES,
+                => size += size_of_VkPhysicalDevicePushDescriptorProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceDriverProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceIDProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceMultiviewProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceDiscardRectanglePropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceSubgroupProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES,
+                => size += size_of_VkPhysicalDevicePointClippingProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceProtectedMemoryProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_FILTER_MINMAX_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceSamplerFilterMinmaxProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLE_LOCATIONS_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceSampleLocationsPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceInlineUniformBlockProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceMaintenance3Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceMaintenance4Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceMaintenance5Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceMaintenance6Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance7PropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_PROPERTIES_LIST_KHR,
+                => size += size_of_VkPhysicalDeviceLayeredApiPropertiesListKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_9_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceMaintenance9PropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceFloatControlsProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceExternalMemoryHostPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceConservativeRasterizationPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderCorePropertiesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD,
+                => size += size_of_VkPhysicalDeviceShaderCoreProperties2AMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceDescriptorIndexingProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceTimelineSemaphoreProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVertexAttributeDivisorProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDevicePCIBusInfoPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceDepthStencilResolveProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceTransformFeedbackPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImagePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceMeshShaderPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceAccelerationStructurePropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMap2PropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDevicePerformanceQueryPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceTexelBufferAlignmentProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceSubgroupSizeControlProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_PROPERTIES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_PROPERTIES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceLineRasterizationProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVulkan11Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVulkan12Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVulkan13Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVulkan14Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceCustomBorderColorPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceExtendedDynamicState3PropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceRobustness2PropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDevicePortabilitySubsetPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRatePropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceHostImageCopyProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_SC_1_0_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceVulkanSC10Properties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceProvokingVertexPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_DENSITY_MAP_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES,
+                => size += size_of_VkPhysicalDeviceShaderIntegerDotProductProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceDrmPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDevicePipelineBinaryPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceOpacityMicromapPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES,
+                => size += size_of_VkPhysicalDevicePipelineRobustnessProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingPropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCorePropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderObjectPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceShaderTileImagePropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ENQUEUE_PROPERTIES_AMDX,
+                => size += size_of_VkPhysicalDeviceShaderEnqueuePropertiesAMDX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2PropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT,
+                => size += size_of_VkPhysicalDeviceLayeredDriverPropertiesMSFT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_PROPERTIES_ANDROID,
+                => size += size_of_VkPhysicalDeviceExternalFormatResolvePropertiesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceMapMemoryPlacedPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA,
+                => size += size_of_VkPhysicalDeviceImageAlignmentControlPropertiesMESA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingPropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE,
+                => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_COMPUTE_QUEUE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceExternalComputeQueuePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceProperties2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceProperties2);
+}
+pub fn size_of_VkPhysicalDeviceProperties2KHR(item: *const vk.VkPhysicalDeviceProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProperties2KHR);
+}
+pub fn size_of_VkFormatProperties2(item: *const vk.VkFormatProperties2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_EXT,
+                => size += size_of_VkDrmFormatModifierPropertiesListEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SUBPASS_RESOLVE_PERFORMANCE_QUERY_EXT,
+                => size += size_of_VkSubpassResolvePerformanceQueryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_3,
+                => size += size_of_VkFormatProperties3(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT,
+                => size += size_of_VkDrmFormatModifierPropertiesList2EXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TENSOR_FORMAT_PROPERTIES_ARM,
+                => size += size_of_VkTensorFormatPropertiesARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkFormatProperties2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkFormatProperties2);
+}
+pub fn size_of_VkFormatProperties2KHR(item: *const vk.VkFormatProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFormatProperties2KHR);
+}
+pub fn size_of_VkImageFormatProperties2(item: *const vk.VkImageFormatProperties2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES,
+                => size += size_of_VkExternalImageFormatProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES,
+                => size += size_of_VkSamplerYcbcrConversionImageFormatProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD,
+                => size += size_of_VkTextureLODGatherFormatPropertiesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID,
+                => size += size_of_VkAndroidHardwareBufferUsageANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT,
+                => size += size_of_VkFilterCubicImageViewImageFormatPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY,
+                => size += size_of_VkHostImageCopyDevicePerformanceQuery(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+                => size += size_of_VkImageCompressionPropertiesEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageFormatProperties2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageFormatProperties2);
+}
+pub fn size_of_VkImageFormatProperties2KHR(item: *const vk.VkImageFormatProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageFormatProperties2KHR);
+}
+pub fn size_of_VkPhysicalDeviceImageFormatInfo2(item: *const vk.VkPhysicalDeviceImageFormatInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
+                => size += size_of_VkPhysicalDeviceExternalImageFormatInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
+                => size += size_of_VkImageFormatListCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
+                => size += size_of_VkPhysicalDeviceImageDrmFormatModifierInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO,
+                => size += size_of_VkImageStencilUsageCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT,
+                => size += size_of_VkPhysicalDeviceImageViewImageFormatInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+                => size += size_of_VkVideoProfileListInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
+                => size += size_of_VkImageCompressionControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+                => size += size_of_VkOpticalFlowImageFormatInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceImageFormatInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceImageFormatInfo2);
+}
+pub fn size_of_VkPhysicalDeviceImageFormatInfo2KHR(item: *const vk.VkPhysicalDeviceImageFormatInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageFormatInfo2KHR);
+}
+pub fn size_of_VkQueueFamilyProperties2(item: *const vk.VkQueueFamilyProperties2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_OWNERSHIP_TRANSFER_PROPERTIES_KHR,
+                => size += size_of_VkQueueFamilyOwnershipTransferPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES,
+                => size += size_of_VkQueueFamilyGlobalPriorityProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV,
+                => size += size_of_VkQueueFamilyCheckpointPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV,
+                => size += size_of_VkQueueFamilyCheckpointProperties2NV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR,
+                => size += size_of_VkQueueFamilyVideoPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR,
+                => size += size_of_VkQueueFamilyQueryResultStatusPropertiesKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkQueueFamilyProperties2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkQueueFamilyProperties2);
+}
+pub fn size_of_VkQueueFamilyProperties2KHR(item: *const vk.VkQueueFamilyProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyProperties2KHR);
+}
+pub fn size_of_VkPhysicalDeviceMemoryProperties2(item: *const vk.VkPhysicalDeviceMemoryProperties2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT,
+                => size += size_of_VkPhysicalDeviceMemoryBudgetPropertiesEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceMemoryProperties2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceMemoryProperties2);
+}
+pub fn size_of_VkPhysicalDeviceMemoryProperties2KHR(item: *const vk.VkPhysicalDeviceMemoryProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryProperties2KHR);
+}
+pub fn size_of_VkSparseImageFormatProperties2(item: *const vk.VkSparseImageFormatProperties2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageFormatProperties2);
+}
+pub fn size_of_VkSparseImageFormatProperties2KHR(item: *const vk.VkSparseImageFormatProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageFormatProperties2KHR);
+}
+pub fn size_of_VkPhysicalDeviceSparseImageFormatInfo2(item: *const vk.VkPhysicalDeviceSparseImageFormatInfo2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSparseImageFormatInfo2);
+}
+pub fn size_of_VkPhysicalDeviceSparseImageFormatInfo2KHR(item: *const vk.VkPhysicalDeviceSparseImageFormatInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSparseImageFormatInfo2KHR);
+}
+pub fn size_of_VkPhysicalDevicePushDescriptorProperties(item: *const vk.VkPhysicalDevicePushDescriptorProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePushDescriptorProperties);
+}
+pub fn size_of_VkPhysicalDevicePushDescriptorPropertiesKHR(item: *const vk.VkPhysicalDevicePushDescriptorPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePushDescriptorPropertiesKHR);
+}
+pub fn size_of_VkConformanceVersion(item: *const vk.VkConformanceVersion, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkConformanceVersion);
+}
+pub fn size_of_VkConformanceVersionKHR(item: *const vk.VkConformanceVersionKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkConformanceVersionKHR);
+}
+pub fn size_of_VkPhysicalDeviceDriverProperties(item: *const vk.VkPhysicalDeviceDriverProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDriverProperties);
+}
+pub fn size_of_VkPhysicalDeviceDriverPropertiesKHR(item: *const vk.VkPhysicalDeviceDriverPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDriverPropertiesKHR);
+}
+pub fn size_of_VkPresentRegionsKHR(item: *const vk.VkPresentRegionsKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |i|
+        size += size_of_VkPresentRegionKHR(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPresentRegionsKHR);
+}
+pub fn size_of_VkPresentRegionKHR(item: *const vk.VkPresentRegionKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.rectangleCount) |i|
+        size += size_of_VkRectLayerKHR(@ptrCast(&item.pRectangles[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPresentRegionKHR);
+}
+pub fn size_of_VkRectLayerKHR(item: *const vk.VkRectLayerKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRectLayerKHR);
+}
+pub fn size_of_VkPhysicalDeviceVariablePointersFeatures(item: *const vk.VkPhysicalDeviceVariablePointersFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVariablePointersFeatures);
+}
+pub fn size_of_VkPhysicalDeviceVariablePointersFeaturesKHR(item: *const vk.VkPhysicalDeviceVariablePointersFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVariablePointersFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceVariablePointerFeaturesKHR(item: *const vk.VkPhysicalDeviceVariablePointerFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVariablePointerFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceVariablePointerFeatures(item: *const vk.VkPhysicalDeviceVariablePointerFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVariablePointerFeatures);
+}
+pub fn size_of_VkExternalMemoryProperties(item: *const vk.VkExternalMemoryProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryProperties);
+}
+pub fn size_of_VkExternalMemoryPropertiesKHR(item: *const vk.VkExternalMemoryPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceExternalImageFormatInfo(item: *const vk.VkPhysicalDeviceExternalImageFormatInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalImageFormatInfo);
+}
+pub fn size_of_VkPhysicalDeviceExternalImageFormatInfoKHR(item: *const vk.VkPhysicalDeviceExternalImageFormatInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalImageFormatInfoKHR);
+}
+pub fn size_of_VkExternalImageFormatProperties(item: *const vk.VkExternalImageFormatProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalImageFormatProperties);
+}
+pub fn size_of_VkExternalImageFormatPropertiesKHR(item: *const vk.VkExternalImageFormatPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalImageFormatPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceExternalBufferInfo(item: *const vk.VkPhysicalDeviceExternalBufferInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkBufferUsageFlags2CreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceExternalBufferInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceExternalBufferInfo);
+}
+pub fn size_of_VkPhysicalDeviceExternalBufferInfoKHR(item: *const vk.VkPhysicalDeviceExternalBufferInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalBufferInfoKHR);
+}
+pub fn size_of_VkExternalBufferProperties(item: *const vk.VkExternalBufferProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalBufferProperties);
+}
+pub fn size_of_VkExternalBufferPropertiesKHR(item: *const vk.VkExternalBufferPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalBufferPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceIDProperties(item: *const vk.VkPhysicalDeviceIDProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceIDProperties);
+}
+pub fn size_of_VkPhysicalDeviceIDPropertiesKHR(item: *const vk.VkPhysicalDeviceIDPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceIDPropertiesKHR);
+}
+pub fn size_of_VkExternalMemoryImageCreateInfo(item: *const vk.VkExternalMemoryImageCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryImageCreateInfo);
+}
+pub fn size_of_VkExternalMemoryImageCreateInfoKHR(item: *const vk.VkExternalMemoryImageCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryImageCreateInfoKHR);
+}
+pub fn size_of_VkExternalMemoryBufferCreateInfo(item: *const vk.VkExternalMemoryBufferCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryBufferCreateInfo);
+}
+pub fn size_of_VkExternalMemoryBufferCreateInfoKHR(item: *const vk.VkExternalMemoryBufferCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryBufferCreateInfoKHR);
+}
+pub fn size_of_VkExportMemoryAllocateInfo(item: *const vk.VkExportMemoryAllocateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemoryAllocateInfo);
+}
+pub fn size_of_VkExportMemoryAllocateInfoKHR(item: *const vk.VkExportMemoryAllocateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemoryAllocateInfoKHR);
+}
+pub fn size_of_VkImportMemoryWin32HandleInfoKHR(item: *const vk.VkImportMemoryWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryWin32HandleInfoKHR);
+}
+pub fn size_of_VkExportMemoryWin32HandleInfoKHR(item: *const vk.VkExportMemoryWin32HandleInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAttributes) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkExportMemoryWin32HandleInfoKHR);
+}
+pub fn size_of_VkImportMemoryZirconHandleInfoFUCHSIA(item: *const vk.VkImportMemoryZirconHandleInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryZirconHandleInfoFUCHSIA);
+}
+pub fn size_of_VkMemoryZirconHandlePropertiesFUCHSIA(item: *const vk.VkMemoryZirconHandlePropertiesFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryZirconHandlePropertiesFUCHSIA);
+}
+pub fn size_of_VkMemoryGetZirconHandleInfoFUCHSIA(item: *const vk.VkMemoryGetZirconHandleInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetZirconHandleInfoFUCHSIA);
+}
+pub fn size_of_VkMemoryWin32HandlePropertiesKHR(item: *const vk.VkMemoryWin32HandlePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryWin32HandlePropertiesKHR);
+}
+pub fn size_of_VkMemoryGetWin32HandleInfoKHR(item: *const vk.VkMemoryGetWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetWin32HandleInfoKHR);
+}
+pub fn size_of_VkImportMemoryFdInfoKHR(item: *const vk.VkImportMemoryFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryFdInfoKHR);
+}
+pub fn size_of_VkMemoryFdPropertiesKHR(item: *const vk.VkMemoryFdPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryFdPropertiesKHR);
+}
+pub fn size_of_VkMemoryGetFdInfoKHR(item: *const vk.VkMemoryGetFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetFdInfoKHR);
+}
+pub fn size_of_VkWin32KeyedMutexAcquireReleaseInfoKHR(item: *const vk.VkWin32KeyedMutexAcquireReleaseInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWin32KeyedMutexAcquireReleaseInfoKHR);
+}
+pub fn size_of_VkImportMemoryMetalHandleInfoEXT(item: *const vk.VkImportMemoryMetalHandleInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportMemoryMetalHandleInfoEXT);
+}
+pub fn size_of_VkMemoryMetalHandlePropertiesEXT(item: *const vk.VkMemoryMetalHandlePropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryMetalHandlePropertiesEXT);
+}
+pub fn size_of_VkMemoryGetMetalHandleInfoEXT(item: *const vk.VkMemoryGetMetalHandleInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetMetalHandleInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceExternalSemaphoreInfo(item: *const vk.VkPhysicalDeviceExternalSemaphoreInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+                => size += size_of_VkSemaphoreTypeCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceExternalSemaphoreInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceExternalSemaphoreInfo);
+}
+pub fn size_of_VkPhysicalDeviceExternalSemaphoreInfoKHR(item: *const vk.VkPhysicalDeviceExternalSemaphoreInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSemaphoreInfoKHR);
+}
+pub fn size_of_VkExternalSemaphoreProperties(item: *const vk.VkExternalSemaphoreProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalSemaphoreProperties);
+}
+pub fn size_of_VkExternalSemaphorePropertiesKHR(item: *const vk.VkExternalSemaphorePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalSemaphorePropertiesKHR);
+}
+pub fn size_of_VkExportSemaphoreCreateInfo(item: *const vk.VkExportSemaphoreCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportSemaphoreCreateInfo);
+}
+pub fn size_of_VkExportSemaphoreCreateInfoKHR(item: *const vk.VkExportSemaphoreCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportSemaphoreCreateInfoKHR);
+}
+pub fn size_of_VkImportSemaphoreWin32HandleInfoKHR(item: *const vk.VkImportSemaphoreWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportSemaphoreWin32HandleInfoKHR);
+}
+pub fn size_of_VkExportSemaphoreWin32HandleInfoKHR(item: *const vk.VkExportSemaphoreWin32HandleInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAttributes) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkExportSemaphoreWin32HandleInfoKHR);
+}
+pub fn size_of_VkD3D12FenceSubmitInfoKHR(item: *const vk.VkD3D12FenceSubmitInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreValuesCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.signalSemaphoreValuesCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkD3D12FenceSubmitInfoKHR);
+}
+pub fn size_of_VkSemaphoreGetWin32HandleInfoKHR(item: *const vk.VkSemaphoreGetWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreGetWin32HandleInfoKHR);
+}
+pub fn size_of_VkImportSemaphoreFdInfoKHR(item: *const vk.VkImportSemaphoreFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportSemaphoreFdInfoKHR);
+}
+pub fn size_of_VkSemaphoreGetFdInfoKHR(item: *const vk.VkSemaphoreGetFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreGetFdInfoKHR);
+}
+pub fn size_of_VkImportSemaphoreZirconHandleInfoFUCHSIA(item: *const vk.VkImportSemaphoreZirconHandleInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportSemaphoreZirconHandleInfoFUCHSIA);
+}
+pub fn size_of_VkSemaphoreGetZirconHandleInfoFUCHSIA(item: *const vk.VkSemaphoreGetZirconHandleInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreGetZirconHandleInfoFUCHSIA);
+}
+pub fn size_of_VkPhysicalDeviceExternalFenceInfo(item: *const vk.VkPhysicalDeviceExternalFenceInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalFenceInfo);
+}
+pub fn size_of_VkPhysicalDeviceExternalFenceInfoKHR(item: *const vk.VkPhysicalDeviceExternalFenceInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalFenceInfoKHR);
+}
+pub fn size_of_VkExternalFenceProperties(item: *const vk.VkExternalFenceProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalFenceProperties);
+}
+pub fn size_of_VkExternalFencePropertiesKHR(item: *const vk.VkExternalFencePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalFencePropertiesKHR);
+}
+pub fn size_of_VkExportFenceCreateInfo(item: *const vk.VkExportFenceCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportFenceCreateInfo);
+}
+pub fn size_of_VkExportFenceCreateInfoKHR(item: *const vk.VkExportFenceCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportFenceCreateInfoKHR);
+}
+pub fn size_of_VkImportFenceWin32HandleInfoKHR(item: *const vk.VkImportFenceWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportFenceWin32HandleInfoKHR);
+}
+pub fn size_of_VkExportFenceWin32HandleInfoKHR(item: *const vk.VkExportFenceWin32HandleInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAttributes) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkExportFenceWin32HandleInfoKHR);
+}
+pub fn size_of_VkFenceGetWin32HandleInfoKHR(item: *const vk.VkFenceGetWin32HandleInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFenceGetWin32HandleInfoKHR);
+}
+pub fn size_of_VkImportFenceFdInfoKHR(item: *const vk.VkImportFenceFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportFenceFdInfoKHR);
+}
+pub fn size_of_VkFenceGetFdInfoKHR(item: *const vk.VkFenceGetFdInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFenceGetFdInfoKHR);
+}
+pub fn size_of_VkExportFenceSciSyncInfoNV(item: *const vk.VkExportFenceSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportFenceSciSyncInfoNV);
+}
+pub fn size_of_VkImportFenceSciSyncInfoNV(item: *const vk.VkImportFenceSciSyncInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportFenceSciSyncInfoNV);
+}
+pub fn size_of_VkFenceGetSciSyncInfoNV(item: *const vk.VkFenceGetSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFenceGetSciSyncInfoNV);
+}
+pub fn size_of_VkExportSemaphoreSciSyncInfoNV(item: *const vk.VkExportSemaphoreSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportSemaphoreSciSyncInfoNV);
+}
+pub fn size_of_VkImportSemaphoreSciSyncInfoNV(item: *const vk.VkImportSemaphoreSciSyncInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportSemaphoreSciSyncInfoNV);
+}
+pub fn size_of_VkSemaphoreGetSciSyncInfoNV(item: *const vk.VkSemaphoreGetSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreGetSciSyncInfoNV);
+}
+pub fn size_of_VkSciSyncAttributesInfoNV(item: *const vk.VkSciSyncAttributesInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSciSyncAttributesInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciSyncFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciSyncFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciSync2FeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciSync2FeaturesNV);
+}
+pub fn size_of_VkSemaphoreSciSyncPoolCreateInfoNV(item: *const vk.VkSemaphoreSciSyncPoolCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSciSyncPoolCreateInfoNV);
+}
+pub fn size_of_VkSemaphoreSciSyncCreateInfoNV(item: *const vk.VkSemaphoreSciSyncCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pFence) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSemaphoreSciSyncCreateInfoNV);
+}
+pub fn size_of_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(item: *const vk.VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewFeatures(item: *const vk.VkPhysicalDeviceMultiviewFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewFeatures);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewFeaturesKHR(item: *const vk.VkPhysicalDeviceMultiviewFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewProperties(item: *const vk.VkPhysicalDeviceMultiviewProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewProperties);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPropertiesKHR(item: *const vk.VkPhysicalDeviceMultiviewPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPropertiesKHR);
+}
+pub fn size_of_VkRenderPassMultiviewCreateInfo(item: *const vk.VkRenderPassMultiviewCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.subpassCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.dependencyCount) |_|
+        size += @sizeOf(i32);
+    for (0..item.correlationMaskCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassMultiviewCreateInfo);
+}
+pub fn size_of_VkRenderPassMultiviewCreateInfoKHR(item: *const vk.VkRenderPassMultiviewCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassMultiviewCreateInfoKHR);
+}
+pub fn size_of_VkSurfaceCapabilities2EXT(item: *const vk.VkSurfaceCapabilities2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilities2EXT);
+}
+pub fn size_of_VkDisplayPowerInfoEXT(item: *const vk.VkDisplayPowerInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPowerInfoEXT);
+}
+pub fn size_of_VkDeviceEventInfoEXT(item: *const vk.VkDeviceEventInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceEventInfoEXT);
+}
+pub fn size_of_VkDisplayEventInfoEXT(item: *const vk.VkDisplayEventInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayEventInfoEXT);
+}
+pub fn size_of_VkSwapchainCounterCreateInfoEXT(item: *const vk.VkSwapchainCounterCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainCounterCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceGroupProperties(item: *const vk.VkPhysicalDeviceGroupProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGroupProperties);
+}
+pub fn size_of_VkPhysicalDeviceGroupPropertiesKHR(item: *const vk.VkPhysicalDeviceGroupPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGroupPropertiesKHR);
+}
+pub fn size_of_VkMemoryAllocateFlagsInfo(item: *const vk.VkMemoryAllocateFlagsInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryAllocateFlagsInfo);
+}
+pub fn size_of_VkMemoryAllocateFlagsInfoKHR(item: *const vk.VkMemoryAllocateFlagsInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryAllocateFlagsInfoKHR);
+}
+pub fn size_of_VkBindBufferMemoryInfo(item: *const vk.VkBindBufferMemoryInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO,
+                => size += size_of_VkBindBufferMemoryDeviceGroupInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS,
+                => size += size_of_VkBindMemoryStatus(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBindBufferMemoryInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBindBufferMemoryInfo);
+}
+pub fn size_of_VkBindBufferMemoryInfoKHR(item: *const vk.VkBindBufferMemoryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindBufferMemoryInfoKHR);
+}
+pub fn size_of_VkBindBufferMemoryDeviceGroupInfo(item: *const vk.VkBindBufferMemoryDeviceGroupInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.deviceIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkBindBufferMemoryDeviceGroupInfo);
+}
+pub fn size_of_VkBindBufferMemoryDeviceGroupInfoKHR(item: *const vk.VkBindBufferMemoryDeviceGroupInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindBufferMemoryDeviceGroupInfoKHR);
+}
+pub fn size_of_VkBindImageMemoryInfo(item: *const vk.VkBindImageMemoryInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO,
+                => size += size_of_VkBindImageMemoryDeviceGroupInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_SWAPCHAIN_INFO_KHR,
+                => size += size_of_VkBindImageMemorySwapchainInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO,
+                => size += size_of_VkBindImagePlaneMemoryInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS,
+                => size += size_of_VkBindMemoryStatus(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBindImageMemoryInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBindImageMemoryInfo);
+}
+pub fn size_of_VkBindImageMemoryInfoKHR(item: *const vk.VkBindImageMemoryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindImageMemoryInfoKHR);
+}
+pub fn size_of_VkBindImageMemoryDeviceGroupInfo(item: *const vk.VkBindImageMemoryDeviceGroupInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.deviceIndexCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.splitInstanceBindRegionCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pSplitInstanceBindRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkBindImageMemoryDeviceGroupInfo);
+}
+pub fn size_of_VkBindImageMemoryDeviceGroupInfoKHR(item: *const vk.VkBindImageMemoryDeviceGroupInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindImageMemoryDeviceGroupInfoKHR);
+}
+pub fn size_of_VkDeviceGroupRenderPassBeginInfo(item: *const vk.VkDeviceGroupRenderPassBeginInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.deviceRenderAreaCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pDeviceRenderAreas[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceGroupRenderPassBeginInfo);
+}
+pub fn size_of_VkDeviceGroupRenderPassBeginInfoKHR(item: *const vk.VkDeviceGroupRenderPassBeginInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupRenderPassBeginInfoKHR);
+}
+pub fn size_of_VkDeviceGroupCommandBufferBeginInfo(item: *const vk.VkDeviceGroupCommandBufferBeginInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupCommandBufferBeginInfo);
+}
+pub fn size_of_VkDeviceGroupCommandBufferBeginInfoKHR(item: *const vk.VkDeviceGroupCommandBufferBeginInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupCommandBufferBeginInfoKHR);
+}
+pub fn size_of_VkDeviceGroupSubmitInfo(item: *const vk.VkDeviceGroupSubmitInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.commandBufferCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.signalSemaphoreCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceGroupSubmitInfo);
+}
+pub fn size_of_VkDeviceGroupSubmitInfoKHR(item: *const vk.VkDeviceGroupSubmitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupSubmitInfoKHR);
+}
+pub fn size_of_VkDeviceGroupBindSparseInfo(item: *const vk.VkDeviceGroupBindSparseInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupBindSparseInfo);
+}
+pub fn size_of_VkDeviceGroupBindSparseInfoKHR(item: *const vk.VkDeviceGroupBindSparseInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupBindSparseInfoKHR);
+}
+pub fn size_of_VkDeviceGroupPresentCapabilitiesKHR(item: *const vk.VkDeviceGroupPresentCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupPresentCapabilitiesKHR);
+}
+pub fn size_of_VkImageSwapchainCreateInfoKHR(item: *const vk.VkImageSwapchainCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSwapchainCreateInfoKHR);
+}
+pub fn size_of_VkBindImageMemorySwapchainInfoKHR(item: *const vk.VkBindImageMemorySwapchainInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindImageMemorySwapchainInfoKHR);
+}
+pub fn size_of_VkAcquireNextImageInfoKHR(item: *const vk.VkAcquireNextImageInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAcquireNextImageInfoKHR);
+}
+pub fn size_of_VkDeviceGroupPresentInfoKHR(item: *const vk.VkDeviceGroupPresentInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceGroupPresentInfoKHR);
+}
+pub fn size_of_VkDeviceGroupDeviceCreateInfo(item: *const vk.VkDeviceGroupDeviceCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.physicalDeviceCount) |_|
+        size += @sizeOf(vk.VkPhysicalDevice);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceGroupDeviceCreateInfo);
+}
+pub fn size_of_VkDeviceGroupDeviceCreateInfoKHR(item: *const vk.VkDeviceGroupDeviceCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupDeviceCreateInfoKHR);
+}
+pub fn size_of_VkDeviceGroupSwapchainCreateInfoKHR(item: *const vk.VkDeviceGroupSwapchainCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceGroupSwapchainCreateInfoKHR);
+}
+pub fn size_of_VkDescriptorUpdateTemplateEntry(item: *const vk.VkDescriptorUpdateTemplateEntry, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorUpdateTemplateEntry);
+}
+pub fn size_of_VkDescriptorUpdateTemplateEntryKHR(item: *const vk.VkDescriptorUpdateTemplateEntryKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorUpdateTemplateEntryKHR);
+}
+pub fn size_of_VkDescriptorUpdateTemplateCreateInfo(item: *const vk.VkDescriptorUpdateTemplateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorUpdateEntryCount) |i|
+        size += size_of_VkDescriptorUpdateTemplateEntry(@ptrCast(&item.pDescriptorUpdateEntries[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDescriptorUpdateTemplateCreateInfo);
+}
+pub fn size_of_VkDescriptorUpdateTemplateCreateInfoKHR(item: *const vk.VkDescriptorUpdateTemplateCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorUpdateTemplateCreateInfoKHR);
+}
+pub fn size_of_VkXYColorEXT(item: *const vk.VkXYColorEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkXYColorEXT);
+}
+pub fn size_of_VkPhysicalDevicePresentIdFeaturesKHR(item: *const vk.VkPhysicalDevicePresentIdFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentIdFeaturesKHR);
+}
+pub fn size_of_VkPresentIdKHR(item: *const vk.VkPresentIdKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPresentIdKHR);
+}
+pub fn size_of_VkPhysicalDevicePresentId2FeaturesKHR(item: *const vk.VkPhysicalDevicePresentId2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentId2FeaturesKHR);
+}
+pub fn size_of_VkPresentId2KHR(item: *const vk.VkPresentId2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPresentId2KHR);
+}
+pub fn size_of_VkPresentWait2InfoKHR(item: *const vk.VkPresentWait2InfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPresentWait2InfoKHR);
+}
+pub fn size_of_VkPhysicalDevicePresentWaitFeaturesKHR(item: *const vk.VkPhysicalDevicePresentWaitFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentWaitFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDevicePresentWait2FeaturesKHR(item: *const vk.VkPhysicalDevicePresentWait2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentWait2FeaturesKHR);
+}
+pub fn size_of_VkHdrMetadataEXT(item: *const vk.VkHdrMetadataEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHdrMetadataEXT);
+}
+pub fn size_of_VkHdrVividDynamicMetadataHUAWEI(item: *const vk.VkHdrVividDynamicMetadataHUAWEI, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dynamicMetadataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkHdrVividDynamicMetadataHUAWEI);
+}
+pub fn size_of_VkDisplayNativeHdrSurfaceCapabilitiesAMD(item: *const vk.VkDisplayNativeHdrSurfaceCapabilitiesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayNativeHdrSurfaceCapabilitiesAMD);
+}
+pub fn size_of_VkSwapchainDisplayNativeHdrCreateInfoAMD(item: *const vk.VkSwapchainDisplayNativeHdrCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainDisplayNativeHdrCreateInfoAMD);
+}
+pub fn size_of_VkRefreshCycleDurationGOOGLE(item: *const vk.VkRefreshCycleDurationGOOGLE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRefreshCycleDurationGOOGLE);
+}
+pub fn size_of_VkPastPresentationTimingGOOGLE(item: *const vk.VkPastPresentationTimingGOOGLE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPastPresentationTimingGOOGLE);
+}
+pub fn size_of_VkPresentTimesInfoGOOGLE(item: *const vk.VkPresentTimesInfoGOOGLE, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |i|
+        size += size_of_VkPresentTimeGOOGLE(@ptrCast(&item.pTimes[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPresentTimesInfoGOOGLE);
+}
+pub fn size_of_VkPresentTimeGOOGLE(item: *const vk.VkPresentTimeGOOGLE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPresentTimeGOOGLE);
+}
+pub fn size_of_VkIOSSurfaceCreateInfoMVK(item: *const vk.VkIOSSurfaceCreateInfoMVK, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pView) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIOSSurfaceCreateInfoMVK);
+}
+pub fn size_of_VkMacOSSurfaceCreateInfoMVK(item: *const vk.VkMacOSSurfaceCreateInfoMVK, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pView) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMacOSSurfaceCreateInfoMVK);
+}
+pub fn size_of_VkMetalSurfaceCreateInfoEXT(item: *const vk.VkMetalSurfaceCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pLayer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMetalSurfaceCreateInfoEXT);
+}
+pub fn size_of_VkViewportWScalingNV(item: *const vk.VkViewportWScalingNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkViewportWScalingNV);
+}
+pub fn size_of_VkPipelineViewportWScalingStateCreateInfoNV(item: *const vk.VkPipelineViewportWScalingStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkViewportWScalingNV(@ptrCast(&item.pViewportWScalings[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportWScalingStateCreateInfoNV);
+}
+pub fn size_of_VkViewportSwizzleNV(item: *const vk.VkViewportSwizzleNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkViewportSwizzleNV);
+}
+pub fn size_of_VkPipelineViewportSwizzleStateCreateInfoNV(item: *const vk.VkPipelineViewportSwizzleStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkViewportSwizzleNV(@ptrCast(&item.pViewportSwizzles[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportSwizzleStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceDiscardRectanglePropertiesEXT(item: *const vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT);
+}
+pub fn size_of_VkPipelineDiscardRectangleStateCreateInfoEXT(item: *const vk.VkPipelineDiscardRectangleStateCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.discardRectangleCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pDiscardRectangles[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineDiscardRectangleStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(item: *const vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX);
+}
+pub fn size_of_VkInputAttachmentAspectReference(item: *const vk.VkInputAttachmentAspectReference, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkInputAttachmentAspectReference);
+}
+pub fn size_of_VkInputAttachmentAspectReferenceKHR(item: *const vk.VkInputAttachmentAspectReferenceKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkInputAttachmentAspectReferenceKHR);
+}
+pub fn size_of_VkRenderPassInputAttachmentAspectCreateInfo(item: *const vk.VkRenderPassInputAttachmentAspectCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.aspectReferenceCount) |i|
+        size += size_of_VkInputAttachmentAspectReference(@ptrCast(&item.pAspectReferences[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassInputAttachmentAspectCreateInfo);
+}
+pub fn size_of_VkRenderPassInputAttachmentAspectCreateInfoKHR(item: *const vk.VkRenderPassInputAttachmentAspectCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassInputAttachmentAspectCreateInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceSurfaceInfo2KHR(item: *const vk.VkPhysicalDeviceSurfaceInfo2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
+                => size += size_of_VkSurfaceFullScreenExclusiveInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT,
+                => size += size_of_VkSurfaceFullScreenExclusiveWin32InfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_KHR,
+                => size += size_of_VkSurfacePresentModeKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceSurfaceInfo2KHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceSurfaceInfo2KHR);
+}
+pub fn size_of_VkSurfaceCapabilities2KHR(item: *const vk.VkSurfaceCapabilities2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_NATIVE_HDR_SURFACE_CAPABILITIES_AMD,
+                => size += size_of_VkDisplayNativeHdrSurfaceCapabilitiesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR,
+                => size += size_of_VkSharedPresentSurfaceCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR,
+                => size += size_of_VkSurfaceProtectedCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_FULL_SCREEN_EXCLUSIVE_EXT,
+                => size += size_of_VkSurfaceCapabilitiesFullScreenExclusiveEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_BARRIER_NV,
+                => size += size_of_VkSurfaceCapabilitiesPresentBarrierNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_ID_2_KHR,
+                => size += size_of_VkSurfaceCapabilitiesPresentId2KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR,
+                => size += size_of_VkSurfaceCapabilitiesPresentWait2KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_SCALING_CAPABILITIES_KHR,
+                => size += size_of_VkSurfacePresentScalingCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR,
+                => size += size_of_VkSurfacePresentModeCompatibilityKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SURFACE_CAPABILITIES_NV,
+                => size += size_of_VkLatencySurfaceCapabilitiesNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSurfaceCapabilities2KHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSurfaceCapabilities2KHR);
+}
+pub fn size_of_VkSurfaceFormat2KHR(item: *const vk.VkSurfaceFormat2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+                => size += size_of_VkImageCompressionPropertiesEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSurfaceFormat2KHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSurfaceFormat2KHR);
+}
+pub fn size_of_VkDisplayProperties2KHR(item: *const vk.VkDisplayProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayProperties2KHR);
+}
+pub fn size_of_VkDisplayPlaneProperties2KHR(item: *const vk.VkDisplayPlaneProperties2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPlaneProperties2KHR);
+}
+pub fn size_of_VkDisplayModeProperties2KHR(item: *const vk.VkDisplayModeProperties2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_STEREO_PROPERTIES_NV,
+                => size += size_of_VkDisplayModeStereoPropertiesNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDisplayModeProperties2KHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDisplayModeProperties2KHR);
+}
+pub fn size_of_VkDisplayModeStereoPropertiesNV(item: *const vk.VkDisplayModeStereoPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayModeStereoPropertiesNV);
+}
+pub fn size_of_VkDisplayPlaneInfo2KHR(item: *const vk.VkDisplayPlaneInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPlaneInfo2KHR);
+}
+pub fn size_of_VkDisplayPlaneCapabilities2KHR(item: *const vk.VkDisplayPlaneCapabilities2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDisplayPlaneCapabilities2KHR);
+}
+pub fn size_of_VkSharedPresentSurfaceCapabilitiesKHR(item: *const vk.VkSharedPresentSurfaceCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSharedPresentSurfaceCapabilitiesKHR);
+}
+pub fn size_of_VkPhysicalDevice16BitStorageFeatures(item: *const vk.VkPhysicalDevice16BitStorageFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevice16BitStorageFeatures);
+}
+pub fn size_of_VkPhysicalDevice16BitStorageFeaturesKHR(item: *const vk.VkPhysicalDevice16BitStorageFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevice16BitStorageFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceSubgroupProperties(item: *const vk.VkPhysicalDeviceSubgroupProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubgroupProperties);
+}
+pub fn size_of_VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures(item: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR);
+}
+pub fn size_of_VkBufferMemoryRequirementsInfo2(item: *const vk.VkBufferMemoryRequirementsInfo2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferMemoryRequirementsInfo2);
+}
+pub fn size_of_VkBufferMemoryRequirementsInfo2KHR(item: *const vk.VkBufferMemoryRequirementsInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferMemoryRequirementsInfo2KHR);
+}
+pub fn size_of_VkDeviceBufferMemoryRequirements(item: *const vk.VkDeviceBufferMemoryRequirements, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCreateInfo) |ptr| size += size_of_VkBufferCreateInfo(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceBufferMemoryRequirements);
+}
+pub fn size_of_VkDeviceBufferMemoryRequirementsKHR(item: *const vk.VkDeviceBufferMemoryRequirementsKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceBufferMemoryRequirementsKHR);
+}
+pub fn size_of_VkImageMemoryRequirementsInfo2(item: *const vk.VkImageMemoryRequirementsInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO,
+                => size += size_of_VkImagePlaneMemoryRequirementsInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageMemoryRequirementsInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageMemoryRequirementsInfo2);
+}
+pub fn size_of_VkImageMemoryRequirementsInfo2KHR(item: *const vk.VkImageMemoryRequirementsInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageMemoryRequirementsInfo2KHR);
+}
+pub fn size_of_VkImageSparseMemoryRequirementsInfo2(item: *const vk.VkImageSparseMemoryRequirementsInfo2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSparseMemoryRequirementsInfo2);
+}
+pub fn size_of_VkImageSparseMemoryRequirementsInfo2KHR(item: *const vk.VkImageSparseMemoryRequirementsInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSparseMemoryRequirementsInfo2KHR);
+}
+pub fn size_of_VkDeviceImageMemoryRequirements(item: *const vk.VkDeviceImageMemoryRequirements, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCreateInfo) |ptr| size += size_of_VkImageCreateInfo(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceImageMemoryRequirements);
+}
+pub fn size_of_VkDeviceImageMemoryRequirementsKHR(item: *const vk.VkDeviceImageMemoryRequirementsKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceImageMemoryRequirementsKHR);
+}
+pub fn size_of_VkMemoryRequirements2(item: *const vk.VkMemoryRequirements2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS,
+                => size += size_of_VkMemoryDedicatedRequirements(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM,
+                => size += size_of_VkTileMemoryRequirementsQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkMemoryRequirements2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkMemoryRequirements2);
+}
+pub fn size_of_VkMemoryRequirements2KHR(item: *const vk.VkMemoryRequirements2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryRequirements2KHR);
+}
+pub fn size_of_VkSparseImageMemoryRequirements2(item: *const vk.VkSparseImageMemoryRequirements2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageMemoryRequirements2);
+}
+pub fn size_of_VkSparseImageMemoryRequirements2KHR(item: *const vk.VkSparseImageMemoryRequirements2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSparseImageMemoryRequirements2KHR);
+}
+pub fn size_of_VkPhysicalDevicePointClippingProperties(item: *const vk.VkPhysicalDevicePointClippingProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePointClippingProperties);
+}
+pub fn size_of_VkPhysicalDevicePointClippingPropertiesKHR(item: *const vk.VkPhysicalDevicePointClippingPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePointClippingPropertiesKHR);
+}
+pub fn size_of_VkMemoryDedicatedRequirements(item: *const vk.VkMemoryDedicatedRequirements, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedRequirements);
+}
+pub fn size_of_VkMemoryDedicatedRequirementsKHR(item: *const vk.VkMemoryDedicatedRequirementsKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedRequirementsKHR);
+}
+pub fn size_of_VkMemoryDedicatedAllocateInfo(item: *const vk.VkMemoryDedicatedAllocateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedAllocateInfo);
+}
+pub fn size_of_VkMemoryDedicatedAllocateInfoKHR(item: *const vk.VkMemoryDedicatedAllocateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedAllocateInfoKHR);
+}
+pub fn size_of_VkImageViewUsageCreateInfo(item: *const vk.VkImageViewUsageCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewUsageCreateInfo);
+}
+pub fn size_of_VkImageViewSlicedCreateInfoEXT(item: *const vk.VkImageViewSlicedCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewSlicedCreateInfoEXT);
+}
+pub fn size_of_VkImageViewUsageCreateInfoKHR(item: *const vk.VkImageViewUsageCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewUsageCreateInfoKHR);
+}
+pub fn size_of_VkPipelineTessellationDomainOriginStateCreateInfo(item: *const vk.VkPipelineTessellationDomainOriginStateCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineTessellationDomainOriginStateCreateInfo);
+}
+pub fn size_of_VkPipelineTessellationDomainOriginStateCreateInfoKHR(item: *const vk.VkPipelineTessellationDomainOriginStateCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineTessellationDomainOriginStateCreateInfoKHR);
+}
+pub fn size_of_VkSamplerYcbcrConversionInfo(item: *const vk.VkSamplerYcbcrConversionInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionInfo);
+}
+pub fn size_of_VkSamplerYcbcrConversionInfoKHR(item: *const vk.VkSamplerYcbcrConversionInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionInfoKHR);
+}
+pub fn size_of_VkSamplerYcbcrConversionCreateInfo(item: *const vk.VkSamplerYcbcrConversionCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
+                => size += size_of_VkExternalFormatQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSamplerYcbcrConversionCreateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSamplerYcbcrConversionCreateInfo);
+}
+pub fn size_of_VkSamplerYcbcrConversionCreateInfoKHR(item: *const vk.VkSamplerYcbcrConversionCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionCreateInfoKHR);
+}
+pub fn size_of_VkBindImagePlaneMemoryInfo(item: *const vk.VkBindImagePlaneMemoryInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindImagePlaneMemoryInfo);
+}
+pub fn size_of_VkBindImagePlaneMemoryInfoKHR(item: *const vk.VkBindImagePlaneMemoryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindImagePlaneMemoryInfoKHR);
+}
+pub fn size_of_VkImagePlaneMemoryRequirementsInfo(item: *const vk.VkImagePlaneMemoryRequirementsInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImagePlaneMemoryRequirementsInfo);
+}
+pub fn size_of_VkImagePlaneMemoryRequirementsInfoKHR(item: *const vk.VkImagePlaneMemoryRequirementsInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImagePlaneMemoryRequirementsInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceSamplerYcbcrConversionFeatures(item: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures);
+}
+pub fn size_of_VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR(item: *const vk.VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR);
+}
+pub fn size_of_VkSamplerYcbcrConversionImageFormatProperties(item: *const vk.VkSamplerYcbcrConversionImageFormatProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionImageFormatProperties);
+}
+pub fn size_of_VkSamplerYcbcrConversionImageFormatPropertiesKHR(item: *const vk.VkSamplerYcbcrConversionImageFormatPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionImageFormatPropertiesKHR);
+}
+pub fn size_of_VkTextureLODGatherFormatPropertiesAMD(item: *const vk.VkTextureLODGatherFormatPropertiesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTextureLODGatherFormatPropertiesAMD);
+}
+pub fn size_of_VkConditionalRenderingBeginInfoEXT(item: *const vk.VkConditionalRenderingBeginInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkConditionalRenderingBeginInfoEXT);
+}
+pub fn size_of_VkProtectedSubmitInfo(item: *const vk.VkProtectedSubmitInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkProtectedSubmitInfo);
+}
+pub fn size_of_VkPhysicalDeviceProtectedMemoryFeatures(item: *const vk.VkPhysicalDeviceProtectedMemoryFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProtectedMemoryFeatures);
+}
+pub fn size_of_VkPhysicalDeviceProtectedMemoryProperties(item: *const vk.VkPhysicalDeviceProtectedMemoryProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProtectedMemoryProperties);
+}
+pub fn size_of_VkDeviceQueueInfo2(item: *const vk.VkDeviceQueueInfo2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueInfo2);
+}
+pub fn size_of_VkPipelineCoverageToColorStateCreateInfoNV(item: *const vk.VkPipelineCoverageToColorStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCoverageToColorStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceSamplerFilterMinmaxProperties(item: *const vk.VkPhysicalDeviceSamplerFilterMinmaxProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSamplerFilterMinmaxProperties);
+}
+pub fn size_of_VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT(item: *const vk.VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT);
+}
+pub fn size_of_VkSampleLocationEXT(item: *const vk.VkSampleLocationEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSampleLocationEXT);
+}
+pub fn size_of_VkSampleLocationsInfoEXT(item: *const vk.VkSampleLocationsInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.sampleLocationsCount) |i|
+        size += size_of_VkSampleLocationEXT(@ptrCast(&item.pSampleLocations[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSampleLocationsInfoEXT);
+}
+pub fn size_of_VkAttachmentSampleLocationsEXT(item: *const vk.VkAttachmentSampleLocationsEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentSampleLocationsEXT);
+}
+pub fn size_of_VkSubpassSampleLocationsEXT(item: *const vk.VkSubpassSampleLocationsEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassSampleLocationsEXT);
+}
+pub fn size_of_VkRenderPassSampleLocationsBeginInfoEXT(item: *const vk.VkRenderPassSampleLocationsBeginInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentInitialSampleLocationsCount) |i|
+        size += size_of_VkAttachmentSampleLocationsEXT(@ptrCast(&item.pAttachmentInitialSampleLocations[i]), false);
+    for (0..item.postSubpassSampleLocationsCount) |i|
+        size += size_of_VkSubpassSampleLocationsEXT(@ptrCast(&item.pPostSubpassSampleLocations[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassSampleLocationsBeginInfoEXT);
+}
+pub fn size_of_VkPipelineSampleLocationsStateCreateInfoEXT(item: *const vk.VkPipelineSampleLocationsStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineSampleLocationsStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceSampleLocationsPropertiesEXT(item: *const vk.VkPhysicalDeviceSampleLocationsPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSampleLocationsPropertiesEXT);
+}
+pub fn size_of_VkMultisamplePropertiesEXT(item: *const vk.VkMultisamplePropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultisamplePropertiesEXT);
+}
+pub fn size_of_VkSamplerReductionModeCreateInfo(item: *const vk.VkSamplerReductionModeCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerReductionModeCreateInfo);
+}
+pub fn size_of_VkSamplerReductionModeCreateInfoEXT(item: *const vk.VkSamplerReductionModeCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerReductionModeCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT(item: *const vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMultiDrawFeaturesEXT(item: *const vk.VkPhysicalDeviceMultiDrawFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiDrawFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT(item: *const vk.VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT);
+}
+pub fn size_of_VkPipelineColorBlendAdvancedStateCreateInfoEXT(item: *const vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceInlineUniformBlockFeatures(item: *const vk.VkPhysicalDeviceInlineUniformBlockFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInlineUniformBlockFeatures);
+}
+pub fn size_of_VkPhysicalDeviceInlineUniformBlockFeaturesEXT(item: *const vk.VkPhysicalDeviceInlineUniformBlockFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInlineUniformBlockFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceInlineUniformBlockProperties(item: *const vk.VkPhysicalDeviceInlineUniformBlockProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInlineUniformBlockProperties);
+}
+pub fn size_of_VkPhysicalDeviceInlineUniformBlockPropertiesEXT(item: *const vk.VkPhysicalDeviceInlineUniformBlockPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInlineUniformBlockPropertiesEXT);
+}
+pub fn size_of_VkWriteDescriptorSetInlineUniformBlock(item: *const vk.VkWriteDescriptorSetInlineUniformBlock, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetInlineUniformBlock);
+}
+pub fn size_of_VkWriteDescriptorSetInlineUniformBlockEXT(item: *const vk.VkWriteDescriptorSetInlineUniformBlockEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkWriteDescriptorSetInlineUniformBlockEXT);
+}
+pub fn size_of_VkDescriptorPoolInlineUniformBlockCreateInfo(item: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorPoolInlineUniformBlockCreateInfo);
+}
+pub fn size_of_VkDescriptorPoolInlineUniformBlockCreateInfoEXT(item: *const vk.VkDescriptorPoolInlineUniformBlockCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorPoolInlineUniformBlockCreateInfoEXT);
+}
+pub fn size_of_VkPipelineCoverageModulationStateCreateInfoNV(item: *const vk.VkPipelineCoverageModulationStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.coverageModulationTableCount) |_|
+        size += @sizeOf(f32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineCoverageModulationStateCreateInfoNV);
+}
+pub fn size_of_VkImageFormatListCreateInfo(item: *const vk.VkImageFormatListCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewFormatCount) |_|
+        size += @sizeOf(vk.VkFormat);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageFormatListCreateInfo);
+}
+pub fn size_of_VkImageFormatListCreateInfoKHR(item: *const vk.VkImageFormatListCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageFormatListCreateInfoKHR);
+}
+pub fn size_of_VkValidationCacheCreateInfoEXT(item: *const vk.VkValidationCacheCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.initialDataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkValidationCacheCreateInfoEXT);
+}
+pub fn size_of_VkShaderModuleValidationCacheCreateInfoEXT(item: *const vk.VkShaderModuleValidationCacheCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderModuleValidationCacheCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance3Properties(item: *const vk.VkPhysicalDeviceMaintenance3Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance3Properties);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance3PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance3PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance3PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance4Features(item: *const vk.VkPhysicalDeviceMaintenance4Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance4Features);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance4FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance4FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance4FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance4Properties(item: *const vk.VkPhysicalDeviceMaintenance4Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance4Properties);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance4PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance4PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance4PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance5Features(item: *const vk.VkPhysicalDeviceMaintenance5Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance5Features);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance5FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance5FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance5FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance5Properties(item: *const vk.VkPhysicalDeviceMaintenance5Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance5Properties);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance5PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance5PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance5PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance6Features(item: *const vk.VkPhysicalDeviceMaintenance6Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance6Features);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance6FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance6FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance6FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance6Properties(item: *const vk.VkPhysicalDeviceMaintenance6Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance6Properties);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance6PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance6PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance6PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance7FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance7FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance7FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance7PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance7PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance7PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceLayeredApiPropertiesListKHR(item: *const vk.VkPhysicalDeviceLayeredApiPropertiesListKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.layeredApiCount) |i|
+        size += size_of_VkPhysicalDeviceLayeredApiPropertiesKHR(@ptrCast(&item.pLayeredApis[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceLayeredApiPropertiesListKHR);
+}
+pub fn size_of_VkPhysicalDeviceLayeredApiPropertiesKHR(item: *const vk.VkPhysicalDeviceLayeredApiPropertiesKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_API_VULKAN_PROPERTIES_KHR,
+                => size += size_of_VkPhysicalDeviceLayeredApiVulkanPropertiesKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceLayeredApiPropertiesKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceLayeredApiPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceLayeredApiVulkanPropertiesKHR(item: *const vk.VkPhysicalDeviceLayeredApiVulkanPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLayeredApiVulkanPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance8FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance8FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance8FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance9FeaturesKHR(item: *const vk.VkPhysicalDeviceMaintenance9FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance9FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceMaintenance9PropertiesKHR(item: *const vk.VkPhysicalDeviceMaintenance9PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMaintenance9PropertiesKHR);
+}
+pub fn size_of_VkQueueFamilyOwnershipTransferPropertiesKHR(item: *const vk.VkQueueFamilyOwnershipTransferPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyOwnershipTransferPropertiesKHR);
+}
+pub fn size_of_VkRenderingAreaInfo(item: *const vk.VkRenderingAreaInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(vk.VkFormat);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderingAreaInfo);
+}
+pub fn size_of_VkRenderingAreaInfoKHR(item: *const vk.VkRenderingAreaInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingAreaInfoKHR);
+}
+pub fn size_of_VkDescriptorSetLayoutSupport(item: *const vk.VkDescriptorSetLayoutSupport, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_LAYOUT_SUPPORT,
+                => size += size_of_VkDescriptorSetVariableDescriptorCountLayoutSupport(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorSetLayoutSupport: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDescriptorSetLayoutSupport);
+}
+pub fn size_of_VkDescriptorSetLayoutSupportKHR(item: *const vk.VkDescriptorSetLayoutSupportKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetLayoutSupportKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderDrawParametersFeatures(item: *const vk.VkPhysicalDeviceShaderDrawParametersFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderDrawParametersFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderDrawParameterFeatures(item: *const vk.VkPhysicalDeviceShaderDrawParameterFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderDrawParameterFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderFloat16Int8Features(item: *const vk.VkPhysicalDeviceShaderFloat16Int8Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderFloat16Int8Features);
+}
+pub fn size_of_VkPhysicalDeviceShaderFloat16Int8FeaturesKHR(item: *const vk.VkPhysicalDeviceShaderFloat16Int8FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderFloat16Int8FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFloat16Int8FeaturesKHR(item: *const vk.VkPhysicalDeviceFloat16Int8FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFloat16Int8FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFloatControlsProperties(item: *const vk.VkPhysicalDeviceFloatControlsProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFloatControlsProperties);
+}
+pub fn size_of_VkPhysicalDeviceFloatControlsPropertiesKHR(item: *const vk.VkPhysicalDeviceFloatControlsPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFloatControlsPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceHostQueryResetFeatures(item: *const vk.VkPhysicalDeviceHostQueryResetFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHostQueryResetFeatures);
+}
+pub fn size_of_VkPhysicalDeviceHostQueryResetFeaturesEXT(item: *const vk.VkPhysicalDeviceHostQueryResetFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHostQueryResetFeaturesEXT);
+}
+pub fn size_of_VkNativeBufferUsage2ANDROID(item: *const vk.VkNativeBufferUsage2ANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkNativeBufferUsage2ANDROID);
+}
+pub fn size_of_VkNativeBufferANDROID(item: *const vk.VkNativeBufferANDROID, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkNativeBufferANDROID);
+}
+pub fn size_of_VkSwapchainImageCreateInfoANDROID(item: *const vk.VkSwapchainImageCreateInfoANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainImageCreateInfoANDROID);
+}
+pub fn size_of_VkPhysicalDevicePresentationPropertiesANDROID(item: *const vk.VkPhysicalDevicePresentationPropertiesANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentationPropertiesANDROID);
+}
+pub fn size_of_VkShaderResourceUsageAMD(item: *const vk.VkShaderResourceUsageAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderResourceUsageAMD);
+}
+pub fn size_of_VkShaderStatisticsInfoAMD(item: *const vk.VkShaderStatisticsInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderStatisticsInfoAMD);
+}
+pub fn size_of_VkDeviceQueueGlobalPriorityCreateInfo(item: *const vk.VkDeviceQueueGlobalPriorityCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueGlobalPriorityCreateInfo);
+}
+pub fn size_of_VkDeviceQueueGlobalPriorityCreateInfoKHR(item: *const vk.VkDeviceQueueGlobalPriorityCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueGlobalPriorityCreateInfoKHR);
+}
+pub fn size_of_VkDeviceQueueGlobalPriorityCreateInfoEXT(item: *const vk.VkDeviceQueueGlobalPriorityCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueGlobalPriorityCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceGlobalPriorityQueryFeatures(item: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGlobalPriorityQueryFeatures);
+}
+pub fn size_of_VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR(item: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT(item: *const vk.VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT);
+}
+pub fn size_of_VkQueueFamilyGlobalPriorityProperties(item: *const vk.VkQueueFamilyGlobalPriorityProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyGlobalPriorityProperties);
+}
+pub fn size_of_VkQueueFamilyGlobalPriorityPropertiesKHR(item: *const vk.VkQueueFamilyGlobalPriorityPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyGlobalPriorityPropertiesKHR);
+}
+pub fn size_of_VkQueueFamilyGlobalPriorityPropertiesEXT(item: *const vk.VkQueueFamilyGlobalPriorityPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyGlobalPriorityPropertiesEXT);
+}
+pub fn size_of_VkDebugUtilsObjectNameInfoEXT(item: *const vk.VkDebugUtilsObjectNameInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pObjectName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugUtilsObjectNameInfoEXT);
+}
+pub fn size_of_VkDebugUtilsObjectTagInfoEXT(item: *const vk.VkDebugUtilsObjectTagInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tagSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugUtilsObjectTagInfoEXT);
+}
+pub fn size_of_VkDebugUtilsLabelEXT(item: *const vk.VkDebugUtilsLabelEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pLabelName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugUtilsLabelEXT);
+}
+pub fn size_of_VkDebugUtilsMessengerCreateInfoEXT(item: *const vk.VkDebugUtilsMessengerCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pUserData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDebugUtilsMessengerCreateInfoEXT);
+}
+pub fn size_of_VkDebugUtilsMessengerCallbackDataEXT(item: *const vk.VkDebugUtilsMessengerCallbackDataEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pMessageIdName)) |i|
+        size += @sizeOf(i);
+    for (std.mem.span(item.pMessage)) |i|
+        size += @sizeOf(i);
+    for (0..item.queueLabelCount) |i|
+        size += size_of_VkDebugUtilsLabelEXT(@ptrCast(&item.pQueueLabels[i]), false);
+    for (0..item.cmdBufLabelCount) |i|
+        size += size_of_VkDebugUtilsLabelEXT(@ptrCast(&item.pCmdBufLabels[i]), false);
+    for (0..item.objectCount) |i|
+        size += size_of_VkDebugUtilsObjectNameInfoEXT(@ptrCast(&item.pObjects[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_ADDRESS_BINDING_CALLBACK_DATA_EXT,
+                => size += size_of_VkDeviceAddressBindingCallbackDataEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDebugUtilsMessengerCallbackDataEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDebugUtilsMessengerCallbackDataEXT);
+}
+pub fn size_of_VkPhysicalDeviceDeviceMemoryReportFeaturesEXT(item: *const vk.VkPhysicalDeviceDeviceMemoryReportFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceMemoryReportFeaturesEXT);
+}
+pub fn size_of_VkDeviceDeviceMemoryReportCreateInfoEXT(item: *const vk.VkDeviceDeviceMemoryReportCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pUserData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceDeviceMemoryReportCreateInfoEXT);
+}
+pub fn size_of_VkDeviceMemoryReportCallbackDataEXT(item: *const vk.VkDeviceMemoryReportCallbackDataEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceMemoryReportCallbackDataEXT);
+}
+pub fn size_of_VkImportMemoryHostPointerInfoEXT(item: *const vk.VkImportMemoryHostPointerInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pHostPointer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportMemoryHostPointerInfoEXT);
+}
+pub fn size_of_VkMemoryHostPointerPropertiesEXT(item: *const vk.VkMemoryHostPointerPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryHostPointerPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceExternalMemoryHostPropertiesEXT(item: *const vk.VkPhysicalDeviceExternalMemoryHostPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemoryHostPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceConservativeRasterizationPropertiesEXT(item: *const vk.VkPhysicalDeviceConservativeRasterizationPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceConservativeRasterizationPropertiesEXT);
+}
+pub fn size_of_VkCalibratedTimestampInfoKHR(item: *const vk.VkCalibratedTimestampInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCalibratedTimestampInfoKHR);
+}
+pub fn size_of_VkCalibratedTimestampInfoEXT(item: *const vk.VkCalibratedTimestampInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCalibratedTimestampInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderCorePropertiesAMD(item: *const vk.VkPhysicalDeviceShaderCorePropertiesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCorePropertiesAMD);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreProperties2AMD(item: *const vk.VkPhysicalDeviceShaderCoreProperties2AMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreProperties2AMD);
+}
+pub fn size_of_VkPipelineRasterizationConservativeStateCreateInfoEXT(item: *const vk.VkPipelineRasterizationConservativeStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationConservativeStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorIndexingFeatures(item: *const vk.VkPhysicalDeviceDescriptorIndexingFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorIndexingFeatures);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorIndexingFeaturesEXT(item: *const vk.VkPhysicalDeviceDescriptorIndexingFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorIndexingFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorIndexingProperties(item: *const vk.VkPhysicalDeviceDescriptorIndexingProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorIndexingProperties);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorIndexingPropertiesEXT(item: *const vk.VkPhysicalDeviceDescriptorIndexingPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorIndexingPropertiesEXT);
+}
+pub fn size_of_VkDescriptorSetLayoutBindingFlagsCreateInfo(item: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.bindingCount) |_|
+        size += @sizeOf(vk.VkDescriptorBindingFlags);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDescriptorSetLayoutBindingFlagsCreateInfo);
+}
+pub fn size_of_VkDescriptorSetLayoutBindingFlagsCreateInfoEXT(item: *const vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
+}
+pub fn size_of_VkDescriptorSetVariableDescriptorCountAllocateInfo(item: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorSetCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDescriptorSetVariableDescriptorCountAllocateInfo);
+}
+pub fn size_of_VkDescriptorSetVariableDescriptorCountAllocateInfoEXT(item: *const vk.VkDescriptorSetVariableDescriptorCountAllocateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetVariableDescriptorCountAllocateInfoEXT);
+}
+pub fn size_of_VkDescriptorSetVariableDescriptorCountLayoutSupport(item: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupport, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetVariableDescriptorCountLayoutSupport);
+}
+pub fn size_of_VkDescriptorSetVariableDescriptorCountLayoutSupportEXT(item: *const vk.VkDescriptorSetVariableDescriptorCountLayoutSupportEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetVariableDescriptorCountLayoutSupportEXT);
+}
+pub fn size_of_VkAttachmentDescription2(item: *const vk.VkAttachmentDescription2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT,
+                => size += size_of_VkAttachmentDescriptionStencilLayout(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAttachmentDescription2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAttachmentDescription2);
+}
+pub fn size_of_VkAttachmentDescription2KHR(item: *const vk.VkAttachmentDescription2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentDescription2KHR);
+}
+pub fn size_of_VkAttachmentReference2(item: *const vk.VkAttachmentReference2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT,
+                => size += size_of_VkAttachmentReferenceStencilLayout(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAttachmentReference2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAttachmentReference2);
+}
+pub fn size_of_VkAttachmentReference2KHR(item: *const vk.VkAttachmentReference2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentReference2KHR);
+}
+pub fn size_of_VkSubpassDescription2(item: *const vk.VkSubpassDescription2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.inputAttachmentCount) |i|
+        size += size_of_VkAttachmentReference2(@ptrCast(&item.pInputAttachments[i]), false);
+    for (0..item.colorAttachmentCount) |i|
+        size += size_of_VkAttachmentReference2(@ptrCast(&item.pColorAttachments[i]), false);
+    for (0..item.colorAttachmentCount) |i|
+        size += size_of_VkAttachmentReference2(@ptrCast(&item.pResolveAttachments[i]), false);
+    if (item.pDepthStencilAttachment) |ptr| size += size_of_VkAttachmentReference2(@ptrCast(ptr), false);
+    for (0..item.preserveAttachmentCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+                => size += size_of_VkSubpassDescriptionDepthStencilResolve(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
+                => size += size_of_VkFragmentShadingRateAttachmentInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT,
+                => size += size_of_VkMultisampledRenderToSingleSampledInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+                => size += size_of_VkRenderPassCreationControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT,
+                => size += size_of_VkRenderPassSubpassFeedbackCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubpassDescription2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkSubpassDescription2);
+}
+pub fn size_of_VkSubpassDescription2KHR(item: *const vk.VkSubpassDescription2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassDescription2KHR);
+}
+pub fn size_of_VkSubpassDependency2(item: *const vk.VkSubpassDependency2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
+                => size += size_of_VkMemoryBarrier2(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+                => size += size_of_VkMemoryBarrierAccessFlags3KHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubpassDependency2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSubpassDependency2);
+}
+pub fn size_of_VkSubpassDependency2KHR(item: *const vk.VkSubpassDependency2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassDependency2KHR);
+}
+pub fn size_of_VkRenderPassCreateInfo2(item: *const vk.VkRenderPassCreateInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |i|
+        size += size_of_VkAttachmentDescription2(@ptrCast(&item.pAttachments[i]), false);
+    for (0..item.subpassCount) |i|
+        size += size_of_VkSubpassDescription2(@ptrCast(&item.pSubpasses[i]), false);
+    for (0..item.dependencyCount) |i|
+        size += size_of_VkSubpassDependency2(@ptrCast(&item.pDependencies[i]), false);
+    for (0..item.correlatedViewMaskCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT,
+                => size += size_of_VkRenderPassFragmentDensityMapCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_CONTROL_EXT,
+                => size += size_of_VkRenderPassCreationControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
+                => size += size_of_VkRenderPassCreationFeedbackCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderPassCreateInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRenderPassCreateInfo2);
+}
+pub fn size_of_VkRenderPassCreateInfo2KHR(item: *const vk.VkRenderPassCreateInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassCreateInfo2KHR);
+}
+pub fn size_of_VkSubpassBeginInfo(item: *const vk.VkSubpassBeginInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassBeginInfo);
+}
+pub fn size_of_VkSubpassBeginInfoKHR(item: *const vk.VkSubpassBeginInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassBeginInfoKHR);
+}
+pub fn size_of_VkSubpassEndInfo(item: *const vk.VkSubpassEndInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT,
+                => size += size_of_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubpassEndInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSubpassEndInfo);
+}
+pub fn size_of_VkSubpassEndInfoKHR(item: *const vk.VkSubpassEndInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassEndInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceTimelineSemaphoreFeatures(item: *const vk.VkPhysicalDeviceTimelineSemaphoreFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTimelineSemaphoreFeatures);
+}
+pub fn size_of_VkPhysicalDeviceTimelineSemaphoreFeaturesKHR(item: *const vk.VkPhysicalDeviceTimelineSemaphoreFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTimelineSemaphoreFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceTimelineSemaphoreProperties(item: *const vk.VkPhysicalDeviceTimelineSemaphoreProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTimelineSemaphoreProperties);
+}
+pub fn size_of_VkPhysicalDeviceTimelineSemaphorePropertiesKHR(item: *const vk.VkPhysicalDeviceTimelineSemaphorePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTimelineSemaphorePropertiesKHR);
+}
+pub fn size_of_VkSemaphoreTypeCreateInfo(item: *const vk.VkSemaphoreTypeCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreTypeCreateInfo);
+}
+pub fn size_of_VkSemaphoreTypeCreateInfoKHR(item: *const vk.VkSemaphoreTypeCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreTypeCreateInfoKHR);
+}
+pub fn size_of_VkTimelineSemaphoreSubmitInfo(item: *const vk.VkTimelineSemaphoreSubmitInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreValueCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.signalSemaphoreValueCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTimelineSemaphoreSubmitInfo);
+}
+pub fn size_of_VkTimelineSemaphoreSubmitInfoKHR(item: *const vk.VkTimelineSemaphoreSubmitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTimelineSemaphoreSubmitInfoKHR);
+}
+pub fn size_of_VkSemaphoreWaitInfo(item: *const vk.VkSemaphoreWaitInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.semaphoreCount) |_|
+        size += @sizeOf(vk.VkSemaphore);
+    for (0..item.semaphoreCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSemaphoreWaitInfo);
+}
+pub fn size_of_VkSemaphoreWaitInfoKHR(item: *const vk.VkSemaphoreWaitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreWaitInfoKHR);
+}
+pub fn size_of_VkSemaphoreSignalInfo(item: *const vk.VkSemaphoreSignalInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSignalInfo);
+}
+pub fn size_of_VkSemaphoreSignalInfoKHR(item: *const vk.VkSemaphoreSignalInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSignalInfoKHR);
+}
+pub fn size_of_VkVertexInputBindingDivisorDescription(item: *const vk.VkVertexInputBindingDivisorDescription, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputBindingDivisorDescription);
+}
+pub fn size_of_VkVertexInputBindingDivisorDescriptionKHR(item: *const vk.VkVertexInputBindingDivisorDescriptionKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputBindingDivisorDescriptionKHR);
+}
+pub fn size_of_VkVertexInputBindingDivisorDescriptionEXT(item: *const vk.VkVertexInputBindingDivisorDescriptionEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputBindingDivisorDescriptionEXT);
+}
+pub fn size_of_VkPipelineVertexInputDivisorStateCreateInfo(item: *const vk.VkPipelineVertexInputDivisorStateCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.vertexBindingDivisorCount) |i|
+        size += size_of_VkVertexInputBindingDivisorDescription(@ptrCast(&item.pVertexBindingDivisors[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineVertexInputDivisorStateCreateInfo);
+}
+pub fn size_of_VkPipelineVertexInputDivisorStateCreateInfoKHR(item: *const vk.VkPipelineVertexInputDivisorStateCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineVertexInputDivisorStateCreateInfoKHR);
+}
+pub fn size_of_VkPipelineVertexInputDivisorStateCreateInfoEXT(item: *const vk.VkPipelineVertexInputDivisorStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineVertexInputDivisorStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorProperties(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorProperties);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDevicePCIBusInfoPropertiesEXT(item: *const vk.VkPhysicalDevicePCIBusInfoPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePCIBusInfoPropertiesEXT);
+}
+pub fn size_of_VkImportAndroidHardwareBufferInfoANDROID(item: *const vk.VkImportAndroidHardwareBufferInfoANDROID, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.buffer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportAndroidHardwareBufferInfoANDROID);
+}
+pub fn size_of_VkAndroidHardwareBufferUsageANDROID(item: *const vk.VkAndroidHardwareBufferUsageANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAndroidHardwareBufferUsageANDROID);
+}
+pub fn size_of_VkAndroidHardwareBufferPropertiesANDROID(item: *const vk.VkAndroidHardwareBufferPropertiesANDROID, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID,
+                => size += size_of_VkAndroidHardwareBufferFormatPropertiesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_2_ANDROID,
+                => size += size_of_VkAndroidHardwareBufferFormatProperties2ANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_RESOLVE_PROPERTIES_ANDROID,
+                => size += size_of_VkAndroidHardwareBufferFormatResolvePropertiesANDROID(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAndroidHardwareBufferPropertiesANDROID: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAndroidHardwareBufferPropertiesANDROID);
+}
+pub fn size_of_VkMemoryGetAndroidHardwareBufferInfoANDROID(item: *const vk.VkMemoryGetAndroidHardwareBufferInfoANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetAndroidHardwareBufferInfoANDROID);
+}
+pub fn size_of_VkAndroidHardwareBufferFormatPropertiesANDROID(item: *const vk.VkAndroidHardwareBufferFormatPropertiesANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAndroidHardwareBufferFormatPropertiesANDROID);
+}
+pub fn size_of_VkCommandBufferInheritanceConditionalRenderingInfoEXT(item: *const vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferInheritanceConditionalRenderingInfoEXT);
+}
+pub fn size_of_VkPhysicalDevice8BitStorageFeatures(item: *const vk.VkPhysicalDevice8BitStorageFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevice8BitStorageFeatures);
+}
+pub fn size_of_VkPhysicalDevice8BitStorageFeaturesKHR(item: *const vk.VkPhysicalDevice8BitStorageFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevice8BitStorageFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceConditionalRenderingFeaturesEXT(item: *const vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceVulkanMemoryModelFeatures(item: *const vk.VkPhysicalDeviceVulkanMemoryModelFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkanMemoryModelFeatures);
+}
+pub fn size_of_VkPhysicalDeviceVulkanMemoryModelFeaturesKHR(item: *const vk.VkPhysicalDeviceVulkanMemoryModelFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkanMemoryModelFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderAtomicInt64Features(item: *const vk.VkPhysicalDeviceShaderAtomicInt64Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicInt64Features);
+}
+pub fn size_of_VkPhysicalDeviceShaderAtomicInt64FeaturesKHR(item: *const vk.VkPhysicalDeviceShaderAtomicInt64FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicInt64FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderAtomicFloatFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT(item: *const vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorFeatures(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorFeatures);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT(item: *const vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT);
+}
+pub fn size_of_VkQueueFamilyCheckpointPropertiesNV(item: *const vk.VkQueueFamilyCheckpointPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyCheckpointPropertiesNV);
+}
+pub fn size_of_VkCheckpointDataNV(item: *const vk.VkCheckpointDataNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCheckpointMarker) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCheckpointDataNV);
+}
+pub fn size_of_VkPhysicalDeviceDepthStencilResolveProperties(item: *const vk.VkPhysicalDeviceDepthStencilResolveProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthStencilResolveProperties);
+}
+pub fn size_of_VkPhysicalDeviceDepthStencilResolvePropertiesKHR(item: *const vk.VkPhysicalDeviceDepthStencilResolvePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthStencilResolvePropertiesKHR);
+}
+pub fn size_of_VkSubpassDescriptionDepthStencilResolve(item: *const vk.VkSubpassDescriptionDepthStencilResolve, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDepthStencilResolveAttachment) |ptr| size += size_of_VkAttachmentReference2(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSubpassDescriptionDepthStencilResolve);
+}
+pub fn size_of_VkSubpassDescriptionDepthStencilResolveKHR(item: *const vk.VkSubpassDescriptionDepthStencilResolveKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassDescriptionDepthStencilResolveKHR);
+}
+pub fn size_of_VkImageViewASTCDecodeModeEXT(item: *const vk.VkImageViewASTCDecodeModeEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewASTCDecodeModeEXT);
+}
+pub fn size_of_VkPhysicalDeviceASTCDecodeFeaturesEXT(item: *const vk.VkPhysicalDeviceASTCDecodeFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceASTCDecodeFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceTransformFeedbackFeaturesEXT(item: *const vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceTransformFeedbackPropertiesEXT(item: *const vk.VkPhysicalDeviceTransformFeedbackPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTransformFeedbackPropertiesEXT);
+}
+pub fn size_of_VkPipelineRasterizationStateStreamCreateInfoEXT(item: *const vk.VkPipelineRasterizationStateStreamCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationStateStreamCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(item: *const vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV);
+}
+pub fn size_of_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(item: *const vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(item: *const vk.VkPhysicalDeviceExclusiveScissorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExclusiveScissorFeaturesNV);
+}
+pub fn size_of_VkPipelineViewportExclusiveScissorStateCreateInfoNV(item: *const vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.exclusiveScissorCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pExclusiveScissors[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(item: *const vk.VkPhysicalDeviceCornerSampledImageFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCornerSampledImageFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesNV(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV(item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(item: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(item: *const vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(item: *const vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(item: *const vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(item: *const vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceMemoryDecompressionPropertiesNV(item: *const vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV);
+}
+pub fn size_of_VkShadingRatePaletteNV(item: *const vk.VkShadingRatePaletteNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.shadingRatePaletteEntryCount) |_|
+        size += @sizeOf(vk.VkShadingRatePaletteEntryNV);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkShadingRatePaletteNV);
+}
+pub fn size_of_VkPipelineViewportShadingRateImageStateCreateInfoNV(item: *const vk.VkPipelineViewportShadingRateImageStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkShadingRatePaletteNV(@ptrCast(&item.pShadingRatePalettes[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportShadingRateImageStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(item: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShadingRateImageFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceShadingRateImagePropertiesNV(item: *const vk.VkPhysicalDeviceShadingRateImagePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShadingRateImagePropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceInvocationMaskFeaturesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInvocationMaskFeaturesHUAWEI);
+}
+pub fn size_of_VkCoarseSampleLocationNV(item: *const vk.VkCoarseSampleLocationNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCoarseSampleLocationNV);
+}
+pub fn size_of_VkCoarseSampleOrderCustomNV(item: *const vk.VkCoarseSampleOrderCustomNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.sampleLocationCount) |i|
+        size += size_of_VkCoarseSampleLocationNV(@ptrCast(&item.pSampleLocations[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCoarseSampleOrderCustomNV);
+}
+pub fn size_of_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(item: *const vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.customSampleOrderCount) |i|
+        size += size_of_VkCoarseSampleOrderCustomNV(@ptrCast(&item.pCustomSampleOrders[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderFeaturesNV(item: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderPropertiesNV(item: *const vk.VkPhysicalDeviceMeshShaderPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderPropertiesNV);
+}
+pub fn size_of_VkDrawMeshTasksIndirectCommandNV(item: *const vk.VkDrawMeshTasksIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawMeshTasksIndirectCommandNV);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(item: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderPropertiesEXT(item: *const vk.VkPhysicalDeviceMeshShaderPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderPropertiesEXT);
+}
+pub fn size_of_VkDrawMeshTasksIndirectCommandEXT(item: *const vk.VkDrawMeshTasksIndirectCommandEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawMeshTasksIndirectCommandEXT);
+}
+pub fn size_of_VkRayTracingShaderGroupCreateInfoNV(item: *const vk.VkRayTracingShaderGroupCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRayTracingShaderGroupCreateInfoNV);
+}
+pub fn size_of_VkRayTracingShaderGroupCreateInfoKHR(item: *const vk.VkRayTracingShaderGroupCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pShaderGroupCaptureReplayHandle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRayTracingShaderGroupCreateInfoKHR);
+}
+pub fn size_of_VkRayTracingPipelineCreateInfoNV(item: *const vk.VkRayTracingPipelineCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    for (0..item.groupCount) |i|
+        size += size_of_VkRayTracingShaderGroupCreateInfoNV(@ptrCast(&item.pGroups[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRayTracingPipelineCreateInfoNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRayTracingPipelineCreateInfoNV);
+}
+pub fn size_of_VkRayTracingPipelineCreateInfoKHR(item: *const vk.VkRayTracingPipelineCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    for (0..item.groupCount) |i|
+        size += size_of_VkRayTracingShaderGroupCreateInfoKHR(@ptrCast(&item.pGroups[i]), false);
+    if (item.pLibraryInfo) |ptr| size += size_of_VkPipelineLibraryCreateInfoKHR(@ptrCast(ptr), false);
+    if (item.pLibraryInterface) |ptr| size += size_of_VkRayTracingPipelineInterfaceCreateInfoKHR(@ptrCast(ptr), false);
+    if (item.pDynamicState) |ptr| size += size_of_VkPipelineDynamicStateCreateInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
+                => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV,
+                => size += size_of_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                => size += size_of_VkPipelineRobustnessCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRayTracingPipelineCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRayTracingPipelineCreateInfoKHR);
+}
+pub fn size_of_VkGeometryTrianglesNV(item: *const vk.VkGeometryTrianglesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryTrianglesNV);
+}
+pub fn size_of_VkGeometryAABBNV(item: *const vk.VkGeometryAABBNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryAABBNV);
+}
+pub fn size_of_VkGeometryDataNV(item: *const vk.VkGeometryDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryDataNV);
+}
+pub fn size_of_VkGeometryNV(item: *const vk.VkGeometryNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryNV);
+}
+pub fn size_of_VkAccelerationStructureInfoNV(item: *const vk.VkAccelerationStructureInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.geometryCount) |i|
+        size += size_of_VkGeometryNV(@ptrCast(&item.pGeometries[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureInfoNV);
+}
+pub fn size_of_VkAccelerationStructureCreateInfoNV(item: *const vk.VkAccelerationStructureCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureCreateInfoNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAccelerationStructureCreateInfoNV);
+}
+pub fn size_of_VkBindAccelerationStructureMemoryInfoNV(item: *const vk.VkBindAccelerationStructureMemoryInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.deviceIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkBindAccelerationStructureMemoryInfoNV);
+}
+pub fn size_of_VkWriteDescriptorSetAccelerationStructureKHR(item: *const vk.VkWriteDescriptorSetAccelerationStructureKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.accelerationStructureCount) |_|
+        size += @sizeOf(vk.VkAccelerationStructureKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetAccelerationStructureKHR);
+}
+pub fn size_of_VkWriteDescriptorSetAccelerationStructureNV(item: *const vk.VkWriteDescriptorSetAccelerationStructureNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.accelerationStructureCount) |_|
+        size += @sizeOf(vk.VkAccelerationStructureNV);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetAccelerationStructureNV);
+}
+pub fn size_of_VkAccelerationStructureMemoryRequirementsInfoNV(item: *const vk.VkAccelerationStructureMemoryRequirementsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMemoryRequirementsInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceAccelerationStructureFeaturesKHR(item: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingPipelineFeaturesKHR(item: *const vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingPipelineFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayQueryFeaturesKHR(item: *const vk.VkPhysicalDeviceRayQueryFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayQueryFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceAccelerationStructurePropertiesKHR(item: *const vk.VkPhysicalDeviceAccelerationStructurePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAccelerationStructurePropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(item: *const vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingPropertiesNV(item: *const vk.VkPhysicalDeviceRayTracingPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingPropertiesNV);
+}
+pub fn size_of_VkStridedDeviceAddressRegionKHR(item: *const vk.VkStridedDeviceAddressRegionKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkStridedDeviceAddressRegionKHR);
+}
+pub fn size_of_VkTraceRaysIndirectCommandKHR(item: *const vk.VkTraceRaysIndirectCommandKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTraceRaysIndirectCommandKHR);
+}
+pub fn size_of_VkTraceRaysIndirectCommand2KHR(item: *const vk.VkTraceRaysIndirectCommand2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTraceRaysIndirectCommand2KHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(item: *const vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR);
+}
+pub fn size_of_VkDrmFormatModifierPropertiesListEXT(item: *const vk.VkDrmFormatModifierPropertiesListEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.drmFormatModifierCount) |i|
+        size += size_of_VkDrmFormatModifierPropertiesEXT(@ptrCast(&item.pDrmFormatModifierProperties[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDrmFormatModifierPropertiesListEXT);
+}
+pub fn size_of_VkDrmFormatModifierPropertiesEXT(item: *const vk.VkDrmFormatModifierPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrmFormatModifierPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageDrmFormatModifierInfoEXT(item: *const vk.VkPhysicalDeviceImageDrmFormatModifierInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceImageDrmFormatModifierInfoEXT);
+}
+pub fn size_of_VkImageDrmFormatModifierListCreateInfoEXT(item: *const vk.VkImageDrmFormatModifierListCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.drmFormatModifierCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageDrmFormatModifierListCreateInfoEXT);
+}
+pub fn size_of_VkImageDrmFormatModifierExplicitCreateInfoEXT(item: *const vk.VkImageDrmFormatModifierExplicitCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.drmFormatModifierPlaneCount) |i|
+        size += size_of_VkSubresourceLayout(@ptrCast(&item.pPlaneLayouts[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageDrmFormatModifierExplicitCreateInfoEXT);
+}
+pub fn size_of_VkImageDrmFormatModifierPropertiesEXT(item: *const vk.VkImageDrmFormatModifierPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageDrmFormatModifierPropertiesEXT);
+}
+pub fn size_of_VkImageStencilUsageCreateInfo(item: *const vk.VkImageStencilUsageCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageStencilUsageCreateInfo);
+}
+pub fn size_of_VkImageStencilUsageCreateInfoEXT(item: *const vk.VkImageStencilUsageCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageStencilUsageCreateInfoEXT);
+}
+pub fn size_of_VkDeviceMemoryOverallocationCreateInfoAMD(item: *const vk.VkDeviceMemoryOverallocationCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceMemoryOverallocationCreateInfoAMD);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMap2FeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMap2FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMap2FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMap2PropertiesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMap2PropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMap2PropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM);
+}
+pub fn size_of_VkRenderPassFragmentDensityMapCreateInfoEXT(item: *const vk.VkRenderPassFragmentDensityMapCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassFragmentDensityMapCreateInfoEXT);
+}
+pub fn size_of_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(item: *const vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.fragmentDensityOffsetCount) |i|
+        size += size_of_VkOffset2D(@ptrCast(&item.pFragmentDensityOffsets[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT);
+}
+pub fn size_of_VkSubpassFragmentDensityMapOffsetEndInfoQCOM(item: *const vk.VkSubpassFragmentDensityMapOffsetEndInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassFragmentDensityMapOffsetEndInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceScalarBlockLayoutFeatures(item: *const vk.VkPhysicalDeviceScalarBlockLayoutFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceScalarBlockLayoutFeatures);
+}
+pub fn size_of_VkPhysicalDeviceScalarBlockLayoutFeaturesEXT(item: *const vk.VkPhysicalDeviceScalarBlockLayoutFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceScalarBlockLayoutFeaturesEXT);
+}
+pub fn size_of_VkSurfaceProtectedCapabilitiesKHR(item: *const vk.VkSurfaceProtectedCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceProtectedCapabilitiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceUniformBufferStandardLayoutFeatures(item: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures);
+}
+pub fn size_of_VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR(item: *const vk.VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceDepthClipEnableFeaturesEXT(item: *const vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT);
+}
+pub fn size_of_VkPipelineRasterizationDepthClipStateCreateInfoEXT(item: *const vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceMemoryBudgetPropertiesEXT(item: *const vk.VkPhysicalDeviceMemoryBudgetPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryBudgetPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMemoryPriorityFeaturesEXT(item: *const vk.VkPhysicalDeviceMemoryPriorityFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryPriorityFeaturesEXT);
+}
+pub fn size_of_VkMemoryPriorityAllocateInfoEXT(item: *const vk.VkMemoryPriorityAllocateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryPriorityAllocateInfoEXT);
+}
+pub fn size_of_VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT(item: *const vk.VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceBufferDeviceAddressFeatures(item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBufferDeviceAddressFeatures);
+}
+pub fn size_of_VkPhysicalDeviceBufferDeviceAddressFeaturesKHR(item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBufferDeviceAddressFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceBufferDeviceAddressFeaturesEXT(item: *const vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBufferDeviceAddressFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceBufferAddressFeaturesEXT(item: *const vk.VkPhysicalDeviceBufferAddressFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBufferAddressFeaturesEXT);
+}
+pub fn size_of_VkBufferDeviceAddressInfo(item: *const vk.VkBufferDeviceAddressInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferDeviceAddressInfo);
+}
+pub fn size_of_VkBufferDeviceAddressInfoKHR(item: *const vk.VkBufferDeviceAddressInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferDeviceAddressInfoKHR);
+}
+pub fn size_of_VkBufferDeviceAddressInfoEXT(item: *const vk.VkBufferDeviceAddressInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferDeviceAddressInfoEXT);
+}
+pub fn size_of_VkBufferOpaqueCaptureAddressCreateInfo(item: *const vk.VkBufferOpaqueCaptureAddressCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferOpaqueCaptureAddressCreateInfo);
+}
+pub fn size_of_VkBufferOpaqueCaptureAddressCreateInfoKHR(item: *const vk.VkBufferOpaqueCaptureAddressCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferOpaqueCaptureAddressCreateInfoKHR);
+}
+pub fn size_of_VkBufferDeviceAddressCreateInfoEXT(item: *const vk.VkBufferDeviceAddressCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferDeviceAddressCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageViewImageFormatInfoEXT(item: *const vk.VkPhysicalDeviceImageViewImageFormatInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageViewImageFormatInfoEXT);
+}
+pub fn size_of_VkFilterCubicImageViewImageFormatPropertiesEXT(item: *const vk.VkFilterCubicImageViewImageFormatPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFilterCubicImageViewImageFormatPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceImagelessFramebufferFeatures(item: *const vk.VkPhysicalDeviceImagelessFramebufferFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImagelessFramebufferFeatures);
+}
+pub fn size_of_VkPhysicalDeviceImagelessFramebufferFeaturesKHR(item: *const vk.VkPhysicalDeviceImagelessFramebufferFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImagelessFramebufferFeaturesKHR);
+}
+pub fn size_of_VkFramebufferAttachmentsCreateInfo(item: *const vk.VkFramebufferAttachmentsCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentImageInfoCount) |i|
+        size += size_of_VkFramebufferAttachmentImageInfo(@ptrCast(&item.pAttachmentImageInfos[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFramebufferAttachmentsCreateInfo);
+}
+pub fn size_of_VkFramebufferAttachmentsCreateInfoKHR(item: *const vk.VkFramebufferAttachmentsCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFramebufferAttachmentsCreateInfoKHR);
+}
+pub fn size_of_VkFramebufferAttachmentImageInfo(item: *const vk.VkFramebufferAttachmentImageInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewFormatCount) |_|
+        size += @sizeOf(vk.VkFormat);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFramebufferAttachmentImageInfo);
+}
+pub fn size_of_VkFramebufferAttachmentImageInfoKHR(item: *const vk.VkFramebufferAttachmentImageInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFramebufferAttachmentImageInfoKHR);
+}
+pub fn size_of_VkRenderPassAttachmentBeginInfo(item: *const vk.VkRenderPassAttachmentBeginInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |_|
+        size += @sizeOf(vk.VkImageView);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassAttachmentBeginInfo);
+}
+pub fn size_of_VkRenderPassAttachmentBeginInfoKHR(item: *const vk.VkRenderPassAttachmentBeginInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassAttachmentBeginInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(item: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTextureCompressionASTCHDRFeatures);
+}
+pub fn size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT(item: *const vk.VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixPropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV);
+}
+pub fn size_of_VkCooperativeMatrixPropertiesNV(item: *const vk.VkCooperativeMatrixPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeMatrixPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(item: *const vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT);
+}
+pub fn size_of_VkImageViewHandleInfoNVX(item: *const vk.VkImageViewHandleInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewHandleInfoNVX);
+}
+pub fn size_of_VkImageViewAddressPropertiesNVX(item: *const vk.VkImageViewAddressPropertiesNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewAddressPropertiesNVX);
+}
+pub fn size_of_VkPresentFrameTokenGGP(item: *const vk.VkPresentFrameTokenGGP, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPresentFrameTokenGGP);
+}
+pub fn size_of_VkPipelineCreationFeedback(item: *const vk.VkPipelineCreationFeedback, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreationFeedback);
+}
+pub fn size_of_VkPipelineCreationFeedbackEXT(item: *const vk.VkPipelineCreationFeedbackEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreationFeedbackEXT);
+}
+pub fn size_of_VkPipelineCreationFeedbackCreateInfo(item: *const vk.VkPipelineCreationFeedbackCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pPipelineCreationFeedback) |ptr| size += size_of_VkPipelineCreationFeedback(@ptrCast(ptr), false);
+    for (0..item.pipelineStageCreationFeedbackCount) |i|
+        size += size_of_VkPipelineCreationFeedback(@ptrCast(&item.pPipelineStageCreationFeedbacks[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineCreationFeedbackCreateInfo);
+}
+pub fn size_of_VkPipelineCreationFeedbackCreateInfoEXT(item: *const vk.VkPipelineCreationFeedbackCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCreationFeedbackCreateInfoEXT);
+}
+pub fn size_of_VkSurfaceFullScreenExclusiveInfoEXT(item: *const vk.VkSurfaceFullScreenExclusiveInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceFullScreenExclusiveInfoEXT);
+}
+pub fn size_of_VkSurfaceFullScreenExclusiveWin32InfoEXT(item: *const vk.VkSurfaceFullScreenExclusiveWin32InfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceFullScreenExclusiveWin32InfoEXT);
+}
+pub fn size_of_VkSurfaceCapabilitiesFullScreenExclusiveEXT(item: *const vk.VkSurfaceCapabilitiesFullScreenExclusiveEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesFullScreenExclusiveEXT);
+}
+pub fn size_of_VkPhysicalDevicePresentBarrierFeaturesNV(item: *const vk.VkPhysicalDevicePresentBarrierFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentBarrierFeaturesNV);
+}
+pub fn size_of_VkSurfaceCapabilitiesPresentBarrierNV(item: *const vk.VkSurfaceCapabilitiesPresentBarrierNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesPresentBarrierNV);
+}
+pub fn size_of_VkSwapchainPresentBarrierCreateInfoNV(item: *const vk.VkSwapchainPresentBarrierCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentBarrierCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(item: *const vk.VkPhysicalDevicePerformanceQueryFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePerformanceQueryFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDevicePerformanceQueryPropertiesKHR(item: *const vk.VkPhysicalDevicePerformanceQueryPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePerformanceQueryPropertiesKHR);
+}
+pub fn size_of_VkPerformanceCounterKHR(item: *const vk.VkPerformanceCounterKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceCounterKHR);
+}
+pub fn size_of_VkPerformanceCounterDescriptionKHR(item: *const vk.VkPerformanceCounterDescriptionKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceCounterDescriptionKHR);
+}
+pub fn size_of_VkQueryPoolPerformanceCreateInfoKHR(item: *const vk.VkQueryPoolPerformanceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.counterIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkQueryPoolPerformanceCreateInfoKHR);
+}
+pub fn size_of_VkAcquireProfilingLockInfoKHR(item: *const vk.VkAcquireProfilingLockInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAcquireProfilingLockInfoKHR);
+}
+pub fn size_of_VkPerformanceQuerySubmitInfoKHR(item: *const vk.VkPerformanceQuerySubmitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceQuerySubmitInfoKHR);
+}
+pub fn size_of_VkPerformanceQueryReservationInfoKHR(item: *const vk.VkPerformanceQueryReservationInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceQueryReservationInfoKHR);
+}
+pub fn size_of_VkHeadlessSurfaceCreateInfoEXT(item: *const vk.VkHeadlessSurfaceCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHeadlessSurfaceCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(item: *const vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV);
+}
+pub fn size_of_VkPipelineCoverageReductionStateCreateInfoNV(item: *const vk.VkPipelineCoverageReductionStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCoverageReductionStateCreateInfoNV);
+}
+pub fn size_of_VkFramebufferMixedSamplesCombinationNV(item: *const vk.VkFramebufferMixedSamplesCombinationNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFramebufferMixedSamplesCombinationNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(item: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL);
+}
+pub fn size_of_VkPerformanceValueINTEL(item: *const vk.VkPerformanceValueINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceValueINTEL);
+}
+pub fn size_of_VkInitializePerformanceApiInfoINTEL(item: *const vk.VkInitializePerformanceApiInfoINTEL, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pUserData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkInitializePerformanceApiInfoINTEL);
+}
+pub fn size_of_VkQueryPoolPerformanceQueryCreateInfoINTEL(item: *const vk.VkQueryPoolPerformanceQueryCreateInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueryPoolPerformanceQueryCreateInfoINTEL);
+}
+pub fn size_of_VkQueryPoolCreateInfoINTEL(item: *const vk.VkQueryPoolCreateInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueryPoolCreateInfoINTEL);
+}
+pub fn size_of_VkPerformanceMarkerInfoINTEL(item: *const vk.VkPerformanceMarkerInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceMarkerInfoINTEL);
+}
+pub fn size_of_VkPerformanceStreamMarkerInfoINTEL(item: *const vk.VkPerformanceStreamMarkerInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceStreamMarkerInfoINTEL);
+}
+pub fn size_of_VkPerformanceOverrideInfoINTEL(item: *const vk.VkPerformanceOverrideInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceOverrideInfoINTEL);
+}
+pub fn size_of_VkPerformanceConfigurationAcquireInfoINTEL(item: *const vk.VkPerformanceConfigurationAcquireInfoINTEL, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerformanceConfigurationAcquireInfoINTEL);
+}
+pub fn size_of_VkPhysicalDeviceShaderClockFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderClockFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderClockFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceIndexTypeUint8Features(item: *const vk.VkPhysicalDeviceIndexTypeUint8Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceIndexTypeUint8Features);
+}
+pub fn size_of_VkPhysicalDeviceIndexTypeUint8FeaturesKHR(item: *const vk.VkPhysicalDeviceIndexTypeUint8FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceIndexTypeUint8FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceIndexTypeUint8FeaturesEXT(item: *const vk.VkPhysicalDeviceIndexTypeUint8FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceIndexTypeUint8FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(item: *const vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(item: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures(item: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures);
+}
+pub fn size_of_VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(item: *const vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR);
+}
+pub fn size_of_VkAttachmentReferenceStencilLayout(item: *const vk.VkAttachmentReferenceStencilLayout, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentReferenceStencilLayout);
+}
+pub fn size_of_VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT(item: *const vk.VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT);
+}
+pub fn size_of_VkAttachmentReferenceStencilLayoutKHR(item: *const vk.VkAttachmentReferenceStencilLayoutKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentReferenceStencilLayoutKHR);
+}
+pub fn size_of_VkAttachmentDescriptionStencilLayout(item: *const vk.VkAttachmentDescriptionStencilLayout, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentDescriptionStencilLayout);
+}
+pub fn size_of_VkAttachmentDescriptionStencilLayoutKHR(item: *const vk.VkAttachmentDescriptionStencilLayoutKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentDescriptionStencilLayoutKHR);
+}
+pub fn size_of_VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR(item: *const vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR);
+}
+pub fn size_of_VkPipelineInfoKHR(item: *const vk.VkPipelineInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineInfoKHR);
+}
+pub fn size_of_VkPipelineInfoEXT(item: *const vk.VkPipelineInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineInfoEXT);
+}
+pub fn size_of_VkPipelineExecutablePropertiesKHR(item: *const vk.VkPipelineExecutablePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineExecutablePropertiesKHR);
+}
+pub fn size_of_VkPipelineExecutableInfoKHR(item: *const vk.VkPipelineExecutableInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineExecutableInfoKHR);
+}
+pub fn size_of_VkPipelineExecutableStatisticKHR(item: *const vk.VkPipelineExecutableStatisticKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineExecutableStatisticKHR);
+}
+pub fn size_of_VkPipelineExecutableInternalRepresentationKHR(item: *const vk.VkPipelineExecutableInternalRepresentationKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineExecutableInternalRepresentationKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures(item: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT(item: *const vk.VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceTexelBufferAlignmentProperties(item: *const vk.VkPhysicalDeviceTexelBufferAlignmentProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTexelBufferAlignmentProperties);
+}
+pub fn size_of_VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT(item: *const vk.VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceSubgroupSizeControlFeatures(item: *const vk.VkPhysicalDeviceSubgroupSizeControlFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubgroupSizeControlFeatures);
+}
+pub fn size_of_VkPhysicalDeviceSubgroupSizeControlFeaturesEXT(item: *const vk.VkPhysicalDeviceSubgroupSizeControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubgroupSizeControlFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceSubgroupSizeControlProperties(item: *const vk.VkPhysicalDeviceSubgroupSizeControlProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubgroupSizeControlProperties);
+}
+pub fn size_of_VkPhysicalDeviceSubgroupSizeControlPropertiesEXT(item: *const vk.VkPhysicalDeviceSubgroupSizeControlPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubgroupSizeControlPropertiesEXT);
+}
+pub fn size_of_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(item: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo);
+}
+pub fn size_of_VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT(item: *const vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT);
+}
+pub fn size_of_VkShaderRequiredSubgroupSizeCreateInfoEXT(item: *const vk.VkShaderRequiredSubgroupSizeCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderRequiredSubgroupSizeCreateInfoEXT);
+}
+pub fn size_of_VkSubpassShadingPipelineCreateInfoHUAWEI(item: *const vk.VkSubpassShadingPipelineCreateInfoHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassShadingPipelineCreateInfoHUAWEI);
+}
+pub fn size_of_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(item: *const vk.VkPhysicalDeviceSubpassShadingPropertiesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubpassShadingPropertiesHUAWEI);
+}
+pub fn size_of_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI);
+}
+pub fn size_of_VkMemoryOpaqueCaptureAddressAllocateInfo(item: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryOpaqueCaptureAddressAllocateInfo);
+}
+pub fn size_of_VkMemoryOpaqueCaptureAddressAllocateInfoKHR(item: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryOpaqueCaptureAddressAllocateInfoKHR);
+}
+pub fn size_of_VkDeviceMemoryOpaqueCaptureAddressInfo(item: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceMemoryOpaqueCaptureAddressInfo);
+}
+pub fn size_of_VkDeviceMemoryOpaqueCaptureAddressInfoKHR(item: *const vk.VkDeviceMemoryOpaqueCaptureAddressInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceMemoryOpaqueCaptureAddressInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationFeatures(item: *const vk.VkPhysicalDeviceLineRasterizationFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationFeatures);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationFeaturesKHR(item: *const vk.VkPhysicalDeviceLineRasterizationFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationFeaturesEXT(item: *const vk.VkPhysicalDeviceLineRasterizationFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationProperties(item: *const vk.VkPhysicalDeviceLineRasterizationProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationProperties);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationPropertiesKHR(item: *const vk.VkPhysicalDeviceLineRasterizationPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceLineRasterizationPropertiesEXT(item: *const vk.VkPhysicalDeviceLineRasterizationPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLineRasterizationPropertiesEXT);
+}
+pub fn size_of_VkPipelineRasterizationLineStateCreateInfo(item: *const vk.VkPipelineRasterizationLineStateCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationLineStateCreateInfo);
+}
+pub fn size_of_VkPipelineRasterizationLineStateCreateInfoKHR(item: *const vk.VkPipelineRasterizationLineStateCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationLineStateCreateInfoKHR);
+}
+pub fn size_of_VkPipelineRasterizationLineStateCreateInfoEXT(item: *const vk.VkPipelineRasterizationLineStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationLineStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineCreationCacheControlFeatures(item: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineCreationCacheControlFeatures);
+}
+pub fn size_of_VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT(item: *const vk.VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceVulkan11Features(item: *const vk.VkPhysicalDeviceVulkan11Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan11Features);
+}
+pub fn size_of_VkPhysicalDeviceVulkan11Properties(item: *const vk.VkPhysicalDeviceVulkan11Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan11Properties);
+}
+pub fn size_of_VkPhysicalDeviceVulkan12Features(item: *const vk.VkPhysicalDeviceVulkan12Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan12Features);
+}
+pub fn size_of_VkPhysicalDeviceVulkan12Properties(item: *const vk.VkPhysicalDeviceVulkan12Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan12Properties);
+}
+pub fn size_of_VkPhysicalDeviceVulkan13Features(item: *const vk.VkPhysicalDeviceVulkan13Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan13Features);
+}
+pub fn size_of_VkPhysicalDeviceVulkan13Properties(item: *const vk.VkPhysicalDeviceVulkan13Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan13Properties);
+}
+pub fn size_of_VkPhysicalDeviceVulkan14Features(item: *const vk.VkPhysicalDeviceVulkan14Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkan14Features);
+}
+pub fn size_of_VkPhysicalDeviceVulkan14Properties(item: *const vk.VkPhysicalDeviceVulkan14Properties, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.copySrcLayoutCount) |_|
+        size += @sizeOf(vk.VkImageLayout);
+    for (0..item.copyDstLayoutCount) |_|
+        size += @sizeOf(vk.VkImageLayout);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceVulkan14Properties);
+}
+pub fn size_of_VkPipelineCompilerControlCreateInfoAMD(item: *const vk.VkPipelineCompilerControlCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCompilerControlCreateInfoAMD);
+}
+pub fn size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(item: *const vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD);
+}
+pub fn size_of_VkFaultData(item: *const vk.VkFaultData, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFaultData);
+}
+pub fn size_of_VkFaultCallbackInfo(item: *const vk.VkFaultCallbackInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.faultCount) |i|
+        size += size_of_VkFaultData(@ptrCast(&item.pFaults[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFaultCallbackInfo);
+}
+pub fn size_of_VkPhysicalDeviceToolProperties(item: *const vk.VkPhysicalDeviceToolProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceToolProperties);
+}
+pub fn size_of_VkPhysicalDeviceToolPropertiesEXT(item: *const vk.VkPhysicalDeviceToolPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceToolPropertiesEXT);
+}
+pub fn size_of_VkSamplerCustomBorderColorCreateInfoEXT(item: *const vk.VkSamplerCustomBorderColorCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerCustomBorderColorCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceCustomBorderColorPropertiesEXT(item: *const vk.VkPhysicalDeviceCustomBorderColorPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCustomBorderColorPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceCustomBorderColorFeaturesEXT(item: *const vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT);
+}
+pub fn size_of_VkSamplerBorderColorComponentMappingCreateInfoEXT(item: *const vk.VkSamplerBorderColorComponentMappingCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerBorderColorComponentMappingCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceBorderColorSwizzleFeaturesEXT(item: *const vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT);
+}
+pub fn size_of_VkAccelerationStructureGeometryTrianglesDataKHR(item: *const vk.VkAccelerationStructureGeometryTrianglesDataKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_MOTION_TRIANGLES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometryMotionTrianglesDataNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT,
+                => size += size_of_VkAccelerationStructureTrianglesOpacityMicromapEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV,
+                => size += size_of_VkAccelerationStructureTrianglesDisplacementMicromapNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureGeometryTrianglesDataKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAccelerationStructureGeometryTrianglesDataKHR);
+}
+pub fn size_of_VkAccelerationStructureGeometryAabbsDataKHR(item: *const vk.VkAccelerationStructureGeometryAabbsDataKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryAabbsDataKHR);
+}
+pub fn size_of_VkAccelerationStructureGeometryInstancesDataKHR(item: *const vk.VkAccelerationStructureGeometryInstancesDataKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryInstancesDataKHR);
+}
+pub fn size_of_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(item: *const vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV);
+}
+pub fn size_of_VkAccelerationStructureGeometrySpheresDataNV(item: *const vk.VkAccelerationStructureGeometrySpheresDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometrySpheresDataNV);
+}
+pub fn size_of_VkAccelerationStructureGeometryKHR(item: *const vk.VkAccelerationStructureGeometryKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_SPHERES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometrySpheresDataNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureGeometryKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAccelerationStructureGeometryKHR);
+}
+pub fn size_of_VkAccelerationStructureBuildGeometryInfoKHR(item: *const vk.VkAccelerationStructureBuildGeometryInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.geometryCount) |i|
+        size += size_of_VkAccelerationStructureGeometryKHR(@ptrCast(&item.pGeometries[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureBuildGeometryInfoKHR);
+}
+pub fn size_of_VkAccelerationStructureBuildRangeInfoKHR(item: *const vk.VkAccelerationStructureBuildRangeInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureBuildRangeInfoKHR);
+}
+pub fn size_of_VkAccelerationStructureCreateInfoKHR(item: *const vk.VkAccelerationStructureCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV,
+                => size += size_of_VkAccelerationStructureMotionInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAccelerationStructureCreateInfoKHR);
+}
+pub fn size_of_VkAabbPositionsKHR(item: *const vk.VkAabbPositionsKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAabbPositionsKHR);
+}
+pub fn size_of_VkAabbPositionsNV(item: *const vk.VkAabbPositionsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAabbPositionsNV);
+}
+pub fn size_of_VkTransformMatrixKHR(item: *const vk.VkTransformMatrixKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTransformMatrixKHR);
+}
+pub fn size_of_VkTransformMatrixNV(item: *const vk.VkTransformMatrixNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTransformMatrixNV);
+}
+pub fn size_of_VkAccelerationStructureInstanceKHR(item: *const vk.VkAccelerationStructureInstanceKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureInstanceKHR);
+}
+pub fn size_of_VkAccelerationStructureInstanceNV(item: *const vk.VkAccelerationStructureInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureInstanceNV);
+}
+pub fn size_of_VkAccelerationStructureDeviceAddressInfoKHR(item: *const vk.VkAccelerationStructureDeviceAddressInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureDeviceAddressInfoKHR);
+}
+pub fn size_of_VkAccelerationStructureVersionInfoKHR(item: *const vk.VkAccelerationStructureVersionInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureVersionInfoKHR);
+}
+pub fn size_of_VkCopyAccelerationStructureInfoKHR(item: *const vk.VkCopyAccelerationStructureInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyAccelerationStructureInfoKHR);
+}
+pub fn size_of_VkCopyAccelerationStructureToMemoryInfoKHR(item: *const vk.VkCopyAccelerationStructureToMemoryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyAccelerationStructureToMemoryInfoKHR);
+}
+pub fn size_of_VkCopyMemoryToAccelerationStructureInfoKHR(item: *const vk.VkCopyMemoryToAccelerationStructureInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryToAccelerationStructureInfoKHR);
+}
+pub fn size_of_VkRayTracingPipelineInterfaceCreateInfoKHR(item: *const vk.VkRayTracingPipelineInterfaceCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRayTracingPipelineInterfaceCreateInfoKHR);
+}
+pub fn size_of_VkPipelineLibraryCreateInfoKHR(item: *const vk.VkPipelineLibraryCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.libraryCount) |_|
+        size += @sizeOf(vk.VkPipeline);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineLibraryCreateInfoKHR);
+}
+pub fn size_of_VkRefreshObjectKHR(item: *const vk.VkRefreshObjectKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRefreshObjectKHR);
+}
+pub fn size_of_VkRefreshObjectListKHR(item: *const vk.VkRefreshObjectListKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.objectCount) |i|
+        size += size_of_VkRefreshObjectKHR(@ptrCast(&item.pObjects[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRefreshObjectListKHR);
+}
+pub fn size_of_VkPhysicalDeviceExtendedDynamicStateFeaturesEXT(item: *const vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(item: *const vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(item: *const vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceExtendedDynamicState3PropertiesEXT(item: *const vk.VkPhysicalDeviceExtendedDynamicState3PropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedDynamicState3PropertiesEXT);
+}
+pub fn size_of_VkColorBlendEquationEXT(item: *const vk.VkColorBlendEquationEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkColorBlendEquationEXT);
+}
+pub fn size_of_VkColorBlendAdvancedEXT(item: *const vk.VkColorBlendAdvancedEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkColorBlendAdvancedEXT);
+}
+pub fn size_of_VkRenderPassTransformBeginInfoQCOM(item: *const vk.VkRenderPassTransformBeginInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassTransformBeginInfoQCOM);
+}
+pub fn size_of_VkCopyCommandTransformInfoQCOM(item: *const vk.VkCopyCommandTransformInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyCommandTransformInfoQCOM);
+}
+pub fn size_of_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(item: *const vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM);
+}
+pub fn size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(item: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV);
+}
+pub fn size_of_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(item: *const vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV);
+}
+pub fn size_of_VkBuildPartitionedAccelerationStructureIndirectCommandNV(item: *const vk.VkBuildPartitionedAccelerationStructureIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBuildPartitionedAccelerationStructureIndirectCommandNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureFlagsNV(item: *const vk.VkPartitionedAccelerationStructureFlagsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureFlagsNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureWriteInstanceDataNV(item: *const vk.VkPartitionedAccelerationStructureWriteInstanceDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureWriteInstanceDataNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureUpdateInstanceDataNV(item: *const vk.VkPartitionedAccelerationStructureUpdateInstanceDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureUpdateInstanceDataNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureWritePartitionTranslationDataNV(item: *const vk.VkPartitionedAccelerationStructureWritePartitionTranslationDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureWritePartitionTranslationDataNV);
+}
+pub fn size_of_VkWriteDescriptorSetPartitionedAccelerationStructureNV(item: *const vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.accelerationStructureCount) |_|
+        size += @sizeOf(vk.VkDeviceAddress);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureInstancesInputNV(item: *const vk.VkPartitionedAccelerationStructureInstancesInputNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_FLAGS_NV,
+                => size += size_of_VkPartitionedAccelerationStructureFlagsNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPartitionedAccelerationStructureInstancesInputNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPartitionedAccelerationStructureInstancesInputNV);
+}
+pub fn size_of_VkBuildPartitionedAccelerationStructureInfoNV(item: *const vk.VkBuildPartitionedAccelerationStructureInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBuildPartitionedAccelerationStructureInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(item: *const vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV);
+}
+pub fn size_of_VkDeviceDiagnosticsConfigCreateInfoNV(item: *const vk.VkDeviceDiagnosticsConfigCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceDiagnosticsConfigCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures);
+}
+pub fn size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR(item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRobustness2FeaturesKHR(item: *const vk.VkPhysicalDeviceRobustness2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRobustness2FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRobustness2FeaturesEXT(item: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceRobustness2PropertiesKHR(item: *const vk.VkPhysicalDeviceRobustness2PropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRobustness2PropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRobustness2PropertiesEXT(item: *const vk.VkPhysicalDeviceRobustness2PropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRobustness2PropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageRobustnessFeatures(item: *const vk.VkPhysicalDeviceImageRobustnessFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageRobustnessFeatures);
+}
+pub fn size_of_VkPhysicalDeviceImageRobustnessFeaturesEXT(item: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageRobustnessFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR(item: *const vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDevicePortabilitySubsetFeaturesKHR(item: *const vk.VkPhysicalDevicePortabilitySubsetFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePortabilitySubsetFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDevicePortabilitySubsetPropertiesKHR(item: *const vk.VkPhysicalDevicePortabilitySubsetPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePortabilitySubsetPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDevice4444FormatsFeaturesEXT(item: *const vk.VkPhysicalDevice4444FormatsFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevice4444FormatsFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceSubpassShadingFeaturesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubpassShadingFeaturesHUAWEI);
+}
+pub fn size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_VRS_FEATURES_HUAWEI,
+                => size += size_of_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI);
+}
+pub fn size_of_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI);
+}
+pub fn size_of_VkBufferCopy2(item: *const vk.VkBufferCopy2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCopy2);
+}
+pub fn size_of_VkBufferCopy2KHR(item: *const vk.VkBufferCopy2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCopy2KHR);
+}
+pub fn size_of_VkImageCopy2(item: *const vk.VkImageCopy2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageCopy2);
+}
+pub fn size_of_VkImageCopy2KHR(item: *const vk.VkImageCopy2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageCopy2KHR);
+}
+pub fn size_of_VkImageBlit2(item: *const vk.VkImageBlit2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCopyCommandTransformInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageBlit2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageBlit2);
+}
+pub fn size_of_VkImageBlit2KHR(item: *const vk.VkImageBlit2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageBlit2KHR);
+}
+pub fn size_of_VkBufferImageCopy2(item: *const vk.VkBufferImageCopy2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCopyCommandTransformInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferImageCopy2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBufferImageCopy2);
+}
+pub fn size_of_VkBufferImageCopy2KHR(item: *const vk.VkBufferImageCopy2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferImageCopy2KHR);
+}
+pub fn size_of_VkImageResolve2(item: *const vk.VkImageResolve2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageResolve2);
+}
+pub fn size_of_VkImageResolve2KHR(item: *const vk.VkImageResolve2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageResolve2KHR);
+}
+pub fn size_of_VkCopyBufferInfo2(item: *const vk.VkCopyBufferInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkBufferCopy2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyBufferInfo2);
+}
+pub fn size_of_VkCopyBufferInfo2KHR(item: *const vk.VkCopyBufferInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyBufferInfo2KHR);
+}
+pub fn size_of_VkCopyImageInfo2(item: *const vk.VkCopyImageInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkImageCopy2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyImageInfo2);
+}
+pub fn size_of_VkCopyImageInfo2KHR(item: *const vk.VkCopyImageInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyImageInfo2KHR);
+}
+pub fn size_of_VkBlitImageInfo2(item: *const vk.VkBlitImageInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkImageBlit2(@ptrCast(&item.pRegions[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM,
+                => size += size_of_VkBlitImageCubicWeightsInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBlitImageInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkBlitImageInfo2);
+}
+pub fn size_of_VkBlitImageInfo2KHR(item: *const vk.VkBlitImageInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBlitImageInfo2KHR);
+}
+pub fn size_of_VkCopyBufferToImageInfo2(item: *const vk.VkCopyBufferToImageInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkBufferImageCopy2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyBufferToImageInfo2);
+}
+pub fn size_of_VkCopyBufferToImageInfo2KHR(item: *const vk.VkCopyBufferToImageInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyBufferToImageInfo2KHR);
+}
+pub fn size_of_VkCopyImageToBufferInfo2(item: *const vk.VkCopyImageToBufferInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkBufferImageCopy2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyImageToBufferInfo2);
+}
+pub fn size_of_VkCopyImageToBufferInfo2KHR(item: *const vk.VkCopyImageToBufferInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyImageToBufferInfo2KHR);
+}
+pub fn size_of_VkResolveImageInfo2(item: *const vk.VkResolveImageInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkImageResolve2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkResolveImageInfo2);
+}
+pub fn size_of_VkResolveImageInfo2KHR(item: *const vk.VkResolveImageInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkResolveImageInfo2KHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(item: *const vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT);
+}
+pub fn size_of_VkFragmentShadingRateAttachmentInfoKHR(item: *const vk.VkFragmentShadingRateAttachmentInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pFragmentShadingRateAttachment) |ptr| size += size_of_VkAttachmentReference2(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFragmentShadingRateAttachmentInfoKHR);
+}
+pub fn size_of_VkPipelineFragmentShadingRateStateCreateInfoKHR(item: *const vk.VkPipelineFragmentShadingRateStateCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineFragmentShadingRateStateCreateInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(item: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRatePropertiesKHR(item: *const vk.VkPhysicalDeviceFragmentShadingRatePropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRatePropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateKHR(item: *const vk.VkPhysicalDeviceFragmentShadingRateKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderTerminateInvocationFeatures(item: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderTerminateInvocationFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV);
+}
+pub fn size_of_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(item: *const vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV);
+}
+pub fn size_of_VkAccelerationStructureBuildSizesInfoKHR(item: *const vk.VkAccelerationStructureBuildSizesInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureBuildSizesInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(item: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT(item: *const vk.VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT(item: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT(item: *const vk.VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT(item: *const vk.VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT(item: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE(item: *const vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE);
+}
+pub fn size_of_VkMutableDescriptorTypeListEXT(item: *const vk.VkMutableDescriptorTypeListEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorTypeCount) |_|
+        size += @sizeOf(vk.VkDescriptorType);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMutableDescriptorTypeListEXT);
+}
+pub fn size_of_VkMutableDescriptorTypeListVALVE(item: *const vk.VkMutableDescriptorTypeListVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMutableDescriptorTypeListVALVE);
+}
+pub fn size_of_VkMutableDescriptorTypeCreateInfoEXT(item: *const vk.VkMutableDescriptorTypeCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.mutableDescriptorTypeListCount) |i|
+        size += size_of_VkMutableDescriptorTypeListEXT(@ptrCast(&item.pMutableDescriptorTypeLists[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMutableDescriptorTypeCreateInfoEXT);
+}
+pub fn size_of_VkMutableDescriptorTypeCreateInfoVALVE(item: *const vk.VkMutableDescriptorTypeCreateInfoVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMutableDescriptorTypeCreateInfoVALVE);
+}
+pub fn size_of_VkPhysicalDeviceDepthClipControlFeaturesEXT(item: *const vk.VkPhysicalDeviceDepthClipControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthClipControlFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT(item: *const vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT);
+}
+pub fn size_of_VkGeneratedCommandsPipelineInfoEXT(item: *const vk.VkGeneratedCommandsPipelineInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeneratedCommandsPipelineInfoEXT);
+}
+pub fn size_of_VkGeneratedCommandsShaderInfoEXT(item: *const vk.VkGeneratedCommandsShaderInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.shaderCount) |_|
+        size += @sizeOf(vk.VkShaderEXT);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGeneratedCommandsShaderInfoEXT);
+}
+pub fn size_of_VkGeneratedCommandsMemoryRequirementsInfoEXT(item: *const vk.VkGeneratedCommandsMemoryRequirementsInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT,
+                => size += size_of_VkGeneratedCommandsPipelineInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT,
+                => size += size_of_VkGeneratedCommandsShaderInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkGeneratedCommandsMemoryRequirementsInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkGeneratedCommandsMemoryRequirementsInfoEXT);
+}
+pub fn size_of_VkIndirectExecutionSetPipelineInfoEXT(item: *const vk.VkIndirectExecutionSetPipelineInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectExecutionSetPipelineInfoEXT);
+}
+pub fn size_of_VkIndirectExecutionSetShaderLayoutInfoEXT(item: *const vk.VkIndirectExecutionSetShaderLayoutInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.setLayoutCount) |_|
+        size += @sizeOf(vk.VkDescriptorSetLayout);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectExecutionSetShaderLayoutInfoEXT);
+}
+pub fn size_of_VkIndirectExecutionSetShaderInfoEXT(item: *const vk.VkIndirectExecutionSetShaderInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.shaderCount) |_|
+        size += @sizeOf(vk.VkShaderEXT);
+    for (0..item.shaderCount) |i|
+        size += size_of_VkIndirectExecutionSetShaderLayoutInfoEXT(@ptrCast(&item.pSetLayoutInfos[i]), false);
+    for (0..item.pushConstantRangeCount) |i|
+        size += size_of_VkPushConstantRange(@ptrCast(&item.pPushConstantRanges[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectExecutionSetShaderInfoEXT);
+}
+pub fn size_of_VkIndirectExecutionSetCreateInfoEXT(item: *const vk.VkIndirectExecutionSetCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectExecutionSetCreateInfoEXT);
+}
+pub fn size_of_VkGeneratedCommandsInfoEXT(item: *const vk.VkGeneratedCommandsInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_PIPELINE_INFO_EXT,
+                => size += size_of_VkGeneratedCommandsPipelineInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_GENERATED_COMMANDS_SHADER_INFO_EXT,
+                => size += size_of_VkGeneratedCommandsShaderInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkGeneratedCommandsInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkGeneratedCommandsInfoEXT);
+}
+pub fn size_of_VkWriteIndirectExecutionSetPipelineEXT(item: *const vk.VkWriteIndirectExecutionSetPipelineEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkWriteIndirectExecutionSetPipelineEXT);
+}
+pub fn size_of_VkWriteIndirectExecutionSetShaderEXT(item: *const vk.VkWriteIndirectExecutionSetShaderEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkWriteIndirectExecutionSetShaderEXT);
+}
+pub fn size_of_VkIndirectCommandsLayoutCreateInfoEXT(item: *const vk.VkIndirectCommandsLayoutCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tokenCount) |i|
+        size += size_of_VkIndirectCommandsLayoutTokenEXT(@ptrCast(&item.pTokens[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkIndirectCommandsLayoutCreateInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkIndirectCommandsLayoutCreateInfoEXT);
+}
+pub fn size_of_VkIndirectCommandsLayoutTokenEXT(item: *const vk.VkIndirectCommandsLayoutTokenEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsLayoutTokenEXT);
+}
+pub fn size_of_VkDrawIndirectCountIndirectCommandEXT(item: *const vk.VkDrawIndirectCountIndirectCommandEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawIndirectCountIndirectCommandEXT);
+}
+pub fn size_of_VkIndirectCommandsVertexBufferTokenEXT(item: *const vk.VkIndirectCommandsVertexBufferTokenEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsVertexBufferTokenEXT);
+}
+pub fn size_of_VkBindVertexBufferIndirectCommandEXT(item: *const vk.VkBindVertexBufferIndirectCommandEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindVertexBufferIndirectCommandEXT);
+}
+pub fn size_of_VkIndirectCommandsIndexBufferTokenEXT(item: *const vk.VkIndirectCommandsIndexBufferTokenEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsIndexBufferTokenEXT);
+}
+pub fn size_of_VkBindIndexBufferIndirectCommandEXT(item: *const vk.VkBindIndexBufferIndirectCommandEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindIndexBufferIndirectCommandEXT);
+}
+pub fn size_of_VkIndirectCommandsPushConstantTokenEXT(item: *const vk.VkIndirectCommandsPushConstantTokenEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsPushConstantTokenEXT);
+}
+pub fn size_of_VkIndirectCommandsExecutionSetTokenEXT(item: *const vk.VkIndirectCommandsExecutionSetTokenEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsExecutionSetTokenEXT);
+}
+pub fn size_of_VkPipelineViewportDepthClipControlCreateInfoEXT(item: *const vk.VkPipelineViewportDepthClipControlCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineViewportDepthClipControlCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceDepthClampControlFeaturesEXT(item: *const vk.VkPhysicalDeviceDepthClampControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthClampControlFeaturesEXT);
+}
+pub fn size_of_VkPipelineViewportDepthClampControlCreateInfoEXT(item: *const vk.VkPipelineViewportDepthClampControlCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDepthClampRange) |ptr| size += size_of_VkDepthClampRangeEXT(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportDepthClampControlCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(item: *const vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(item: *const vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR);
+}
+pub fn size_of_VkVertexInputBindingDescription2EXT(item: *const vk.VkVertexInputBindingDescription2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputBindingDescription2EXT);
+}
+pub fn size_of_VkVertexInputAttributeDescription2EXT(item: *const vk.VkVertexInputAttributeDescription2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVertexInputAttributeDescription2EXT);
+}
+pub fn size_of_VkPhysicalDeviceColorWriteEnableFeaturesEXT(item: *const vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT);
+}
+pub fn size_of_VkPipelineColorWriteCreateInfoEXT(item: *const vk.VkPipelineColorWriteCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.attachmentCount) |_|
+        size += @sizeOf(vk.VkBool32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineColorWriteCreateInfoEXT);
+}
+pub fn size_of_VkMemoryBarrier2(item: *const vk.VkMemoryBarrier2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryBarrier2);
+}
+pub fn size_of_VkMemoryBarrier2KHR(item: *const vk.VkMemoryBarrier2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryBarrier2KHR);
+}
+pub fn size_of_VkImageMemoryBarrier2(item: *const vk.VkImageMemoryBarrier2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT,
+                => size += size_of_VkSampleLocationsInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+                => size += size_of_VkMemoryBarrierAccessFlags3KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+                => size += size_of_VkExternalMemoryAcquireUnmodifiedEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageMemoryBarrier2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkImageMemoryBarrier2);
+}
+pub fn size_of_VkImageMemoryBarrier2KHR(item: *const vk.VkImageMemoryBarrier2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageMemoryBarrier2KHR);
+}
+pub fn size_of_VkBufferMemoryBarrier2(item: *const vk.VkBufferMemoryBarrier2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_MEMORY_BARRIER_ACCESS_FLAGS_3_KHR,
+                => size += size_of_VkMemoryBarrierAccessFlags3KHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_ACQUIRE_UNMODIFIED_EXT,
+                => size += size_of_VkExternalMemoryAcquireUnmodifiedEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferMemoryBarrier2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBufferMemoryBarrier2);
+}
+pub fn size_of_VkBufferMemoryBarrier2KHR(item: *const vk.VkBufferMemoryBarrier2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferMemoryBarrier2KHR);
+}
+pub fn size_of_VkMemoryBarrierAccessFlags3KHR(item: *const vk.VkMemoryBarrierAccessFlags3KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryBarrierAccessFlags3KHR);
+}
+pub fn size_of_VkDependencyInfo(item: *const vk.VkDependencyInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.memoryBarrierCount) |i|
+        size += size_of_VkMemoryBarrier2(@ptrCast(&item.pMemoryBarriers[i]), false);
+    for (0..item.bufferMemoryBarrierCount) |i|
+        size += size_of_VkBufferMemoryBarrier2(@ptrCast(&item.pBufferMemoryBarriers[i]), false);
+    for (0..item.imageMemoryBarrierCount) |i|
+        size += size_of_VkImageMemoryBarrier2(@ptrCast(&item.pImageMemoryBarriers[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_BARRIER_ARM,
+                => size += size_of_VkTensorMemoryBarrierARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TENSOR_DEPENDENCY_INFO_ARM,
+                => size += size_of_VkTensorDependencyInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDependencyInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDependencyInfo);
+}
+pub fn size_of_VkDependencyInfoKHR(item: *const vk.VkDependencyInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDependencyInfoKHR);
+}
+pub fn size_of_VkSemaphoreSubmitInfo(item: *const vk.VkSemaphoreSubmitInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSubmitInfo);
+}
+pub fn size_of_VkSemaphoreSubmitInfoKHR(item: *const vk.VkSemaphoreSubmitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSubmitInfoKHR);
+}
+pub fn size_of_VkCommandBufferSubmitInfo(item: *const vk.VkCommandBufferSubmitInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM,
+                => size += size_of_VkRenderPassStripeSubmitInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCommandBufferSubmitInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkCommandBufferSubmitInfo);
+}
+pub fn size_of_VkCommandBufferSubmitInfoKHR(item: *const vk.VkCommandBufferSubmitInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferSubmitInfoKHR);
+}
+pub fn size_of_VkSubmitInfo2(item: *const vk.VkSubmitInfo2, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.waitSemaphoreInfoCount) |i|
+        size += size_of_VkSemaphoreSubmitInfo(@ptrCast(&item.pWaitSemaphoreInfos[i]), false);
+    for (0..item.commandBufferInfoCount) |i|
+        size += size_of_VkCommandBufferSubmitInfo(@ptrCast(&item.pCommandBufferInfos[i]), false);
+    for (0..item.signalSemaphoreInfoCount) |i|
+        size += size_of_VkSemaphoreSubmitInfo(@ptrCast(&item.pSignalSemaphoreInfos[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
+                => size += size_of_VkPerformanceQuerySubmitInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
+                => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+                => size += size_of_VkLatencySubmissionPresentIdNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubmitInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkSubmitInfo2);
+}
+pub fn size_of_VkSubmitInfo2KHR(item: *const vk.VkSubmitInfo2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubmitInfo2KHR);
+}
+pub fn size_of_VkQueueFamilyCheckpointProperties2NV(item: *const vk.VkQueueFamilyCheckpointProperties2NV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyCheckpointProperties2NV);
+}
+pub fn size_of_VkCheckpointData2NV(item: *const vk.VkCheckpointData2NV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCheckpointMarker) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCheckpointData2NV);
+}
+pub fn size_of_VkPhysicalDeviceSynchronization2Features(item: *const vk.VkPhysicalDeviceSynchronization2Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSynchronization2Features);
+}
+pub fn size_of_VkPhysicalDeviceSynchronization2FeaturesKHR(item: *const vk.VkPhysicalDeviceSynchronization2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSynchronization2FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR(item: *const vk.VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceHostImageCopyFeatures(item: *const vk.VkPhysicalDeviceHostImageCopyFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHostImageCopyFeatures);
+}
+pub fn size_of_VkPhysicalDeviceHostImageCopyFeaturesEXT(item: *const vk.VkPhysicalDeviceHostImageCopyFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHostImageCopyFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceHostImageCopyProperties(item: *const vk.VkPhysicalDeviceHostImageCopyProperties, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.copySrcLayoutCount) |_|
+        size += @sizeOf(vk.VkImageLayout);
+    for (0..item.copyDstLayoutCount) |_|
+        size += @sizeOf(vk.VkImageLayout);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceHostImageCopyProperties);
+}
+pub fn size_of_VkPhysicalDeviceHostImageCopyPropertiesEXT(item: *const vk.VkPhysicalDeviceHostImageCopyPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHostImageCopyPropertiesEXT);
+}
+pub fn size_of_VkMemoryToImageCopy(item: *const vk.VkMemoryToImageCopy, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pHostPointer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMemoryToImageCopy);
+}
+pub fn size_of_VkMemoryToImageCopyEXT(item: *const vk.VkMemoryToImageCopyEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryToImageCopyEXT);
+}
+pub fn size_of_VkImageToMemoryCopy(item: *const vk.VkImageToMemoryCopy, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pHostPointer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageToMemoryCopy);
+}
+pub fn size_of_VkImageToMemoryCopyEXT(item: *const vk.VkImageToMemoryCopyEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageToMemoryCopyEXT);
+}
+pub fn size_of_VkCopyMemoryToImageInfo(item: *const vk.VkCopyMemoryToImageInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkMemoryToImageCopy(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyMemoryToImageInfo);
+}
+pub fn size_of_VkCopyMemoryToImageInfoEXT(item: *const vk.VkCopyMemoryToImageInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryToImageInfoEXT);
+}
+pub fn size_of_VkCopyImageToMemoryInfo(item: *const vk.VkCopyImageToMemoryInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkImageToMemoryCopy(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyImageToMemoryInfo);
+}
+pub fn size_of_VkCopyImageToMemoryInfoEXT(item: *const vk.VkCopyImageToMemoryInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyImageToMemoryInfoEXT);
+}
+pub fn size_of_VkCopyImageToImageInfo(item: *const vk.VkCopyImageToImageInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkImageCopy2(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyImageToImageInfo);
+}
+pub fn size_of_VkCopyImageToImageInfoEXT(item: *const vk.VkCopyImageToImageInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyImageToImageInfoEXT);
+}
+pub fn size_of_VkHostImageLayoutTransitionInfo(item: *const vk.VkHostImageLayoutTransitionInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHostImageLayoutTransitionInfo);
+}
+pub fn size_of_VkHostImageLayoutTransitionInfoEXT(item: *const vk.VkHostImageLayoutTransitionInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHostImageLayoutTransitionInfoEXT);
+}
+pub fn size_of_VkSubresourceHostMemcpySize(item: *const vk.VkSubresourceHostMemcpySize, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubresourceHostMemcpySize);
+}
+pub fn size_of_VkSubresourceHostMemcpySizeEXT(item: *const vk.VkSubresourceHostMemcpySizeEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubresourceHostMemcpySizeEXT);
+}
+pub fn size_of_VkHostImageCopyDevicePerformanceQuery(item: *const vk.VkHostImageCopyDevicePerformanceQuery, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHostImageCopyDevicePerformanceQuery);
+}
+pub fn size_of_VkHostImageCopyDevicePerformanceQueryEXT(item: *const vk.VkHostImageCopyDevicePerformanceQueryEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkHostImageCopyDevicePerformanceQueryEXT);
+}
+pub fn size_of_VkPhysicalDeviceVulkanSC10Properties(item: *const vk.VkPhysicalDeviceVulkanSC10Properties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkanSC10Properties);
+}
+pub fn size_of_VkPipelinePoolSize(item: *const vk.VkPipelinePoolSize, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelinePoolSize);
+}
+pub fn size_of_VkDeviceObjectReservationCreateInfo(item: *const vk.VkDeviceObjectReservationCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.pipelineCacheCreateInfoCount) |i|
+        size += size_of_VkPipelineCacheCreateInfo(@ptrCast(&item.pPipelineCacheCreateInfos[i]), false);
+    for (0..item.pipelinePoolSizeCount) |i|
+        size += size_of_VkPipelinePoolSize(@ptrCast(&item.pPipelinePoolSizes[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceObjectReservationCreateInfo);
+}
+pub fn size_of_VkCommandPoolMemoryReservationCreateInfo(item: *const vk.VkCommandPoolMemoryReservationCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandPoolMemoryReservationCreateInfo);
+}
+pub fn size_of_VkCommandPoolMemoryConsumption(item: *const vk.VkCommandPoolMemoryConsumption, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandPoolMemoryConsumption);
+}
+pub fn size_of_VkPhysicalDeviceVulkanSC10Features(item: *const vk.VkPhysicalDeviceVulkanSC10Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVulkanSC10Features);
+}
+pub fn size_of_VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT(item: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceLegacyDitheringFeaturesEXT(item: *const vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT(item: *const vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT);
+}
+pub fn size_of_VkSurfaceCapabilitiesPresentId2KHR(item: *const vk.VkSurfaceCapabilitiesPresentId2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesPresentId2KHR);
+}
+pub fn size_of_VkSurfaceCapabilitiesPresentWait2KHR(item: *const vk.VkSurfaceCapabilitiesPresentWait2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesPresentWait2KHR);
+}
+pub fn size_of_VkSubpassResolvePerformanceQueryEXT(item: *const vk.VkSubpassResolvePerformanceQueryEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassResolvePerformanceQueryEXT);
+}
+pub fn size_of_VkMultisampledRenderToSingleSampledInfoEXT(item: *const vk.VkMultisampledRenderToSingleSampledInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultisampledRenderToSingleSampledInfoEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineProtectedAccessFeatures(item: *const vk.VkPhysicalDevicePipelineProtectedAccessFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineProtectedAccessFeatures);
+}
+pub fn size_of_VkPhysicalDevicePipelineProtectedAccessFeaturesEXT(item: *const vk.VkPhysicalDevicePipelineProtectedAccessFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineProtectedAccessFeaturesEXT);
+}
+pub fn size_of_VkQueueFamilyVideoPropertiesKHR(item: *const vk.VkQueueFamilyVideoPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyVideoPropertiesKHR);
+}
+pub fn size_of_VkQueueFamilyQueryResultStatusPropertiesKHR(item: *const vk.VkQueueFamilyQueryResultStatusPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyQueryResultStatusPropertiesKHR);
+}
+pub fn size_of_VkVideoProfileListInfoKHR(item: *const vk.VkVideoProfileListInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.profileCount) |i|
+        size += size_of_VkVideoProfileInfoKHR(@ptrCast(&item.pProfiles[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoProfileListInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoFormatInfoKHR(item: *const vk.VkPhysicalDeviceVideoFormatInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+                => size += size_of_VkVideoProfileListInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceVideoFormatInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPhysicalDeviceVideoFormatInfoKHR);
+}
+pub fn size_of_VkVideoFormatPropertiesKHR(item: *const vk.VkVideoFormatPropertiesKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_QUANTIZATION_MAP_PROPERTIES_KHR,
+                => size += size_of_VkVideoFormatQuantizationMapPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_H265_QUANTIZATION_MAP_PROPERTIES_KHR,
+                => size += size_of_VkVideoFormatH265QuantizationMapPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_FORMAT_AV1_QUANTIZATION_MAP_PROPERTIES_KHR,
+                => size += size_of_VkVideoFormatAV1QuantizationMapPropertiesKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoFormatPropertiesKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoFormatPropertiesKHR);
+}
+pub fn size_of_VkVideoEncodeQuantizationMapCapabilitiesKHR(item: *const vk.VkVideoEncodeQuantizationMapCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeQuantizationMapCapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeH264QuantizationMapCapabilitiesKHR(item: *const vk.VkVideoEncodeH264QuantizationMapCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264QuantizationMapCapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeH265QuantizationMapCapabilitiesKHR(item: *const vk.VkVideoEncodeH265QuantizationMapCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265QuantizationMapCapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeAV1QuantizationMapCapabilitiesKHR(item: *const vk.VkVideoEncodeAV1QuantizationMapCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1QuantizationMapCapabilitiesKHR);
+}
+pub fn size_of_VkVideoFormatQuantizationMapPropertiesKHR(item: *const vk.VkVideoFormatQuantizationMapPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoFormatQuantizationMapPropertiesKHR);
+}
+pub fn size_of_VkVideoFormatH265QuantizationMapPropertiesKHR(item: *const vk.VkVideoFormatH265QuantizationMapPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoFormatH265QuantizationMapPropertiesKHR);
+}
+pub fn size_of_VkVideoFormatAV1QuantizationMapPropertiesKHR(item: *const vk.VkVideoFormatAV1QuantizationMapPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoFormatAV1QuantizationMapPropertiesKHR);
+}
+pub fn size_of_VkVideoProfileInfoKHR(item: *const vk.VkVideoProfileInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+                => size += size_of_VkVideoDecodeUsageInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeVP9ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_USAGE_INFO_KHR,
+                => size += size_of_VkVideoEncodeUsageInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265ProfileInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PROFILE_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1ProfileInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoProfileInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoProfileInfoKHR);
+}
+pub fn size_of_VkVideoCapabilitiesKHR(item: *const vk.VkVideoCapabilitiesKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeQuantizationMapCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUANTIZATION_MAP_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeH264QuantizationMapCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUANTIZATION_MAP_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeH265QuantizationMapCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUANTIZATION_MAP_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeAV1QuantizationMapCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+                => size += size_of_VkVideoDecodeCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR,
+                => size += size_of_VkVideoDecodeH264CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_CAPABILITIES_KHR,
+                => size += size_of_VkVideoDecodeH265CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_CAPABILITIES_KHR,
+                => size += size_of_VkVideoDecodeVP9CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_CAPABILITIES_KHR,
+                => size += size_of_VkVideoDecodeAV1CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeCapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeH264CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeH265CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeAV1CapabilitiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_CAPABILITIES_KHR,
+                => size += size_of_VkVideoEncodeIntraRefreshCapabilitiesKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoCapabilitiesKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoCapabilitiesKHR);
+}
+pub fn size_of_VkVideoSessionMemoryRequirementsKHR(item: *const vk.VkVideoSessionMemoryRequirementsKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoSessionMemoryRequirementsKHR);
+}
+pub fn size_of_VkBindVideoSessionMemoryInfoKHR(item: *const vk.VkBindVideoSessionMemoryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindVideoSessionMemoryInfoKHR);
+}
+pub fn size_of_VkVideoPictureResourceInfoKHR(item: *const vk.VkVideoPictureResourceInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoPictureResourceInfoKHR);
+}
+pub fn size_of_VkVideoReferenceSlotInfoKHR(item: *const vk.VkVideoReferenceSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pPictureResource) |ptr| size += size_of_VkVideoPictureResourceInfoKHR(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_DPB_SLOT_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1DpbSlotInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_REFERENCE_INTRA_REFRESH_INFO_KHR,
+                => size += size_of_VkVideoReferenceIntraRefreshInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoReferenceSlotInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkVideoReferenceSlotInfoKHR);
+}
+pub fn size_of_VkVideoDecodeCapabilitiesKHR(item: *const vk.VkVideoDecodeCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeCapabilitiesKHR);
+}
+pub fn size_of_VkVideoDecodeUsageInfoKHR(item: *const vk.VkVideoDecodeUsageInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeUsageInfoKHR);
+}
+pub fn size_of_VkVideoDecodeInfoKHR(item: *const vk.VkVideoDecodeInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pSetupReferenceSlot) |ptr| size += size_of_VkVideoReferenceSlotInfoKHR(@ptrCast(ptr), false);
+    for (0..item.referenceSlotCount) |i|
+        size += size_of_VkVideoReferenceSlotInfoKHR(@ptrCast(&item.pReferenceSlots[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR,
+                => size += size_of_VkVideoInlineQueryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_INLINE_SESSION_PARAMETERS_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264InlineSessionParametersInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_INLINE_SESSION_PARAMETERS_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265InlineSessionParametersInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_VP9_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoDecodeVP9PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_INLINE_SESSION_PARAMETERS_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1InlineSessionParametersInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1PictureInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoDecodeInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkVideoDecodeInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoMaintenance1FeaturesKHR(item: *const vk.VkPhysicalDeviceVideoMaintenance1FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoMaintenance1FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoMaintenance2FeaturesKHR(item: *const vk.VkPhysicalDeviceVideoMaintenance2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoMaintenance2FeaturesKHR);
+}
+pub fn size_of_VkVideoInlineQueryInfoKHR(item: *const vk.VkVideoInlineQueryInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoInlineQueryInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264ProfileInfoKHR(item: *const vk.VkVideoDecodeH264ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeH264ProfileInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264CapabilitiesKHR(item: *const vk.VkVideoDecodeH264CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeH264CapabilitiesKHR);
+}
+pub fn size_of_VkVideoDecodeH264SessionParametersAddInfoKHR(item: *const vk.VkVideoDecodeH264SessionParametersAddInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stdSPSCount) |_|
+        size += @sizeOf(vk.StdVideoH264SequenceParameterSet);
+    for (0..item.stdPPSCount) |_|
+        size += @sizeOf(vk.StdVideoH264PictureParameterSet);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH264SessionParametersAddInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264SessionParametersCreateInfoKHR(item: *const vk.VkVideoDecodeH264SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pParametersAddInfo) |ptr| size += size_of_VkVideoDecodeH264SessionParametersAddInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH264SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264InlineSessionParametersInfoKHR(item: *const vk.VkVideoDecodeH264InlineSessionParametersInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSPS) |ptr| size += @sizeOf(ptr.*);
+    if (item.pStdPPS) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH264InlineSessionParametersInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264PictureInfoKHR(item: *const vk.VkVideoDecodeH264PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+    for (0..item.sliceCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH264PictureInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH264DpbSlotInfoKHR(item: *const vk.VkVideoDecodeH264DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH264DpbSlotInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265ProfileInfoKHR(item: *const vk.VkVideoDecodeH265ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeH265ProfileInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265CapabilitiesKHR(item: *const vk.VkVideoDecodeH265CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeH265CapabilitiesKHR);
+}
+pub fn size_of_VkVideoDecodeH265SessionParametersAddInfoKHR(item: *const vk.VkVideoDecodeH265SessionParametersAddInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stdVPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265VideoParameterSet);
+    for (0..item.stdSPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265SequenceParameterSet);
+    for (0..item.stdPPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265PictureParameterSet);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH265SessionParametersAddInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265SessionParametersCreateInfoKHR(item: *const vk.VkVideoDecodeH265SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pParametersAddInfo) |ptr| size += size_of_VkVideoDecodeH265SessionParametersAddInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH265SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265InlineSessionParametersInfoKHR(item: *const vk.VkVideoDecodeH265InlineSessionParametersInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdVPS) |ptr| size += @sizeOf(ptr.*);
+    if (item.pStdSPS) |ptr| size += @sizeOf(ptr.*);
+    if (item.pStdPPS) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH265InlineSessionParametersInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265PictureInfoKHR(item: *const vk.VkVideoDecodeH265PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+    for (0..item.sliceSegmentCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH265PictureInfoKHR);
+}
+pub fn size_of_VkVideoDecodeH265DpbSlotInfoKHR(item: *const vk.VkVideoDecodeH265DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeH265DpbSlotInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoDecodeVP9FeaturesKHR(item: *const vk.VkPhysicalDeviceVideoDecodeVP9FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoDecodeVP9FeaturesKHR);
+}
+pub fn size_of_VkVideoDecodeVP9ProfileInfoKHR(item: *const vk.VkVideoDecodeVP9ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeVP9ProfileInfoKHR);
+}
+pub fn size_of_VkVideoDecodeVP9CapabilitiesKHR(item: *const vk.VkVideoDecodeVP9CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeVP9CapabilitiesKHR);
+}
+pub fn size_of_VkVideoDecodeVP9PictureInfoKHR(item: *const vk.VkVideoDecodeVP9PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeVP9PictureInfoKHR);
+}
+pub fn size_of_VkVideoDecodeAV1ProfileInfoKHR(item: *const vk.VkVideoDecodeAV1ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeAV1ProfileInfoKHR);
+}
+pub fn size_of_VkVideoDecodeAV1CapabilitiesKHR(item: *const vk.VkVideoDecodeAV1CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoDecodeAV1CapabilitiesKHR);
+}
+pub fn size_of_VkVideoDecodeAV1SessionParametersCreateInfoKHR(item: *const vk.VkVideoDecodeAV1SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSequenceHeader) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeAV1SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoDecodeAV1InlineSessionParametersInfoKHR(item: *const vk.VkVideoDecodeAV1InlineSessionParametersInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSequenceHeader) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeAV1InlineSessionParametersInfoKHR);
+}
+pub fn size_of_VkVideoDecodeAV1PictureInfoKHR(item: *const vk.VkVideoDecodeAV1PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+    for (0..item.tileCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.tileCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeAV1PictureInfoKHR);
+}
+pub fn size_of_VkVideoDecodeAV1DpbSlotInfoKHR(item: *const vk.VkVideoDecodeAV1DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoDecodeAV1DpbSlotInfoKHR);
+}
+pub fn size_of_VkVideoSessionCreateInfoKHR(item: *const vk.VkVideoSessionCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pVideoProfile) |ptr| size += size_of_VkVideoProfileInfoKHR(@ptrCast(ptr), false);
+    if (item.pStdHeaderVersion) |ptr| size += size_of_VkExtensionProperties(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264SessionCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265SessionCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1SessionCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_INTRA_REFRESH_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeSessionIntraRefreshCreateInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoSessionCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkVideoSessionCreateInfoKHR);
+}
+pub fn size_of_VkVideoSessionParametersCreateInfoKHR(item: *const vk.VkVideoSessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoDecodeAV1SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+                => size += size_of_VkVideoEncodeQualityLevelInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1SessionParametersCreateInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoSessionParametersCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoSessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoSessionParametersUpdateInfoKHR(item: *const vk.VkVideoSessionParametersUpdateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+                => size += size_of_VkVideoDecodeH264SessionParametersAddInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR,
+                => size += size_of_VkVideoDecodeH265SessionParametersAddInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264SessionParametersAddInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_ADD_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265SessionParametersAddInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoSessionParametersUpdateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoSessionParametersUpdateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeSessionParametersGetInfoKHR(item: *const vk.VkVideoEncodeSessionParametersGetInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_GET_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264SessionParametersGetInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_GET_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265SessionParametersGetInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoEncodeSessionParametersGetInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoEncodeSessionParametersGetInfoKHR);
+}
+pub fn size_of_VkVideoEncodeSessionParametersFeedbackInfoKHR(item: *const vk.VkVideoEncodeSessionParametersFeedbackInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_FEEDBACK_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264SessionParametersFeedbackInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_SESSION_PARAMETERS_FEEDBACK_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265SessionParametersFeedbackInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoEncodeSessionParametersFeedbackInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoEncodeSessionParametersFeedbackInfoKHR);
+}
+pub fn size_of_VkVideoBeginCodingInfoKHR(item: *const vk.VkVideoBeginCodingInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.referenceSlotCount) |i|
+        size += size_of_VkVideoReferenceSlotInfoKHR(@ptrCast(&item.pReferenceSlots[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeRateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264RateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_GOP_REMAINING_FRAME_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264GopRemainingFrameInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265RateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_GOP_REMAINING_FRAME_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265GopRemainingFrameInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1RateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_GOP_REMAINING_FRAME_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1GopRemainingFrameInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoBeginCodingInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkVideoBeginCodingInfoKHR);
+}
+pub fn size_of_VkVideoEndCodingInfoKHR(item: *const vk.VkVideoEndCodingInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEndCodingInfoKHR);
+}
+pub fn size_of_VkVideoCodingControlInfoKHR(item: *const vk.VkVideoCodingControlInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUALITY_LEVEL_INFO_KHR,
+                => size += size_of_VkVideoEncodeQualityLevelInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeRateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264RateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265RateControlInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1RateControlInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoCodingControlInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoCodingControlInfoKHR);
+}
+pub fn size_of_VkVideoEncodeUsageInfoKHR(item: *const vk.VkVideoEncodeUsageInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeUsageInfoKHR);
+}
+pub fn size_of_VkVideoEncodeInfoKHR(item: *const vk.VkVideoEncodeInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pSetupReferenceSlot) |ptr| size += size_of_VkVideoReferenceSlotInfoKHR(@ptrCast(ptr), false);
+    for (0..item.referenceSlotCount) |i|
+        size += size_of_VkVideoReferenceSlotInfoKHR(@ptrCast(&item.pReferenceSlots[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR,
+                => size += size_of_VkVideoInlineQueryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_QUANTIZATION_MAP_INFO_KHR,
+                => size += size_of_VkVideoEncodeQuantizationMapInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_PICTURE_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1PictureInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_INTRA_REFRESH_INFO_KHR,
+                => size += size_of_VkVideoEncodeIntraRefreshInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoEncodeInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkVideoEncodeInfoKHR);
+}
+pub fn size_of_VkVideoEncodeQuantizationMapInfoKHR(item: *const vk.VkVideoEncodeQuantizationMapInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeQuantizationMapInfoKHR);
+}
+pub fn size_of_VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR(item: *const vk.VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeQuantizationMapSessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(item: *const vk.VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR);
+}
+pub fn size_of_VkQueryPoolVideoEncodeFeedbackCreateInfoKHR(item: *const vk.VkQueryPoolVideoEncodeFeedbackCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueryPoolVideoEncodeFeedbackCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeQualityLevelInfoKHR(item: *const vk.VkVideoEncodeQualityLevelInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeQualityLevelInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR(item: *const vk.VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pVideoProfile) |ptr| size += size_of_VkVideoProfileInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR);
+}
+pub fn size_of_VkVideoEncodeQualityLevelPropertiesKHR(item: *const vk.VkVideoEncodeQualityLevelPropertiesKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_QUALITY_LEVEL_PROPERTIES_KHR,
+                => size += size_of_VkVideoEncodeH264QualityLevelPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_QUALITY_LEVEL_PROPERTIES_KHR,
+                => size += size_of_VkVideoEncodeH265QualityLevelPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_QUALITY_LEVEL_PROPERTIES_KHR,
+                => size += size_of_VkVideoEncodeAV1QualityLevelPropertiesKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoEncodeQualityLevelPropertiesKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoEncodeQualityLevelPropertiesKHR);
+}
+pub fn size_of_VkVideoEncodeRateControlInfoKHR(item: *const vk.VkVideoEncodeRateControlInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.layerCount) |i|
+        size += size_of_VkVideoEncodeRateControlLayerInfoKHR(@ptrCast(&item.pLayers[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeRateControlInfoKHR);
+}
+pub fn size_of_VkVideoEncodeRateControlLayerInfoKHR(item: *const vk.VkVideoEncodeRateControlLayerInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_RATE_CONTROL_LAYER_INFO_KHR,
+                => size += size_of_VkVideoEncodeH264RateControlLayerInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_RATE_CONTROL_LAYER_INFO_KHR,
+                => size += size_of_VkVideoEncodeH265RateControlLayerInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_VIDEO_ENCODE_AV1_RATE_CONTROL_LAYER_INFO_KHR,
+                => size += size_of_VkVideoEncodeAV1RateControlLayerInfoKHR(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkVideoEncodeRateControlLayerInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkVideoEncodeRateControlLayerInfoKHR);
+}
+pub fn size_of_VkVideoEncodeCapabilitiesKHR(item: *const vk.VkVideoEncodeCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeCapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeH264CapabilitiesKHR(item: *const vk.VkVideoEncodeH264CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264CapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeH264QualityLevelPropertiesKHR(item: *const vk.VkVideoEncodeH264QualityLevelPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264QualityLevelPropertiesKHR);
+}
+pub fn size_of_VkVideoEncodeH264SessionCreateInfoKHR(item: *const vk.VkVideoEncodeH264SessionCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264SessionCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264SessionParametersAddInfoKHR(item: *const vk.VkVideoEncodeH264SessionParametersAddInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stdSPSCount) |_|
+        size += @sizeOf(vk.StdVideoH264SequenceParameterSet);
+    for (0..item.stdPPSCount) |_|
+        size += @sizeOf(vk.StdVideoH264PictureParameterSet);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH264SessionParametersAddInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264SessionParametersCreateInfoKHR(item: *const vk.VkVideoEncodeH264SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pParametersAddInfo) |ptr| size += size_of_VkVideoEncodeH264SessionParametersAddInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH264SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264SessionParametersGetInfoKHR(item: *const vk.VkVideoEncodeH264SessionParametersGetInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264SessionParametersGetInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264SessionParametersFeedbackInfoKHR(item: *const vk.VkVideoEncodeH264SessionParametersFeedbackInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264SessionParametersFeedbackInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264DpbSlotInfoKHR(item: *const vk.VkVideoEncodeH264DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH264DpbSlotInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264PictureInfoKHR(item: *const vk.VkVideoEncodeH264PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.naluSliceEntryCount) |i|
+        size += size_of_VkVideoEncodeH264NaluSliceInfoKHR(@ptrCast(&item.pNaluSliceEntries[i]), false);
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH264PictureInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264ProfileInfoKHR(item: *const vk.VkVideoEncodeH264ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264ProfileInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264NaluSliceInfoKHR(item: *const vk.VkVideoEncodeH264NaluSliceInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSliceHeader) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH264NaluSliceInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264RateControlInfoKHR(item: *const vk.VkVideoEncodeH264RateControlInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264RateControlInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264QpKHR(item: *const vk.VkVideoEncodeH264QpKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264QpKHR);
+}
+pub fn size_of_VkVideoEncodeH264FrameSizeKHR(item: *const vk.VkVideoEncodeH264FrameSizeKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264FrameSizeKHR);
+}
+pub fn size_of_VkVideoEncodeH264GopRemainingFrameInfoKHR(item: *const vk.VkVideoEncodeH264GopRemainingFrameInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264GopRemainingFrameInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH264RateControlLayerInfoKHR(item: *const vk.VkVideoEncodeH264RateControlLayerInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH264RateControlLayerInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265CapabilitiesKHR(item: *const vk.VkVideoEncodeH265CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265CapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeH265QualityLevelPropertiesKHR(item: *const vk.VkVideoEncodeH265QualityLevelPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265QualityLevelPropertiesKHR);
+}
+pub fn size_of_VkVideoEncodeH265SessionCreateInfoKHR(item: *const vk.VkVideoEncodeH265SessionCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265SessionCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265SessionParametersAddInfoKHR(item: *const vk.VkVideoEncodeH265SessionParametersAddInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stdVPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265VideoParameterSet);
+    for (0..item.stdSPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265SequenceParameterSet);
+    for (0..item.stdPPSCount) |_|
+        size += @sizeOf(vk.StdVideoH265PictureParameterSet);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH265SessionParametersAddInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265SessionParametersCreateInfoKHR(item: *const vk.VkVideoEncodeH265SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pParametersAddInfo) |ptr| size += size_of_VkVideoEncodeH265SessionParametersAddInfoKHR(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH265SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265SessionParametersGetInfoKHR(item: *const vk.VkVideoEncodeH265SessionParametersGetInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265SessionParametersGetInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265SessionParametersFeedbackInfoKHR(item: *const vk.VkVideoEncodeH265SessionParametersFeedbackInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265SessionParametersFeedbackInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265PictureInfoKHR(item: *const vk.VkVideoEncodeH265PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.naluSliceSegmentEntryCount) |i|
+        size += size_of_VkVideoEncodeH265NaluSliceSegmentInfoKHR(@ptrCast(&item.pNaluSliceSegmentEntries[i]), false);
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH265PictureInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265NaluSliceSegmentInfoKHR(item: *const vk.VkVideoEncodeH265NaluSliceSegmentInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSliceSegmentHeader) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH265NaluSliceSegmentInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265RateControlInfoKHR(item: *const vk.VkVideoEncodeH265RateControlInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265RateControlInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265QpKHR(item: *const vk.VkVideoEncodeH265QpKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265QpKHR);
+}
+pub fn size_of_VkVideoEncodeH265FrameSizeKHR(item: *const vk.VkVideoEncodeH265FrameSizeKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265FrameSizeKHR);
+}
+pub fn size_of_VkVideoEncodeH265GopRemainingFrameInfoKHR(item: *const vk.VkVideoEncodeH265GopRemainingFrameInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265GopRemainingFrameInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265RateControlLayerInfoKHR(item: *const vk.VkVideoEncodeH265RateControlLayerInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265RateControlLayerInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265ProfileInfoKHR(item: *const vk.VkVideoEncodeH265ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeH265ProfileInfoKHR);
+}
+pub fn size_of_VkVideoEncodeH265DpbSlotInfoKHR(item: *const vk.VkVideoEncodeH265DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeH265DpbSlotInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1CapabilitiesKHR(item: *const vk.VkVideoEncodeAV1CapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1CapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeAV1QualityLevelPropertiesKHR(item: *const vk.VkVideoEncodeAV1QualityLevelPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1QualityLevelPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(item: *const vk.VkPhysicalDeviceVideoEncodeAV1FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoEncodeAV1FeaturesKHR);
+}
+pub fn size_of_VkVideoEncodeAV1SessionCreateInfoKHR(item: *const vk.VkVideoEncodeAV1SessionCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1SessionCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1SessionParametersCreateInfoKHR(item: *const vk.VkVideoEncodeAV1SessionParametersCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdSequenceHeader) |ptr| size += @sizeOf(ptr.*);
+    if (item.pStdDecoderModelInfo) |ptr| size += @sizeOf(ptr.*);
+    for (0..item.stdOperatingPointCount) |_|
+        size += @sizeOf(vk.StdVideoEncodeAV1OperatingPointInfo);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeAV1SessionParametersCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1DpbSlotInfoKHR(item: *const vk.VkVideoEncodeAV1DpbSlotInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdReferenceInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeAV1DpbSlotInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1PictureInfoKHR(item: *const vk.VkVideoEncodeAV1PictureInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pStdPictureInfo) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkVideoEncodeAV1PictureInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1ProfileInfoKHR(item: *const vk.VkVideoEncodeAV1ProfileInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1ProfileInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1RateControlInfoKHR(item: *const vk.VkVideoEncodeAV1RateControlInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1RateControlInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1QIndexKHR(item: *const vk.VkVideoEncodeAV1QIndexKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1QIndexKHR);
+}
+pub fn size_of_VkVideoEncodeAV1FrameSizeKHR(item: *const vk.VkVideoEncodeAV1FrameSizeKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1FrameSizeKHR);
+}
+pub fn size_of_VkVideoEncodeAV1GopRemainingFrameInfoKHR(item: *const vk.VkVideoEncodeAV1GopRemainingFrameInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1GopRemainingFrameInfoKHR);
+}
+pub fn size_of_VkVideoEncodeAV1RateControlLayerInfoKHR(item: *const vk.VkVideoEncodeAV1RateControlLayerInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeAV1RateControlLayerInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(item: *const vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV);
+}
+pub fn size_of_VkCommandBufferInheritanceViewportScissorInfoNV(item: *const vk.VkCommandBufferInheritanceViewportScissorInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pViewportDepths) |ptr| size += size_of_VkViewport(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCommandBufferInheritanceViewportScissorInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(item: *const vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceProvokingVertexFeaturesEXT(item: *const vk.VkPhysicalDeviceProvokingVertexFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProvokingVertexFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceProvokingVertexPropertiesEXT(item: *const vk.VkPhysicalDeviceProvokingVertexPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceProvokingVertexPropertiesEXT);
+}
+pub fn size_of_VkPipelineRasterizationProvokingVertexStateCreateInfoEXT(item: *const vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT);
+}
+pub fn size_of_VkVideoEncodeIntraRefreshCapabilitiesKHR(item: *const vk.VkVideoEncodeIntraRefreshCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeIntraRefreshCapabilitiesKHR);
+}
+pub fn size_of_VkVideoEncodeSessionIntraRefreshCreateInfoKHR(item: *const vk.VkVideoEncodeSessionIntraRefreshCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeSessionIntraRefreshCreateInfoKHR);
+}
+pub fn size_of_VkVideoEncodeIntraRefreshInfoKHR(item: *const vk.VkVideoEncodeIntraRefreshInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoEncodeIntraRefreshInfoKHR);
+}
+pub fn size_of_VkVideoReferenceIntraRefreshInfoKHR(item: *const vk.VkVideoReferenceIntraRefreshInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkVideoReferenceIntraRefreshInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(item: *const vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR);
+}
+pub fn size_of_VkCuModuleCreateInfoNVX(item: *const vk.VkCuModuleCreateInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_CU_MODULE_TEXTURING_MODE_CREATE_INFO_NVX,
+                => size += size_of_VkCuModuleTexturingModeCreateInfoNVX(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCuModuleCreateInfoNVX: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkCuModuleCreateInfoNVX);
+}
+pub fn size_of_VkCuModuleTexturingModeCreateInfoNVX(item: *const vk.VkCuModuleTexturingModeCreateInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCuModuleTexturingModeCreateInfoNVX);
+}
+pub fn size_of_VkCuFunctionCreateInfoNVX(item: *const vk.VkCuFunctionCreateInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCuFunctionCreateInfoNVX);
+}
+pub fn size_of_VkCuLaunchInfoNVX(item: *const vk.VkCuLaunchInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.paramCount) |_|
+        size += @sizeOf(void);
+    for (0..item.extraCount) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCuLaunchInfoNVX);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferFeaturesEXT(item: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferPropertiesEXT(item: *const vk.VkPhysicalDeviceDescriptorBufferPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT(item: *const vk.VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT);
+}
+pub fn size_of_VkDescriptorAddressInfoEXT(item: *const vk.VkDescriptorAddressInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorAddressInfoEXT);
+}
+pub fn size_of_VkDescriptorBufferBindingInfoEXT(item: *const vk.VkDescriptorBufferBindingInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkBufferUsageFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_BUFFER_BINDING_PUSH_DESCRIPTOR_BUFFER_HANDLE_EXT,
+                => size += size_of_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorBufferBindingInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDescriptorBufferBindingInfoEXT);
+}
+pub fn size_of_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(item: *const vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT);
+}
+pub fn size_of_VkDescriptorGetInfoEXT(item: *const vk.VkDescriptorGetInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_TENSOR_INFO_ARM,
+                => size += size_of_VkDescriptorGetTensorInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorGetInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDescriptorGetInfoEXT);
+}
+pub fn size_of_VkBufferCaptureDescriptorDataInfoEXT(item: *const vk.VkBufferCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCaptureDescriptorDataInfoEXT);
+}
+pub fn size_of_VkImageCaptureDescriptorDataInfoEXT(item: *const vk.VkImageCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageCaptureDescriptorDataInfoEXT);
+}
+pub fn size_of_VkImageViewCaptureDescriptorDataInfoEXT(item: *const vk.VkImageViewCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewCaptureDescriptorDataInfoEXT);
+}
+pub fn size_of_VkSamplerCaptureDescriptorDataInfoEXT(item: *const vk.VkSamplerCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerCaptureDescriptorDataInfoEXT);
+}
+pub fn size_of_VkAccelerationStructureCaptureDescriptorDataInfoEXT(item: *const vk.VkAccelerationStructureCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureCaptureDescriptorDataInfoEXT);
+}
+pub fn size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(item: *const vk.VkOpaqueCaptureDescriptorDataCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.opaqueCaptureDescriptorData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkOpaqueCaptureDescriptorDataCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderIntegerDotProductFeatures(item: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderIntegerDotProductFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderIntegerDotProductProperties(item: *const vk.VkPhysicalDeviceShaderIntegerDotProductProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderIntegerDotProductProperties);
+}
+pub fn size_of_VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR(item: *const vk.VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceDrmPropertiesEXT(item: *const vk.VkPhysicalDeviceDrmPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDrmPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR(item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingValidationFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingValidationFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV);
+}
+pub fn size_of_VkAccelerationStructureGeometryMotionTrianglesDataNV(item: *const vk.VkAccelerationStructureGeometryMotionTrianglesDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryMotionTrianglesDataNV);
+}
+pub fn size_of_VkAccelerationStructureMotionInfoNV(item: *const vk.VkAccelerationStructureMotionInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMotionInfoNV);
+}
+pub fn size_of_VkSRTDataNV(item: *const vk.VkSRTDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSRTDataNV);
+}
+pub fn size_of_VkAccelerationStructureSRTMotionInstanceNV(item: *const vk.VkAccelerationStructureSRTMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureSRTMotionInstanceNV);
+}
+pub fn size_of_VkAccelerationStructureMatrixMotionInstanceNV(item: *const vk.VkAccelerationStructureMatrixMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMatrixMotionInstanceNV);
+}
+pub fn size_of_VkAccelerationStructureMotionInstanceNV(item: *const vk.VkAccelerationStructureMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMotionInstanceNV);
+}
+pub fn size_of_VkMemoryGetRemoteAddressInfoNV(item: *const vk.VkMemoryGetRemoteAddressInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetRemoteAddressInfoNV);
+}
+pub fn size_of_VkImportMemoryBufferCollectionFUCHSIA(item: *const vk.VkImportMemoryBufferCollectionFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryBufferCollectionFUCHSIA);
+}
+pub fn size_of_VkBufferCollectionImageCreateInfoFUCHSIA(item: *const vk.VkBufferCollectionImageCreateInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCollectionImageCreateInfoFUCHSIA);
+}
+pub fn size_of_VkBufferCollectionBufferCreateInfoFUCHSIA(item: *const vk.VkBufferCollectionBufferCreateInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCollectionBufferCreateInfoFUCHSIA);
+}
+pub fn size_of_VkBufferCollectionCreateInfoFUCHSIA(item: *const vk.VkBufferCollectionCreateInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCollectionCreateInfoFUCHSIA);
+}
+pub fn size_of_VkBufferCollectionPropertiesFUCHSIA(item: *const vk.VkBufferCollectionPropertiesFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCollectionPropertiesFUCHSIA);
+}
+pub fn size_of_VkBufferConstraintsInfoFUCHSIA(item: *const vk.VkBufferConstraintsInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferConstraintsInfoFUCHSIA);
+}
+pub fn size_of_VkSysmemColorSpaceFUCHSIA(item: *const vk.VkSysmemColorSpaceFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSysmemColorSpaceFUCHSIA);
+}
+pub fn size_of_VkImageFormatConstraintsInfoFUCHSIA(item: *const vk.VkImageFormatConstraintsInfoFUCHSIA, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorSpaceCount) |i|
+        size += size_of_VkSysmemColorSpaceFUCHSIA(@ptrCast(&item.pColorSpaces[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageFormatConstraintsInfoFUCHSIA);
+}
+pub fn size_of_VkImageConstraintsInfoFUCHSIA(item: *const vk.VkImageConstraintsInfoFUCHSIA, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.formatConstraintsCount) |i|
+        size += size_of_VkImageFormatConstraintsInfoFUCHSIA(@ptrCast(&item.pFormatConstraints[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageConstraintsInfoFUCHSIA);
+}
+pub fn size_of_VkBufferCollectionConstraintsInfoFUCHSIA(item: *const vk.VkBufferCollectionConstraintsInfoFUCHSIA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBufferCollectionConstraintsInfoFUCHSIA);
+}
+pub fn size_of_VkCudaModuleCreateInfoNV(item: *const vk.VkCudaModuleCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaModuleCreateInfoNV);
+}
+pub fn size_of_VkCudaFunctionCreateInfoNV(item: *const vk.VkCudaFunctionCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaFunctionCreateInfoNV);
+}
+pub fn size_of_VkCudaLaunchInfoNV(item: *const vk.VkCudaLaunchInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.paramCount) |_|
+        size += @sizeOf(void);
+    for (0..item.extraCount) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaLaunchInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(item: *const vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT);
+}
+pub fn size_of_VkFormatProperties3(item: *const vk.VkFormatProperties3, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFormatProperties3);
+}
+pub fn size_of_VkFormatProperties3KHR(item: *const vk.VkFormatProperties3KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFormatProperties3KHR);
+}
+pub fn size_of_VkDrmFormatModifierPropertiesList2EXT(item: *const vk.VkDrmFormatModifierPropertiesList2EXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.drmFormatModifierCount) |i|
+        size += size_of_VkDrmFormatModifierProperties2EXT(@ptrCast(&item.pDrmFormatModifierProperties[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDrmFormatModifierPropertiesList2EXT);
+}
+pub fn size_of_VkDrmFormatModifierProperties2EXT(item: *const vk.VkDrmFormatModifierProperties2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrmFormatModifierProperties2EXT);
+}
+pub fn size_of_VkAndroidHardwareBufferFormatProperties2ANDROID(item: *const vk.VkAndroidHardwareBufferFormatProperties2ANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAndroidHardwareBufferFormatProperties2ANDROID);
+}
+pub fn size_of_VkPipelineRenderingCreateInfo(item: *const vk.VkPipelineRenderingCreateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(vk.VkFormat);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineRenderingCreateInfo);
+}
+pub fn size_of_VkPipelineRenderingCreateInfoKHR(item: *const vk.VkPipelineRenderingCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRenderingCreateInfoKHR);
+}
+pub fn size_of_VkRenderingInfo(item: *const vk.VkRenderingInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |i|
+        size += size_of_VkRenderingAttachmentInfo(@ptrCast(&item.pColorAttachments[i]), false);
+    if (item.pDepthAttachment) |ptr| size += size_of_VkRenderingAttachmentInfo(@ptrCast(ptr), false);
+    if (item.pStencilAttachment) |ptr| size += size_of_VkRenderingAttachmentInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_RENDER_PASS_BEGIN_INFO,
+                => size += size_of_VkDeviceGroupRenderPassBeginInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_INFO_EXT,
+                => size += size_of_VkMultisampledRenderToSingleSampledInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
+                => size += size_of_VkRenderingFragmentShadingRateAttachmentInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT,
+                => size += size_of_VkRenderingFragmentDensityMapAttachmentInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+                => size += size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+                => size += size_of_VkRenderPassStripeBeginInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderingInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRenderingInfo);
+}
+pub fn size_of_VkRenderingInfoKHR(item: *const vk.VkRenderingInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingInfoKHR);
+}
+pub fn size_of_VkRenderingEndInfoEXT(item: *const vk.VkRenderingEndInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT,
+                => size += size_of_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderingEndInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkRenderingEndInfoEXT);
+}
+pub fn size_of_VkRenderingAttachmentInfo(item: *const vk.VkRenderingAttachmentInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_FEEDBACK_LOOP_INFO_EXT,
+                => size += size_of_VkAttachmentFeedbackLoopInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRenderingAttachmentInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkRenderingAttachmentInfo);
+}
+pub fn size_of_VkRenderingAttachmentInfoKHR(item: *const vk.VkRenderingAttachmentInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingAttachmentInfoKHR);
+}
+pub fn size_of_VkRenderingFragmentShadingRateAttachmentInfoKHR(item: *const vk.VkRenderingFragmentShadingRateAttachmentInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingFragmentShadingRateAttachmentInfoKHR);
+}
+pub fn size_of_VkRenderingFragmentDensityMapAttachmentInfoEXT(item: *const vk.VkRenderingFragmentDensityMapAttachmentInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingFragmentDensityMapAttachmentInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceDynamicRenderingFeatures(item: *const vk.VkPhysicalDeviceDynamicRenderingFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDynamicRenderingFeatures);
+}
+pub fn size_of_VkPhysicalDeviceDynamicRenderingFeaturesKHR(item: *const vk.VkPhysicalDeviceDynamicRenderingFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDynamicRenderingFeaturesKHR);
+}
+pub fn size_of_VkCommandBufferInheritanceRenderingInfo(item: *const vk.VkCommandBufferInheritanceRenderingInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(vk.VkFormat);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCommandBufferInheritanceRenderingInfo);
+}
+pub fn size_of_VkCommandBufferInheritanceRenderingInfoKHR(item: *const vk.VkCommandBufferInheritanceRenderingInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferInheritanceRenderingInfoKHR);
+}
+pub fn size_of_VkAttachmentSampleCountInfoAMD(item: *const vk.VkAttachmentSampleCountInfoAMD, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(vk.VkSampleCountFlagBits);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAttachmentSampleCountInfoAMD);
+}
+pub fn size_of_VkAttachmentSampleCountInfoNV(item: *const vk.VkAttachmentSampleCountInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentSampleCountInfoNV);
+}
+pub fn size_of_VkMultiviewPerViewAttributesInfoNVX(item: *const vk.VkMultiviewPerViewAttributesInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultiviewPerViewAttributesInfoNVX);
+}
+pub fn size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(item: *const vk.VkPhysicalDeviceImageViewMinLodFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageViewMinLodFeaturesEXT);
+}
+pub fn size_of_VkImageViewMinLodCreateInfoEXT(item: *const vk.VkImageViewMinLodCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewMinLodCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(item: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM(item: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(item: *const vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(item: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineBinaryFeaturesKHR(item: *const vk.VkPhysicalDevicePipelineBinaryFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineBinaryFeaturesKHR);
+}
+pub fn size_of_VkDevicePipelineBinaryInternalCacheControlKHR(item: *const vk.VkDevicePipelineBinaryInternalCacheControlKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDevicePipelineBinaryInternalCacheControlKHR);
+}
+pub fn size_of_VkPhysicalDevicePipelineBinaryPropertiesKHR(item: *const vk.VkPhysicalDevicePipelineBinaryPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineBinaryPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT(item: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT);
+}
+pub fn size_of_VkGraphicsPipelineLibraryCreateInfoEXT(item: *const vk.VkGraphicsPipelineLibraryCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE(item: *const vk.VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE);
+}
+pub fn size_of_VkDescriptorSetBindingReferenceVALVE(item: *const vk.VkDescriptorSetBindingReferenceVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetBindingReferenceVALVE);
+}
+pub fn size_of_VkDescriptorSetLayoutHostMappingInfoVALVE(item: *const vk.VkDescriptorSetLayoutHostMappingInfoVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorSetLayoutHostMappingInfoVALVE);
+}
+pub fn size_of_VkPhysicalDeviceNestedCommandBufferFeaturesEXT(item: *const vk.VkPhysicalDeviceNestedCommandBufferFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceNestedCommandBufferFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceNestedCommandBufferPropertiesEXT(item: *const vk.VkPhysicalDeviceNestedCommandBufferPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceNestedCommandBufferPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT(item: *const vk.VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT);
+}
+pub fn size_of_VkPipelineShaderStageModuleIdentifierCreateInfoEXT(item: *const vk.VkPipelineShaderStageModuleIdentifierCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.identifierSize) |_|
+        size += @sizeOf(u8);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineShaderStageModuleIdentifierCreateInfoEXT);
+}
+pub fn size_of_VkShaderModuleIdentifierEXT(item: *const vk.VkShaderModuleIdentifierEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderModuleIdentifierEXT);
+}
+pub fn size_of_VkImageCompressionControlEXT(item: *const vk.VkImageCompressionControlEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.compressionControlPlaneCount) |_|
+        size += @sizeOf(vk.VkImageCompressionFixedRateFlagsEXT);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImageCompressionControlEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageCompressionControlFeaturesEXT(item: *const vk.VkPhysicalDeviceImageCompressionControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageCompressionControlFeaturesEXT);
+}
+pub fn size_of_VkImageCompressionPropertiesEXT(item: *const vk.VkImageCompressionPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageCompressionPropertiesEXT);
+}
+pub fn size_of_VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT(item: *const vk.VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT);
+}
+pub fn size_of_VkImageSubresource2(item: *const vk.VkImageSubresource2, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresource2);
+}
+pub fn size_of_VkImageSubresource2KHR(item: *const vk.VkImageSubresource2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresource2KHR);
+}
+pub fn size_of_VkImageSubresource2EXT(item: *const vk.VkImageSubresource2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageSubresource2EXT);
+}
+pub fn size_of_VkSubresourceLayout2(item: *const vk.VkSubresourceLayout2, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE,
+                => size += size_of_VkSubresourceHostMemcpySize(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT,
+                => size += size_of_VkImageCompressionPropertiesEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSubresourceLayout2: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkSubresourceLayout2);
+}
+pub fn size_of_VkSubresourceLayout2KHR(item: *const vk.VkSubresourceLayout2KHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubresourceLayout2KHR);
+}
+pub fn size_of_VkSubresourceLayout2EXT(item: *const vk.VkSubresourceLayout2EXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubresourceLayout2EXT);
+}
+pub fn size_of_VkRenderPassCreationControlEXT(item: *const vk.VkRenderPassCreationControlEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassCreationControlEXT);
+}
+pub fn size_of_VkRenderPassCreationFeedbackInfoEXT(item: *const vk.VkRenderPassCreationFeedbackInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassCreationFeedbackInfoEXT);
+}
+pub fn size_of_VkRenderPassCreationFeedbackCreateInfoEXT(item: *const vk.VkRenderPassCreationFeedbackCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pRenderPassFeedback) |ptr| size += size_of_VkRenderPassCreationFeedbackInfoEXT(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassCreationFeedbackCreateInfoEXT);
+}
+pub fn size_of_VkRenderPassSubpassFeedbackInfoEXT(item: *const vk.VkRenderPassSubpassFeedbackInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassSubpassFeedbackInfoEXT);
+}
+pub fn size_of_VkRenderPassSubpassFeedbackCreateInfoEXT(item: *const vk.VkRenderPassSubpassFeedbackCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pSubpassFeedback) |ptr| size += size_of_VkRenderPassSubpassFeedbackInfoEXT(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassSubpassFeedbackCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(item: *const vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT);
+}
+pub fn size_of_VkMicromapBuildInfoEXT(item: *const vk.VkMicromapBuildInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.usageCountsCount) |i|
+        size += size_of_VkMicromapUsageEXT(@ptrCast(&item.pUsageCounts[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMicromapBuildInfoEXT);
+}
+pub fn size_of_VkMicromapCreateInfoEXT(item: *const vk.VkMicromapCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMicromapCreateInfoEXT);
+}
+pub fn size_of_VkMicromapVersionInfoEXT(item: *const vk.VkMicromapVersionInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMicromapVersionInfoEXT);
+}
+pub fn size_of_VkCopyMicromapInfoEXT(item: *const vk.VkCopyMicromapInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMicromapInfoEXT);
+}
+pub fn size_of_VkCopyMicromapToMemoryInfoEXT(item: *const vk.VkCopyMicromapToMemoryInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMicromapToMemoryInfoEXT);
+}
+pub fn size_of_VkCopyMemoryToMicromapInfoEXT(item: *const vk.VkCopyMemoryToMicromapInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryToMicromapInfoEXT);
+}
+pub fn size_of_VkMicromapBuildSizesInfoEXT(item: *const vk.VkMicromapBuildSizesInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMicromapBuildSizesInfoEXT);
+}
+pub fn size_of_VkMicromapUsageEXT(item: *const vk.VkMicromapUsageEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMicromapUsageEXT);
+}
+pub fn size_of_VkMicromapTriangleEXT(item: *const vk.VkMicromapTriangleEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMicromapTriangleEXT);
+}
+pub fn size_of_VkPhysicalDeviceOpacityMicromapFeaturesEXT(item: *const vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceOpacityMicromapPropertiesEXT(item: *const vk.VkPhysicalDeviceOpacityMicromapPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpacityMicromapPropertiesEXT);
+}
+pub fn size_of_VkAccelerationStructureTrianglesOpacityMicromapEXT(item: *const vk.VkAccelerationStructureTrianglesOpacityMicromapEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.usageCountsCount) |i|
+        size += size_of_VkMicromapUsageEXT(@ptrCast(&item.pUsageCounts[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureTrianglesOpacityMicromapEXT);
+}
+pub fn size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(item: *const vk.VkPhysicalDeviceDisplacementMicromapFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDisplacementMicromapFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDisplacementMicromapPropertiesNV(item: *const vk.VkPhysicalDeviceDisplacementMicromapPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDisplacementMicromapPropertiesNV);
+}
+pub fn size_of_VkAccelerationStructureTrianglesDisplacementMicromapNV(item: *const vk.VkAccelerationStructureTrianglesDisplacementMicromapNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.usageCountsCount) |i|
+        size += size_of_VkMicromapUsageEXT(@ptrCast(&item.pUsageCounts[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureTrianglesDisplacementMicromapNV);
+}
+pub fn size_of_VkPipelinePropertiesIdentifierEXT(item: *const vk.VkPipelinePropertiesIdentifierEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelinePropertiesIdentifierEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(item: *const vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(item: *const vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD);
+}
+pub fn size_of_VkExternalMemoryAcquireUnmodifiedEXT(item: *const vk.VkExternalMemoryAcquireUnmodifiedEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryAcquireUnmodifiedEXT);
+}
+pub fn size_of_VkExportMetalObjectCreateInfoEXT(item: *const vk.VkExportMetalObjectCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalObjectCreateInfoEXT);
+}
+pub fn size_of_VkExportMetalObjectsInfoEXT(item: *const vk.VkExportMetalObjectsInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_DEVICE_INFO_EXT,
+                => size += size_of_VkExportMetalDeviceInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_QUEUE_INFO_EXT,
+                => size += size_of_VkExportMetalCommandQueueInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_BUFFER_INFO_EXT,
+                => size += size_of_VkExportMetalBufferInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_TEXTURE_INFO_EXT,
+                => size += size_of_VkExportMetalTextureInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_IO_SURFACE_INFO_EXT,
+                => size += size_of_VkExportMetalIOSurfaceInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_METAL_SHARED_EVENT_INFO_EXT,
+                => size += size_of_VkExportMetalSharedEventInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkExportMetalObjectsInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkExportMetalObjectsInfoEXT);
+}
+pub fn size_of_VkExportMetalDeviceInfoEXT(item: *const vk.VkExportMetalDeviceInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalDeviceInfoEXT);
+}
+pub fn size_of_VkExportMetalCommandQueueInfoEXT(item: *const vk.VkExportMetalCommandQueueInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalCommandQueueInfoEXT);
+}
+pub fn size_of_VkExportMetalBufferInfoEXT(item: *const vk.VkExportMetalBufferInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalBufferInfoEXT);
+}
+pub fn size_of_VkImportMetalBufferInfoEXT(item: *const vk.VkImportMetalBufferInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMetalBufferInfoEXT);
+}
+pub fn size_of_VkExportMetalTextureInfoEXT(item: *const vk.VkExportMetalTextureInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalTextureInfoEXT);
+}
+pub fn size_of_VkImportMetalTextureInfoEXT(item: *const vk.VkImportMetalTextureInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMetalTextureInfoEXT);
+}
+pub fn size_of_VkExportMetalIOSurfaceInfoEXT(item: *const vk.VkExportMetalIOSurfaceInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalIOSurfaceInfoEXT);
+}
+pub fn size_of_VkImportMetalIOSurfaceInfoEXT(item: *const vk.VkImportMetalIOSurfaceInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMetalIOSurfaceInfoEXT);
+}
+pub fn size_of_VkExportMetalSharedEventInfoEXT(item: *const vk.VkExportMetalSharedEventInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMetalSharedEventInfoEXT);
+}
+pub fn size_of_VkImportMetalSharedEventInfoEXT(item: *const vk.VkImportMetalSharedEventInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMetalSharedEventInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(item: *const vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineRobustnessFeatures(item: *const vk.VkPhysicalDevicePipelineRobustnessFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineRobustnessFeatures);
+}
+pub fn size_of_VkPhysicalDevicePipelineRobustnessFeaturesEXT(item: *const vk.VkPhysicalDevicePipelineRobustnessFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineRobustnessFeaturesEXT);
+}
+pub fn size_of_VkPipelineRobustnessCreateInfo(item: *const vk.VkPipelineRobustnessCreateInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRobustnessCreateInfo);
+}
+pub fn size_of_VkPipelineRobustnessCreateInfoEXT(item: *const vk.VkPipelineRobustnessCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRobustnessCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineRobustnessProperties(item: *const vk.VkPhysicalDevicePipelineRobustnessProperties, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineRobustnessProperties);
+}
+pub fn size_of_VkPhysicalDevicePipelineRobustnessPropertiesEXT(item: *const vk.VkPhysicalDevicePipelineRobustnessPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineRobustnessPropertiesEXT);
+}
+pub fn size_of_VkImageViewSampleWeightCreateInfoQCOM(item: *const vk.VkImageViewSampleWeightCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewSampleWeightCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(item: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessingFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessingPropertiesQCOM(item: *const vk.VkPhysicalDeviceImageProcessingPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessingPropertiesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(item: *const vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM);
+}
+pub fn size_of_VkTilePropertiesQCOM(item: *const vk.VkTilePropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTilePropertiesQCOM);
+}
+pub fn size_of_VkTileMemoryBindInfoQCOM(item: *const vk.VkTileMemoryBindInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemoryBindInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceAmigoProfilingFeaturesSEC(item: *const vk.VkPhysicalDeviceAmigoProfilingFeaturesSEC, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAmigoProfilingFeaturesSEC);
+}
+pub fn size_of_VkAmigoProfilingSubmitInfoSEC(item: *const vk.VkAmigoProfilingSubmitInfoSEC, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAmigoProfilingSubmitInfoSEC);
+}
+pub fn size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(item: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesEXT(item: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthClampZeroOneFeaturesEXT);
+}
+pub fn size_of_VkAttachmentFeedbackLoopInfoEXT(item: *const vk.VkAttachmentFeedbackLoopInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentFeedbackLoopInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceAddressBindingReportFeaturesEXT(item: *const vk.VkPhysicalDeviceAddressBindingReportFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAddressBindingReportFeaturesEXT);
+}
+pub fn size_of_VkDeviceAddressBindingCallbackDataEXT(item: *const vk.VkDeviceAddressBindingCallbackDataEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceAddressBindingCallbackDataEXT);
+}
+pub fn size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(item: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpticalFlowFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceOpticalFlowPropertiesNV(item: *const vk.VkPhysicalDeviceOpticalFlowPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpticalFlowPropertiesNV);
+}
+pub fn size_of_VkOpticalFlowImageFormatInfoNV(item: *const vk.VkOpticalFlowImageFormatInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowImageFormatInfoNV);
+}
+pub fn size_of_VkOpticalFlowImageFormatPropertiesNV(item: *const vk.VkOpticalFlowImageFormatPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowImageFormatPropertiesNV);
+}
+pub fn size_of_VkOpticalFlowSessionCreateInfoNV(item: *const vk.VkOpticalFlowSessionCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowSessionCreateInfoNV);
+}
+pub fn size_of_VkOpticalFlowSessionCreatePrivateDataInfoNV(item: *const vk.VkOpticalFlowSessionCreatePrivateDataInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowSessionCreatePrivateDataInfoNV);
+}
+pub fn size_of_VkOpticalFlowExecuteInfoNV(item: *const vk.VkOpticalFlowExecuteInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkOpticalFlowExecuteInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceFaultFeaturesEXT(item: *const vk.VkPhysicalDeviceFaultFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFaultFeaturesEXT);
+}
+pub fn size_of_VkDeviceFaultAddressInfoEXT(item: *const vk.VkDeviceFaultAddressInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceFaultAddressInfoEXT);
+}
+pub fn size_of_VkDeviceFaultVendorInfoEXT(item: *const vk.VkDeviceFaultVendorInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceFaultVendorInfoEXT);
+}
+pub fn size_of_VkDeviceFaultCountsEXT(item: *const vk.VkDeviceFaultCountsEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceFaultCountsEXT);
+}
+pub fn size_of_VkDeviceFaultInfoEXT(item: *const vk.VkDeviceFaultInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAddressInfos) |ptr| size += size_of_VkDeviceFaultAddressInfoEXT(@ptrCast(ptr), false);
+    if (item.pVendorInfos) |ptr| size += size_of_VkDeviceFaultVendorInfoEXT(@ptrCast(ptr), false);
+    if (item.pVendorBinaryData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceFaultInfoEXT);
+}
+pub fn size_of_VkDeviceFaultVendorBinaryHeaderVersionOneEXT(item: *const vk.VkDeviceFaultVendorBinaryHeaderVersionOneEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceFaultVendorBinaryHeaderVersionOneEXT);
+}
+pub fn size_of_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(item: *const vk.VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT);
+}
+pub fn size_of_VkDepthBiasInfoEXT(item: *const vk.VkDepthBiasInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+                => size += size_of_VkDepthBiasRepresentationInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDepthBiasInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDepthBiasInfoEXT);
+}
+pub fn size_of_VkDepthBiasRepresentationInfoEXT(item: *const vk.VkDepthBiasRepresentationInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDepthBiasRepresentationInfoEXT);
+}
+pub fn size_of_VkDecompressMemoryRegionNV(item: *const vk.VkDecompressMemoryRegionNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDecompressMemoryRegionNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM);
+}
+pub fn size_of_VkFrameBoundaryEXT(item: *const vk.VkFrameBoundaryEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.imageCount) |_|
+        size += @sizeOf(vk.VkImage);
+    for (0..item.bufferCount) |_|
+        size += @sizeOf(vk.VkBuffer);
+    for (0..item.tagSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFrameBoundaryEXT);
+}
+pub fn size_of_VkPhysicalDeviceFrameBoundaryFeaturesEXT(item: *const vk.VkPhysicalDeviceFrameBoundaryFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFrameBoundaryFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT(item: *const vk.VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT);
+}
+pub fn size_of_VkSurfacePresentModeKHR(item: *const vk.VkSurfacePresentModeKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfacePresentModeKHR);
+}
+pub fn size_of_VkSurfacePresentModeEXT(item: *const vk.VkSurfacePresentModeEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfacePresentModeEXT);
+}
+pub fn size_of_VkSurfacePresentScalingCapabilitiesKHR(item: *const vk.VkSurfacePresentScalingCapabilitiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfacePresentScalingCapabilitiesKHR);
+}
+pub fn size_of_VkSurfacePresentScalingCapabilitiesEXT(item: *const vk.VkSurfacePresentScalingCapabilitiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfacePresentScalingCapabilitiesEXT);
+}
+pub fn size_of_VkSurfacePresentModeCompatibilityKHR(item: *const vk.VkSurfacePresentModeCompatibilityKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.presentModeCount) |_|
+        size += @sizeOf(vk.VkPresentModeKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSurfacePresentModeCompatibilityKHR);
+}
+pub fn size_of_VkSurfacePresentModeCompatibilityEXT(item: *const vk.VkSurfacePresentModeCompatibilityEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfacePresentModeCompatibilityEXT);
+}
+pub fn size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(item: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT(item: *const vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT);
+}
+pub fn size_of_VkSwapchainPresentFenceInfoKHR(item: *const vk.VkSwapchainPresentFenceInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(vk.VkFence);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSwapchainPresentFenceInfoKHR);
+}
+pub fn size_of_VkSwapchainPresentFenceInfoEXT(item: *const vk.VkSwapchainPresentFenceInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentFenceInfoEXT);
+}
+pub fn size_of_VkSwapchainPresentModesCreateInfoKHR(item: *const vk.VkSwapchainPresentModesCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentModesCreateInfoKHR);
+}
+pub fn size_of_VkSwapchainPresentModesCreateInfoEXT(item: *const vk.VkSwapchainPresentModesCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentModesCreateInfoEXT);
+}
+pub fn size_of_VkSwapchainPresentModeInfoKHR(item: *const vk.VkSwapchainPresentModeInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.swapchainCount) |_|
+        size += @sizeOf(vk.VkPresentModeKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSwapchainPresentModeInfoKHR);
+}
+pub fn size_of_VkSwapchainPresentModeInfoEXT(item: *const vk.VkSwapchainPresentModeInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentModeInfoEXT);
+}
+pub fn size_of_VkSwapchainPresentScalingCreateInfoKHR(item: *const vk.VkSwapchainPresentScalingCreateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentScalingCreateInfoKHR);
+}
+pub fn size_of_VkSwapchainPresentScalingCreateInfoEXT(item: *const vk.VkSwapchainPresentScalingCreateInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentScalingCreateInfoEXT);
+}
+pub fn size_of_VkReleaseSwapchainImagesInfoKHR(item: *const vk.VkReleaseSwapchainImagesInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.imageIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkReleaseSwapchainImagesInfoKHR);
+}
+pub fn size_of_VkReleaseSwapchainImagesInfoEXT(item: *const vk.VkReleaseSwapchainImagesInfoEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkReleaseSwapchainImagesInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(item: *const vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV);
+}
+pub fn size_of_VkDirectDriverLoadingInfoLUNARG(item: *const vk.VkDirectDriverLoadingInfoLUNARG, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDirectDriverLoadingInfoLUNARG);
+}
+pub fn size_of_VkDirectDriverLoadingListLUNARG(item: *const vk.VkDirectDriverLoadingListLUNARG, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.driverCount) |i|
+        size += size_of_VkDirectDriverLoadingInfoLUNARG(@ptrCast(&item.pDrivers[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDirectDriverLoadingListLUNARG);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(item: *const vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(item: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR);
+}
+pub fn size_of_VkDeviceImageSubresourceInfo(item: *const vk.VkDeviceImageSubresourceInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCreateInfo) |ptr| size += size_of_VkImageCreateInfo(@ptrCast(ptr), false);
+    if (item.pSubresource) |ptr| size += size_of_VkImageSubresource2(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceImageSubresourceInfo);
+}
+pub fn size_of_VkDeviceImageSubresourceInfoKHR(item: *const vk.VkDeviceImageSubresourceInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceImageSubresourceInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderCorePropertiesARM(item: *const vk.VkPhysicalDeviceShaderCorePropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCorePropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(item: *const vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM);
+}
+pub fn size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(item: *const vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.perViewRenderAreaCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pPerViewRenderAreas[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM);
+}
+pub fn size_of_VkQueryLowLatencySupportNV(item: *const vk.VkQueryLowLatencySupportNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pQueriedLowLatencyData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkQueryLowLatencySupportNV);
+}
+pub fn size_of_VkMemoryMapInfo(item: *const vk.VkMemoryMapInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT,
+                => size += size_of_VkMemoryMapPlacedInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkMemoryMapInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkMemoryMapInfo);
+}
+pub fn size_of_VkMemoryMapInfoKHR(item: *const vk.VkMemoryMapInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryMapInfoKHR);
+}
+pub fn size_of_VkMemoryUnmapInfo(item: *const vk.VkMemoryUnmapInfo, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryUnmapInfo);
+}
+pub fn size_of_VkMemoryUnmapInfoKHR(item: *const vk.VkMemoryUnmapInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryUnmapInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderObjectFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderObjectFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderObjectPropertiesEXT(item: *const vk.VkPhysicalDeviceShaderObjectPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderObjectPropertiesEXT);
+}
+pub fn size_of_VkShaderCreateInfoEXT(item: *const vk.VkShaderCreateInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.codeSize) |_|
+        size += @sizeOf(void);
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+    for (0..item.setLayoutCount) |_|
+        size += @sizeOf(vk.VkDescriptorSetLayout);
+    for (0..item.pushConstantRangeCount) |i|
+        size += size_of_VkPushConstantRange(@ptrCast(&item.pPushConstantRanges[i]), false);
+    if (item.pSpecializationInfo) |ptr| size += size_of_VkSpecializationInfo(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT,
+                => size += size_of_VkValidationFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+                => size += size_of_VkPipelineShaderStageRequiredSubgroupSizeCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkShaderCreateInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkShaderCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderTileImageFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderTileImageFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderTileImageFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderTileImagePropertiesEXT(item: *const vk.VkPhysicalDeviceShaderTileImagePropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderTileImagePropertiesEXT);
+}
+pub fn size_of_VkImportScreenBufferInfoQNX(item: *const vk.VkImportScreenBufferInfoQNX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.buffer) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportScreenBufferInfoQNX);
+}
+pub fn size_of_VkScreenBufferPropertiesQNX(item: *const vk.VkScreenBufferPropertiesQNX, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SCREEN_BUFFER_FORMAT_PROPERTIES_QNX,
+                => size += size_of_VkScreenBufferFormatPropertiesQNX(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkScreenBufferPropertiesQNX: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkScreenBufferPropertiesQNX);
+}
+pub fn size_of_VkScreenBufferFormatPropertiesQNX(item: *const vk.VkScreenBufferFormatPropertiesQNX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkScreenBufferFormatPropertiesQNX);
+}
+pub fn size_of_VkExternalFormatQNX(item: *const vk.VkExternalFormatQNX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalFormatQNX);
+}
+pub fn size_of_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(item: *const vk.VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(item: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR);
+}
+pub fn size_of_VkCooperativeMatrixPropertiesKHR(item: *const vk.VkCooperativeMatrixPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeMatrixPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(item: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderEnqueuePropertiesAMDX(item: *const vk.VkPhysicalDeviceShaderEnqueuePropertiesAMDX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderEnqueuePropertiesAMDX);
+}
+pub fn size_of_VkPhysicalDeviceShaderEnqueueFeaturesAMDX(item: *const vk.VkPhysicalDeviceShaderEnqueueFeaturesAMDX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderEnqueueFeaturesAMDX);
+}
+pub fn size_of_VkExecutionGraphPipelineCreateInfoAMDX(item: *const vk.VkExecutionGraphPipelineCreateInfoAMDX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    if (item.pLibraryInfo) |ptr| size += size_of_VkPipelineLibraryCreateInfoKHR(@ptrCast(ptr), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+                => size += size_of_VkPipelineCompilerControlCreateInfoAMD(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkExecutionGraphPipelineCreateInfoAMDX: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkExecutionGraphPipelineCreateInfoAMDX);
+}
+pub fn size_of_VkPipelineShaderStageNodeCreateInfoAMDX(item: *const vk.VkPipelineShaderStageNodeCreateInfoAMDX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineShaderStageNodeCreateInfoAMDX);
+}
+pub fn size_of_VkExecutionGraphPipelineScratchSizeAMDX(item: *const vk.VkExecutionGraphPipelineScratchSizeAMDX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExecutionGraphPipelineScratchSizeAMDX);
+}
+pub fn size_of_VkDispatchGraphInfoAMDX(item: *const vk.VkDispatchGraphInfoAMDX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDispatchGraphInfoAMDX);
+}
+pub fn size_of_VkDispatchGraphCountInfoAMDX(item: *const vk.VkDispatchGraphCountInfoAMDX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDispatchGraphCountInfoAMDX);
+}
+pub fn size_of_VkPhysicalDeviceAntiLagFeaturesAMD(item: *const vk.VkPhysicalDeviceAntiLagFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAntiLagFeaturesAMD);
+}
+pub fn size_of_VkAntiLagDataAMD(item: *const vk.VkAntiLagDataAMD, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pPresentationInfo) |ptr| size += size_of_VkAntiLagPresentationInfoAMD(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAntiLagDataAMD);
+}
+pub fn size_of_VkAntiLagPresentationInfoAMD(item: *const vk.VkAntiLagPresentationInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAntiLagPresentationInfoAMD);
+}
+pub fn size_of_VkBindMemoryStatus(item: *const vk.VkBindMemoryStatus, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pResult) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkBindMemoryStatus);
+}
+pub fn size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(item: *const vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(item: *const vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM);
+}
+pub fn size_of_VkTileMemorySizeInfoQCOM(item: *const vk.VkTileMemorySizeInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemorySizeInfoQCOM);
+}
+pub fn size_of_VkTileMemoryRequirementsQCOM(item: *const vk.VkTileMemoryRequirementsQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemoryRequirementsQCOM);
+}
+pub fn size_of_VkBindMemoryStatusKHR(item: *const vk.VkBindMemoryStatusKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindMemoryStatusKHR);
+}
+pub fn size_of_VkBindDescriptorSetsInfo(item: *const vk.VkBindDescriptorSetsInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorSetCount) |_|
+        size += @sizeOf(vk.VkDescriptorSet);
+    for (0..item.dynamicOffsetCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBindDescriptorSetsInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkBindDescriptorSetsInfo);
+}
+pub fn size_of_VkBindDescriptorSetsInfoKHR(item: *const vk.VkBindDescriptorSetsInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindDescriptorSetsInfoKHR);
+}
+pub fn size_of_VkPushConstantsInfo(item: *const vk.VkPushConstantsInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.size) |_|
+        size += @sizeOf(void);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPushConstantsInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPushConstantsInfo);
+}
+pub fn size_of_VkPushConstantsInfoKHR(item: *const vk.VkPushConstantsInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPushConstantsInfoKHR);
+}
+pub fn size_of_VkPushDescriptorSetInfo(item: *const vk.VkPushDescriptorSetInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.descriptorWriteCount) |i|
+        size += size_of_VkWriteDescriptorSet(@ptrCast(&item.pDescriptorWrites[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPushDescriptorSetInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPushDescriptorSetInfo);
+}
+pub fn size_of_VkPushDescriptorSetInfoKHR(item: *const vk.VkPushDescriptorSetInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPushDescriptorSetInfoKHR);
+}
+pub fn size_of_VkPushDescriptorSetWithTemplateInfo(item: *const vk.VkPushDescriptorSetWithTemplateInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pData) |ptr| size += @sizeOf(ptr.*);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPushDescriptorSetWithTemplateInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkPushDescriptorSetWithTemplateInfo);
+}
+pub fn size_of_VkPushDescriptorSetWithTemplateInfoKHR(item: *const vk.VkPushDescriptorSetWithTemplateInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPushDescriptorSetWithTemplateInfoKHR);
+}
+pub fn size_of_VkSetDescriptorBufferOffsetsInfoEXT(item: *const vk.VkSetDescriptorBufferOffsetsInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.setCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.setCount) |_|
+        size += @sizeOf(vk.VkDeviceSize);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkSetDescriptorBufferOffsetsInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkSetDescriptorBufferOffsetsInfoEXT);
+}
+pub fn size_of_VkBindDescriptorBufferEmbeddedSamplersInfoEXT(item: *const vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                => size += size_of_VkPipelineLayoutCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBindDescriptorBufferEmbeddedSamplersInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(item: *const vk.VkPhysicalDeviceCubicClampFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCubicClampFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(item: *const vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM);
+}
+pub fn size_of_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(item: *const vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(item: *const vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM);
+}
+pub fn size_of_VkSamplerCubicWeightsCreateInfoQCOM(item: *const vk.VkSamplerCubicWeightsCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerCubicWeightsCreateInfoQCOM);
+}
+pub fn size_of_VkBlitImageCubicWeightsInfoQCOM(item: *const vk.VkBlitImageCubicWeightsInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBlitImageCubicWeightsInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(item: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessing2PropertiesQCOM(item: *const vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM);
+}
+pub fn size_of_VkSamplerBlockMatchWindowCreateInfoQCOM(item: *const vk.VkSamplerBlockMatchWindowCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerBlockMatchWindowCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(item: *const vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceLayeredDriverPropertiesMSFT(item: *const vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT);
+}
+pub fn size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(item: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(item: *const vk.VkPhysicalDeviceExternalFormatResolveFeaturesANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalFormatResolveFeaturesANDROID);
+}
+pub fn size_of_VkPhysicalDeviceExternalFormatResolvePropertiesANDROID(item: *const vk.VkPhysicalDeviceExternalFormatResolvePropertiesANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalFormatResolvePropertiesANDROID);
+}
+pub fn size_of_VkAndroidHardwareBufferFormatResolvePropertiesANDROID(item: *const vk.VkAndroidHardwareBufferFormatResolvePropertiesANDROID, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAndroidHardwareBufferFormatResolvePropertiesANDROID);
+}
+pub fn size_of_VkLatencySleepModeInfoNV(item: *const vk.VkLatencySleepModeInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySleepModeInfoNV);
+}
+pub fn size_of_VkLatencySleepInfoNV(item: *const vk.VkLatencySleepInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySleepInfoNV);
+}
+pub fn size_of_VkSetLatencyMarkerInfoNV(item: *const vk.VkSetLatencyMarkerInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetLatencyMarkerInfoNV);
+}
+pub fn size_of_VkGetLatencyMarkerInfoNV(item: *const vk.VkGetLatencyMarkerInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.timingCount) |i|
+        size += size_of_VkLatencyTimingsFrameReportNV(@ptrCast(&item.pTimings[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGetLatencyMarkerInfoNV);
+}
+pub fn size_of_VkLatencyTimingsFrameReportNV(item: *const vk.VkLatencyTimingsFrameReportNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencyTimingsFrameReportNV);
+}
+pub fn size_of_VkOutOfBandQueueTypeInfoNV(item: *const vk.VkOutOfBandQueueTypeInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOutOfBandQueueTypeInfoNV);
+}
+pub fn size_of_VkLatencySubmissionPresentIdNV(item: *const vk.VkLatencySubmissionPresentIdNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySubmissionPresentIdNV);
+}
+pub fn size_of_VkSwapchainLatencyCreateInfoNV(item: *const vk.VkSwapchainLatencyCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainLatencyCreateInfoNV);
+}
+pub fn size_of_VkLatencySurfaceCapabilitiesNV(item: *const vk.VkLatencySurfaceCapabilitiesNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.presentModeCount) |_|
+        size += @sizeOf(vk.VkPresentModeKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkLatencySurfaceCapabilitiesNV);
+}
+pub fn size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(item: *const vk.VkPhysicalDeviceCudaKernelLaunchFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCudaKernelLaunchFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(item: *const vk.VkPhysicalDeviceCudaKernelLaunchPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCudaKernelLaunchPropertiesNV);
+}
+pub fn size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(item: *const vk.VkDeviceQueueShaderCoreControlCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueShaderCoreControlCreateInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(item: *const vk.VkPhysicalDeviceSchedulingControlsFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSchedulingControlsFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceSchedulingControlsPropertiesARM(item: *const vk.VkPhysicalDeviceSchedulingControlsPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSchedulingControlsPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(item: *const vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG);
+}
+pub fn size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(item: *const vk.VkPhysicalDeviceRenderPassStripedFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRenderPassStripedFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceRenderPassStripedPropertiesARM(item: *const vk.VkPhysicalDeviceRenderPassStripedPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRenderPassStripedPropertiesARM);
+}
+pub fn size_of_VkRenderPassStripeInfoARM(item: *const vk.VkRenderPassStripeInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassStripeInfoARM);
+}
+pub fn size_of_VkRenderPassStripeBeginInfoARM(item: *const vk.VkRenderPassStripeBeginInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stripeInfoCount) |i|
+        size += size_of_VkRenderPassStripeInfoARM(@ptrCast(&item.pStripeInfos[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassStripeBeginInfoARM);
+}
+pub fn size_of_VkRenderPassStripeSubmitInfoARM(item: *const vk.VkRenderPassStripeSubmitInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stripeSemaphoreInfoCount) |i|
+        size += size_of_VkSemaphoreSubmitInfo(@ptrCast(&item.pStripeSemaphoreInfos[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassStripeSubmitInfoARM);
+}
+pub fn size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(item: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderSubgroupRotateFeatures(item: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSubgroupRotateFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderExpectAssumeFeatures(item: *const vk.VkPhysicalDeviceShaderExpectAssumeFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderExpectAssumeFeatures);
+}
+pub fn size_of_VkPhysicalDeviceShaderExpectAssumeFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderExpectAssumeFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderExpectAssumeFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderFloatControls2Features(item: *const vk.VkPhysicalDeviceShaderFloatControls2Features, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderFloatControls2Features);
+}
+pub fn size_of_VkPhysicalDeviceShaderFloatControls2FeaturesKHR(item: *const vk.VkPhysicalDeviceShaderFloatControls2FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderFloatControls2FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(item: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures);
+}
+pub fn size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR(item: *const vk.VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR);
+}
+pub fn size_of_VkRenderingAttachmentLocationInfo(item: *const vk.VkRenderingAttachmentLocationInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderingAttachmentLocationInfo);
+}
+pub fn size_of_VkRenderingAttachmentLocationInfoKHR(item: *const vk.VkRenderingAttachmentLocationInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingAttachmentLocationInfoKHR);
+}
+pub fn size_of_VkRenderingInputAttachmentIndexInfo(item: *const vk.VkRenderingInputAttachmentIndexInfo, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(u32);
+    if (item.pDepthInputAttachmentIndex) |ptr| size += @sizeOf(ptr.*);
+    if (item.pStencilInputAttachmentIndex) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderingInputAttachmentIndexInfo);
+}
+pub fn size_of_VkRenderingInputAttachmentIndexInfoKHR(item: *const vk.VkRenderingInputAttachmentIndexInfoKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderingInputAttachmentIndexInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(item: *const vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(item: *const vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceMapMemoryPlacedPropertiesEXT(item: *const vk.VkPhysicalDeviceMapMemoryPlacedPropertiesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMapMemoryPlacedPropertiesEXT);
+}
+pub fn size_of_VkMemoryMapPlacedInfoEXT(item: *const vk.VkMemoryMapPlacedInfoEXT, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pPlacedAddress) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMemoryMapPlacedInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(item: *const vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(item: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRawAccessChainsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(item: *const vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(item: *const vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA);
+}
+pub fn size_of_VkPhysicalDeviceImageAlignmentControlPropertiesMESA(item: *const vk.VkPhysicalDeviceImageAlignmentControlPropertiesMESA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageAlignmentControlPropertiesMESA);
+}
+pub fn size_of_VkImageAlignmentControlCreateInfoMESA(item: *const vk.VkImageAlignmentControlCreateInfoMESA, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageAlignmentControlCreateInfoMESA);
+}
+pub fn size_of_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(item: *const vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT(item: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(item: *const vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR);
+}
+pub fn size_of_VkDepthClampRangeEXT(item: *const vk.VkDepthClampRangeEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDepthClampRangeEXT);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV);
+}
+pub fn size_of_VkCooperativeMatrixFlexibleDimensionsPropertiesNV(item: *const vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceHdrVividFeaturesHUAWEI, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceHdrVividFeaturesHUAWEI);
+}
+pub fn size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(item: *const vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(item: *const vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeVectorFeaturesNV);
+}
+pub fn size_of_VkCooperativeVectorPropertiesNV(item: *const vk.VkCooperativeVectorPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeVectorPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeVectorPropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeVectorPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeVectorPropertiesNV);
+}
+pub fn size_of_VkConvertCooperativeVectorMatrixInfoNV(item: *const vk.VkConvertCooperativeVectorMatrixInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDstSize) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkConvertCooperativeVectorMatrixInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(item: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileShadingFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTileShadingPropertiesQCOM(item: *const vk.VkPhysicalDeviceTileShadingPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileShadingPropertiesQCOM);
+}
+pub fn size_of_VkRenderPassTileShadingCreateInfoQCOM(item: *const vk.VkRenderPassTileShadingCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassTileShadingCreateInfoQCOM);
+}
+pub fn size_of_VkPerTileBeginInfoQCOM(item: *const vk.VkPerTileBeginInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerTileBeginInfoQCOM);
+}
+pub fn size_of_VkPerTileEndInfoQCOM(item: *const vk.VkPerTileEndInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerTileEndInfoQCOM);
+}
+pub fn size_of_VkDispatchTileInfoQCOM(item: *const vk.VkDispatchTileInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDispatchTileInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(item: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(item: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE);
+}
+pub fn size_of_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(item: *const vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE);
+}
+pub fn size_of_VkSetPresentConfigNV(item: *const vk.VkSetPresentConfigNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetPresentConfigNV);
+}
+pub fn size_of_VkPhysicalDevicePresentMeteringFeaturesNV(item: *const vk.VkPhysicalDevicePresentMeteringFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentMeteringFeaturesNV);
+}
+pub fn size_of_VkExternalComputeQueueDeviceCreateInfoNV(item: *const vk.VkExternalComputeQueueDeviceCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueDeviceCreateInfoNV);
+}
+pub fn size_of_VkExternalComputeQueueCreateInfoNV(item: *const vk.VkExternalComputeQueueCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueCreateInfoNV);
+}
+pub fn size_of_VkExternalComputeQueueDataParamsNV(item: *const vk.VkExternalComputeQueueDataParamsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueDataParamsNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalComputeQueuePropertiesNV(item: *const vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceFormatPackFeaturesARM(item: *const vk.VkPhysicalDeviceFormatPackFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFormatPackFeaturesARM);
+}
+pub fn size_of_VkTensorDescriptionARM(item: *const vk.VkTensorDescriptionARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(i64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(i64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorDescriptionARM);
+}
+pub fn size_of_VkTensorCreateInfoARM(item: *const vk.VkTensorCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDescription) |ptr| size += size_of_VkTensorDescriptionARM(@ptrCast(ptr), false);
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM,
+                => size += size_of_VkExternalMemoryTensorCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkTensorCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkTensorCreateInfoARM);
+}
+pub fn size_of_VkTensorViewCreateInfoARM(item: *const vk.VkTensorViewCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkTensorViewCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkTensorViewCreateInfoARM);
+}
+pub fn size_of_VkTensorMemoryRequirementsInfoARM(item: *const vk.VkTensorMemoryRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorMemoryRequirementsInfoARM);
+}
+pub fn size_of_VkBindTensorMemoryInfoARM(item: *const vk.VkBindTensorMemoryInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindTensorMemoryInfoARM);
+}
+pub fn size_of_VkWriteDescriptorSetTensorARM(item: *const vk.VkWriteDescriptorSetTensorARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tensorViewCount) |_|
+        size += @sizeOf(vk.VkTensorViewARM);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetTensorARM);
+}
+pub fn size_of_VkTensorFormatPropertiesARM(item: *const vk.VkTensorFormatPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorFormatPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceTensorPropertiesARM(item: *const vk.VkPhysicalDeviceTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTensorPropertiesARM);
+}
+pub fn size_of_VkTensorMemoryBarrierARM(item: *const vk.VkTensorMemoryBarrierARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorMemoryBarrierARM);
+}
+pub fn size_of_VkTensorDependencyInfoARM(item: *const vk.VkTensorDependencyInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pTensorMemoryBarriers) |ptr| size += size_of_VkTensorMemoryBarrierARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorDependencyInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceTensorFeaturesARM(item: *const vk.VkPhysicalDeviceTensorFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTensorFeaturesARM);
+}
+pub fn size_of_VkDeviceTensorMemoryRequirementsARM(item: *const vk.VkDeviceTensorMemoryRequirementsARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCreateInfo) |ptr| size += size_of_VkTensorCreateInfoARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceTensorMemoryRequirementsARM);
+}
+pub fn size_of_VkCopyTensorInfoARM(item: *const vk.VkCopyTensorInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkTensorCopyARM(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyTensorInfoARM);
+}
+pub fn size_of_VkTensorCopyARM(item: *const vk.VkTensorCopyARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorCopyARM);
+}
+pub fn size_of_VkMemoryDedicatedAllocateInfoTensorARM(item: *const vk.VkMemoryDedicatedAllocateInfoTensorARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedAllocateInfoTensorARM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(item: *const vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(item: *const vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM);
+}
+pub fn size_of_VkTensorCaptureDescriptorDataInfoARM(item: *const vk.VkTensorCaptureDescriptorDataInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorCaptureDescriptorDataInfoARM);
+}
+pub fn size_of_VkTensorViewCaptureDescriptorDataInfoARM(item: *const vk.VkTensorViewCaptureDescriptorDataInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorViewCaptureDescriptorDataInfoARM);
+}
+pub fn size_of_VkDescriptorGetTensorInfoARM(item: *const vk.VkDescriptorGetTensorInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorGetTensorInfoARM);
+}
+pub fn size_of_VkFrameBoundaryTensorsARM(item: *const vk.VkFrameBoundaryTensorsARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tensorCount) |_|
+        size += @sizeOf(vk.VkTensorARM);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFrameBoundaryTensorsARM);
+}
+pub fn size_of_VkPhysicalDeviceExternalTensorInfoARM(item: *const vk.VkPhysicalDeviceExternalTensorInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDescription) |ptr| size += size_of_VkTensorDescriptionARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceExternalTensorInfoARM);
+}
+pub fn size_of_VkExternalTensorPropertiesARM(item: *const vk.VkExternalTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalTensorPropertiesARM);
+}
+pub fn size_of_VkExternalMemoryTensorCreateInfoARM(item: *const vk.VkExternalMemoryTensorCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryTensorCreateInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(item: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderFloat8FeaturesEXT);
+}
+pub fn size_of_VkOHSurfaceCreateInfoOHOS(item: *const vk.VkOHSurfaceCreateInfoOHOS, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.window) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkOHSurfaceCreateInfoOHOS);
+}
+pub fn size_of_VkSurfaceCreateInfoOHOS(item: *const vk.VkSurfaceCreateInfoOHOS, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCreateInfoOHOS);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphFeaturesARM(item: *const vk.VkPhysicalDeviceDataGraphFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphFeaturesARM);
+}
+pub fn size_of_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(item: *const vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineConstantARM(item: *const vk.VkDataGraphPipelineConstantARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pConstantData) |ptr| size += @sizeOf(ptr.*);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+                => size += size_of_VkTensorDescriptionARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineConstantARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineConstantARM);
+}
+pub fn size_of_VkDataGraphPipelineResourceInfoARM(item: *const vk.VkDataGraphPipelineResourceInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+                => size += size_of_VkTensorDescriptionARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineResourceInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDataGraphPipelineResourceInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineCompilerControlCreateInfoARM(item: *const vk.VkDataGraphPipelineCompilerControlCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pVendorOptions)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelineCompilerControlCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineCreateInfoARM(item: *const vk.VkDataGraphPipelineCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.resourceInfoCount) |i|
+        size += size_of_VkDataGraphPipelineResourceInfoARM(@ptrCast(&item.pResourceInfos[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineCompilerControlCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineShaderModuleCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineIdentifierCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineShaderModuleCreateInfoARM(item: *const vk.VkDataGraphPipelineShaderModuleCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+    if (item.pSpecializationInfo) |ptr| size += size_of_VkSpecializationInfo(@ptrCast(ptr), false);
+    for (0..item.constantCount) |i|
+        size += size_of_VkDataGraphPipelineConstantARM(@ptrCast(&item.pConstants[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                => size += size_of_VkShaderModuleCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineShaderModuleCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineShaderModuleCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionCreateInfoARM(item: *const vk.VkDataGraphPipelineSessionCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionBindPointRequirementsInfoARM(item: *const vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionBindPointRequirementARM(item: *const vk.VkDataGraphPipelineSessionBindPointRequirementARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionBindPointRequirementARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionMemoryRequirementsInfoARM(item: *const vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM);
+}
+pub fn size_of_VkBindDataGraphPipelineSessionMemoryInfoARM(item: *const vk.VkBindDataGraphPipelineSessionMemoryInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindDataGraphPipelineSessionMemoryInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineInfoARM(item: *const vk.VkDataGraphPipelineInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineInfoARM);
+}
+pub fn size_of_VkDataGraphPipelinePropertyQueryResultARM(item: *const vk.VkDataGraphPipelinePropertyQueryResultARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelinePropertyQueryResultARM);
+}
+pub fn size_of_VkDataGraphPipelineIdentifierCreateInfoARM(item: *const vk.VkDataGraphPipelineIdentifierCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.identifierSize) |_|
+        size += @sizeOf(u8);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelineIdentifierCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineDispatchInfoARM(item: *const vk.VkDataGraphPipelineDispatchInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineDispatchInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphProcessingEngineARM(item: *const vk.VkPhysicalDeviceDataGraphProcessingEngineARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphProcessingEngineARM);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphOperationSupportARM(item: *const vk.VkPhysicalDeviceDataGraphOperationSupportARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphOperationSupportARM);
+}
+pub fn size_of_VkQueueFamilyDataGraphPropertiesARM(item: *const vk.VkQueueFamilyDataGraphPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyDataGraphPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM(item: *const vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM);
+}
+pub fn size_of_VkQueueFamilyDataGraphProcessingEnginePropertiesARM(item: *const vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM);
+}
+pub fn size_of_VkDataGraphProcessingEngineCreateInfoARM(item: *const vk.VkDataGraphProcessingEngineCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.processingEngineCount) |i|
+        size += size_of_VkPhysicalDeviceDataGraphProcessingEngineARM(@ptrCast(&item.pProcessingEngines[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphProcessingEngineCreateInfoARM);
+}
+pub fn size_of_VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC(item: *const vk.VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC);
 }
 pub fn check_result(result: vk.VkResult) !void {
     switch (result) {
