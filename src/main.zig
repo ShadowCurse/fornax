@@ -589,11 +589,12 @@ var created_compute_failures: std.atomic.Value(u32) = .init(0);
 var created_raytracing_failures: std.atomic.Value(u32) = .init(0);
 
 pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
-    create_inner(parsing, vulkan, context, root_entries) catch unreachable;
+    create_inner(parsing, vulkan, vulkan, context, root_entries) catch unreachable;
 }
 pub fn create_inner(
     comptime PARSE: type,
     comptime CREATE: type,
+    comptime DESTROY: type,
     context: *ThreadContext,
     root_entries: []RootEntry,
 ) !void {
@@ -628,14 +629,14 @@ pub fn create_inner(
                 .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
                 .created => {
                     counters.getPtr(curr_entry.tag).* += 1;
-                    curr_entry.destroy(context.vk_device);
+                    curr_entry.destroy(DESTROY, context.vk_device);
                 },
                 .invalid => {
-                    curr_entry.destroy_dependencies(context.vk_device);
+                    curr_entry.destroy_dependencies(DESTROY, context.vk_device);
                     for (queue.items) |t| {
                         const e, _ = t;
                         @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
-                        e.destroy_dependencies(context.vk_device);
+                        e.destroy_dependencies(DESTROY, context.vk_device);
                     }
                     switch (root_entry.entry.tag) {
                         .graphics_pipeline => {
@@ -726,19 +727,38 @@ test "parse" {
             unreachable;
         }
 
-        fn put_hashes(alloc: Allocator, db: *Database, hashes: []const u32) !void {
+        fn put_pipelines(
+            alloc: Allocator,
+            db: *Database,
+            data: []const struct {
+                hash: u32,
+                dependent_by: u32 = 0,
+                create_info: ?*align(8) const anyopaque = null,
+            },
+        ) !void {
             db.entries.getPtr(.graphics_pipeline).deinit(alloc);
             db.entries = .initFill(.empty);
-            for (hashes) |hash|
-                try db.entries.getPtr(.graphics_pipeline).put(alloc, hash, .{
+            for (data) |d| {
+                try db.entries.getPtr(.graphics_pipeline).put(alloc, d.hash, .{
                     .tag = .graphics_pipeline,
-                    .hash = hash,
+                    .hash = d.hash,
                     .payload_flag = .not_compressed,
                     .payload_crc = 0,
                     .payload_stored_size = 0,
                     .payload_decompressed_size = 0,
                     .payload_file_offset = 0,
+                    .status = if (d.create_info != null) .parsed else .not_parsed,
+                    .create_info = d.create_info,
+                    .dependent_by = d.dependent_by,
                 });
+            }
+        }
+
+        fn create(_: vk.VkDevice, _: *align(8) const anyopaque) !?*anyopaque {
+            unreachable;
+        }
+        fn destroy(_: vk.VkDevice, _: *const anyopaque) void {
+            unreachable;
         }
     };
 
@@ -751,16 +771,6 @@ test "parse" {
     var tmp_dir = std.testing.tmpDir(.{});
     defer tmp_dir.cleanup();
     const tmp_file = try tmp_dir.dir.createFile("parse_test", .{});
-
-    var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-    var thread_context: ThreadContext = .{
-        .arena = .init(alloc),
-        .shared_alloc = alloc,
-        .progress = &progress,
-        .extensions = &.{},
-        .db = &db,
-        .vk_device = undefined,
-    };
 
     // Simple root node with 2 deps
     {
@@ -797,7 +807,21 @@ test "parse" {
                 };
             }
         };
-        try Dummy.put_hashes(alloc, &db, &.{ 1, 2 });
+
+        var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
+        var thread_context: ThreadContext = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .extensions = &.{},
+            .db = &db,
+            .vk_device = undefined,
+        };
+
+        try Dummy.put_pipelines(alloc, &db, &.{
+            .{ .hash = 1 },
+            .{ .hash = 2 },
+        });
         var test_entry: Database.Entry = .{
             .tag = .graphics_pipeline,
             .hash = 0,
@@ -866,7 +890,22 @@ test "parse" {
                 };
             }
         };
-        try Dummy.put_hashes(alloc, &db, &.{ 1, 2 });
+
+        var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
+        var thread_context: ThreadContext = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .extensions = &.{},
+            .db = &db,
+            .vk_device = undefined,
+        };
+
+        try Dummy.put_pipelines(alloc, &db, &.{
+            .{ .hash = 1 },
+            .{ .hash = 2 },
+        });
+
         var test_entry: Database.Entry = .{
             .tag = .graphics_pipeline,
             .hash = 0,
@@ -888,6 +927,255 @@ test "parse" {
             if (entry.hash == 2) {
                 try std.testing.expectEqual(.invalid, entry.status);
                 try std.testing.expectEqual(0, entry.dependent_by);
+            }
+        }
+    }
+
+    // Create simple root node with 2 deps
+    // Make sure the creation and destruction order is correct
+    {
+        const Global = struct {
+            var create_counter: u32 = 0;
+            var destroy_counter: u32 = 0;
+            var gp0: u64 = 0xA;
+            var gp0_1: u64 = 0;
+            var gp0_2: u64 = 0;
+            var gp1: u64 = 0xB;
+            var gp2: u64 = 0xC;
+        };
+        const Parse = struct {
+            pub const parse_sampler = Dummy.parse;
+            pub const parse_shader_module = Dummy.parse;
+            pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
+            pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
+            pub const parse_render_pass = Dummy.parse;
+            pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_graphics_pipeline = Dummy.parse_with_dependencies;
+        };
+        const Create = struct {
+            pub const create_vk_sampler = Dummy.create;
+            pub const create_descriptor_set_layout = Dummy.create;
+            pub const create_pipeline_layout = Dummy.create;
+            pub const parse_shader_module = Dummy.create;
+            pub const create_shader_module = Dummy.create;
+            pub const create_render_pass = Dummy.create;
+            pub const create_raytracing_pipeline = Dummy.create;
+            pub const create_compute_pipeline = Dummy.create;
+            pub fn create_graphics_pipeline(
+                _: vk.VkDevice,
+                create_info: *align(8) const anyopaque,
+            ) !?*anyopaque {
+                defer Global.create_counter += 1;
+                const c: *const u64 = @ptrCast(create_info);
+                switch (Global.create_counter) {
+                    0 => try std.testing.expectEqual(0xB, c.*),
+                    1 => try std.testing.expectEqual(0xC, c.*),
+                    2 => try std.testing.expectEqual(0xA, c.*),
+                    else => unreachable,
+                }
+                return @ptrFromInt(c.*);
+            }
+        };
+        const Destroy = struct {
+            pub const destroy_vk_sampler = Dummy.destroy;
+            pub const destroy_descriptor_set_layout = Dummy.destroy;
+            pub const destroy_pipeline_layout = Dummy.destroy;
+            pub const parse_shader_module = Dummy.destroy;
+            pub const destroy_shader_module = Dummy.destroy;
+            pub const destroy_render_pass = Dummy.destroy;
+            pub fn destroy_pipeline(_: vk.VkDevice, handle: *const anyopaque) void {
+                defer Global.destroy_counter += 1;
+                const c: u64 = @intFromPtr(handle);
+                switch (Global.destroy_counter) {
+                    0 => std.testing.expectEqual(0xA, c) catch unreachable,
+                    1 => std.testing.expectEqual(0xB, c) catch unreachable,
+                    2 => std.testing.expectEqual(0xC, c) catch unreachable,
+                    else => unreachable,
+                }
+            }
+        };
+
+        var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
+        var thread_context: ThreadContext = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .extensions = &.{},
+            .db = &db,
+            .vk_device = undefined,
+        };
+
+        try Dummy.put_pipelines(
+            alloc,
+            &db,
+            &.{
+                .{ .hash = 0xB, .dependent_by = 1, .create_info = &Global.gp1 },
+                .{ .hash = 0xC, .dependent_by = 1, .create_info = &Global.gp2 },
+            },
+        );
+        var test_entry: Database.Entry = .{
+            .tag = .graphics_pipeline,
+            .hash = 0xA,
+            .payload_flag = .not_compressed,
+            .payload_crc = 0,
+            .payload_stored_size = 0,
+            .payload_decompressed_size = 0,
+            .payload_file_offset = 0,
+            .status = .parsed,
+            .create_info = &Global.gp0,
+            .dependencies = &.{
+                .{
+                    .entry = db.entries.getPtr(.graphics_pipeline).getPtr(0xB).?,
+                    .ptr_to_handle = @ptrCast(&Global.gp0_1),
+                },
+                .{
+                    .entry = db.entries.getPtr(.graphics_pipeline).getPtr(0xC).?,
+                    .ptr_to_handle = @ptrCast(&Global.gp0_2),
+                },
+            },
+        };
+        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        try create_inner(Parse, Create, Destroy, &thread_context, &root_entries);
+
+        try std.testing.expectEqual(0xB, Global.gp0_1);
+        try std.testing.expectEqual(0xC, Global.gp0_2);
+        try std.testing.expectEqual(.created, test_entry.status);
+        try std.testing.expectEqual(true, test_entry.dependencies_destroyed);
+        const pipelines = db.entries.getPtr(.graphics_pipeline);
+        for (pipelines.values()) |*entry| {
+            try std.testing.expectEqual(.created, entry.status);
+            try std.testing.expectEqual(0, entry.dependent_by);
+            try std.testing.expectEqual(true, entry.dependencies_destroyed);
+        }
+    }
+
+    // Create simple root node with 2 deps, but one is uncreatable
+    // Make sure the creation and destruction order is correct
+    {
+        const Global = struct {
+            var create_counter: u32 = 0;
+            var destroy_counter: u32 = 0;
+            var gp0: u64 = 0xA;
+            var gp0_1: u64 = 0;
+            var gp0_2: u64 = 0;
+            var gp1: u64 = 0xB;
+            var gp2: u64 = 0xC;
+        };
+        const Parse = struct {
+            pub const parse_sampler = Dummy.parse;
+            pub const parse_shader_module = Dummy.parse;
+            pub const parse_descriptor_set_layout = Dummy.parse_with_dependencies;
+            pub const parse_pipeline_layout = Dummy.parse_with_dependencies;
+            pub const parse_render_pass = Dummy.parse;
+            pub const parse_compute_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_raytracing_pipeline = Dummy.parse_with_dependencies;
+            pub const parse_graphics_pipeline = Dummy.parse_with_dependencies;
+        };
+        const Create = struct {
+            pub const create_vk_sampler = Dummy.create;
+            pub const create_descriptor_set_layout = Dummy.create;
+            pub const create_pipeline_layout = Dummy.create;
+            pub const parse_shader_module = Dummy.create;
+            pub const create_shader_module = Dummy.create;
+            pub const create_render_pass = Dummy.create;
+            pub const create_raytracing_pipeline = Dummy.create;
+            pub const create_compute_pipeline = Dummy.create;
+            pub fn create_graphics_pipeline(
+                _: vk.VkDevice,
+                create_info: *align(8) const anyopaque,
+            ) !?*anyopaque {
+                defer Global.create_counter += 1;
+                const c: *const u64 = @ptrCast(create_info);
+                switch (Global.create_counter) {
+                    0 => try std.testing.expectEqual(0xB, c.*),
+                    1 => {
+                        try std.testing.expectEqual(0xC, c.*);
+                        return error.SomeError;
+                    },
+                    2 => try std.testing.expectEqual(0xA, c.*),
+                    else => unreachable,
+                }
+                return @ptrFromInt(c.*);
+            }
+        };
+        const Destroy = struct {
+            pub const destroy_vk_sampler = Dummy.destroy;
+            pub const destroy_descriptor_set_layout = Dummy.destroy;
+            pub const destroy_pipeline_layout = Dummy.destroy;
+            pub const parse_shader_module = Dummy.destroy;
+            pub const destroy_shader_module = Dummy.destroy;
+            pub const destroy_render_pass = Dummy.destroy;
+            pub fn destroy_pipeline(_: vk.VkDevice, handle: *const anyopaque) void {
+                defer Global.destroy_counter += 1;
+                const c: u64 = @intFromPtr(handle);
+                switch (Global.destroy_counter) {
+                    0 => std.testing.expectEqual(0xB, c) catch unreachable,
+                    else => unreachable,
+                }
+            }
+        };
+
+        var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
+        var thread_context: ThreadContext = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .extensions = &.{},
+            .db = &db,
+            .vk_device = undefined,
+        };
+
+        try Dummy.put_pipelines(
+            alloc,
+            &db,
+            &.{
+                .{ .hash = 0xB, .dependent_by = 1, .create_info = &Global.gp1 },
+                .{ .hash = 0xC, .dependent_by = 1, .create_info = &Global.gp2 },
+            },
+        );
+        var test_entry: Database.Entry = .{
+            .tag = .graphics_pipeline,
+            .hash = 0xA,
+            .payload_flag = .not_compressed,
+            .payload_crc = 0,
+            .payload_stored_size = 0,
+            .payload_decompressed_size = 0,
+            .payload_file_offset = 0,
+            .status = .parsed,
+            .create_info = &Global.gp0,
+            .dependencies = &.{
+                .{
+                    .entry = db.entries.getPtr(.graphics_pipeline).getPtr(0xB).?,
+                    .ptr_to_handle = @ptrCast(&Global.gp0_1),
+                },
+                .{
+                    .entry = db.entries.getPtr(.graphics_pipeline).getPtr(0xC).?,
+                    .ptr_to_handle = @ptrCast(&Global.gp0_2),
+                },
+            },
+        };
+        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        try create_inner(Parse, Create, Destroy, &thread_context, &root_entries);
+
+        try std.testing.expectEqual(0, Global.gp0_1);
+        try std.testing.expectEqual(0, Global.gp0_2);
+        try std.testing.expectEqual(.invalid, test_entry.status);
+        try std.testing.expectEqual(true, test_entry.dependencies_destroyed);
+        const pipelines = db.entries.getPtr(.graphics_pipeline);
+        for (pipelines.values()) |*entry| {
+            switch (entry.hash) {
+                0xB => {
+                    try std.testing.expectEqual(.created, entry.status);
+                    try std.testing.expectEqual(0, entry.dependent_by);
+                    try std.testing.expectEqual(true, entry.dependencies_destroyed);
+                },
+                0xC => {
+                    try std.testing.expectEqual(.invalid, entry.status);
+                    try std.testing.expectEqual(0, entry.dependent_by);
+                    try std.testing.expectEqual(true, entry.dependencies_destroyed);
+                },
+                else => unreachable,
             }
         }
     }

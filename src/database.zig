@@ -521,7 +521,11 @@ pub const Entry = struct {
             _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
     }
 
-    pub fn destroy_dependencies(self: *Entry, vk_device: vk.VkDevice) void {
+    pub fn destroy_dependencies(
+        self: *Entry,
+        comptime DESTROY: type,
+        vk_device: vk.VkDevice,
+    ) void {
         if (@cmpxchgWeak(
             bool,
             &self.dependencies_destroyed,
@@ -534,11 +538,11 @@ pub const Entry = struct {
 
         for (self.dependencies) |dep| {
             _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
-            dep.entry.destroy(vk_device);
+            dep.entry.destroy(DESTROY, vk_device);
         }
     }
 
-    pub fn destroy(self: *Entry, vk_device: vk.VkDevice) void {
+    pub fn destroy(self: *Entry, comptime DESTROY: type, vk_device: vk.VkDevice) void {
         const status = @atomicLoad(Status, &self.status, .seq_cst);
         if (status != .created) return;
 
@@ -557,28 +561,28 @@ pub const Entry = struct {
 
         switch (self.tag) {
             .application_info => {},
-            .sampler => vulkan.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
-            .descriptor_set_layout => vulkan.destroy_descriptor_set_layout(
+            .sampler => DESTROY.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
+            .descriptor_set_layout => DESTROY.destroy_descriptor_set_layout(
                 vk_device,
                 @ptrCast(self.handle),
             ),
-            .pipeline_layout => vulkan.destroy_pipeline_layout(
+            .pipeline_layout => DESTROY.destroy_pipeline_layout(
                 vk_device,
                 @ptrCast(self.handle),
             ),
             .shader_module,
-            => vulkan.destroy_shader_module(vk_device, @ptrCast(self.handle)),
+            => DESTROY.destroy_shader_module(vk_device, @ptrCast(self.handle)),
             .render_pass,
-            => vulkan.destroy_render_pass(vk_device, @ptrCast(self.handle)),
+            => DESTROY.destroy_render_pass(vk_device, @ptrCast(self.handle)),
             .graphics_pipeline,
             .compute_pipeline,
             .raytracing_pipeline,
-            => vulkan.destroy_pipeline(vk_device, @ptrCast(self.handle)),
+            => DESTROY.destroy_pipeline(vk_device, @ptrCast(self.handle)),
             .application_blob_link => {},
         }
         for (self.dependencies) |dep| {
             _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
-            dep.entry.destroy(vk_device);
+            dep.entry.destroy(DESTROY, vk_device);
         }
     }
 };
@@ -702,7 +706,7 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
     var fe_iter = final_entries.iterator();
     while (fe_iter.next()) |e| {
         const map = entries.getPtrConst(e.key);
-        log.info(@src(), "Found {s:<21} {d:>5}", .{ @tagName(e.key), map.count() });
+        log.info(@src(), "Found {s:<21} {d:>8}", .{ @tagName(e.key), map.count() });
         e.value.* = try map.clone(arena_alloc);
     }
     return .{
