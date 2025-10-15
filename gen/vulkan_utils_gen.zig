@@ -1827,14 +1827,26 @@ const PRINT_STRUCT =
     \\
 ;
 
-fn write_fmt(
-    file: *const std.fs.File,
+const Writer = struct {
     alloc: Allocator,
-    comptime fmt: []const u8,
-    args: anytype,
-) !void {
-    const line = try std.fmt.allocPrint(alloc, fmt, args);
-    _ = try file.write(line);
+    file: *const std.fs.File,
+
+    const Self = @This();
+
+    fn write(self: *Self, comptime fmt: []const u8, args: anytype) void {
+        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch |e| {
+            std.log.err("Err: {t}", .{e});
+            unreachable;
+        };
+        _ = self.file.write(line) catch |e| {
+            std.log.err("Err: {t}", .{e});
+            unreachable;
+        };
+    }
+};
+
+fn eql(s1: []const u8, s2: []const u8) bool {
+    return std.mem.eql(u8, s1, s2);
 }
 
 fn write_print_chain(
@@ -1842,14 +1854,15 @@ fn write_print_chain(
     file: *const std.fs.File,
     stypes: []const struct { u32, []const u8 },
 ) !void {
-    _ = try file.write(
-        \\pub fn print_chain(chain: anytype) void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\pub fn print_chain(chain: anytype) void {{
         \\    var current: ?*const anyopaque = chain;
-        \\    while (current) |c| {
+        \\    while (current) |c| {{
         \\        const base_struct: *const vk.VkBaseInStructure = @ptrCast(@alignCast(c));
-        \\        switch (base_struct.sType) {
+        \\        switch (base_struct.sType) {{
         \\
-    );
+    , .{});
 
     var seen_values: std.ArrayListUnmanaged(u32) = .empty;
     for (stypes) |tuple| {
@@ -1860,32 +1873,25 @@ fn write_print_chain(
             continue;
 
         const t = try root.get_type(alloc, stype);
-        const line = try std.fmt.allocPrint(
-            alloc,
+        w.write(
             \\            vk.{[stype]s} => {{
             \\                const nn: *const vk.{[type]s} = @ptrCast(@alignCast(c));
             \\                print_struct(nn);
             \\                current = nn.pNext;
             \\            }},
             \\
-        ,
-            .{
-                .stype = stype,
-                .type = t,
-            },
-        );
-        _ = try file.write(line);
+        , .{ .stype = stype, .type = t });
     }
-    _ = try file.write(
-        \\            else => {
-        \\                log.warn(@src(), "Unknown struct sType: {d}", .{base_struct.sType});
+    w.write(
+        \\            else => {{
+        \\                log.warn(@src(), "Unknown struct sType: {{d}}", .{{base_struct.sType}});
         \\                current = base_struct.pNext;
-        \\            },
-        \\        }
-        \\    }
-        \\}
+        \\            }},
+        \\        }}
+        \\    }}
+        \\}}
         \\
-    );
+    , .{});
 }
 
 fn write_chain_size(
@@ -1893,15 +1899,16 @@ fn write_chain_size(
     file: *const std.fs.File,
     stypes: []const struct { u32, []const u8 },
 ) !void {
-    _ = try file.write(
-        \\pub fn chain_size(chain: anytype) usize {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\pub fn chain_size(chain: anytype) usize {{
         \\    var size: usize = 0;
         \\    var current: ?*const anyopaque = chain;
-        \\    while (current) |c| {
+        \\    while (current) |c| {{
         \\        const base_struct: *const vk.VkBaseInStructure = @ptrCast(@alignCast(c));
-        \\        switch (base_struct.sType) {
+        \\        switch (base_struct.sType) {{
         \\
-    );
+    , .{});
 
     var seen_values: std.ArrayListUnmanaged(u32) = .empty;
     for (stypes) |tuple| {
@@ -1912,33 +1919,26 @@ fn write_chain_size(
             continue;
 
         const t = try root.get_type(alloc, stype);
-        const line = try std.fmt.allocPrint(
-            alloc,
+        w.write(
             \\            vk.{[stype]s} => {{
             \\                const nn: *const vk.{[type]s} = @ptrCast(@alignCast(c));
             \\                size += struct_size(nn);
             \\                current = nn.pNext;
             \\            }},
             \\
-        ,
-            .{
-                .stype = stype,
-                .type = t,
-            },
-        );
-        _ = try file.write(line);
+        , .{ .stype = stype, .type = t });
     }
-    _ = try file.write(
-        \\            else => {
-        \\                log.warn(@src(), "Unknown struct sType: {d}", .{base_struct.sType});
+    w.write(
+        \\            else => {{
+        \\                log.warn(@src(), "Unknown struct sType: {{d}}", .{{base_struct.sType}});
         \\                current = base_struct.pNext;
-        \\            },
-        \\        }
-        \\    }
+        \\            }},
+        \\        }}
+        \\    }}
         \\    return size;
-        \\}
+        \\}}
         \\
-    );
+    , .{});
 }
 
 fn write_check_result(
@@ -1946,18 +1946,17 @@ fn write_check_result(
     file: *const std.fs.File,
     db: *const vkp.Database,
 ) !void {
-    _ = try file.write(
-        \\pub fn check_result(result: vk.VkResult) !void {
-        \\    switch (result) {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\pub fn check_result(result: vk.VkResult) !void {{
+        \\    switch (result) {{
         \\        vk.VK_SUCCESS => return,
         \\
-    );
+    , .{});
     const e = db.enum_by_name("VkResult").?;
     for (e.items) |*item| {
-        if (std.mem.eql(u8, item.name, "VK_SUCCESS")) continue;
-        try write_fmt(
-            file,
-            alloc,
+        if (eql(item.name, "VK_SUCCESS")) continue;
+        w.write(
             \\        vk.{[name]s} => {{
             \\            log.err(@src(), "Vulkan error: {[name]s} ({[comment]s})", .{{}});
             \\            return error.{s};
@@ -1976,12 +1975,10 @@ fn write_check_result(
                 switch (item) {
                     .@"enum" => |ee| {
                         const enum_name = if (ee.alias) |a| a else ee.name;
-                        if (std.mem.eql(u8, ee.extends, "VkResult")) {
+                        if (eql(ee.extends, "VkResult")) {
                             if (used_enums.getPtr(enum_name) != null) continue;
                             try used_enums.put(alloc, enum_name, {});
-                            try write_fmt(
-                                file,
-                                alloc,
+                            w.write(
                                 \\        vk.{[name]s} => {{
                                 \\            log.err(@src(), "Vulkan error: {[name]s} ({[extension]s})", .{{}});
                                 \\            return error.{s};
@@ -1997,15 +1994,15 @@ fn write_check_result(
             }
         }
     }
-    _ = try file.write(
-        \\        else => {
-        \\            log.err(@src(), "Vulkan error: UNKNOWN {}", .{result});
+    w.write(
+        \\        else => {{
+        \\            log.err(@src(), "Vulkan error: UNKNOWN {{}}", .{{result}});
         \\            return error.UNKNOWN;
-        \\        },
-        \\    }
-        \\}
+        \\        }},
+        \\    }}
+        \\}}
         \\
-    );
+    , .{});
 }
 
 fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
@@ -2046,7 +2043,7 @@ fn write_depends(
                         const name = depends[i .. i + index];
                         var t: []const u8 = "device";
                         for (instance_extensions) |*ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
+                            if (eql(name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2057,7 +2054,7 @@ fn write_depends(
                         const name = depends[i..];
                         var t: []const u8 = "device";
                         for (instance_extensions) |*ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
+                            if (eql(name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -2078,59 +2075,51 @@ fn write_extension_type(
     file: *const std.fs.File,
     db: *const vkp.Database,
 ) !void {
-    try write_fmt(
-        file,
-        alloc,
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
         \\pub const Extensions = struct {{
         \\    instance: packed struct(u{d}) {{
         \\
-    ,
-        .{db.extensions.instance.len},
-    );
-    for (db.extensions.instance) |*ext| {
-        try write_fmt(file, alloc,
+    , .{db.extensions.instance.len});
+    for (db.extensions.instance) |*ext|
+        w.write(
             \\        {s}: bool = false,
             \\
         , .{ext.name});
-    }
-    try write_fmt(
-        file,
-        alloc,
+    w.write(
         \\    }} = .{{}},
         \\    device: packed struct(u{d}) {{
         \\
-    ,
-        .{db.extensions.device.len},
-    );
+    , .{db.extensions.device.len});
 
     for (db.extensions.device) |*ext| {
-        try write_fmt(file, alloc,
+        w.write(
             \\        {s}: bool = false,
             \\
         , .{ext.name});
     }
-    _ = try file.write(
-        \\    } = .{},
+    w.write(
+        \\    }} = .{{}},
         \\
         \\    const Self = @This();
         \\
-    );
+    , .{});
 
-    _ = try file.write(
+    w.write(
         \\
         \\    pub fn init(
         \\        tmp_alloc: Allocator,
         \\        api_version: u32,
         \\        instance_extensions: []const [*c]const u8,
         \\        device_extensions: []const [*c]const u8,
-        \\    ) !Self {
+        \\    ) !Self {{
         \\        const ie = try tmp_alloc.alloc([]const u8, instance_extensions.len);
         \\        for (instance_extensions, ie) |a, *b| b.* = std.mem.span(a);
         \\        const de = try tmp_alloc.alloc([]const u8, device_extensions.len);
         \\        for (device_extensions, de) |a, *b| b.* = std.mem.span(a);
-        \\        var self: Self = .{};
+        \\        var self: Self = .{{}};
         \\
-    );
+    , .{});
     {
         for (&[_]struct { []const u8, []const u8 }{
             .{ "VK_API_VERSION_1_1", "VK_VERSION_1_1" },
@@ -2139,37 +2128,37 @@ fn write_extension_type(
             .{ "VK_API_VERSION_1_4", "VK_VERSION_1_4" },
         }) |tuple| {
             const api_version, const promoted_to = tuple;
-            try write_fmt(file, alloc,
+            w.write(
                 \\        if (vk.{s} <= api_version) {{
                 \\
             , .{api_version});
             for (db.extensions.instance) |*ext| {
-                if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
-                try write_fmt(file, alloc,
+                if (!eql(ext.promoted_to, promoted_to)) continue;
+                w.write(
                     \\            self.instance.{s} = true;
                     \\
                 , .{ext.name});
             }
             for (db.extensions.device) |*ext| {
-                if (!std.mem.eql(u8, ext.promoted_to, promoted_to)) continue;
-                try write_fmt(file, alloc,
+                if (!eql(ext.promoted_to, promoted_to)) continue;
+                w.write(
                     \\            self.device.{s} = true;
                     \\
                 , .{ext.name});
             }
-            _ = try file.write(
-                \\        }
+            w.write(
+                \\        }}
                 \\
-            );
+            , .{});
         }
     }
-    _ = try file.write(
+    w.write(
         \\        // Instance extensions
         \\
-    );
+    , .{});
     {
         for (db.extensions.instance) |*ext| {
-            try write_fmt(file, alloc,
+            w.write(
                 \\        for (ie) |ext| {{
                 \\            if (std.mem.eql(u8, ext, "{s}")
             , .{ext.name});
@@ -2179,7 +2168,7 @@ fn write_extension_type(
                 db.extensions.instance,
                 ext.depends,
             );
-            try write_fmt(file, alloc,
+            w.write(
                 \\) {{
                 \\                self.instance.{s} = true;
                 \\                break;
@@ -2189,13 +2178,13 @@ fn write_extension_type(
             , .{ext.name});
         }
     }
-    _ = try file.write(
+    w.write(
         \\        // Device extensions
         \\
-    );
+    , .{});
     {
         for (db.extensions.device) |*ext| {
-            try write_fmt(file, alloc,
+            w.write(
                 \\        for (de) |ext| {{
                 \\            if (std.mem.eql(u8, ext, "{s}")
             , .{ext.name});
@@ -2205,7 +2194,7 @@ fn write_extension_type(
                 db.extensions.instance,
                 ext.depends,
             );
-            try write_fmt(file, alloc,
+            w.write(
                 \\) {{
                 \\                self.device.{s} = true;
                 \\                break;
@@ -2216,76 +2205,76 @@ fn write_extension_type(
         }
     }
 
-    _ = try file.write(
+    w.write(
         \\        return self;
-        \\    }
-        \\};
+        \\    }}
+        \\}};
         \\
-    );
+    , .{});
 
-    for (db.types.structs) |*s| {
-        try write_fmt(file, alloc,
+    for (db.types.structs) |*@"struct"| {
+        w.write(
             \\
             \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}, check_pnext: bool) bool {{
             \\
-        , .{ s.name, s.name });
+        , .{ @"struct".name, @"struct".name });
         var checked_members: u32 = 0;
         var has_pnext: bool = false;
-        for (s.members) |m| {
-            if (std.mem.eql(u8, m.name, "pNext")) has_pnext = true;
-            for (db.enums.items) |e| {
-                if (std.mem.eql(u8, e.name, m.type)) {
+        for (@"struct".members) |*member| {
+            if (eql(member.name, "pNext")) has_pnext = true;
+            for (db.enums.items) |*@"enum"| {
+                if (eql(@"enum".name, member.type)) {
                     checked_members += 1;
-                    if (m.len) |len| {
-                        try write_fmt(file, alloc,
+                    if (member.len) |len| {
+                        w.write(
                             \\    for (0..item.{s}) |i| {{
                             \\        if (!check_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
                             \\            return false;
                             \\    }}
                             \\
-                        , .{ len, e.type, e.name, m.name });
+                        , .{ len, @"enum".type, @"enum".name, member.name });
                         break;
                     } else {
-                        try write_fmt(file, alloc,
+                        w.write(
                             \\    if (!check_{t}_{s}(extensions, @ptrCast(&item.{s})))
                             \\        return false;
                             \\
-                        , .{ e.type, e.name, m.name });
+                        , .{ @"enum".type, @"enum".name, member.name });
                         break;
                     }
                 }
             }
-            for (db.types.bitmasks) |b| {
-                if (std.mem.eql(u8, m.type, b.type_name)) {
+            for (db.types.bitmasks) |*bitmask| {
+                if (eql(member.type, bitmask.type_name)) {
                     checked_members += 1;
-                    if (m.len) |len| {
-                        try write_fmt(file, alloc,
+                    if (member.len) |len| {
+                        w.write(
                             \\    for (0..item.{s}) |i| {{
                             \\        if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
                             \\            return false;
                             \\    }}
                             \\
-                        , .{ len, b.enum_name, m.name });
+                        , .{ len, bitmask.enum_name, member.name });
                         break;
                     } else {
-                        try write_fmt(file, alloc,
+                        w.write(
                             \\    if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s})))
                             \\        return false;
                             \\
-                        , .{ b.enum_name, m.name });
+                        , .{ bitmask.enum_name, member.name });
                         break;
                     }
                 }
             }
         }
         if (checked_members == 0)
-            _ = try file.write(
+            w.write(
                 \\    _ = extensions;
                 \\    _ = item;
                 \\
-            );
+            , .{});
         if (has_pnext) {
-            try write_fmt(file, alloc,
+            w.write(
                 \\    if (!check_pnext) return true;
                 \\
                 \\    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
@@ -2297,8 +2286,8 @@ fn write_extension_type(
             for (db.types.structs) |*ss| {
                 if (ss.extends) |extends| {
                     if (ss.stype()) |stype| {
-                        if (std.mem.indexOf(u8, extends, s.name) != null) {
-                            try write_fmt(file, alloc,
+                        if (std.mem.indexOf(u8, extends, @"struct".name) != null) {
+                            w.write(
                                 \\            vk.{[stype]s},
                                 \\            => if (!check_{[type]s}(extensions, @ptrCast(next), false))
                                 \\                return false,
@@ -2308,9 +2297,9 @@ fn write_extension_type(
                     }
                 }
             }
-            try write_fmt(file, alloc,
+            w.write(
                 \\            else => |v| {{
-                \\                log.debug(@src(), "Invalid pNext chain item for {s}: {{d}}", .{{v}});
+                \\                log.debug(@src(), "Invalid pNext chain item for {[name]s}: {{d}}", .{{v}});
                 \\                return false;
                 \\            }},
                 \\        }}
@@ -2318,9 +2307,9 @@ fn write_extension_type(
                 \\    return true;
                 \\}}
                 \\
-            , .{s.name});
+            , .{ .name = @"struct".name });
         } else {
-            try write_fmt(file, alloc,
+            w.write(
                 \\    _ = check_pnext;
                 \\    return true;
                 \\}}
@@ -2328,18 +2317,18 @@ fn write_extension_type(
             , .{});
         }
     }
-    for (db.enums.items) |e| {
-        if (std.mem.indexOfScalar(u8, e.name, ' ') != null) continue;
-        try write_fmt(file, alloc,
+    for (db.enums.items) |@"enum"| {
+        if (std.mem.indexOfScalar(u8, @"enum".name, ' ') != null) continue;
+        w.write(
             \\
-            \\pub fn check_{t}_{s}(extensions: *const Extensions, item: *const vk.{s}) bool {{
+            \\pub fn check_{[type]t}_{[name]s}(extensions: *const Extensions, item: *const vk.{[name]s}) bool {{
             \\
-        , .{ e.type, e.name, e.name });
-        switch (e.type) {
+        , .{ .type = @"enum".type, .name = @"enum".name });
+        switch (@"enum".type) {
             .bitmask => {
                 var tmp: std.ArrayListUnmanaged(u8) = .empty;
                 var writer = tmp.writer(alloc);
-                for (e.items) |i| {
+                for (@"enum".items) |i| {
                     try writer.print(
                         \\ |
                         \\        vk.{s}
@@ -2353,18 +2342,18 @@ fn write_extension_type(
                 var extensions_used: u32 = 0;
                 var iter = db.all_extensions();
                 while (iter.next()) |tuple| {
-                    const ext, const t = tuple;
+                    const ext, const ext_type = tuple;
                     for (ext.require) |req| {
                         for (req.items) |item| {
                             switch (item) {
                                 .@"enum" => |ee| {
-                                    if (std.mem.eql(u8, ee.extends, e.name)) {
+                                    if (eql(ee.extends, @"enum".name)) {
                                         extensions_used += 1;
                                         try writer.print(
                                             \\    if (extensions.{t}.{s})
                                             \\        valid_bits |= vk.{s};
                                             \\
-                                        , .{ t, ext.name, ee.name });
+                                        , .{ ext_type, ext.name, ee.name });
                                     }
                                 },
                                 else => {},
@@ -2373,86 +2362,86 @@ fn write_extension_type(
                     }
                 }
                 if (extensions_used != 0)
-                    try write_fmt(file, alloc,
+                    w.write(
                         \\    var valid_bits: u{d} = 0{s}
-                    , .{ e.bitwidth, tmp.items })
+                    , .{ @"enum".bitwidth, tmp.items })
                 else
-                    try write_fmt(file, alloc,
+                    w.write(
                         \\    _ = extensions;
                         \\    const valid_bits: u{d} = 0{s}
-                    , .{ e.bitwidth, tmp.items });
+                    , .{ @"enum".bitwidth, tmp.items });
 
-                try write_fmt(file, alloc,
+                w.write(
                     \\    return (item.* & ~valid_bits) == 0;
                     \\}}
                     \\
                 , .{});
             },
             .@"enum" => {
-                if (e.items.len != 1) {
-                    _ = try file.write(
+                if (@"enum".items.len != 1) {
+                    w.write(
                         \\    const min = @min(
-                    );
-                    for (e.items) |i| {
-                        try write_fmt(file, alloc,
+                    , .{});
+                    for (@"enum".items) |i| {
+                        w.write(
                             \\
                             \\        vk.{s},
                         , .{i.name});
                     }
-                    _ = try file.write(
+                    w.write(
                         \\
                         \\    );
                         \\
-                    );
+                    , .{});
                 } else {
-                    try write_fmt(file, alloc,
+                    w.write(
                         \\    const min = vk.{s};
                         \\
-                    , .{e.items[0].name});
+                    , .{@"enum".items[0].name});
                 }
 
-                if (e.items.len != 1) {
-                    _ = try file.write(
+                if (@"enum".items.len != 1) {
+                    w.write(
                         \\    const max = @max(
-                    );
-                    for (e.items) |i| {
-                        try write_fmt(file, alloc,
+                    , .{});
+                    for (@"enum".items) |i| {
+                        w.write(
                             \\
                             \\        vk.{s},
                         , .{i.name});
                     }
-                    _ = try file.write(
+                    w.write(
                         \\
                         \\    );
                         \\
-                    );
+                    , .{});
                 } else {
-                    try write_fmt(file, alloc,
+                    w.write(
                         \\    const max = vk.{s};
                         \\
-                    , .{e.items[0].name});
+                    , .{@"enum".items[0].name});
                 }
 
-                _ = try file.write(
+                w.write(
                     \\    if (min <= item.* and item.* <= max)
                     \\        return true;
                     \\
-                );
+                , .{});
                 var extensions_used: u32 = 0;
                 var iter = db.all_extensions();
                 while (iter.next()) |tuple| {
-                    const ext, const t = tuple;
+                    const ext, const ext_type = tuple;
                     for (ext.require) |req| {
                         for (req.items) |item| {
                             switch (item) {
                                 .@"enum" => |ee| {
-                                    if (std.mem.eql(u8, ee.extends, e.name)) {
+                                    if (eql(ee.extends, @"enum".name)) {
                                         extensions_used += 1;
-                                        try write_fmt(file, alloc,
+                                        w.write(
                                             \\    if (extensions.{t}.{s} and item.* == vk.{s})
                                             \\        return true;
                                             \\
-                                        , .{ t, ext.name, ee.name });
+                                        , .{ ext_type, ext.name, ee.name });
                                     }
                                 },
                                 else => {},
@@ -2461,16 +2450,16 @@ fn write_extension_type(
                     }
                 }
                 if (extensions_used == 0)
-                    _ = try file.write(
+                    w.write(
                         \\    _ = extensions;
                         \\
-                    );
+                    , .{});
 
-                _ = try file.write(
+                w.write(
                     \\    return false;
-                    \\}
+                    \\}}
                     \\
-                );
+                , .{});
             },
         }
     }
