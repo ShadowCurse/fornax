@@ -41,6 +41,29 @@ const IGNORE_STRUCTS: []const []const u8 = &.{
     "VkExternalFormatANDROID",
 };
 
+pub fn c_to_zig_type(name: []const u8) ?[]const u8 {
+    for (&[_]struct { []const u8, []const u8 }{
+        .{ "void", "void" },
+        .{ "char", "u8" },
+        .{ "float", "f32" },
+        .{ "double", "f64" },
+        .{ "int8_t", "i8" },
+        .{ "uint8_t", "u8" },
+        .{ "int16_t", "i16" },
+        .{ "uint16_t", "u16" },
+        .{ "uint32_t", "u32" },
+        .{ "uint64_t", "u64" },
+        .{ "int32_t", "i32" },
+        .{ "int64_t", "i64" },
+        .{ "size_t", "usize" },
+        .{ "int", "i32" },
+    }) |tuple| {
+        const c_name, const zig_name = tuple;
+        if (std.mem.eql(u8, c_name, name)) return zig_name;
+    }
+    return null;
+}
+
 pub const Database = struct {
     types: Types,
     extensions: Extensions,
@@ -118,6 +141,12 @@ pub const Database = struct {
                 return e;
         }
         return null;
+    }
+
+    pub fn is_struct_name(self: *const Self, name: []const u8) bool {
+        for (self.types.structs) |*s|
+            if (std.mem.eql(u8, s.name, name)) return true;
+        return false;
     }
 };
 
@@ -581,8 +610,15 @@ pub const Struct = struct {
         name: []const u8 = &.{},
         type: []const u8 = &.{},
         value: ?[]const u8 = null,
-        len: ?[]const u8 = null,
+        len: ?Len = null,
         optional: bool = false,
+        pointer: bool = false,
+
+        pub const Len = union(enum) {
+            member: []const u8,
+            null: void,
+        };
+
         pub fn format(self: *const Member, writer: anytype) !void {
             try writer.print(
                 "name: {s} type: {s} value: {?s} len: {?s}",
@@ -605,6 +641,12 @@ pub const Struct = struct {
         }
         return null;
     }
+
+    pub fn has_member(self: *const Struct, name: []const u8) bool {
+        for (self.members) |*m|
+            if (std.mem.eql(u8, m.name, name)) return true;
+        return false;
+    }
 };
 
 pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
@@ -617,9 +659,16 @@ pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
     if (parser.state == .attribute) {
         while (parser.attribute()) |attr| {
             if (std.mem.eql(u8, attr.name, "len")) {
-                result.len = attr.value;
+                if (std.mem.eql(u8, attr.value, "null-terminated")) {
+                    result.len = .null;
+                } else if (std.mem.endsWith(u8, attr.value, "null-terminated")) {
+                    const len = attr.value.len - ",null-terminated".len;
+                    result.len = .{ .member = attr.value[0..len] };
+                } else {
+                    result.len = .{ .member = attr.value };
+                }
             } else if (std.mem.eql(u8, attr.name, "altlen")) {
-                result.len = attr.value;
+                result.len = .{ .member = attr.value };
             } else if (std.mem.eql(u8, attr.name, "values")) {
                 result.value = attr.value;
             } else if (std.mem.eql(u8, attr.name, "optional")) {
@@ -632,6 +681,8 @@ pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
     parser.skip_to_specific_element_start("type");
     result.type = parser.text() orelse return null;
     parser.skip_to_specific_element_end("type");
+    if (parser.peek_text()) |text|
+        result.pointer = std.mem.indexOfScalar(u8, text, '*') != null;
     parser.skip_to_specific_element_start("name");
     result.name = parser.text() orelse return null;
     parser.skip_to_specific_element_end("name");
@@ -681,6 +732,7 @@ test "parse_struct_member" {
             .name = "N",
             .type = "T",
             .optional = true,
+            .pointer = true,
         };
         try std.testing.expectEqualDeep(expected, m);
     }
@@ -708,7 +760,37 @@ test "parse_struct_member" {
         const expected: Struct.Member = .{
             .name = "N",
             .type = "T",
-            .len = "null-terminated",
+            .len = .null,
+        };
+        try std.testing.expectEqualDeep(expected, m);
+    }
+    {
+        const text =
+            \\<member len="L">B <type>T</type>* <name>N</name></member>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .len = .{ .member = "L" },
+            .pointer = true,
+        };
+        try std.testing.expectEqualDeep(expected, m);
+    }
+    {
+        const text =
+            \\<member len="L,null-terminated">B <type>T</type>* <name>N</name></member>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const m = parse_struct_member(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Struct.Member = .{
+            .name = "N",
+            .type = "T",
+            .len = .{ .member = "L" },
+            .pointer = true,
         };
         try std.testing.expectEqualDeep(expected, m);
     }
