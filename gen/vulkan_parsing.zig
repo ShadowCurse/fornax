@@ -37,6 +37,15 @@ const IGNORE_SUB_NAMES: []const []const u8 = &.{
 
 // Ignore list for structs
 const IGNORE_STRUCTS: []const []const u8 = &.{
+    "NV",
+    "NVX",
+    "AMD",
+    "AMDX",
+    "QCOM",
+    "ARM",
+    "SEC",
+    "GOOGLE",
+    "GGP",
     "VkPipelineOfflineCreateInfo",
     "VkExternalFormatANDROID",
 };
@@ -443,19 +452,16 @@ pub fn parse_extensions(
 
     var instance_extensions: std.ArrayListUnmanaged(Extension) = .empty;
     var device_extensions: std.ArrayListUnmanaged(Extension) = .empty;
-    loop: while (true) {
+    while (true) {
         if (try parse_extension(alloc, parser)) |tuple| {
             const ext, const t = tuple;
-            for (ignore_subnames) |ia|
-                if (std.mem.indexOf(u8, ext.name, ia) != null) continue :loop;
-            switch (t) {
+            for (ignore_subnames) |ia| {
+                if (std.mem.indexOf(u8, ext.name, ia) != null) break;
+            } else switch (t) {
                 .instance => try instance_extensions.append(alloc, ext),
                 .device => try device_extensions.append(alloc, ext),
             }
-        } else {
-            // std.log.err("skipped out {s}", .{parser.buffer[0..50]});
-            parser.skip_current_element();
-        }
+        } else parser.skip_current_element();
         switch (parser.peek_next() orelse break) {
             .element_end => |es| if (std.mem.eql(u8, es, "extension")) break,
             else => {},
@@ -873,15 +879,17 @@ pub fn parse_types(
     var basetypes: std.ArrayListUnmanaged(Basetype) = .empty;
     var bitmasks: std.ArrayListUnmanaged(Bitmask) = .empty;
     var structs: std.ArrayListUnmanaged(Struct) = .empty;
-    loop: while (true) {
+    while (true) {
         if (parse_basetype(parser)) |v| {
             try basetypes.append(alloc, v);
         } else if (parse_bitmask(parser)) |v| {
             try bitmasks.append(alloc, v);
         } else if (try parse_struct(alloc, parser)) |v| {
-            for (ignore_structs) |ignore|
-                if (std.mem.eql(u8, ignore, v.name)) continue :loop;
-            try structs.append(alloc, v);
+            for (ignore_structs) |ignore| {
+                if (std.mem.eql(u8, v.name, ignore) or
+                    std.mem.endsWith(u8, v.name, ignore))
+                    break;
+            } else try structs.append(alloc, v);
         } else {
             parser.skip_current_element();
         }
