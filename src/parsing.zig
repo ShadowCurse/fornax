@@ -1076,38 +1076,6 @@ pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
     }
 }
 
-pub fn parse_vk_pipeline_rendering_create_info_khr(
-    context: *Context,
-    obj: *vk.VkPipelineRenderingCreateInfo,
-) Error!void {
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR };
-    while (try scanner_object_next_field(context.scanner)) |s| {
-        if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
-        } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
-        } else if (std.mem.eql(u8, s, "viewMask")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.viewMask = try std.fmt.parseInt(u32, v, 10);
-        } else if (std.mem.eql(u8, s, "colorAttachmentFormats")) {
-            const formats = try parse_number_array(u32, context);
-            obj.pColorAttachmentFormats = @ptrCast(formats.ptr);
-            obj.colorAttachmentCount = @intCast(formats.len);
-        } else if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
-        } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
-        } else {
-            const v = try scanner_next_number_or_string(context.scanner);
-            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
-        }
-    }
-}
-
 pub fn parse_vk_physical_device_robustness_2_features_khr(
     context: *Context,
     obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
@@ -1139,6 +1107,142 @@ pub fn parse_vk_pipeline_create_flags_2_create_info(
     obj: *vk.VkPipelineCreateFlags2CreateInfo,
 ) Error!void {
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
+    try parse_simple_type(context, obj);
+}
+
+pub fn parse_vk_pipeline_discard_rectangle_state_create_info_ext(
+    context: *Context,
+    item: *vk.VkPipelineDiscardRectangleStateCreateInfoEXT,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "flags")) {
+            const v = try scanner_next_number(context.scanner);
+            item.flags = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "discardRectangleMode")) {
+            const v = try scanner_next_number(context.scanner);
+            item.discardRectangleMode = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "discardRectangleCount")) {
+            const v = try scanner_next_number(context.scanner);
+            item.discardRectangleCount = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "discardRectangles")) {
+            const rectangles = try parse_object_array(
+                vk.VkRect2D,
+                parse_vk_rect_2d,
+                context,
+            );
+            item.pDiscardRectangles = @ptrCast(rectangles.ptr);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+pub fn parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(
+    context: *Context,
+    item: *vk.VkPipelineFragmentShadingRateStateCreateInfoKHR,
+) Error!void {
+    item.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
+    };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "fragmentSize")) {
+            try parse_simple_type(context, &item.fragmentSize);
+        } else if (std.mem.eql(u8, s, "combinerOps")) {
+            try scanner_array_begin(context.scanner);
+            var i: usize = 0;
+            while (try scanner_array_next_number(context.scanner)) |v| : (i += 1) {
+                if (1 < i) return error.InvalidJson;
+                const number = try std.fmt.parseInt(u32, v, 10);
+                item.combinerOps[i] = number;
+            }
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+pub fn parse_vk_pipeline_rendering_create_info(
+    context: *Context,
+    item: *vk.VkPipelineRenderingCreateInfo,
+) Error!void {
+    item.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+    };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "viewMask")) {
+            const v = try scanner_next_number(context.scanner);
+            item.viewMask = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "colorAttachmentFormats")) {
+            const formats = try parse_number_array(u32, context);
+            item.pColorAttachmentFormats = @ptrCast(formats.ptr);
+            item.colorAttachmentCount = @intCast(formats.len);
+        } else if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
+            const v = try scanner_next_number(context.scanner);
+            item.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
+            const v = try scanner_next_number(context.scanner);
+            item.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+pub fn parse_vk_rendering_attachment_location_info(
+    context: *Context,
+    item: *vk.VkRenderingAttachmentLocationInfo,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "colorAttachmentLocations")) {
+            const attachments = try parse_number_array(u32, context);
+            item.pColorAttachmentLocations = @ptrCast(attachments.ptr);
+            item.colorAttachmentCount = @intCast(attachments.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+pub fn parse_vk_rendering_input_attachment_index_info(
+    context: *Context,
+    item: *vk.VkRenderingInputAttachmentIndexInfo,
+) Error!void {
+    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "colorAttachmentInputIndices")) {
+            const attachments = try parse_number_array(u32, context);
+            item.pColorAttachmentInputIndices = @ptrCast(attachments.ptr);
+            item.colorAttachmentCount = @intCast(attachments.len);
+        } else if (std.mem.eql(u8, s, "depthInputAttachmentIndex")) {
+            const index = try context.alloc.create(u32);
+            const v = try scanner_next_number(context.scanner);
+            index.* = try std.fmt.parseInt(u32, v, 10);
+            item.pDepthInputAttachmentIndex = index;
+        } else if (std.mem.eql(u8, s, "stencilInputAttachmentIndex")) {
+            const index = try context.alloc.create(u32);
+            const v = try scanner_next_number(context.scanner);
+            index.* = try std.fmt.parseInt(u32, v, 10);
+            item.pStencilInputAttachmentIndex = index;
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+pub fn parse_vk_pipeline_fragment_density_map_layered_create_info_valve(
+    context: *Context,
+    obj: *vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE,
+) Error!void {
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
+    };
     try parse_simple_type(context, obj);
 }
 
@@ -1329,6 +1433,21 @@ test "test_parse_vk_mutable_descriptor_type_create_info_ext" {
 
 pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
     const Inner = struct {
+        const Chain = struct {
+            c: *Context,
+            first_in_chain: *?*anyopaque,
+            last_pnext_in_chain: *?**anyopaque,
+            fn chain(
+                self: *const Chain,
+                comptime T: type,
+            ) !*T {
+                const obj = try self.c.alloc.create(T);
+                if (self.first_in_chain.* == null) self.first_in_chain.* = obj;
+                if (self.last_pnext_in_chain.*) |lpic| lpic.* = obj;
+                self.last_pnext_in_chain.* = @ptrCast(&obj.pNext);
+                return obj;
+            }
+        };
         fn parse_next(
             c: *Context,
             first_in_chain: *?*anyopaque,
@@ -1336,184 +1455,130 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
         ) Error!void {
             const v = try scanner_next_number(c.scanner);
             const stype = try std.fmt.parseInt(u32, v, 10);
+            const chain: Chain = .{
+                .c = c,
+                .first_in_chain = first_in_chain,
+                .last_pnext_in_chain = last_pnext_in_chain,
+            };
             switch (stype) {
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                    const obj = try c.alloc.create(vk.VkPhysicalDeviceMeshShaderFeaturesEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_physical_device_mesh_shader_features_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPhysicalDeviceMeshShaderFeaturesEXT);
+                    try parse_vk_physical_device_mesh_shader_features_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                    const obj =
-                        try c.alloc.create(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_physical_device_fragment_shading_rate_features_khr(c, obj);
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                => {
+                    const item =
+                        try chain.chain(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
+                    try parse_vk_physical_device_fragment_shading_rate_features_khr(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT => {
-                    const obj =
-                        try c.alloc.create(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
+                => {
+                    const item =
+                        try chain.chain(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
+                    try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR => {
-                    const obj = try c.alloc.create(vk.VkPipelineRenderingCreateInfo);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_rendering_create_info_khr(c, obj);
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                => {
+                    const item = try chain.chain(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
+                    try parse_vk_physical_device_robustness_2_features_khr(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR => {
-                    const obj = try c.alloc.create(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_physical_device_robustness_2_features_khr(c, obj);
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
+                    try parse_vk_physical_device_descriptor_buffer_features_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                    const obj =
-                        try c.alloc.create(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_physical_device_descriptor_buffer_features_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+                => {
+                    const item =
+                        try chain.chain(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
+                    try parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT => {
-                    const obj =
-                        try c.alloc.create(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkPipelineCreateFlags2CreateInfo);
+                    try parse_vk_pipeline_create_flags_2_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO => {
-                    const obj = try c.alloc.create(vk.VkPipelineCreateFlags2CreateInfo);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_create_flags_2_create_info(c, obj);
+                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
+                    try parse_vk_graphics_pipeline_library_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT => {
-                    const obj =
-                        try c.alloc.create(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_graphics_pipeline_library_create_info_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkPipelineVertexInputDivisorStateCreateInfo);
+                    try parse_vk_pipeline_vertex_input_divisor_state_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO => {
-                    const obj =
-                        try c.alloc.create(vk.VkPipelineVertexInputDivisorStateCreateInfo);
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_vertex_input_divisor_state_create_info(c, obj);
-                },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO => {
-                    const obj = try c.alloc.create(
-                        vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
+                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+                => {
+                    const item =
+                        try chain.chain(vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo);
+                    try parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
+                        c,
+                        item,
                     );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR => {
-                    const obj = try c.alloc.create(
-                        vk.VkPipelineRasterizationLineStateCreateInfo,
-                    );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_rasterization_line_state_create_info(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
+                => {
+                    const item = try chain.chain(vk.VkPipelineRasterizationLineStateCreateInfo);
+                    try parse_vk_pipeline_rasterization_line_state_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO => {
-                    const obj = try c.alloc.create(
-                        vk.VkPipelineRobustnessCreateInfo,
-                    );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_robustness_create_info(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkPipelineRobustnessCreateInfo);
+                    try parse_vk_pipeline_robustness_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT => {
-                    const obj = try c.alloc.create(
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(
                         vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT,
                     );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(c, obj);
-                },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT => {
-                    const obj = try c.alloc.create(
-                        vk.VkPipelineViewportDepthClipControlCreateInfoEXT,
+                    try parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(
+                        c,
+                        item,
                     );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT => {
-                    const obj = try c.alloc.create(
-                        vk.VkMutableDescriptorTypeCreateInfoEXT,
-                    );
-                    if (first_in_chain.* == null)
-                        first_in_chain.* = obj;
-                    if (last_pnext_in_chain.*) |lpic| {
-                        lpic.* = obj;
-                    }
-                    last_pnext_in_chain.* = @ptrCast(&obj.pNext);
-                    try parse_vk_mutable_descriptor_type_create_info_ext(c, obj);
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
+                => {
+                    const item =
+                        try chain.chain(vk.VkPipelineViewportDepthClipControlCreateInfoEXT);
+                    try parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(c, item);
+                },
+                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkMutableDescriptorTypeCreateInfoEXT);
+                    try parse_vk_mutable_descriptor_type_create_info_ext(c, item);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
+                => {
+                    const obj = try chain.chain(vk.VkPipelineDiscardRectangleStateCreateInfoEXT);
+                    try parse_vk_pipeline_discard_rectangle_state_create_info_ext(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
+                => {
+                    const obj =
+                        try chain.chain(vk.VkPipelineFragmentShadingRateStateCreateInfoKHR);
+                    try parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+                => {
+                    const obj = try chain.chain(vk.VkPipelineRenderingCreateInfo);
+                    try parse_vk_pipeline_rendering_create_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+                => {
+                    const obj = try chain.chain(vk.VkRenderingAttachmentLocationInfo);
+                    try parse_vk_rendering_attachment_location_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+                => {
+                    const obj = try chain.chain(vk.VkRenderingInputAttachmentIndexInfo);
+                    try parse_vk_rendering_input_attachment_index_info(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
+                => {
+                    const obj = try chain.chain(vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE);
+                    try parse_vk_pipeline_fragment_density_map_layered_create_info_valve(c, obj);
                 },
                 else => {
                     log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
