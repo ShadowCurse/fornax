@@ -22,9 +22,11 @@ pub fn build(b: *std.Build) !void {
         },
     });
 
+    const use_llvm = b.option(bool, "use_llvm", "Use LLVM backend") != null;
     const exe = b.addExecutable(.{
         .name = "glacier",
         .root_module = exe_mod,
+        .use_llvm = use_llvm,
     });
     b.installArtifact(exe);
     {
