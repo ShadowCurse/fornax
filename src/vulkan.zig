@@ -470,6 +470,491 @@ pub fn usable_device_extension(
     return true;
 }
 
+fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
+    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item));
+    while (pnext) |next| {
+        pnext = next.pNext;
+        if (next.sType == stype) return @ptrCast(@constCast(next));
+    }
+    return null;
+}
+
+fn filter_features(
+    current_features: *vk.VkPhysicalDeviceFeatures2,
+    other_features: *PDF,
+    wanted_features: ?*const vk.VkPhysicalDeviceFeatures2,
+) void {
+    const Inner = struct {
+        fn reset(item: anytype) void {
+            const child = @typeInfo(@TypeOf(item)).pointer.child;
+            const type_info = @typeInfo(child).@"struct";
+            inline for (type_info.fields) |field| {
+                if (field.type == vk.VkBool32) @field(item, field.name) = vk.VK_FALSE;
+            }
+        }
+    };
+    // These feature bits conflict according to validation layers.
+    if (other_features.vk_physical_device_fragment_shading_rate_features_khr.pipelineFragmentShadingRate == vk.VK_TRUE or
+        other_features.vk_physical_device_fragment_shading_rate_features_khr.attachmentFragmentShadingRate == vk.VK_TRUE or
+        other_features.vk_physical_device_fragment_shading_rate_features_khr.primitiveFragmentShadingRate == vk.VK_TRUE)
+    {
+        // other_features.shading_rate_nv.shadingRateImage = false;
+        // other_features.shading_rate_nv.shadingRateCoarseSampleOrder = false;
+        other_features.vk_physical_device_fragment_density_map_features_ext.fragmentDensityMap =
+            vk.VK_FALSE;
+    }
+
+    // Only enable robustness if requested since it affects compilation on most implementations.
+    if (wanted_features) |wf| {
+        current_features.features.robustBufferAccess =
+            current_features.features.robustBufferAccess & wf.features.robustBufferAccess;
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const robustness2: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features
+                .vk_physical_device_robustness_2_features_ext.robustBufferAccess2 =
+                other_features
+                    .vk_physical_device_robustness_2_features_ext.robustBufferAccess2 &
+                robustness2.robustBufferAccess2;
+            other_features
+                .vk_physical_device_robustness_2_features_ext.robustImageAccess2 =
+                other_features
+                    .vk_physical_device_robustness_2_features_ext.robustImageAccess2 &
+                robustness2.robustImageAccess2;
+            other_features
+                .vk_physical_device_robustness_2_features_ext.nullDescriptor =
+                other_features
+                    .vk_physical_device_robustness_2_features_ext.nullDescriptor &
+                robustness2.nullDescriptor;
+        } else Inner.reset(&other_features.vk_physical_device_robustness_2_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const image_robustness: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features
+                .vk_physical_device_image_robustness_features_ext.robustImageAccess =
+                other_features
+                    .vk_physical_device_image_robustness_features_ext.robustImageAccess &
+                image_robustness.robustImageAccess;
+        } else Inner.reset(&other_features.vk_physical_device_image_robustness_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+            wf.pNext,
+        )) |item| {
+            const fragment_shading_rate_enums: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
+                @ptrCast(@alignCast(item));
+            other_features
+                .vk_physical_device_fragment_shading_rate_enums_features_nv
+                .fragmentShadingRateEnums =
+                other_features
+                    .vk_physical_device_fragment_shading_rate_enums_features_nv
+                    .fragmentShadingRateEnums &
+                fragment_shading_rate_enums.fragmentShadingRateEnums;
+
+            other_features
+                .vk_physical_device_fragment_shading_rate_enums_features_nv
+                .noInvocationFragmentShadingRates =
+                other_features.vk_physical_device_fragment_shading_rate_enums_features_nv
+                    .noInvocationFragmentShadingRates &
+                fragment_shading_rate_enums.noInvocationFragmentShadingRates;
+
+            other_features
+                .vk_physical_device_fragment_shading_rate_enums_features_nv
+                .supersampleFragmentShadingRates =
+                other_features
+                    .vk_physical_device_fragment_shading_rate_enums_features_nv
+                    .supersampleFragmentShadingRates &
+                fragment_shading_rate_enums.supersampleFragmentShadingRates;
+        } else Inner.reset(&other_features.vk_physical_device_fragment_shading_rate_enums_features_nv);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+            wf.pNext,
+        )) |item| {
+            const fragment_shading_rate: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_fragment_shading_rate_features_khr
+                .pipelineFragmentShadingRate =
+                other_features.vk_physical_device_fragment_shading_rate_features_khr
+                    .pipelineFragmentShadingRate &
+                fragment_shading_rate.pipelineFragmentShadingRate;
+            other_features.vk_physical_device_fragment_shading_rate_features_khr
+                .primitiveFragmentShadingRate =
+                other_features.vk_physical_device_fragment_shading_rate_features_khr
+                    .primitiveFragmentShadingRate &
+                fragment_shading_rate.primitiveFragmentShadingRate;
+            other_features.vk_physical_device_fragment_shading_rate_features_khr
+                .attachmentFragmentShadingRate =
+                other_features.vk_physical_device_fragment_shading_rate_features_khr
+                    .attachmentFragmentShadingRate &
+                fragment_shading_rate.attachmentFragmentShadingRate;
+        } else Inner.reset(&other_features.vk_physical_device_fragment_shading_rate_features_khr);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const mesh_shader: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_mesh_shader_features_ext.taskShader =
+                other_features.vk_physical_device_mesh_shader_features_ext.taskShader &
+                mesh_shader.taskShader;
+            other_features.vk_physical_device_mesh_shader_features_ext.meshShader =
+                other_features.vk_physical_device_mesh_shader_features_ext.meshShader &
+                mesh_shader.meshShader;
+            other_features.vk_physical_device_mesh_shader_features_ext.multiviewMeshShader =
+                other_features.vk_physical_device_mesh_shader_features_ext.multiviewMeshShader &
+                mesh_shader.multiviewMeshShader;
+            other_features.vk_physical_device_mesh_shader_features_ext.meshShaderQueries =
+                other_features.vk_physical_device_mesh_shader_features_ext.meshShaderQueries &
+                mesh_shader.meshShaderQueries;
+            other_features.vk_physical_device_mesh_shader_features_ext
+                .primitiveFragmentShadingRateMeshShader =
+                other_features.vk_physical_device_mesh_shader_features_ext
+                    .primitiveFragmentShadingRateMeshShader &
+                other_features.vk_physical_device_fragment_shading_rate_features_khr
+                    .primitiveFragmentShadingRate &
+                mesh_shader.primitiveFragmentShadingRateMeshShader;
+        } else Inner.reset(&other_features.vk_physical_device_mesh_shader_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+            wf.pNext,
+        )) |item| {
+            const mesh_shader_nv: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_mesh_shader_features_nv.taskShader =
+                other_features.vk_physical_device_mesh_shader_features_nv.taskShader &
+                mesh_shader_nv.taskShader;
+            other_features.vk_physical_device_mesh_shader_features_nv.meshShader =
+                other_features.vk_physical_device_mesh_shader_features_nv.meshShader &
+                mesh_shader_nv.meshShader;
+        } else Inner.reset(&other_features.vk_physical_device_mesh_shader_features_nv);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const descriptor_buffer: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_descriptor_buffer_features_ext.descriptorBuffer =
+                other_features.vk_physical_device_descriptor_buffer_features_ext
+                    .descriptorBuffer &
+                descriptor_buffer.descriptorBuffer;
+            other_features.vk_physical_device_descriptor_buffer_features_ext
+                .descriptorBufferCaptureReplay =
+                other_features.vk_physical_device_descriptor_buffer_features_ext
+                    .descriptorBufferCaptureReplay &
+                descriptor_buffer.descriptorBufferCaptureReplay;
+            other_features.vk_physical_device_descriptor_buffer_features_ext
+                .descriptorBufferImageLayoutIgnored =
+                other_features.vk_physical_device_descriptor_buffer_features_ext
+                    .descriptorBufferImageLayoutIgnored &
+                descriptor_buffer.descriptorBufferImageLayoutIgnored;
+            other_features.vk_physical_device_descriptor_buffer_features_ext
+                .descriptorBufferPushDescriptors =
+                other_features.vk_physical_device_descriptor_buffer_features_ext
+                    .descriptorBufferPushDescriptors &
+                descriptor_buffer.descriptorBufferPushDescriptors;
+        } else Inner.reset(&other_features.vk_physical_device_descriptor_buffer_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const shader_object: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_shader_object_features_ext.shaderObject =
+                other_features.vk_physical_device_shader_object_features_ext.shaderObject &
+                shader_object.shaderObject;
+        } else Inner.reset(&other_features.vk_physical_device_shader_object_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const prim_generated: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_primitives_generated_query_features_ext
+                .primitivesGeneratedQuery =
+                other_features.vk_physical_device_primitives_generated_query_features_ext
+                    .primitivesGeneratedQuery &
+                prim_generated.primitivesGeneratedQuery;
+
+            other_features.vk_physical_device_primitives_generated_query_features_ext
+                .primitivesGeneratedQueryWithNonZeroStreams =
+                other_features.vk_physical_device_primitives_generated_query_features_ext
+                    .primitivesGeneratedQueryWithNonZeroStreams &
+                prim_generated.primitivesGeneratedQueryWithNonZeroStreams;
+
+            other_features.vk_physical_device_primitives_generated_query_features_ext
+                .primitivesGeneratedQueryWithRasterizerDiscard =
+                other_features.vk_physical_device_primitives_generated_query_features_ext
+                    .primitivesGeneratedQueryWithRasterizerDiscard &
+                prim_generated.primitivesGeneratedQueryWithRasterizerDiscard;
+        } else Inner.reset(&other_features.vk_physical_device_primitives_generated_query_features_ext);
+
+        if (find_pnext(
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+            wf.pNext,
+        )) |item| {
+            const image_2d_view_of_3d: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
+                @ptrCast(@alignCast(item));
+            other_features.vk_physical_device_image_2d_view_of_3d_features_ext.image2DViewOf3D =
+                other_features.vk_physical_device_image_2d_view_of_3d_features_ext
+                    .image2DViewOf3D &
+                image_2d_view_of_3d.image2DViewOf3D;
+
+            other_features.vk_physical_device_image_2d_view_of_3d_features_ext.sampler2DViewOf3D =
+                other_features.vk_physical_device_image_2d_view_of_3d_features_ext
+                    .sampler2DViewOf3D &
+                image_2d_view_of_3d.sampler2DViewOf3D;
+        } else {
+            Inner.reset(&other_features.vk_physical_device_image_2d_view_of_3d_features_ext);
+        }
+    } else {
+        current_features.features.robustBufferAccess = vk.VK_FALSE;
+        Inner.reset(&other_features.vk_physical_device_robustness_2_features_ext);
+        Inner.reset(&other_features.vk_physical_device_image_robustness_features_ext);
+        Inner.reset(&other_features.vk_physical_device_fragment_shading_rate_enums_features_nv);
+        Inner.reset(&other_features.vk_physical_device_fragment_shading_rate_features_khr);
+        Inner.reset(&other_features.vk_physical_device_mesh_shader_features_ext);
+        Inner.reset(&other_features.vk_physical_device_mesh_shader_features_nv);
+        Inner.reset(&other_features.vk_physical_device_descriptor_buffer_features_ext);
+        Inner.reset(&other_features.vk_physical_device_shader_object_features_ext);
+        Inner.reset(&other_features.vk_physical_device_primitives_generated_query_features_ext);
+        Inner.reset(&other_features.vk_physical_device_image_2d_view_of_3d_features_ext);
+    }
+}
+
+fn filter_active_extensions(
+    current_features: *vk.VkPhysicalDeviceFeatures2,
+    all_extenson_names: [][*c]const u8,
+) [][*c]const u8 {
+    const Inner = struct {
+        fn remove_from_slice(slice: [][*c]const u8, value: [:0]const u8) [][*c]const u8 {
+            for (slice, 0..) |name, i| {
+                const n: [:0]const u8 = std.mem.span(name);
+                if (std.mem.eql(u8, n, value)) {
+                    slice[i] = slice[slice.len - 1];
+                    return slice[0 .. slice.len - 1];
+                }
+            }
+            return slice;
+        }
+    };
+    var current_pnext: ?*const vk.VkBaseInStructure =
+        @ptrCast(@alignCast(current_features.pNext));
+    current_features.pNext = null;
+    var last_pnext: *?*anyopaque = &current_features.pNext;
+    var result: [][*c]const u8 = all_extenson_names;
+    while (current_pnext) |current| {
+        current_pnext = current.pNext;
+        var accept: bool = true;
+
+        switch (current.sType) {
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
+                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
+                    @ptrCast(@alignCast(current));
+                if (feature.fragmentShadingRateEnums == vk.VK_FALSE and
+                    feature.noInvocationFragmentShadingRates == vk.VK_FALSE and
+                    feature.supersampleFragmentShadingRates == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
+                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
+                    @ptrCast(@alignCast(current));
+                if (feature.attachmentFragmentShadingRate == vk.VK_FALSE and
+                    feature.pipelineFragmentShadingRate == vk.VK_FALSE and
+                    feature.primitiveFragmentShadingRate == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.nullDescriptor == vk.VK_FALSE and
+                    feature.robustBufferAccess2 == vk.VK_FALSE and
+                    feature.robustImageAccess2 == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT  from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.robustImageAccess == vk.VK_FALSE) {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT  from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.meshShader == vk.VK_FALSE and
+                    feature.taskShader == vk.VK_FALSE and
+                    feature.multiviewMeshShader == vk.VK_FALSE and
+                    feature.primitiveFragmentShadingRateMeshShader == vk.VK_FALSE and
+                    feature.meshShaderQueries == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT  from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_MESH_SHADER_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
+                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV =
+                    @ptrCast(@alignCast(current));
+                if (feature.meshShader == vk.VK_FALSE and
+                    feature.taskShader == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(result, vk.VK_NV_MESH_SHADER_EXTENSION_NAME);
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.descriptorBuffer == vk.VK_FALSE and
+                    feature.descriptorBufferCaptureReplay == vk.VK_FALSE and
+                    feature.descriptorBufferImageLayoutIgnored == vk.VK_FALSE and
+                    feature.descriptorBufferPushDescriptors == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.shaderObject == vk.VK_FALSE) {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.primitivesGeneratedQuery == vk.VK_FALSE and
+                    feature.primitivesGeneratedQueryWithNonZeroStreams == vk.VK_FALSE and
+                    feature.primitivesGeneratedQueryWithRasterizerDiscard == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
+                const feature: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
+                    @ptrCast(@alignCast(current));
+                if (feature.image2DViewOf3D == vk.VK_FALSE and
+                    feature.sampler2DViewOf3D == vk.VK_FALSE)
+                {
+                    log.debug(
+                        @src(),
+                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT from device extensions",
+                        .{},
+                    );
+                    result = Inner.remove_from_slice(
+                        result,
+                        vk.VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
+                    );
+                    accept = false;
+                }
+            },
+            else => {},
+        }
+
+        if (accept) {
+            last_pnext.* = @ptrCast(@constCast(current));
+            last_pnext = @ptrCast(@constCast(&current.pNext));
+            last_pnext.* = null;
+        }
+    }
+    return result;
+}
+
 pub const Device = struct {
     device: vk.VkDevice,
     all_extension_names: []const [*c]const u8,
@@ -478,7 +963,8 @@ pub fn create_vk_device(
     arena_alloc: Allocator,
     instance: *const Instance,
     physical_device: *const PhysicalDevice,
-    device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
+    application_create_info: *const vk.VkApplicationInfo,
+    wanted_physical_device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
     enable_validation: bool,
 ) !Device {
     const queue_priority: f32 = 1.0;
@@ -518,22 +1004,70 @@ pub fn create_vk_device(
     }
     all_extension_names = all_extension_names[0..all_extensions_len];
 
-    var features_2 = vk.VkPhysicalDeviceFeatures2{
+    var physical_device_features_2 = vk.VkPhysicalDeviceFeatures2{
         .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
     };
     var stats: vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{
         .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
     };
-    features_2.pNext = &stats;
-    var physical_device_features: PDF = .{};
+    physical_device_features_2.pNext = &stats;
+    var other_device_features: PDF = .{};
     if (instance.has_properties_2) {
-        stats.pNext = physical_device_features.chain_supported(all_extension_names);
-        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &features_2);
-    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &features_2.features);
+        stats.pNext = other_device_features.chain_supported(all_extension_names);
+        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &physical_device_features_2);
+    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &physical_device_features_2.features);
 
-    // TODO add a robustness2 check for older dxvk/vkd3d databases.
-    // TODO filter feateres_2 and extension_names based on the device_features2
-    _ = device_features2;
+    // Workaround for older dxvk/vkd3d databases, where robustness2 or VRS was not captured,
+    // but we expect them to be present. New databases will capture robustness2.
+    var wpdf2: ?*const vk.VkPhysicalDeviceFeatures2 = wanted_physical_device_features2;
+    var updf2: vk.VkPhysicalDeviceFeatures2 = undefined;
+    var spare_robustness2: vk.VkPhysicalDeviceRobustness2FeaturesEXT = undefined;
+    var replacement_fragment_shading_rate: vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
+        undefined;
+    if (wanted_physical_device_features2) |df2| {
+        const engine_name: []const u8 = std.mem.span(application_create_info.pEngineName);
+
+        updf2 = df2.*;
+        wpdf2 = &updf2;
+
+        if ((std.mem.eql(u8, engine_name, "DXVK") or std.mem.eql(u8, engine_name, "vkd3d")) and
+            find_pnext(
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                @ptrCast(df2.pNext),
+            ) == null)
+        {
+            spare_robustness2 = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+                .pNext = updf2.pNext,
+                .robustBufferAccess2 = df2.features.robustBufferAccess,
+                .robustImageAccess2 = df2.features.robustBufferAccess,
+                .nullDescriptor = vk.VK_FALSE,
+            };
+            updf2.pNext = &spare_robustness2;
+        }
+
+        if (std.mem.eql(u8, engine_name, "vkd3d") and
+            find_pnext(
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                @ptrCast(df2.pNext),
+            ) == null)
+        {
+            replacement_fragment_shading_rate = .{
+                .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                .pNext = updf2.pNext,
+                .pipelineFragmentShadingRate = vk.VK_TRUE,
+                .primitiveFragmentShadingRate = vk.VK_TRUE,
+                .attachmentFragmentShadingRate = vk.VK_TRUE,
+            };
+            updf2.pNext = &replacement_fragment_shading_rate;
+        }
+    }
+
+    filter_features(&physical_device_features_2, &other_device_features, wpdf2);
+    all_extension_names = filter_active_extensions(
+        &physical_device_features_2,
+        all_extension_names,
+    );
 
     const enabled_layers = if (enable_validation) &VK_VALIDATION_LAYERS_NAMES else &.{};
 
@@ -545,8 +1079,11 @@ pub fn create_vk_device(
         .enabledLayerCount = @as(u32, @intCast(enabled_layers.len)),
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
-        .pEnabledFeatures = if (instance.has_properties_2) null else &features_2.features,
-        .pNext = if (instance.has_properties_2) &features_2 else null,
+        .pEnabledFeatures = if (instance.has_properties_2)
+            null
+        else
+            &physical_device_features_2.features,
+        .pNext = if (instance.has_properties_2) &physical_device_features_2 else null,
     };
 
     var vk_device: vk.VkDevice = undefined;

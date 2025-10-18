@@ -173,6 +173,7 @@ pub fn main() !void {
         tmp_alloc,
         &instance,
         &physical_device,
+        parsed_application_info.application_info,
         parsed_application_info.device_features2,
         args.enable_validation,
     );
