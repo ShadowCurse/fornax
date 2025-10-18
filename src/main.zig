@@ -496,7 +496,7 @@ pub fn parse_inner(
                 .invalid => {
                     for (queue.items) |t| {
                         const e, _ = t;
-                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
+                        e.status.store(.invalid, .seq_cst);
                         e.decrement_dependencies();
                     }
                     switch (root_entry.entry.tag) {
@@ -636,7 +636,7 @@ pub fn create_inner(
                     curr_entry.destroy_dependencies(DESTROY, context.vk_device);
                     for (queue.items) |t| {
                         const e, _ = t;
-                        @atomicStore(Database.Entry.Status, &e.status, .invalid, .seq_cst);
+                        e.status.store(.invalid, .seq_cst);
                         e.destroy_dependencies(DESTROY, context.vk_device);
                     }
                     switch (root_entry.entry.tag) {
@@ -748,9 +748,9 @@ test "parse" {
                     .payload_stored_size = 0,
                     .payload_decompressed_size = 0,
                     .payload_file_offset = 0,
-                    .status = if (d.create_info != null) .parsed else .not_parsed,
+                    .status = if (d.create_info != null) .init(.parsed) else .init(.not_parsed),
                     .create_info = d.create_info,
-                    .dependent_by = d.dependent_by,
+                    .dependent_by = .init(d.dependent_by),
                 });
             }
         }
@@ -834,11 +834,11 @@ test "parse" {
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
         try parse_inner(TestParse, &thread_context, &root_entries);
-        try std.testing.expectEqual(.parsed, test_entry.status);
+        try std.testing.expectEqual(.parsed, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
-            try std.testing.expectEqual(.parsed, entry.status);
-            try std.testing.expectEqual(1, entry.dependent_by);
+            try std.testing.expectEqual(.parsed, entry.status.raw);
+            try std.testing.expectEqual(1, entry.dependent_by.raw);
         }
     }
 
@@ -918,16 +918,16 @@ test "parse" {
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
         try parse_inner(TestParse, &thread_context, &root_entries);
-        try std.testing.expectEqual(.invalid, test_entry.status);
+        try std.testing.expectEqual(.invalid, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
             if (entry.hash == 1) {
-                try std.testing.expectEqual(.parsed, entry.status);
-                try std.testing.expectEqual(0, entry.dependent_by);
+                try std.testing.expectEqual(.parsed, entry.status.raw);
+                try std.testing.expectEqual(0, entry.dependent_by.raw);
             }
             if (entry.hash == 2) {
-                try std.testing.expectEqual(.invalid, entry.status);
-                try std.testing.expectEqual(0, entry.dependent_by);
+                try std.testing.expectEqual(.invalid, entry.status.raw);
+                try std.testing.expectEqual(0, entry.dependent_by.raw);
             }
         }
     }
@@ -1023,7 +1023,7 @@ test "parse" {
             .payload_stored_size = 0,
             .payload_decompressed_size = 0,
             .payload_file_offset = 0,
-            .status = .parsed,
+            .status = .init(.parsed),
             .create_info = &Global.gp0,
             .dependencies = &.{
                 .{
@@ -1041,13 +1041,13 @@ test "parse" {
 
         try std.testing.expectEqual(0xB, Global.gp0_1);
         try std.testing.expectEqual(0xC, Global.gp0_2);
-        try std.testing.expectEqual(.created, test_entry.status);
-        try std.testing.expectEqual(true, test_entry.dependencies_destroyed);
+        try std.testing.expectEqual(.created, test_entry.status.raw);
+        try std.testing.expectEqual(true, test_entry.dependencies_destroyed.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
-            try std.testing.expectEqual(.created, entry.status);
-            try std.testing.expectEqual(0, entry.dependent_by);
-            try std.testing.expectEqual(true, entry.dependencies_destroyed);
+            try std.testing.expectEqual(.created, entry.status.raw);
+            try std.testing.expectEqual(0, entry.dependent_by.raw);
+            try std.testing.expectEqual(true, entry.dependencies_destroyed.raw);
         }
     }
 
@@ -1143,7 +1143,7 @@ test "parse" {
             .payload_stored_size = 0,
             .payload_decompressed_size = 0,
             .payload_file_offset = 0,
-            .status = .parsed,
+            .status = .init(.parsed),
             .create_info = &Global.gp0,
             .dependencies = &.{
                 .{
@@ -1161,20 +1161,20 @@ test "parse" {
 
         try std.testing.expectEqual(0, Global.gp0_1);
         try std.testing.expectEqual(0, Global.gp0_2);
-        try std.testing.expectEqual(.invalid, test_entry.status);
-        try std.testing.expectEqual(true, test_entry.dependencies_destroyed);
+        try std.testing.expectEqual(.invalid, test_entry.status.raw);
+        try std.testing.expectEqual(true, test_entry.dependencies_destroyed.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
             switch (entry.hash) {
                 0xB => {
-                    try std.testing.expectEqual(.created, entry.status);
-                    try std.testing.expectEqual(0, entry.dependent_by);
-                    try std.testing.expectEqual(true, entry.dependencies_destroyed);
+                    try std.testing.expectEqual(.created, entry.status.raw);
+                    try std.testing.expectEqual(0, entry.dependent_by.raw);
+                    try std.testing.expectEqual(true, entry.dependencies_destroyed.raw);
                 },
                 0xC => {
-                    try std.testing.expectEqual(.invalid, entry.status);
-                    try std.testing.expectEqual(0, entry.dependent_by);
-                    try std.testing.expectEqual(true, entry.dependencies_destroyed);
+                    try std.testing.expectEqual(.invalid, entry.status.raw);
+                    try std.testing.expectEqual(0, entry.dependent_by.raw);
+                    try std.testing.expectEqual(true, entry.dependencies_destroyed.raw);
                 },
                 else => unreachable,
             }

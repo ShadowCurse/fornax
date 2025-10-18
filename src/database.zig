@@ -49,9 +49,9 @@ pub const Entry = struct {
     handle: ?*anyopaque = null,
 
     // atomicly updated
-    dependent_by: u32 = 0,
-    status: Status = .not_parsed,
-    dependencies_destroyed: bool = false,
+    dependent_by: std.atomic.Value(u32) = .init(0),
+    status: std.atomic.Value(Status) = .init(.not_parsed),
+    dependencies_destroyed: std.atomic.Value(bool) = .init(false),
 
     pub const Tag = enum(u8) {
         application_info = 0,
@@ -93,7 +93,7 @@ pub const Entry = struct {
             log.output("    ", .{});
         log.output(
             "{t} hash: 0x{x:0>16} depended_by: {d}\n",
-            .{ self.tag, self.hash, self.dependent_by },
+            .{ self.tag, self.hash, self.dependent_by.raw },
         );
         for (self.dependencies) |dep| {
             G.padding += 1;
@@ -195,7 +195,7 @@ pub const Entry = struct {
         extensions: *const vu.Extensions,
         db: *Database,
     ) ParseResult {
-        if (@cmpxchgWeak(Status, &self.status, .not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
+        if (self.status.cmpxchgStrong(.not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
             log.assert(
                 @src(),
                 old == .parsing or old == .parsed or old == .invalid,
@@ -220,7 +220,7 @@ pub const Entry = struct {
                     "Cannot read the payload for {t} 0x{x:0>16}: {t}",
                     .{ self.tag, self.hash, err },
                 );
-                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                self.status.store(.invalid, .seq_cst);
                 return .invalid;
             };
             self.parse_inner(
@@ -240,12 +240,12 @@ pub const Entry = struct {
                 if (err == parsing.ScannerError.InvalidJson)
                     log.debug(@src(), "payload: {s}", .{payload});
 
-                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                self.status.store(.invalid, .seq_cst);
                 return .invalid;
             };
         }
 
-        @atomicStore(Status, &self.status, .parsed, .seq_cst);
+        self.status.store(.parsed, .seq_cst);
         return .parsed;
     }
 
@@ -264,7 +264,7 @@ pub const Entry = struct {
                 .entry = dep_entry,
                 .ptr_to_handle = dep.ptr_to_handle,
             };
-            _ = @atomicRmw(u32, &dep_entry.dependent_by, .Add, 1, .seq_cst);
+            _ = dep_entry.dependent_by.fetchAdd(1, .seq_cst);
         }
         self.dependencies = dependencies;
     }
@@ -405,15 +405,15 @@ pub const Entry = struct {
         vk_device: vk.VkDevice,
     ) CreateResult {
         for (self.dependencies) |dep| {
-            const d_status = @atomicLoad(Status, &dep.entry.status, .seq_cst);
+            const d_status = dep.entry.status.load(.seq_cst);
             if (d_status == .invalid) {
-                @atomicStore(Status, &self.status, .invalid, .seq_cst);
+                self.status.store(.invalid, .seq_cst);
                 return .invalid;
             }
             if (d_status != .created) return .dependencies;
         }
 
-        if (@cmpxchgWeak(Status, &self.status, .parsed, .creating, .seq_cst, .seq_cst)) |old| {
+        if (self.status.cmpxchgStrong(.parsed, .creating, .seq_cst, .seq_cst)) |old| {
             log.assert(
                 @src(),
                 old == .creating or old == .created or old == .invalid,
@@ -434,10 +434,10 @@ pub const Entry = struct {
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
                 .{ self.tag, self.hash, err },
             );
-            @atomicStore(Status, &self.status, .invalid, .seq_cst);
+            self.status.store(.invalid, .seq_cst);
             return .invalid;
         };
-        @atomicStore(Status, &self.status, .created, .seq_cst);
+        self.status.store(.created, .seq_cst);
         return .created;
     }
 
@@ -507,18 +507,11 @@ pub const Entry = struct {
     }
 
     pub fn decrement_dependencies(self: *Entry) void {
-        if (@cmpxchgWeak(
-            bool,
-            &self.dependencies_destroyed,
-            false,
-            true,
-            .seq_cst,
-            .seq_cst,
-        ) != null)
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
             return;
 
         for (self.dependencies) |dep|
-            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
+            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
     }
 
     pub fn destroy_dependencies(
@@ -526,37 +519,23 @@ pub const Entry = struct {
         comptime DESTROY: type,
         vk_device: vk.VkDevice,
     ) void {
-        if (@cmpxchgWeak(
-            bool,
-            &self.dependencies_destroyed,
-            false,
-            true,
-            .seq_cst,
-            .seq_cst,
-        ) != null)
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
             return;
 
         for (self.dependencies) |dep| {
-            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
+            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
             dep.entry.destroy(DESTROY, vk_device);
         }
     }
 
     pub fn destroy(self: *Entry, comptime DESTROY: type, vk_device: vk.VkDevice) void {
-        const status = @atomicLoad(Status, &self.status, .seq_cst);
+        const status = self.status.load(.seq_cst);
         if (status != .created) return;
 
-        const dependent_by = @atomicLoad(u32, &self.dependent_by, .seq_cst);
+        const dependent_by = self.dependent_by.load(.seq_cst);
         if (dependent_by != 0) return;
 
-        if (@cmpxchgWeak(
-            bool,
-            &self.dependencies_destroyed,
-            false,
-            true,
-            .seq_cst,
-            .seq_cst,
-        ) != null)
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
             return;
 
         switch (self.tag) {
@@ -581,7 +560,7 @@ pub const Entry = struct {
             .application_blob_link => {},
         }
         for (self.dependencies) |dep| {
-            _ = @atomicRmw(u32, &dep.entry.dependent_by, .Sub, 1, .seq_cst);
+            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
             dep.entry.destroy(DESTROY, vk_device);
         }
     }
