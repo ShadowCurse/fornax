@@ -5,6 +5,8 @@
 
 const std = @import("std");
 const vk = @import("volk");
+const spirv = @import("spirv");
+const PDF = @import("physical_device_features.zig");
 const log = @import("log.zig");
 
 const Allocator = std.mem.Allocator;
@@ -31802,4 +31804,335 @@ pub fn validate_spirv_extension(api_version: u32, extensions: *const Extensions,
         return extensions.device.VK_QCOM_tile_shading;
     if (std.mem.eql(u8, extension_name, "VK_EXT_shader_float8"))
         return extensions.device.VK_EXT_shader_float8;
+    return false;
+}
+
+pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, capability: spirv.SpvCapability) bool {
+    switch (capability) {
+        spirv.SpvCapabilityMatrix => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityShader => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityInputAttachment => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilitySampled1D => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityImage1D => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilitySampledBuffer => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityImageBuffer => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityImageQuery => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityDerivativeControl => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityInt64Atomics => {
+            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_image_atomic_int64) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat16AddEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat32AddEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat32AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat32AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderImageFloat32AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat64AddEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat64AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat64AtomicAdd != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat16MinMaxEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat32MinMaxEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat32AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat32AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderImageFloat32AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+        },
+        spirv.SpvCapabilityAtomicFloat64MinMaxEXT => {
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat64AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat64AtomicMinMax != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+        },
+        spirv.SpvCapabilityInt64ImageEXT => {
+            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_image_atomic_int64) return false;
+        },
+        spirv.SpvCapabilityStorageImageExtendedFormats => {
+            if (api_version < vk.VK_API_VERSION_1_0) return false;
+        },
+        spirv.SpvCapabilityStorageImageReadWithoutFormat => {
+            if (api_version < vk.VK_API_VERSION_1_3) return false;
+            if (!extensions.device.VK_KHR_format_feature_flags2) return false;
+        },
+        spirv.SpvCapabilityStorageImageWriteWithoutFormat => {
+            if (api_version < vk.VK_API_VERSION_1_3) return false;
+            if (!extensions.device.VK_KHR_format_feature_flags2) return false;
+        },
+        spirv.SpvCapabilityDrawParameters => {
+            if (pdf.vk_physical_device_shader_draw_parameters_features.shaderDrawParameters != vk.VK_TRUE) return false;
+            if (api_version < vk.VK_API_VERSION_1_1) return false;
+            if (!extensions.device.VK_KHR_shader_draw_parameters) return false;
+        },
+        spirv.SpvCapabilityMultiView => {
+            if (pdf.vk_physical_device_multiview_features.multiview != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_multiview) return false;
+        },
+        spirv.SpvCapabilityDeviceGroup => {
+            if (api_version < vk.VK_API_VERSION_1_1) return false;
+            if (!extensions.device.VK_KHR_device_group) return false;
+        },
+        spirv.SpvCapabilityVariablePointersStorageBuffer => {
+            if (pdf.vk_physical_device_variable_pointers_features.variablePointersStorageBuffer != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_variable_pointers) return false;
+        },
+        spirv.SpvCapabilityVariablePointers => {
+            if (pdf.vk_physical_device_variable_pointers_features.variablePointers != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_variable_pointers) return false;
+        },
+        spirv.SpvCapabilityShaderClockKHR => {
+            if (!extensions.device.VK_KHR_shader_clock) return false;
+        },
+        spirv.SpvCapabilityStencilExportEXT => {
+            if (!extensions.device.VK_EXT_shader_stencil_export) return false;
+        },
+        spirv.SpvCapabilitySubgroupBallotKHR => {
+            if (!extensions.device.VK_EXT_shader_subgroup_ballot) return false;
+        },
+        spirv.SpvCapabilitySubgroupVoteKHR => {
+            if (!extensions.device.VK_EXT_shader_subgroup_vote) return false;
+        },
+        spirv.SpvCapabilityShaderViewportIndexLayerEXT => {
+            if (!extensions.device.VK_EXT_shader_viewport_index_layer) return false;
+        },
+        spirv.SpvCapabilityStorageBuffer16BitAccess => {
+            if (pdf.vk_physical_device_16bit_storage_features.storageBuffer16BitAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_16bit_storage) return false;
+        },
+        spirv.SpvCapabilityUniformAndStorageBuffer16BitAccess => {
+            if (pdf.vk_physical_device_16bit_storage_features.uniformAndStorageBuffer16BitAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_16bit_storage) return false;
+        },
+        spirv.SpvCapabilityStoragePushConstant16 => {
+            if (pdf.vk_physical_device_16bit_storage_features.storagePushConstant16 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_16bit_storage) return false;
+        },
+        spirv.SpvCapabilityStorageInputOutput16 => {
+            if (pdf.vk_physical_device_16bit_storage_features.storageInputOutput16 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_16bit_storage) return false;
+        },
+        spirv.SpvCapabilitySampleMaskPostDepthCoverage => {
+            if (!extensions.device.VK_EXT_post_depth_coverage) return false;
+        },
+        spirv.SpvCapabilityShaderNonUniform => {
+            if (api_version < vk.VK_API_VERSION_1_2) return false;
+            if (!extensions.device.VK_EXT_descriptor_indexing) return false;
+        },
+        spirv.SpvCapabilityFragmentFullyCoveredEXT => {
+            if (!extensions.device.VK_EXT_conservative_rasterization) return false;
+        },
+        spirv.SpvCapabilityComputeDerivativeGroupQuadsKHR => {
+            if (pdf.vk_physical_device_compute_shader_derivatives_features_khr.computeDerivativeGroupQuads != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_compute_shader_derivatives) return false;
+        },
+        spirv.SpvCapabilityComputeDerivativeGroupLinearKHR => {
+            if (pdf.vk_physical_device_compute_shader_derivatives_features_khr.computeDerivativeGroupLinear != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_compute_shader_derivatives) return false;
+        },
+        spirv.SpvCapabilityRayTracingKHR => {
+            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTracingPipeline != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_tracing_pipeline) return false;
+        },
+        spirv.SpvCapabilityRayQueryKHR => {
+            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_query) return false;
+        },
+        spirv.SpvCapabilityRayTraversalPrimitiveCullingKHR => {
+            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTraversalPrimitiveCulling != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_tracing_pipeline) return false;
+            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_query) return false;
+        },
+        spirv.SpvCapabilityRayCullMaskKHR => {
+            if (pdf.vk_physical_device_ray_tracing_maintenance_1_features_khr.rayTracingMaintenance1 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_tracing_maintenance1) return false;
+        },
+        spirv.SpvCapabilityTransformFeedback => {
+            if (pdf.vk_physical_device_transform_feedback_features_ext.transformFeedback != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_transform_feedback) return false;
+        },
+        spirv.SpvCapabilityGeometryStreams => {
+            if (pdf.vk_physical_device_transform_feedback_features_ext.geometryStreams != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_transform_feedback) return false;
+        },
+        spirv.SpvCapabilityPhysicalStorageBufferAddresses => {
+            if (pdf.vk_physical_device_buffer_device_address_features_ext.bufferDeviceAddress != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_buffer_device_address) return false;
+        },
+        spirv.SpvCapabilityIntegerFunctions2INTEL => {
+            if (pdf.vk_physical_device_shader_integer_functions_2_features_intel.shaderIntegerFunctions2 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_INTEL_shader_integer_functions2) return false;
+        },
+        spirv.SpvCapabilityFragmentShaderSampleInterlockEXT => {
+            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderSampleInterlock != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_fragment_shader_interlock) return false;
+        },
+        spirv.SpvCapabilityFragmentShaderPixelInterlockEXT => {
+            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderPixelInterlock != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_fragment_shader_interlock) return false;
+        },
+        spirv.SpvCapabilityDemoteToHelperInvocation => {
+            if (pdf.vk_physical_device_shader_demote_to_helper_invocation_features_ext.shaderDemoteToHelperInvocation != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_demote_to_helper_invocation) return false;
+        },
+        spirv.SpvCapabilityFragmentShadingRateKHR => {
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.pipelineFragmentShadingRate != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.primitiveFragmentShadingRate != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.attachmentFragmentShadingRate != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
+        },
+        spirv.SpvCapabilityWorkgroupMemoryExplicitLayoutKHR => {
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+        },
+        spirv.SpvCapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR => {
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout8BitAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+        },
+        spirv.SpvCapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR => {
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout16BitAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+        },
+        spirv.SpvCapabilityDotProductInputAll => {
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+        },
+        spirv.SpvCapabilityDotProductInput4x8Bit => {
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+        },
+        spirv.SpvCapabilityDotProductInput4x8BitPacked => {
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+        },
+        spirv.SpvCapabilityDotProduct => {
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+        },
+        spirv.SpvCapabilityFragmentBarycentricKHR => {
+            if (pdf.vk_physical_device_fragment_shader_barycentric_features_khr.fragmentShaderBarycentric != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_fragment_shader_barycentric) return false;
+        },
+        spirv.SpvCapabilityTextureSampleWeightedQCOM => {
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureSampleWeighted != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_QCOM_image_processing) return false;
+        },
+        spirv.SpvCapabilityTextureBoxFilterQCOM => {
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureBoxFilter != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_QCOM_image_processing) return false;
+        },
+        spirv.SpvCapabilityTextureBlockMatchQCOM => {
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureBlockMatch != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_QCOM_image_processing) return false;
+        },
+        spirv.SpvCapabilityTextureBlockMatch2QCOM => {
+            if (pdf.vk_physical_device_image_processing_2_features_qcom.textureBlockMatch2 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_QCOM_image_processing2) return false;
+        },
+        spirv.SpvCapabilityMeshShadingEXT => {
+            if (!extensions.device.VK_EXT_mesh_shader) return false;
+        },
+        spirv.SpvCapabilityRayTracingOpacityMicromapEXT => {
+            if (!extensions.device.VK_EXT_opacity_micromap) return false;
+        },
+        spirv.SpvCapabilityRayTracingPositionFetchKHR => {
+            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_tracing_position_fetch) return false;
+        },
+        spirv.SpvCapabilityRayQueryPositionFetchKHR => {
+            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_ray_tracing_position_fetch) return false;
+        },
+        spirv.SpvCapabilityTileImageColorReadAccessEXT => {
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageColorReadAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+        },
+        spirv.SpvCapabilityTileImageDepthReadAccessEXT => {
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageDepthReadAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+        },
+        spirv.SpvCapabilityTileImageStencilReadAccessEXT => {
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageStencilReadAccess != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+        },
+        spirv.SpvCapabilityCooperativeMatrixKHR => {
+            if (pdf.vk_physical_device_cooperative_matrix_features_khr.cooperativeMatrix != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_cooperative_matrix) return false;
+        },
+        spirv.SpvCapabilityQuadControlKHR => {
+            if (pdf.vk_physical_device_shader_quad_control_features_khr.shaderQuadControl != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_quad_control) return false;
+        },
+        spirv.SpvCapabilityBFloat16TypeKHR => {
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16Type != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+        },
+        spirv.SpvCapabilityBFloat16DotProductKHR => {
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16DotProduct != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+        },
+        spirv.SpvCapabilityBFloat16CooperativeMatrixKHR => {
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16CooperativeMatrix != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+        },
+        spirv.SpvCapabilityReplicatedCompositesEXT => {
+            if (pdf.vk_physical_device_shader_replicated_composites_features_ext.shaderReplicatedComposites != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_replicated_composites) return false;
+        },
+        spirv.SpvCapabilityTileShadingQCOM => {
+            if (pdf.vk_physical_device_tile_shading_features_qcom.tileShading != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_QCOM_tile_shading) return false;
+        },
+        spirv.SpvCapabilityFloat8EXT => {
+            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8 != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_float8) return false;
+        },
+        spirv.SpvCapabilityFloat8CooperativeMatrixEXT => {
+            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8CooperativeMatrix != vk.VK_TRUE) return false;
+            if (!extensions.device.VK_EXT_shader_float8) return false;
+        },
+        else => |other| {
+            log.debug(@src(), "Uknown SPRIV capability: {d}", .{other});
+            return false;
+        }
+    }
+    return true;
 }

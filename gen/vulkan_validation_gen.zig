@@ -13,6 +13,7 @@ const HEADER =
     \\const std = @import("std");
     \\const vk = @import("volk");
     \\const spirv = @import("spirv");
+    \\const PDF = @import("physical_device_features.zig");
     \\const log = @import("log.zig");
     \\
     \\const Allocator = std.mem.Allocator;
@@ -128,6 +129,7 @@ fn write_check_result(
 }
 
 fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
+    if (std.mem.startsWith(u8, s, "VK_VERSION_1_0")) return "VK_API_VERSION_1_0";
     if (std.mem.startsWith(u8, s, "VK_VERSION_1_1")) return "VK_API_VERSION_1_1";
     if (std.mem.startsWith(u8, s, "VK_VERSION_1_2")) return "VK_API_VERSION_1_2";
     if (std.mem.startsWith(u8, s, "VK_VERSION_1_3")) return "VK_API_VERSION_1_3";
@@ -662,7 +664,227 @@ fn write_spirv_validation(
         }
     }
     w.write(
+        \\    return false;
+        \\}}
+        \\
+    , .{});
+
+    w.write(
+        \\
+        \\pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, capability: spirv.SpvCapability) bool {{
+        \\    switch (capability) {{
+        \\
+    , .{});
+    for (db.spirv.capabilities) |cap| {
+        var tmp: std.ArrayListUnmanaged(u8) = .empty;
+        var writer = tmp.writer(alloc);
+        var keep: bool = false;
+        _ = try writer.print(
+            \\        spirv.SpvCapability{[cap]s} => {{
+            \\
+        , .{ .cap = cap.name });
+        for (cap.enable) |e| {
+            switch (e) {
+                .sfr => |sfr| {
+                    var found: bool = false;
+                    for (PDF_TYPES) |pdf_type| {
+                        if (eql(pdf_type, sfr.@"struct")) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) continue;
+                    keep = true;
+                    _ = try writer.print(
+                        \\            if (pdf.{[field]s}.{[feature]s} != vk.VK_TRUE) return false;
+                        \\
+                    , .{
+                        .field = try root.format_name(alloc, sfr.@"struct", false),
+                        .feature = sfr.feature,
+                    });
+
+                    var iter = std.mem.splitScalar(u8, sfr.requires, ',');
+                    while (iter.next()) |s| {
+                        if (std.mem.startsWith(u8, s, "VK_VERSION")) {
+                            _ = try writer.print(
+                                \\            if (api_version < vk.{[version]s}) return false;
+                                \\
+                            , .{ .version = vk_version_to_api_version(s).? });
+                        } else {
+                            var found2: bool = false;
+                            var ext_iter = db.all_extensions();
+                            while (ext_iter.next()) |tuple| {
+                                const ext, const t = tuple;
+                                if (eql(ext.name, s)) {
+                                    found2 = true;
+                                    _ = try writer.print(
+                                        \\            if (!extensions.{[type]t}.{[name]s}) return false;
+                                        \\
+                                    , .{ .type = t, .name = ext.name });
+                                }
+                            }
+                            if (!found2) keep = false;
+                        }
+                    }
+                },
+                .version => |v| {
+                    keep = true;
+                    _ = try writer.print(
+                        \\            if (api_version < vk.{[version]s}) return false;
+                        \\
+                    , .{ .version = vk_version_to_api_version(v).? });
+                },
+                .extension => |sext| {
+                    var iter = db.all_extensions();
+                    while (iter.next()) |tuple| {
+                        const ext, const t = tuple;
+                        if (eql(ext.name, sext)) {
+                            keep = true;
+                            _ = try writer.print(
+                                \\            if (!extensions.{[type]t}.{[name]s}) return false;
+                                \\
+                            , .{ .type = t, .name = ext.name });
+                        }
+                    }
+                },
+            }
+        }
+        _ = try writer.print(
+            \\        }},
+            \\
+        , .{});
+        if (keep) {
+            w.write(
+                \\{s}
+            , .{tmp.items});
+        }
+    }
+    w.write(
+        \\        else => |other| {{
+        \\            log.debug(@src(), "Uknown SPRIV capability: {{d}}", .{{other}});
+        \\            return false;
+        \\        }}
+        \\    }}
+        \\    return true;
         \\}}
         \\
     , .{});
 }
+
+const PDF_TYPES = [_][]const u8{
+    "VkPhysicalDevice16BitStorageFeatures",
+    "VkPhysicalDeviceMultiviewFeatures",
+    "VkPhysicalDeviceVariablePointersFeatures",
+    "VkPhysicalDeviceSamplerYcbcrConversionFeatures",
+    "VkPhysicalDeviceShaderDrawParametersFeatures",
+    "VkPhysicalDevice8BitStorageFeatures",
+    "VkPhysicalDeviceShaderAtomicInt64Features",
+    "VkPhysicalDeviceShaderFloat16Int8Features",
+    "VkPhysicalDeviceDescriptorIndexingFeatures",
+    "VkPhysicalDeviceVulkanMemoryModelFeatures",
+    "VkPhysicalDeviceUniformBufferStandardLayoutFeatures",
+    "VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures",
+    "VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures",
+    "VkPhysicalDeviceBufferDeviceAddressFeatures",
+    "VkPhysicalDeviceShaderClockFeaturesKHR",
+    "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
+    "VkPhysicalDeviceRayQueryFeaturesKHR",
+    "VkPhysicalDeviceRayTracingPipelineFeaturesKHR",
+    "VkPhysicalDeviceAccelerationStructureFeaturesKHR",
+    "VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR",
+    "VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR",
+    "VkPhysicalDeviceSynchronization2FeaturesKHR",
+    "VkPhysicalDeviceDynamicRenderingFeaturesKHR",
+    "VkPhysicalDeviceMaintenance4FeaturesKHR",
+    "VkPhysicalDeviceMaintenance5FeaturesKHR",
+    "VkPhysicalDeviceMaintenance7FeaturesKHR",
+    "VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR",
+    "VkPhysicalDeviceTransformFeedbackFeaturesEXT",
+    "VkPhysicalDeviceDepthClipEnableFeaturesEXT",
+    "VkPhysicalDeviceInlineUniformBlockFeaturesEXT",
+    "VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT",
+    "VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR",
+    "VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT",
+    "VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT",
+    "VkPhysicalDeviceFragmentDensityMapFeaturesEXT",
+    "VkPhysicalDeviceBufferDeviceAddressFeaturesEXT",
+    "VkPhysicalDeviceLineRasterizationFeaturesKHR",
+    "VkPhysicalDeviceSubgroupSizeControlFeaturesEXT",
+    "VkPhysicalDeviceExtendedDynamicStateFeaturesEXT",
+    "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT",
+    "VkPhysicalDeviceExtendedDynamicState3FeaturesEXT",
+    "VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT",
+    "VkPhysicalDeviceColorWriteEnableFeaturesEXT",
+    "VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT",
+    "VkPhysicalDeviceShaderAtomicFloatFeaturesEXT",
+    "VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT",
+    "VkPhysicalDeviceProvokingVertexFeaturesEXT",
+    "VkPhysicalDeviceCustomBorderColorFeaturesEXT",
+    "VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR",
+    "VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR",
+    "VkPhysicalDeviceShaderImageFootprintFeaturesNV",
+    "VkPhysicalDeviceShadingRateImageFeaturesNV",
+    "VkPhysicalDeviceCooperativeMatrixFeaturesNV",
+    "VkPhysicalDeviceShaderSMBuiltinsFeaturesNV",
+    "VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL",
+    "VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT",
+    "VkPhysicalDeviceRobustness2FeaturesEXT",
+    "VkPhysicalDeviceImageRobustnessFeaturesEXT",
+    "VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT",
+    "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
+    "VkPhysicalDeviceDepthClipControlFeaturesEXT",
+    "VkPhysicalDeviceMeshShaderFeaturesNV",
+    "VkPhysicalDeviceMeshShaderFeaturesEXT",
+    "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
+    "VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT",
+    "VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT",
+    "VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT",
+    "VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR",
+    "VkPhysicalDeviceRayTracingMotionBlurFeaturesNV",
+    "VkPhysicalDeviceImageProcessingFeaturesQCOM",
+    "VkPhysicalDeviceImageProcessing2FeaturesQCOM",
+    "VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM",
+    "VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR",
+    "VkPhysicalDeviceShaderTileImageFeaturesEXT",
+    "VkPhysicalDeviceCooperativeMatrixFeaturesKHR",
+    "VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR",
+    "VkPhysicalDeviceShaderExpectAssumeFeaturesKHR",
+    "VkPhysicalDeviceShaderFloatControls2FeaturesKHR",
+    "VkPhysicalDeviceShaderQuadControlFeaturesKHR",
+    "VkPhysicalDeviceRawAccessChainsFeaturesNV",
+    "VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT",
+    "VkPhysicalDevicePipelineRobustnessFeaturesEXT",
+    "VkPhysicalDeviceConditionalRenderingFeaturesEXT",
+    "VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR",
+    "VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT",
+    "VkPhysicalDeviceOpacityMicromapFeaturesEXT",
+    "VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV",
+    "VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV",
+    "VkPhysicalDeviceOpticalFlowFeaturesNV",
+    "VkPhysicalDeviceLegacyDitheringFeaturesEXT",
+    "VkPhysicalDevicePipelineProtectedAccessFeaturesEXT",
+    "VkPhysicalDevicePerStageDescriptorSetFeaturesNV",
+    "VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT",
+    "VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT",
+    "VkPhysicalDeviceBorderColorSwizzleFeaturesEXT",
+    "VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT",
+    "VkPhysicalDeviceDepthBiasControlFeaturesEXT",
+    "VkPhysicalDeviceDepthClampControlFeaturesEXT",
+    "VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT",
+    "VkPhysicalDeviceShaderObjectFeaturesEXT",
+    "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
+    "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
+    "VkPhysicalDeviceScalarBlockLayoutFeaturesEXT",
+    "VkPhysicalDeviceShaderBfloat16FeaturesKHR",
+    "VkPhysicalDeviceCooperativeMatrix2FeaturesNV",
+    "VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV",
+    "VkPhysicalDeviceClusterAccelerationStructureFeaturesNV",
+    "VkPhysicalDeviceCooperativeVectorFeaturesNV",
+    "VkPhysicalDeviceTileShadingFeaturesQCOM",
+    "VkPhysicalDeviceShaderFloat8FeaturesEXT",
+    "VkPhysicalDeviceTensorFeaturesARM",
+    "VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT",
+    "VkPhysicalDevicePipelineOpacityMicromapFeaturesARM",
+    "VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV",
+    "VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE",
+};
