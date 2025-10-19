@@ -8,7 +8,7 @@
 const std = @import("std");
 const vk = @import("volk");
 const log = @import("log.zig");
-const vu = @import("vulkan_utils.zig");
+const vv = @import("vulkan_validation.zig");
 const PDF = @import("physical_device_features.zig");
 
 const Allocator = std.mem.Allocator;
@@ -83,13 +83,13 @@ pub fn contains_all_layers(
 
 pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionProperties {
     var extensions_count: u32 = 0;
-    try vu.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    try vv.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         null,
     ));
     const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vu.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    try vv.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         extensions.ptr,
@@ -99,9 +99,9 @@ pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionPr
 
 pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayerProperties {
     var layer_property_count: u32 = 0;
-    try vu.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
+    try vv.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
     const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vu.check_result(vk.vkEnumerateInstanceLayerProperties.?(
+    try vv.check_result(vk.vkEnumerateInstanceLayerProperties.?(
         &layer_property_count,
         layers.ptr,
     ));
@@ -195,7 +195,7 @@ pub fn create_vk_instance(
     };
 
     var vk_instance: vk.VkInstance = undefined;
-    try vu.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
+    try vv.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
     log.debug(
         @src(),
         "Created instance api version: {d}.{d}.{d} has_properties_2: {}",
@@ -224,7 +224,7 @@ pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT
     };
 
     var callback: vk.VkDebugReportCallbackEXT = undefined;
-    try vu.check_result(
+    try vv.check_result(
         vk.vkCreateDebugReportCallbackEXT.?(
             instance,
             &create_info,
@@ -258,7 +258,7 @@ pub fn get_physical_devices(
     vk_instance: vk.VkInstance,
 ) ![]const vk.VkPhysicalDevice {
     var physical_device_count: u32 = 0;
-    try vu.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vv.check_result(vk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         null,
@@ -267,7 +267,7 @@ pub fn get_physical_devices(
         vk.VkPhysicalDevice,
         physical_device_count,
     );
-    try vu.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vv.check_result(vk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         physical_devices.ptr,
@@ -281,14 +281,14 @@ pub fn get_physical_device_exensions(
     extension_name: [*c]const u8,
 ) ![]const vk.VkExtensionProperties {
     var extensions_count: u32 = 0;
-    try vu.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    try vv.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
         null,
     ));
     const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vu.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    try vv.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
@@ -302,13 +302,13 @@ pub fn get_physical_device_layers(
     physical_device: vk.VkPhysicalDevice,
 ) ![]const vk.VkLayerProperties {
     var layer_property_count: u32 = 0;
-    try vu.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    try vv.check_result(vk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         null,
     ));
     const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vu.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    try vv.check_result(vk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         layers.ptr,
@@ -1087,7 +1087,7 @@ pub fn create_vk_device(
     };
 
     var vk_device: vk.VkDevice = undefined;
-    try vu.check_result(vk.vkCreateDevice.?(
+    try vv.check_result(vk.vkCreateDevice.?(
         physical_device.device,
         &create_info,
         null,
@@ -1104,7 +1104,7 @@ pub fn create_vk_sampler(
     create_info: *const vk.VkSamplerCreateInfo,
 ) !vk.VkSampler {
     var sampler: vk.VkSampler = undefined;
-    try vu.check_result(vk.vkCreateSampler.?(
+    try vv.check_result(vk.vkCreateSampler.?(
         vk_device,
         create_info,
         null,
@@ -1125,7 +1125,7 @@ pub fn create_descriptor_set_layout(
     create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 ) !vk.VkDescriptorSetLayout {
     var descriptor_set_layout: vk.VkDescriptorSetLayout = undefined;
-    try vu.check_result(vk.vkCreateDescriptorSetLayout.?(
+    try vv.check_result(vk.vkCreateDescriptorSetLayout.?(
         vk_device,
         create_info,
         null,
@@ -1146,7 +1146,7 @@ pub fn create_pipeline_layout(
     create_info: *const vk.VkPipelineLayoutCreateInfo,
 ) !vk.VkPipelineLayout {
     var pipeline_layout: vk.VkPipelineLayout = undefined;
-    try vu.check_result(vk.vkCreatePipelineLayout.?(
+    try vv.check_result(vk.vkCreatePipelineLayout.?(
         vk_device,
         create_info,
         null,
@@ -1167,7 +1167,7 @@ pub fn create_shader_module(
     create_info: *const vk.VkShaderModuleCreateInfo,
 ) !vk.VkShaderModule {
     var shader_module: vk.VkShaderModule = undefined;
-    try vu.check_result(vk.vkCreateShaderModule.?(
+    try vv.check_result(vk.vkCreateShaderModule.?(
         vk_device,
         create_info,
         null,
@@ -1191,14 +1191,14 @@ pub fn create_render_pass(
     var render_pass: vk.VkRenderPass = undefined;
     switch (base_type.sType) {
         vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        => try vu.check_result(vk.vkCreateRenderPass.?(
+        => try vv.check_result(vk.vkCreateRenderPass.?(
             vk_device,
             @ptrCast(create_info),
             null,
             &render_pass,
         )),
         vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
-        => try vu.check_result(vk.vkCreateRenderPass2.?(
+        => try vv.check_result(vk.vkCreateRenderPass2.?(
             vk_device,
             @ptrCast(create_info),
             null,
@@ -1222,7 +1222,7 @@ pub fn create_graphics_pipeline(
 ) !vk.VkPipeline {
     // vu.print_chain(create_info);
     var pipeline: vk.VkPipeline = undefined;
-    try vu.check_result(vk.vkCreateGraphicsPipelines.?(
+    try vv.check_result(vk.vkCreateGraphicsPipelines.?(
         vk_device,
         null,
         1,
@@ -1238,7 +1238,7 @@ pub fn create_compute_pipeline(
     create_info: *const vk.VkComputePipelineCreateInfo,
 ) !vk.VkPipeline {
     var pipeline: vk.VkPipeline = undefined;
-    try vu.check_result(vk.vkCreateComputePipelines.?(
+    try vv.check_result(vk.vkCreateComputePipelines.?(
         vk_device,
         null,
         1,
@@ -1254,7 +1254,7 @@ pub fn create_raytracing_pipeline(
     create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
 ) !vk.VkPipeline {
     var pipeline: vk.VkPipeline = undefined;
-    try vu.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
+    try vv.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
         vk_device,
         null,
         null,

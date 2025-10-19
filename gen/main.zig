@@ -2,7 +2,9 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const physical_device_features = @import("physical_device_features_gen.zig");
+const vkp = @import("vulkan_parsing.zig");
 const vulkan_utils = @import("vulkan_utils_gen.zig");
+const vulkan_validation = @import("vulkan_validation_gen.zig");
 
 pub const NOTE =
     \\// Copyright (c) 2025 Egor Lazarchuk
@@ -219,7 +221,14 @@ pub fn get_type(alloc: Allocator, stype: []const u8) ![]const u8 {
 
 pub fn main() !void {
     try physical_device_features.gen();
-    try vulkan_utils.gen();
+
+    const db: vkp.Database = try .init(
+        std.heap.page_allocator,
+        "thirdparty/Vulkan-Headers/registry/vk.xml",
+    );
+
+    try vulkan_utils.gen(&db);
+    try vulkan_validation.gen(&db);
 }
 
 comptime {

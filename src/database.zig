@@ -11,7 +11,7 @@ const miniz = @import("miniz");
 const log = @import("log.zig");
 const parsing = @import("parsing.zig");
 const vulkan = @import("vulkan.zig");
-const vu = @import("vulkan_utils.zig");
+const vv = @import("vulkan_validation.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -192,7 +192,7 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
-        extensions: *const vu.Extensions,
+        extensions: *const vv.Extensions,
         db: *Database,
     ) ParseResult {
         if (self.status.cmpxchgStrong(.not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
@@ -275,7 +275,7 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
-        extensions: *const vu.Extensions,
+        extensions: *const vv.Extensions,
         db: *Database,
         payload: []const u8,
     ) !void {
@@ -284,7 +284,7 @@ pub const Entry = struct {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vu.check_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info), true))
+                if (!vv.check_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info), true))
                     return error.CheckFailedVkSamplerCreateInfo;
             },
             .descriptor_set_layout => {
@@ -295,7 +295,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vu.check_VkDescriptorSetLayoutCreateInfo(
+                if (!vv.check_VkDescriptorSetLayoutCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -308,7 +308,7 @@ pub const Entry = struct {
                 const result =
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vu.check_VkPipelineLayoutCreateInfo(
+                if (!vv.check_VkPipelineLayoutCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -326,7 +326,7 @@ pub const Entry = struct {
                 );
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vu.check_VkRenderPassCreateInfo(
+                if (!vv.check_VkRenderPassCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -343,7 +343,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vu.check_VkGraphicsPipelineCreateInfo(
+                if (!vv.check_VkGraphicsPipelineCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -360,7 +360,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vu.check_VkComputePipelineCreateInfo(
+                if (!vv.check_VkComputePipelineCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -377,7 +377,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vu.check_VkRayTracingPipelineCreateInfoKHR(
+                if (!vv.check_VkRayTracingPipelineCreateInfoKHR(
                     extensions,
                     @ptrCast(
                         result.create_info,

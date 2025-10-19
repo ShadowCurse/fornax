@@ -6,7 +6,7 @@ const vk = @import("volk");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
-const vu = @import("vulkan_utils.zig");
+const vv = @import("vulkan_validation.zig");
 const vulkan = @import("vulkan.zig");
 const Database = @import("database.zig");
 
@@ -154,7 +154,7 @@ pub fn main() !void {
     if (parsed_application_info.version != 6)
         return error.ApllicationInfoVersionMissmatch;
 
-    try vu.check_result(vk.volkInitialize());
+    try vv.check_result(vk.volkInitialize());
     const instance = try vulkan.create_vk_instance(
         tmp_alloc,
         parsed_application_info.application_info,
@@ -177,7 +177,7 @@ pub fn main() !void {
         parsed_application_info.device_features2,
         args.enable_validation,
     );
-    const extensions: vu.Extensions = try .init(
+    const extensions: vv.Extensions = try .init(
         tmp_alloc,
         instance.api_version,
         instance.all_extension_names,
@@ -349,7 +349,7 @@ pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
     shared_alloc: Allocator,
     progress: *std.Progress.Node,
-    extensions: *const vu.Extensions,
+    extensions: *const vv.Extensions,
     db: *Database,
     vk_device: vk.VkDevice,
 };
@@ -359,7 +359,7 @@ pub fn init_thread_contexts(
     shared_alloc: Allocator,
     num_threads: ?u32,
     progress: *std.Progress.Node,
-    extensions: *const vu.Extensions,
+    extensions: *const vv.Extensions,
     db: *Database,
     vk_device: vk.VkDevice,
 ) ![]align(64) ThreadContext {
