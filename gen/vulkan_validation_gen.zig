@@ -34,6 +34,8 @@ pub fn gen(db: *const vkp.Database) !void {
     _ = arena.reset(.retain_capacity);
     try write_extension_type(alloc, &file, db);
     _ = arena.reset(.retain_capacity);
+    try write_types_validation(alloc, &file, db);
+    _ = arena.reset(.retain_capacity);
 }
 
 const Writer = struct {
@@ -328,11 +330,19 @@ fn write_extension_type(
         \\}};
         \\
     , .{});
+}
+
+fn write_types_validation(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    db: *const vkp.Database,
+) !void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
 
     for (db.types.structs) |*@"struct"| {
         w.write(
             \\
-            \\pub fn check_{s}(extensions: *const Extensions, item: *const vk.{s}, check_pnext: bool) bool {{
+            \\pub fn validate_{s}(extensions: *const Extensions, item: *const vk.{s}, validate_pnext: bool) bool {{
             \\
         , .{ @"struct".name, @"struct".name });
         var checked_members: u32 = 0;
@@ -347,7 +357,7 @@ fn write_extension_type(
                             .null => {
                                 w.write(
                                     \\    for (std.mem.span(item.{[member]s})) |*i| {{
-                                    \\        if (!check_{[type]t}_{[name]s}(extensions, @ptrCast(i)))
+                                    \\        if (!validate_{[type]t}_{[name]s}(extensions, @ptrCast(i)))
                                     \\            return false;
                                     \\    }}
                                     \\
@@ -361,7 +371,7 @@ fn write_extension_type(
                                 if (@"struct".has_member(m)) {
                                     w.write(
                                         \\    for (0..item.{s}) |i| {{
-                                        \\        if (!check_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
+                                        \\        if (!validate_{t}_{s}(extensions, @ptrCast(&item.{s}[i])))
                                         \\            return false;
                                         \\    }}
                                         \\
@@ -372,7 +382,7 @@ fn write_extension_type(
                         break;
                     } else {
                         w.write(
-                            \\    if (!check_{t}_{s}(extensions, @ptrCast(&item.{s})))
+                            \\    if (!validate_{t}_{s}(extensions, @ptrCast(&item.{s})))
                             \\        return false;
                             \\
                         , .{ @"enum".type, @"enum".name, member.name });
@@ -388,7 +398,7 @@ fn write_extension_type(
                             .null => {
                                 w.write(
                                     \\    for (std.mem.span(item.{s})) |*i| {{
-                                    \\        if (!check_bitmask_{s}(extensions, @ptrCast(i))) 
+                                    \\        if (!validate_bitmask_{s}(extensions, @ptrCast(i))) 
                                     \\            return false;
                                     \\    }}
                                     \\
@@ -398,7 +408,7 @@ fn write_extension_type(
                                 if (@"struct".has_member(m)) {
                                     w.write(
                                         \\    for (0..item.{s}) |i| {{
-                                        \\        if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
+                                        \\        if (!validate_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
                                         \\            return false;
                                         \\    }}
                                         \\
@@ -409,7 +419,7 @@ fn write_extension_type(
                         break;
                     } else {
                         w.write(
-                            \\    if (!check_bitmask_{s}(extensions, @ptrCast(&item.{s})))
+                            \\    if (!validate_bitmask_{s}(extensions, @ptrCast(&item.{s})))
                             \\        return false;
                             \\
                         , .{ bitmask.enum_name, member.name });
@@ -426,7 +436,7 @@ fn write_extension_type(
             , .{});
         if (has_pnext) {
             w.write(
-                \\    if (!check_pnext) return true;
+                \\    if (!validate_pnext) return true;
                 \\
                 \\    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
                 \\    while (pnext) |next| {{
@@ -440,7 +450,7 @@ fn write_extension_type(
                         if (std.mem.indexOf(u8, extends, @"struct".name) != null) {
                             w.write(
                                 \\            vk.{[stype]s},
-                                \\            => if (!check_{[type]s}(extensions, @ptrCast(next), false))
+                                \\            => if (!validate_{[type]s}(extensions, @ptrCast(next), false))
                                 \\                return false,
                                 \\
                             , .{ .stype = stype, .type = ss.name });
@@ -461,7 +471,7 @@ fn write_extension_type(
             , .{ .name = @"struct".name });
         } else {
             w.write(
-                \\    _ = check_pnext;
+                \\    _ = validate_pnext;
                 \\    return true;
                 \\}}
                 \\
@@ -472,7 +482,7 @@ fn write_extension_type(
         if (std.mem.indexOfScalar(u8, @"enum".name, ' ') != null) continue;
         w.write(
             \\
-            \\pub fn check_{[type]t}_{[name]s}(extensions: *const Extensions, item: *const vk.{[name]s}) bool {{
+            \\pub fn validate_{[type]t}_{[name]s}(extensions: *const Extensions, item: *const vk.{[name]s}) bool {{
             \\
         , .{ .type = @"enum".type, .name = @"enum".name });
         switch (@"enum".type) {

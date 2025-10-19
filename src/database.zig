@@ -284,7 +284,7 @@ pub const Entry = struct {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vv.check_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info), true))
+                if (!vv.validate_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info), true))
                     return error.CheckFailedVkSamplerCreateInfo;
             },
             .descriptor_set_layout => {
@@ -295,7 +295,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.check_VkDescriptorSetLayoutCreateInfo(
+                if (!vv.validate_VkDescriptorSetLayoutCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -308,7 +308,7 @@ pub const Entry = struct {
                 const result =
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.check_VkPipelineLayoutCreateInfo(
+                if (!vv.validate_VkPipelineLayoutCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -326,7 +326,7 @@ pub const Entry = struct {
                 );
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vv.check_VkRenderPassCreateInfo(
+                if (!vv.validate_VkRenderPassCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -343,7 +343,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.check_VkGraphicsPipelineCreateInfo(
+                if (!vv.validate_VkGraphicsPipelineCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -360,7 +360,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.check_VkComputePipelineCreateInfo(
+                if (!vv.validate_VkComputePipelineCreateInfo(
                     extensions,
                     @ptrCast(
                         result.create_info,
@@ -377,7 +377,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.check_VkRayTracingPipelineCreateInfoKHR(
+                if (!vv.validate_VkRayTracingPipelineCreateInfoKHR(
                     extensions,
                     @ptrCast(
                         result.create_info,
