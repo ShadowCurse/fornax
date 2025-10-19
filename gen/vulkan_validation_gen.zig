@@ -645,23 +645,20 @@ fn write_spirv_validation(
         \\
     , .{});
     for (db.spirv.extensions) |sext| {
-        var iter = db.all_extensions();
-        while (iter.next()) |tuple| {
+        if (db.extension_by_name(sext.extension)) |tuple| {
             const ext, const t = tuple;
-            if (eql(sext.extension, ext.name)) {
-                if (sext.version) |v| {
-                    w.write(
-                        \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
-                        \\        return extensions.{[type]t}.{[name]s} and vk.{[version]s} <= api_version;
-                        \\
-                    , .{ .name = ext.name, .type = t, .version = vk_version_to_api_version(v).? });
-                } else {
-                    w.write(
-                        \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
-                        \\        return extensions.{[type]t}.{[name]s};
-                        \\
-                    , .{ .name = ext.name, .type = t });
-                }
+            if (sext.version) |v| {
+                w.write(
+                    \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                    \\        return extensions.{[type]t}.{[name]s} and vk.{[version]s} <= api_version;
+                    \\
+                , .{ .name = ext.name, .type = t, .version = vk_version_to_api_version(v).? });
+            } else {
+                w.write(
+                    \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                    \\        return extensions.{[type]t}.{[name]s};
+                    \\
+                , .{ .name = ext.name, .type = t });
             }
         }
     }
@@ -714,16 +711,13 @@ fn write_spirv_validation(
                             , .{ .version = vk_version_to_api_version(s).? });
                         } else {
                             var found2: bool = false;
-                            var ext_iter = db.all_extensions();
-                            while (ext_iter.next()) |tuple| {
+                            if (db.extension_by_name(s)) |tuple| {
                                 const ext, const t = tuple;
-                                if (eql(ext.name, s)) {
-                                    found2 = true;
-                                    _ = try writer.print(
-                                        \\            if (!extensions.{[type]t}.{[name]s}) return false;
-                                        \\
-                                    , .{ .type = t, .name = ext.name });
-                                }
+                                found2 = true;
+                                _ = try writer.print(
+                                    \\            if (!extensions.{[type]t}.{[name]s}) return false;
+                                    \\
+                                , .{ .type = t, .name = ext.name });
                             }
                             if (!found2) keep = false;
                         }
@@ -737,16 +731,13 @@ fn write_spirv_validation(
                     , .{ .version = vk_version_to_api_version(v).? });
                 },
                 .extension => |sext| {
-                    var iter = db.all_extensions();
-                    while (iter.next()) |tuple| {
+                    if (db.extension_by_name(sext)) |tuple| {
                         const ext, const t = tuple;
-                        if (eql(ext.name, sext)) {
-                            keep = true;
-                            _ = try writer.print(
-                                \\            if (!extensions.{[type]t}.{[name]s}) return false;
-                                \\
-                            , .{ .type = t, .name = ext.name });
-                        }
+                        keep = true;
+                        _ = try writer.print(
+                            \\            if (!extensions.{[type]t}.{[name]s}) return false;
+                            \\
+                        , .{ .type = t, .name = ext.name });
                     }
                 },
             }
@@ -772,4 +763,3 @@ fn write_spirv_validation(
         \\
     , .{});
 }
-

@@ -149,6 +149,16 @@ pub const Database = struct {
         return .{ .db = self };
     }
 
+    pub fn extension_by_name(self: *const Self, name: []const u8) ?struct { *const Extension, Extension.Type } {
+        var iter = self.all_extensions();
+        while (iter.next()) |tuple| {
+            const ext, _ = tuple;
+            if (std.mem.eql(u8, ext.name, name))
+                return tuple;
+        }
+        return null;
+    }
+
     pub fn enum_by_name(self: *const Self, name: []const u8) ?*const Enum {
         for (self.enums.items) |*e| {
             if (std.mem.eql(u8, e.name, name))
