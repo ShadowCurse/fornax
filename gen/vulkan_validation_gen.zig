@@ -36,6 +36,8 @@ pub fn gen(db: *const vkp.Database) !void {
     _ = arena.reset(.retain_capacity);
     try write_types_validation(alloc, &file, db);
     _ = arena.reset(.retain_capacity);
+    try write_spirv_validation(alloc, &file, db);
+    _ = arena.reset(.retain_capacity);
 }
 
 const Writer = struct {
@@ -624,4 +626,42 @@ fn write_types_validation(
             },
         }
     }
+}
+
+fn write_spirv_validation(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    db: *const vkp.Database,
+) !void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\
+        \\pub fn validate_spirv_extension(api_version: u32, extensions: *const Extensions, extension_name: []const u8) bool {{
+        \\
+    , .{});
+    for (db.spirv.extensions) |sext| {
+        var iter = db.all_extensions();
+        while (iter.next()) |tuple| {
+            const ext, const t = tuple;
+            if (eql(sext.extension, ext.name)) {
+                if (sext.version) |v| {
+                    w.write(
+                        \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                        \\        return extensions.{[type]t}.{[name]s} and vk.{[version]s} <= api_version;
+                        \\
+                    , .{ .name = ext.name, .type = t, .version = vk_version_to_api_version(v).? });
+                } else {
+                    w.write(
+                        \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                        \\        return extensions.{[type]t}.{[name]s};
+                        \\
+                    , .{ .name = ext.name, .type = t });
+                }
+            }
+        }
+    }
+    w.write(
+        \\}}
+        \\
+    , .{});
 }

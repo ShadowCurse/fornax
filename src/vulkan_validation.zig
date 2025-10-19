@@ -31690,3 +31690,116 @@ pub fn validate_enum_VkPhysicalDeviceDataGraphOperationTypeARM(extensions: *cons
     _ = extensions;
     return false;
 }
+
+pub fn validate_spirv_extension(api_version: u32, extensions: *const Extensions, extension_name: []const u8) bool {
+    if (std.mem.eql(u8, extension_name, "VK_KHR_variable_pointers"))
+        return extensions.device.VK_KHR_variable_pointers and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_draw_parameters"))
+        return extensions.device.VK_KHR_shader_draw_parameters and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_8bit_storage"))
+        return extensions.device.VK_KHR_8bit_storage and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_16bit_storage"))
+        return extensions.device.VK_KHR_16bit_storage and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_clock"))
+        return extensions.device.VK_KHR_shader_clock;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_float_controls"))
+        return extensions.device.VK_KHR_shader_float_controls and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_storage_buffer_storage_class"))
+        return extensions.device.VK_KHR_storage_buffer_storage_class and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_post_depth_coverage"))
+        return extensions.device.VK_EXT_post_depth_coverage;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_stencil_export"))
+        return extensions.device.VK_EXT_shader_stencil_export;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_subgroup_ballot"))
+        return extensions.device.VK_EXT_shader_subgroup_ballot;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_subgroup_vote"))
+        return extensions.device.VK_EXT_shader_subgroup_vote;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_viewport_index_layer"))
+        return extensions.device.VK_EXT_shader_viewport_index_layer and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_descriptor_indexing"))
+        return extensions.device.VK_EXT_descriptor_indexing and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_vulkan_memory_model"))
+        return extensions.device.VK_KHR_vulkan_memory_model and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_pipeline"))
+        return extensions.device.VK_KHR_ray_tracing_pipeline;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_query"))
+        return extensions.device.VK_KHR_ray_query;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_maintenance1"))
+        return extensions.device.VK_KHR_ray_tracing_maintenance1;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_fragment_density_map"))
+        return extensions.device.VK_EXT_fragment_density_map;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_buffer_device_address"))
+        return extensions.device.VK_KHR_buffer_device_address and vk.VK_API_VERSION_1_2 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_buffer_device_address"))
+        return extensions.device.VK_EXT_buffer_device_address;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_fragment_shader_interlock"))
+        return extensions.device.VK_EXT_fragment_shader_interlock;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_demote_to_helper_invocation"))
+        return extensions.device.VK_EXT_shader_demote_to_helper_invocation and vk.VK_API_VERSION_1_3 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_fragment_shading_rate"))
+        return extensions.device.VK_KHR_fragment_shading_rate;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_non_semantic_info"))
+        return extensions.device.VK_KHR_shader_non_semantic_info and vk.VK_API_VERSION_1_3 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_image_atomic_int64"))
+        return extensions.device.VK_EXT_shader_image_atomic_int64;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_terminate_invocation"))
+        return extensions.device.VK_KHR_shader_terminate_invocation and vk.VK_API_VERSION_1_3 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_multiview"))
+        return extensions.device.VK_KHR_multiview and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_workgroup_memory_explicit_layout"))
+        return extensions.device.VK_KHR_workgroup_memory_explicit_layout;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float"))
+        return extensions.device.VK_EXT_shader_atomic_float;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_fragment_shader_barycentric"))
+        return extensions.device.VK_KHR_fragment_shader_barycentric;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_subgroup_uniform_control_flow"))
+        return extensions.device.VK_KHR_shader_subgroup_uniform_control_flow;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float2"))
+        return extensions.device.VK_EXT_shader_atomic_float2;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float2"))
+        return extensions.device.VK_EXT_shader_atomic_float2;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_conservative_rasterization"))
+        return extensions.device.VK_EXT_conservative_rasterization;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_integer_dot_product"))
+        return extensions.device.VK_KHR_shader_integer_dot_product and vk.VK_API_VERSION_1_3 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_INTEL_shader_integer_functions2"))
+        return extensions.device.VK_INTEL_shader_integer_functions2;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_device_group"))
+        return extensions.device.VK_KHR_device_group and vk.VK_API_VERSION_1_1 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_QCOM_image_processing"))
+        return extensions.device.VK_QCOM_image_processing;
+    if (std.mem.eql(u8, extension_name, "VK_QCOM_image_processing2"))
+        return extensions.device.VK_QCOM_image_processing2;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_mesh_shader"))
+        return extensions.device.VK_EXT_mesh_shader;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_position_fetch"))
+        return extensions.device.VK_KHR_ray_tracing_position_fetch;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_tile_image"))
+        return extensions.device.VK_EXT_shader_tile_image;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_opacity_micromap"))
+        return extensions.device.VK_EXT_opacity_micromap;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_cooperative_matrix"))
+        return extensions.device.VK_KHR_cooperative_matrix;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_maximal_reconvergence"))
+        return extensions.device.VK_KHR_shader_maximal_reconvergence;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_subgroup_rotate"))
+        return extensions.device.VK_KHR_shader_subgroup_rotate and vk.VK_API_VERSION_1_4 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_expect_assume"))
+        return extensions.device.VK_KHR_shader_expect_assume and vk.VK_API_VERSION_1_4 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_float_controls2"))
+        return extensions.device.VK_KHR_shader_float_controls2 and vk.VK_API_VERSION_1_4 <= api_version;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_quad_control"))
+        return extensions.device.VK_KHR_shader_quad_control;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_bfloat16"))
+        return extensions.device.VK_KHR_shader_bfloat16;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_compute_shader_derivatives"))
+        return extensions.device.VK_KHR_compute_shader_derivatives;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_replicated_composites"))
+        return extensions.device.VK_EXT_shader_replicated_composites;
+    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_relaxed_extended_instruction"))
+        return extensions.device.VK_KHR_shader_relaxed_extended_instruction;
+    if (std.mem.eql(u8, extension_name, "VK_QCOM_tile_shading"))
+        return extensions.device.VK_QCOM_tile_shading;
+    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_float8"))
+        return extensions.device.VK_EXT_shader_float8;
+}
