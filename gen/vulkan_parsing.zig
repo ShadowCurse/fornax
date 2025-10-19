@@ -453,6 +453,11 @@ pub fn parse_extensions(
     var instance_extensions: std.ArrayListUnmanaged(Extension) = .empty;
     var device_extensions: std.ArrayListUnmanaged(Extension) = .empty;
     while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "extensions")) break,
+            else => {},
+        }
+
         if (try parse_extension(alloc, parser)) |tuple| {
             const ext, const t = tuple;
             for (ignore_subnames) |ia| {
@@ -462,10 +467,6 @@ pub fn parse_extensions(
                 .device => try device_extensions.append(alloc, ext),
             }
         } else parser.skip_current_element();
-        switch (parser.peek_next() orelse break) {
-            .element_end => |es| if (std.mem.eql(u8, es, "extension")) break,
-            else => {},
-        }
     }
     _ = parser.next();
     return .{
