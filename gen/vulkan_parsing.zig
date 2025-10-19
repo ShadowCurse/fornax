@@ -1114,6 +1114,7 @@ pub const Spirv = struct {
         pub const Enable = union(enum) {
             sfr: Sfr,
             version: []const u8,
+            extension: []const u8,
 
             pub const Sfr = struct {
                 @"struct": []const u8 = &.{},
@@ -1214,6 +1215,8 @@ pub fn parse_spirv_capability(alloc: Allocator, original_parser: *xml.Parser) !?
         const first = parser.attribute() orelse return null;
         if (std.mem.eql(u8, first.name, "version")) {
             try items.append(alloc, .{ .version = first.value });
+        } else if (std.mem.eql(u8, first.name, "extension")) {
+            try items.append(alloc, .{ .extension = first.value });
         } else {
             if (!std.mem.eql(u8, first.name, "struct")) return null;
             var sfr: Spirv.Capability.Enable.Sfr = .{};
@@ -1276,6 +1279,27 @@ test "parse_spirv_capability" {
                 .{ .sfr = .{ .@"struct" = "S1", .feature = "F1", .requires = "R1" } },
                 .{ .sfr = .{ .@"struct" = "S2", .feature = "F2", .requires = "R2" } },
                 .{ .sfr = .{ .@"struct" = "S3", .feature = "F3", .requires = "R3" } },
+            },
+        };
+        try std.testing.expectEqualDeep(expected, c);
+    }
+    {
+        const text =
+            \\<spirvcapability name="N">
+            \\    <enable struct="S" feature="F" requires="R"/>
+            \\    <enable version="V"/>
+            \\    <enable extension="E"/>
+            \\</spirvcapability>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const c = (try parse_spirv_capability(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Capability = .{
+            .name = "N",
+            .enable = &.{
+                .{ .sfr = .{ .@"struct" = "S", .feature = "F", .requires = "R" } },
+                .{ .version = "V" },
+                .{ .extension = "E" },
             },
         };
         try std.testing.expectEqualDeep(expected, c);

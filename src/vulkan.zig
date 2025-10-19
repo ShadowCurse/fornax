@@ -7,6 +7,7 @@
 
 const std = @import("std");
 const vk = @import("volk");
+const a = @import("spirv");
 const log = @import("log.zig");
 const vv = @import("vulkan_validation.zig");
 const PDF = @import("physical_device_features.zig");

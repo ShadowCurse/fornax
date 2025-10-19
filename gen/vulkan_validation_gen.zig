@@ -12,6 +12,7 @@ const HEADER =
     \\
     \\const std = @import("std");
     \\const vk = @import("volk");
+    \\const spirv = @import("spirv");
     \\const log = @import("log.zig");
     \\
     \\const Allocator = std.mem.Allocator;
