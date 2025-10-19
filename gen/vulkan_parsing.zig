@@ -77,6 +77,7 @@ pub const Database = struct {
     types: Types,
     extensions: Extensions,
     enums: std.ArrayListUnmanaged(Enum),
+    spirv: Spirv,
 
     const Self = @This();
 
@@ -88,6 +89,7 @@ pub const Database = struct {
         var types: Types = undefined;
         var extensions: Extensions = undefined;
         var enums: std.ArrayListUnmanaged(Enum) = .empty;
+        var spirv: Spirv = undefined;
         var parser: xml.Parser = .init(buffer);
         while (parser.peek_next()) |token| {
             switch (token) {
@@ -99,6 +101,8 @@ pub const Database = struct {
                         types = try parse_types(alloc, &parser, IGNORE_STRUCTS);
                     } else if (std.mem.eql(u8, es, "extensions")) {
                         extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
+                    } else if (std.mem.eql(u8, es, "spirvextensions")) {
+                        spirv = try parse_spirv(alloc, &parser);
                     } else if (std.mem.eql(u8, es, "enums")) {
                         if (try parse_enum(alloc, &parser)) |e|
                             try enums.append(alloc, e)
@@ -117,6 +121,7 @@ pub const Database = struct {
             .types = types,
             .extensions = extensions,
             .enums = enums,
+            .spirv = spirv,
         };
     }
 
@@ -475,7 +480,7 @@ pub fn parse_extensions(
     };
 }
 
-test "parse_several_extensions" {
+test "parse_extensions" {
     const text =
         \\<extensions comment="Text">
         \\  <extension name="A" number="1" type="device" author="B" depends="C" contact="D" supported="vulkan" promotedto="E" ratified="F">
@@ -493,10 +498,17 @@ test "parse_several_extensions" {
     const alloc = arena.allocator();
 
     var parser: xml.Parser = .init(text);
-    const extensions = try parse_extensions(alloc, &parser, &.{});
+    const e = try parse_extensions(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-    try std.testing.expectEqual(1, extensions.instance.len);
-    try std.testing.expectEqual(1, extensions.device.len);
+    const expected: Extensions = .{
+        .instance = &.{
+            .{ .name = "B", .depends = "C", .promoted_to = "E", .require = &.{.{}} },
+        },
+        .device = &.{
+            .{ .name = "A", .depends = "C", .promoted_to = "E", .require = &.{.{}} },
+        },
+    };
+    try std.testing.expectEqualDeep(expected, e);
 }
 
 pub const Types = struct {
@@ -1084,4 +1096,285 @@ test "parse_enum" {
         _ = e;
         // std.log.err("{f}", .{e});
     }
+}
+
+pub const Spirv = struct {
+    extensions: []const Spirv.Extension = &.{},
+    capabilities: []const Spirv.Capability = &.{},
+
+    pub const Extension = struct {
+        name: []const u8 = &.{},
+        version: ?[]const u8 = null,
+        extension: []const u8 = &.{},
+    };
+    pub const Capability = struct {
+        name: []const u8 = &.{},
+        enable: []const Capability.Enable = &.{},
+
+        pub const Enable = union(enum) {
+            sfr: Sfr,
+            version: []const u8,
+
+            pub const Sfr = struct {
+                @"struct": []const u8 = &.{},
+                feature: []const u8 = &.{},
+                requires: []const u8 = &.{},
+            };
+        };
+    };
+};
+
+pub fn parse_spirv_extension(original_parser: *xml.Parser) ?Spirv.Extension {
+    if (!original_parser.check_peek_element_start("spirvextension")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Spirv.Extension = .{};
+    const name = parser.attribute() orelse return null;
+    result.name = name.value;
+    _ = parser.skip_attributes();
+
+    while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "spirvextension")) break,
+            else => {},
+        }
+        _ = parser.element_start() orelse return null;
+        const attr = parser.attribute() orelse return null;
+        if (std.mem.eql(u8, attr.name, "version")) {
+            result.version = attr.value;
+            _ = parser.skip_attributes();
+        } else if (std.mem.eql(u8, attr.name, "extension")) {
+            result.extension = attr.value;
+            _ = parser.skip_attributes();
+        }
+    }
+    _ = parser.next();
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_spirv_extension" {
+    {
+        const text =
+            \\<spirvextension name="N">
+            \\    <enable extension="E"/>
+            \\</spirvextension>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = parse_spirv_extension(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Extension = .{
+            .name = "N",
+            .version = null,
+            .extension = "E",
+        };
+        try std.testing.expectEqualDeep(expected, e);
+    }
+    {
+        const text =
+            \\<spirvextension name="N">
+            \\    <enable version="V"/>
+            \\    <enable extension="E"/>
+            \\</spirvextension>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const e = parse_spirv_extension(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Extension = .{
+            .name = "N",
+            .version = "V",
+            .extension = "E",
+        };
+        try std.testing.expectEqualDeep(expected, e);
+    }
+}
+
+pub fn parse_spirv_capability(alloc: Allocator, original_parser: *xml.Parser) !?Spirv.Capability {
+    if (!original_parser.check_peek_element_start("spirvcapability")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var result: Spirv.Capability = .{};
+    const name = parser.attribute() orelse return null;
+    result.name = name.value;
+    _ = parser.skip_attributes();
+
+    var items: std.ArrayListUnmanaged(Spirv.Capability.Enable) = .empty;
+    while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "spirvcapability")) break,
+            else => {},
+        }
+        _ = parser.element_start() orelse return null;
+
+        const first = parser.attribute() orelse return null;
+        if (std.mem.eql(u8, first.name, "version")) {
+            try items.append(alloc, .{ .version = first.value });
+        } else {
+            if (!std.mem.eql(u8, first.name, "struct")) return null;
+            var sfr: Spirv.Capability.Enable.Sfr = .{};
+            sfr.@"struct" = first.value;
+
+            const feature = parser.attribute() orelse return null;
+            if (!std.mem.eql(u8, feature.name, "feature")) return null;
+            sfr.feature = feature.value;
+
+            const requires = parser.attribute() orelse return null;
+            if (!std.mem.eql(u8, requires.name, "requires")) return null;
+            sfr.requires = requires.value;
+
+            try items.append(alloc, .{ .sfr = sfr });
+        }
+
+        _ = parser.skip_attributes();
+    }
+    _ = parser.next();
+
+    result.enable = items.items;
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_spirv_capability" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+    {
+        const text =
+            \\<spirvcapability name="N">
+            \\    <enable version="V"/>
+            \\</spirvcapability>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const c = (try parse_spirv_capability(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Capability = .{
+            .name = "N",
+            .enable = &.{
+                .{ .version = "V" },
+            },
+        };
+        try std.testing.expectEqualDeep(expected, c);
+    }
+    {
+        const text =
+            \\<spirvcapability name="N">
+            \\    <enable struct="S1" feature="F1" requires="R1"/>
+            \\    <enable struct="S2" feature="F2" requires="R2"/>
+            \\    <enable struct="S3" feature="F3" requires="R3"/>
+            \\</spirvcapability>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const c = (try parse_spirv_capability(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Capability = .{
+            .name = "N",
+            .enable = &.{
+                .{ .sfr = .{ .@"struct" = "S1", .feature = "F1", .requires = "R1" } },
+                .{ .sfr = .{ .@"struct" = "S2", .feature = "F2", .requires = "R2" } },
+                .{ .sfr = .{ .@"struct" = "S3", .feature = "F3", .requires = "R3" } },
+            },
+        };
+        try std.testing.expectEqualDeep(expected, c);
+    }
+}
+
+pub fn parse_spirv(
+    alloc: Allocator,
+    parser: *xml.Parser,
+) !Spirv {
+    if (!parser.check_peek_element_start("spirvextensions")) return .{};
+    _ = parser.element_start();
+    _ = parser.skip_attributes();
+
+    var extensions: std.ArrayListUnmanaged(Spirv.Extension) = .empty;
+    while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "spirvextensions")) break,
+            else => {},
+        }
+
+        if (parse_spirv_extension(parser)) |v| {
+            try extensions.append(alloc, v);
+        } else {
+            parser.skip_current_element();
+        }
+    }
+    _ = parser.next();
+
+    if (!parser.check_peek_element_start("spirvcapabilities")) return .{};
+    _ = parser.element_start();
+    _ = parser.skip_attributes();
+
+    var capabilities: std.ArrayListUnmanaged(Spirv.Capability) = .empty;
+    while (true) {
+        switch (parser.peek_next() orelse break) {
+            .element_end => |es| if (std.mem.eql(u8, es, "spirvcapabilities")) break,
+            else => {},
+        }
+
+        if (try parse_spirv_capability(alloc, parser)) |v| {
+            try capabilities.append(alloc, v);
+        } else {
+            parser.skip_current_element();
+        }
+    }
+    _ = parser.next();
+    return .{
+        .extensions = extensions.items,
+        .capabilities = capabilities.items,
+    };
+}
+
+test "parse_spirv" {
+    const text =
+        \\<spirvextensions comment="C">
+        \\    <spirvextension name="N1">
+        \\        <enable extension="X1"/>
+        \\    </spirvextension>
+        \\    <spirvextension name="N2">
+        \\        <enable version="V2"/>
+        \\        <enable extension="X2"/>
+        \\    </spirvextension>
+        \\</spirvextensions>
+        \\<spirvcapabilities comment="C">
+        \\    <spirvcapability name="N1">
+        \\        <enable struct="S" feature="F" requires="R"/>
+        \\    </spirvcapability>
+        \\    <spirvcapability name="N2">
+        \\        <enable struct="S" feature="F" requires="R"/>
+        \\    </spirvcapability>
+        \\</spirvcapabilities>----
+    ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var parser: xml.Parser = .init(text);
+    const s = try parse_spirv(alloc, &parser);
+    try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    const expected: Spirv = .{
+        .extensions = &.{
+            .{ .name = "N1", .version = null, .extension = "X1" },
+            .{ .name = "N2", .version = "V2", .extension = "X2" },
+        },
+        .capabilities = &.{
+            .{
+                .name = "N1",
+                .enable = &.{
+                    .{ .sfr = .{ .@"struct" = "S", .feature = "F", .requires = "R" } },
+                },
+            },
+            .{
+                .name = "N2",
+                .enable = &.{
+                    .{ .sfr = .{ .@"struct" = "S", .feature = "F", .requires = "R" } },
+                },
+            },
+        },
+    };
+    try std.testing.expectEqualDeep(expected, s);
 }
