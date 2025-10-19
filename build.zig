@@ -9,6 +9,7 @@ pub fn build(b: *std.Build) !void {
 
     const miniz_mod = create_miniz_module(b, target, optimize);
     const volk_mod = create_volk_module(b, target, optimize);
+    const spirv_mod = create_spirv_module(b, target, optimize);
 
     create_gen_exe(b, target, optimize, volk_mod);
 
@@ -19,6 +20,7 @@ pub fn build(b: *std.Build) !void {
         .imports = &.{
             .{ .name = "miniz", .module = miniz_mod },
             .{ .name = "volk", .module = volk_mod },
+            .{ .name = "spirv", .module = spirv_mod },
         },
     });
 
@@ -159,4 +161,26 @@ pub fn create_volk_module(
     volk_mod.addIncludePath(b.path("thirdparty/Vulkan-Headers/include"));
     volk_mod.addCSourceFile(.{ .file = b.path("thirdparty/volk/volk.c") });
     return volk_mod;
+}
+
+pub fn create_spirv_module(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) *std.Build.Module {
+    const spirv_c = b.addWriteFiles().add("translate_spirv.h",
+        \\#include "spirv.h"
+    );
+    const spirv_translate = b.addTranslateC(.{
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = spirv_c,
+    });
+    spirv_translate.addIncludePath(b.path("thirdparty/SPIRV-Headers/include/spirv/unified1"));
+    const spirv_mod = b.createModule(.{
+        .root_source_file = spirv_translate.getOutput(),
+        .target = target,
+        .optimize = optimize,
+    });
+    return spirv_mod;
 }
