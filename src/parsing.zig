@@ -2139,6 +2139,8 @@ fn parse_vk_shader_module_create_info(
     }
     if (shader_code_payload.len < variant_offset + variant_size)
         return error.InvalidShaderPayload;
+    if ((item.codeSize & (@sizeOf(u32) - 1)) != 0)
+        return error.InvalidShaderPayload;
     const code = try context.alloc.alignedAlloc(u32, .@"64", item.codeSize / @sizeOf(u32));
     if (!Inner.decode_shader_payload(
         shader_code_payload[variant_offset..][0..variant_size],
