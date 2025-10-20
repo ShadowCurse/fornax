@@ -15,8 +15,8 @@ const HEADER =
     \\const std = @import("std");
     \\const vk = @import("volk");
     \\const spirv = @import("spirv");
-    \\const PDF = @import("physical_device_features.zig");
     \\const log = @import("log.zig");
+    \\const PDF = @import("physical_device_features.zig");
     \\
     \\const Allocator = std.mem.Allocator;
     \\
@@ -44,6 +44,7 @@ pub fn gen(db: *const vkp.Database) !void {
     _ = arena.reset(.retain_capacity);
 
     _ = try file.write(VALIDATE_SHADER_CODE);
+    _ = try file.write(VALIDATION_STRUCT);
 }
 
 const Writer = struct {
@@ -70,11 +71,8 @@ fn eql(s1: []const u8, s2: []const u8) bool {
 
 const VALIDATE_SHADER_CODE =
     \\pub fn validate_shader_code(
+    \\    validation: *const Validation,
     \\    create_info: *const vk.VkShaderModuleCreateInfo,
-    \\    api_version: u32,
-    \\    extensions: *const Extensions,
-    \\    pdf: *const PDF,
-    \\    pdf2: *const vk.VkPhysicalDeviceFeatures2,
     \\) bool {
     \\    var code: []const u32 = undefined;
     \\    code.ptr = create_info.pCode;
@@ -86,13 +84,13 @@ const VALIDATE_SHADER_CODE =
     \\
     \\    const version = code[1];
     \\    if (spirv.SPV_VERSION < version) return false;
-    \\    if (version == 0x10600 and api_version < vk.VK_API_VERSION_1_3) return false;
-    \\    if (version == 0x10500 and api_version < vk.VK_API_VERSION_1_2) return false;
+    \\    if (version == 0x10600 and validation.api_version < vk.VK_API_VERSION_1_3) return false;
+    \\    if (version == 0x10500 and validation.api_version < vk.VK_API_VERSION_1_2) return false;
     \\    if (0x10400 <= version and
-    \\        (api_version < vk.VK_API_VERSION_1_2 and
-    \\            !extensions.device.VK_KHR_spirv_1_4)) return false;
-    \\    if (0x10300 <= version and api_version < vk.VK_API_VERSION_1_1) return false;
-    \\    if (0x10000 < version and api_version < vk.VK_API_VERSION_1_1) return false;
+    \\        (validation.api_version < vk.VK_API_VERSION_1_2 and
+    \\            !validation.extensions.device.VK_KHR_spirv_1_4)) return false;
+    \\    if (0x10300 <= version and validation.api_version < vk.VK_API_VERSION_1_1) return false;
+    \\    if (0x10000 < version and validation.api_version < vk.VK_API_VERSION_1_1) return false;
     \\
     \\    var offset: usize = 5;
     \\    while (offset < code.len) {
@@ -106,7 +104,7 @@ const VALIDATE_SHADER_CODE =
     \\            if (count != 2) return false;
     \\
     \\            const capability = code[offset + 1];
-    \\            if (!validate_spirv_capability(api_version, extensions, pdf, pdf2, capability)) {
+    \\            if (!validate_spirv_capability(validation, capability)) {
     \\                log.debug(@src(), "Invalid SPIR-V capability: {d}", .{capability});
     \\                return false;
     \\            }
@@ -114,7 +112,7 @@ const VALIDATE_SHADER_CODE =
     \\            if (count < 2) return false;
     \\            const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1..].ptr);
     \\            const name = std.mem.span(byte_slice);
-    \\            if (!validate_spirv_extension(api_version, extensions, name)) {
+    \\            if (!validate_spirv_extension(validation, name)) {
     \\                log.debug(@src(), "Invalid SPIR-V extension: {s}", .{name});
     \\                return false;
     \\            }
@@ -127,6 +125,16 @@ const VALIDATE_SHADER_CODE =
     \\
     \\    return true;
     \\}
+    \\
+;
+
+const VALIDATION_STRUCT =
+    \\pub const Validation = struct {
+    \\    api_version: u32,
+    \\    extensions: *const Extensions,
+    \\    device_features: *const PDF,
+    \\    device_features_2: *const vk.VkPhysicalDeviceFeatures2,
+    \\};
     \\
 ;
 
@@ -469,7 +477,7 @@ fn write_types_validation(
                             .null => {
                                 w.write(
                                     \\    for (std.mem.span(item.{s})) |*i| {{
-                                    \\        if (!validate_bitmask_{s}(extensions, @ptrCast(i))) 
+                                    \\        if (!validate_bitmask_{s}(extensions, @ptrCast(i)))
                                     \\            return false;
                                     \\    }}
                                     \\
@@ -479,7 +487,7 @@ fn write_types_validation(
                                 if (@"struct".has_member(m)) {
                                     w.write(
                                         \\    for (0..item.{s}) |i| {{
-                                        \\        if (!validate_bitmask_{s}(extensions, @ptrCast(&item.{s}[i]))) 
+                                        \\        if (!validate_bitmask_{s}(extensions, @ptrCast(&item.{s}[i])))
                                         \\            return false;
                                         \\    }}
                                         \\
@@ -705,7 +713,7 @@ fn write_spirv_validation(
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
-        \\pub fn validate_spirv_extension(api_version: u32, extensions: *const Extensions, extension_name: []const u8) bool {{
+        \\pub fn validate_spirv_extension(validation: *const Validation, extension_name: []const u8) bool {{
         \\
     , .{});
     for (db.spirv.extensions) |sext| {
@@ -714,7 +722,7 @@ fn write_spirv_validation(
             if (sext.version) |v| {
                 w.write(
                     \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
-                    \\        return extensions.{[type]t}.{[name]s} and vk.{[version]s} <= api_version;
+                    \\        return validation.extensions.{[type]t}.{[name]s} and vk.{[version]s} <= validation.api_version;
                     \\
                 , .{
                     .sname = sext.name,
@@ -725,7 +733,7 @@ fn write_spirv_validation(
             } else {
                 w.write(
                     \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
-                    \\        return extensions.{[type]t}.{[name]s};
+                    \\        return validation.extensions.{[type]t}.{[name]s};
                     \\
                 , .{ .sname = sext.name, .name = ext.name, .type = t });
             }
@@ -739,7 +747,7 @@ fn write_spirv_validation(
 
     w.write(
         \\
-        \\pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, pdf2: *const vk.VkPhysicalDeviceFeatures2, capability: spirv.SpvCapability) bool {{
+        \\pub fn validate_spirv_capability(validation: *const Validation, capability: spirv.SpvCapability) bool {{
         \\    switch (capability) {{
         \\
     , .{});
@@ -778,7 +786,7 @@ fn write_spirv_validation(
                     keep = true;
                     if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
                         _ = try writer.print(
-                            \\            if (pdf2.features.{[feature]s} == vk.VK_TRUE and (
+                            \\            if (validation.device_features_2.features.{[feature]s} == vk.VK_TRUE and (
                         , .{ .feature = sfr.feature });
                     } else {
                         if (!found) {
@@ -787,7 +795,7 @@ fn write_spirv_validation(
                             , .{});
                         } else {
                             _ = try writer.print(
-                                \\            if (pdf.{[field]s}.{[feature]s} == vk.VK_TRUE and (
+                                \\            if (validation.device_features.{[field]s}.{[feature]s} == vk.VK_TRUE and (
                             , .{
                                 .field = try root.format_name(alloc, sfr.@"struct", false),
                                 .feature = sfr.feature,
@@ -805,7 +813,7 @@ fn write_spirv_validation(
 
                         if (std.mem.startsWith(u8, s, "VK_VERSION")) {
                             _ = try writer.print(
-                                \\vk.{[version]s} <= api_version
+                                \\vk.{[version]s} <= validation.api_version
                             , .{ .version = vk_version_to_api_version(s).? });
                         } else {
                             var found2: bool = false;
@@ -813,7 +821,7 @@ fn write_spirv_validation(
                                 const ext, const t = tuple;
                                 found2 = true;
                                 _ = try writer.print(
-                                    \\extensions.{[type]t}.{[name]s}
+                                    \\validation.extensions.{[type]t}.{[name]s}
                                 , .{ .type = t, .name = ext.name });
                             }
                             if (!found2) keep = false;
@@ -827,7 +835,7 @@ fn write_spirv_validation(
                 .version => |v| {
                     keep = true;
                     _ = try writer.print(
-                        \\            if (vk.{[version]s} <= api_version) return true;
+                        \\            if (vk.{[version]s} <= validation.api_version) return true;
                         \\
                     , .{ .version = vk_version_to_api_version(v).? });
                 },
@@ -836,7 +844,7 @@ fn write_spirv_validation(
                         const ext, const t = tuple;
                         keep = true;
                         _ = try writer.print(
-                            \\            if (extensions.{[type]t}.{[name]s}) return true;
+                            \\            if (validation.extensions.{[type]t}.{[name]s}) return true;
                             \\
                         , .{ .type = t, .name = ext.name });
                     }
