@@ -1122,13 +1122,21 @@ pub const Spirv = struct {
         enable: []const Capability.Enable = &.{},
 
         pub const Enable = union(enum) {
-            sfr: Sfr,
+            sfr: Enable.Sfr,
+            property: Enable.Property,
             version: []const u8,
             extension: []const u8,
 
             pub const Sfr = struct {
                 @"struct": []const u8 = &.{},
                 feature: []const u8 = &.{},
+                requires: []const u8 = &.{},
+            };
+
+            pub const Property = struct {
+                property: []const u8 = &.{},
+                member: []const u8 = &.{},
+                value: []const u8 = &.{},
                 requires: []const u8 = &.{},
             };
         };
@@ -1227,8 +1235,7 @@ pub fn parse_spirv_capability(alloc: Allocator, original_parser: *xml.Parser) !?
             try items.append(alloc, .{ .version = first.value });
         } else if (std.mem.eql(u8, first.name, "extension")) {
             try items.append(alloc, .{ .extension = first.value });
-        } else {
-            if (!std.mem.eql(u8, first.name, "struct")) return null;
+        } else if (std.mem.eql(u8, first.name, "struct")) {
             var sfr: Spirv.Capability.Enable.Sfr = .{};
             sfr.@"struct" = first.value;
 
@@ -1241,6 +1248,23 @@ pub fn parse_spirv_capability(alloc: Allocator, original_parser: *xml.Parser) !?
             sfr.requires = requires.value;
 
             try items.append(alloc, .{ .sfr = sfr });
+        } else if (std.mem.eql(u8, first.name, "property")) {
+            var prop: Spirv.Capability.Enable.Property = .{};
+            prop.property = first.value;
+
+            const member = parser.attribute() orelse return null;
+            if (!std.mem.eql(u8, member.name, "member")) return null;
+            prop.member = member.value;
+
+            const value = parser.attribute() orelse return null;
+            if (!std.mem.eql(u8, value.name, "value")) return null;
+            prop.value = value.value;
+
+            const requires = parser.attribute() orelse return null;
+            if (!std.mem.eql(u8, requires.name, "requires")) return null;
+            prop.requires = requires.value;
+
+            try items.append(alloc, .{ .property = prop });
         }
 
         _ = parser.skip_attributes();
@@ -1310,6 +1334,28 @@ test "parse_spirv_capability" {
                 .{ .sfr = .{ .@"struct" = "S", .feature = "F", .requires = "R" } },
                 .{ .version = "V" },
                 .{ .extension = "E" },
+            },
+        };
+        try std.testing.expectEqualDeep(expected, c);
+    }
+    {
+        const text =
+            \\<spirvcapability name="N">
+            \\    <enable property="P" member="M" value="V" requires="R"/>
+            \\</spirvcapability>----
+        ;
+        var parser: xml.Parser = .init(text);
+        const c = (try parse_spirv_capability(alloc, &parser)).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Spirv.Capability = .{
+            .name = "N",
+            .enable = &.{
+                .{ .property = .{
+                    .property = "P",
+                    .member = "M",
+                    .value = "V",
+                    .requires = "R",
+                } },
             },
         };
         try std.testing.expectEqualDeep(expected, c);
