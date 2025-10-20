@@ -8,8 +8,11 @@ const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const vv = @import("vulkan_validation.zig");
 const vulkan = @import("vulkan.zig");
+
+const PDF = @import("physical_device_features.zig");
 const Database = @import("database.zig");
 
+const Validation = vv.Validation;
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
@@ -169,12 +172,16 @@ pub fn main() !void {
         instance.instance,
         args.enable_validation,
     );
+    var device_features: PDF = .{};
+    var device_features_2: vk.VkPhysicalDeviceFeatures2 = .{};
     const device = try vulkan.create_vk_device(
         tmp_alloc,
         &instance,
         &physical_device,
         parsed_application_info.application_info,
         parsed_application_info.device_features2,
+        &device_features_2,
+        &device_features,
         args.enable_validation,
     );
     const extensions: vv.Extensions = try .init(
@@ -185,6 +192,13 @@ pub fn main() !void {
     );
     _ = tmp_arena.reset(.free_all);
 
+    const validation: Validation = .{
+        .api_version = instance.api_version,
+        .extensions = &extensions,
+        .device_features = &device_features,
+        .device_features_2 = &device_features_2,
+    };
+
     var thread_pool: ThreadPool = undefined;
     try init_thread_pool_context(&thread_pool, args.num_threads);
     var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
@@ -194,8 +208,8 @@ pub fn main() !void {
         shared_alloc,
         args.num_threads,
         &progress_root,
-        &extensions,
         &db,
+        &validation,
         device.device,
     );
 
@@ -349,8 +363,8 @@ pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
     shared_alloc: Allocator,
     progress: *std.Progress.Node,
-    extensions: *const vv.Extensions,
     db: *Database,
+    validation: *const Validation,
     vk_device: vk.VkDevice,
 };
 
@@ -359,8 +373,8 @@ pub fn init_thread_contexts(
     shared_alloc: Allocator,
     num_threads: ?u32,
     progress: *std.Progress.Node,
-    extensions: *const vv.Extensions,
     db: *Database,
+    validation: *const Validation,
     vk_device: vk.VkDevice,
 ) ![]align(64) ThreadContext {
     const host_threads = std.Thread.getCpuCount() catch 1;
@@ -375,8 +389,8 @@ pub fn init_thread_contexts(
             .arena = .init(std.heap.page_allocator),
             .shared_alloc = shared_alloc,
             .progress = progress,
-            .extensions = extensions,
             .db = db,
+            .validation = validation,
             .vk_device = vk_device,
         };
     }
@@ -481,8 +495,8 @@ pub fn parse_inner(
                 shared_alloc,
                 alloc,
                 tmp_alloc,
-                context.extensions,
                 context.db,
+                context.validation,
             )) {
                 .parsed => {
                     if (next_dep != curr_entry.dependencies.len) {
@@ -619,7 +633,14 @@ pub fn create_inner(
         while (queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
-            switch (curr_entry.create(PARSE, CREATE, tmp_alloc, context.db, context.vk_device)) {
+            switch (curr_entry.create(
+                PARSE,
+                CREATE,
+                tmp_alloc,
+                context.db,
+                context.validation,
+                context.vk_device,
+            )) {
                 .dependencies => {
                     if (next_dep != curr_entry.dependencies.len) {
                         try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
@@ -814,8 +835,8 @@ test "parse" {
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
-            .extensions = &.{},
             .db = &db,
+            .validation = undefined,
             .vk_device = undefined,
         };
 
@@ -897,8 +918,8 @@ test "parse" {
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
-            .extensions = &.{},
             .db = &db,
+            .validation = undefined,
             .vk_device = undefined,
         };
 
@@ -1002,8 +1023,8 @@ test "parse" {
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
-            .extensions = &.{},
             .db = &db,
+            .validation = undefined,
             .vk_device = undefined,
         };
 
@@ -1122,8 +1143,8 @@ test "parse" {
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
-            .extensions = &.{},
             .db = &db,
+            .validation = undefined,
             .vk_device = undefined,
         };
 

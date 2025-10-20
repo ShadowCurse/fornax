@@ -13,6 +13,9 @@ const parsing = @import("parsing.zig");
 const vulkan = @import("vulkan.zig");
 const vv = @import("vulkan_validation.zig");
 
+const Validation = vv.Validation;
+const PDF = @import("physical_device_features.zig");
+
 const Allocator = std.mem.Allocator;
 
 file: std.fs.File,
@@ -192,8 +195,8 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
-        extensions: *const vv.Extensions,
         db: *Database,
+        validation: *const Validation,
     ) ParseResult {
         if (self.status.cmpxchgStrong(.not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
             log.assert(
@@ -228,8 +231,8 @@ pub const Entry = struct {
                 dependency_alloc,
                 entry_alloc,
                 tmp_alloc,
-                extensions,
                 db,
+                validation,
                 payload,
             ) catch |err| {
                 log.debug(
@@ -275,8 +278,8 @@ pub const Entry = struct {
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
-        extensions: *const vv.Extensions,
         db: *Database,
+        validation: *const Validation,
         payload: []const u8,
     ) !void {
         switch (self.tag) {
@@ -284,7 +287,11 @@ pub const Entry = struct {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vv.validate_VkSamplerCreateInfo(extensions, @ptrCast(result.create_info), true))
+                if (!vv.validate_VkSamplerCreateInfo(
+                    validation.extensions,
+                    @ptrCast(result.create_info),
+                    true,
+                ))
                     return error.CheckFailedVkSamplerCreateInfo;
             },
             .descriptor_set_layout => {
@@ -296,7 +303,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!vv.validate_VkDescriptorSetLayoutCreateInfo(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -309,7 +316,7 @@ pub const Entry = struct {
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!vv.validate_VkPipelineLayoutCreateInfo(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -327,7 +334,7 @@ pub const Entry = struct {
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
                 if (!vv.validate_VkRenderPassCreateInfo(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -344,7 +351,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!vv.validate_VkGraphicsPipelineCreateInfo(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -361,7 +368,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!vv.validate_VkComputePipelineCreateInfo(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -378,7 +385,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!vv.validate_VkRayTracingPipelineCreateInfoKHR(
-                    extensions,
+                    validation.extensions,
                     @ptrCast(
                         result.create_info,
                     ),
@@ -402,6 +409,7 @@ pub const Entry = struct {
         comptime CREATE: type,
         tmp_alloc: Allocator,
         db: *Database,
+        validation: *const Validation,
         vk_device: vk.VkDevice,
     ) CreateResult {
         for (self.dependencies) |dep| {
@@ -428,7 +436,7 @@ pub const Entry = struct {
             };
         }
 
-        self.create_inner(PARSE, CREATE, tmp_alloc, db, vk_device) catch |err| {
+        self.create_inner(PARSE, CREATE, tmp_alloc, db, validation, vk_device) catch |err| {
             log.debug(
                 @src(),
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
@@ -447,6 +455,7 @@ pub const Entry = struct {
         comptime CREATE: type,
         tmp_alloc: Allocator,
         db: *Database,
+        validation: *const Validation,
         vk_device: vk.VkDevice,
     ) !void {
         for (self.dependencies, 0..) |dep, i| {
@@ -480,6 +489,10 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.check_version_and_hash(result);
+                if (!vv.validate_shader_code(validation, @ptrCast(result.create_info))) {
+                    log.err(@src(), "Invalid shader module 0x{x}", .{self.hash});
+                    return error.InvalidShaderCode;
+                }
 
                 self.handle = try CREATE.create_shader_module(
                     vk_device,

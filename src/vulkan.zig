@@ -966,6 +966,8 @@ pub fn create_vk_device(
     physical_device: *const PhysicalDevice,
     application_create_info: *const vk.VkApplicationInfo,
     wanted_physical_device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
+    device_features_2: *vk.VkPhysicalDeviceFeatures2,
+    other_device_features: *PDF,
     enable_validation: bool,
 ) !Device {
     const queue_priority: f32 = 1.0;
@@ -1005,18 +1007,17 @@ pub fn create_vk_device(
     }
     all_extension_names = all_extension_names[0..all_extensions_len];
 
-    var physical_device_features_2 = vk.VkPhysicalDeviceFeatures2{
+    device_features_2.* = vk.VkPhysicalDeviceFeatures2{
         .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
     };
     var stats: vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{
         .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
     };
-    physical_device_features_2.pNext = &stats;
-    var other_device_features: PDF = .{};
+    device_features_2.pNext = &stats;
     if (instance.has_properties_2) {
         stats.pNext = other_device_features.chain_supported(all_extension_names);
-        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, &physical_device_features_2);
-    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &physical_device_features_2.features);
+        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, device_features_2);
+    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &device_features_2.features);
 
     // Workaround for older dxvk/vkd3d databases, where robustness2 or VRS was not captured,
     // but we expect them to be present. New databases will capture robustness2.
@@ -1064,9 +1065,9 @@ pub fn create_vk_device(
         }
     }
 
-    filter_features(&physical_device_features_2, &other_device_features, wpdf2);
+    filter_features(device_features_2, other_device_features, wpdf2);
     all_extension_names = filter_active_extensions(
-        &physical_device_features_2,
+        device_features_2,
         all_extension_names,
     );
 
@@ -1083,8 +1084,8 @@ pub fn create_vk_device(
         .pEnabledFeatures = if (instance.has_properties_2)
             null
         else
-            &physical_device_features_2.features,
-        .pNext = if (instance.has_properties_2) &physical_device_features_2 else null,
+            &device_features_2.features,
+        .pNext = if (instance.has_properties_2) device_features_2 else null,
     };
 
     var vk_device: vk.VkDevice = undefined;
