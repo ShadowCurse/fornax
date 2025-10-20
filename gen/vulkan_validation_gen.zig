@@ -42,6 +42,8 @@ pub fn gen(db: *const vkp.Database) !void {
     _ = arena.reset(.retain_capacity);
     try write_spirv_validation(alloc, &file, db);
     _ = arena.reset(.retain_capacity);
+
+    _ = try file.write(VALIDATE_SHADER_CODE);
 }
 
 const Writer = struct {
@@ -65,6 +67,68 @@ const Writer = struct {
 fn eql(s1: []const u8, s2: []const u8) bool {
     return std.mem.eql(u8, s1, s2);
 }
+
+const VALIDATE_SHADER_CODE =
+    \\pub fn validate_shader_code(
+    \\    create_info: *const vk.VkShaderModuleCreateInfo,
+    \\    api_version: u32,
+    \\    extensions: *const Extensions,
+    \\    pdf: *const PDF,
+    \\    pdf2: *const vk.VkPhysicalDeviceFeatures2,
+    \\) bool {
+    \\    var code: []const u32 = undefined;
+    \\    code.ptr = create_info.pCode;
+    \\    code.len = create_info.codeSize / @sizeOf(u32);
+    \\
+    \\    // Impossibly small shader
+    \\    if (code.len < 5) return false;
+    \\    if (code[0] != spirv.SpvMagicNumber) return false;
+    \\
+    \\    const version = code[1];
+    \\    if (spirv.SPV_VERSION < version) return false;
+    \\    if (version == 0x10600 and api_version < vk.VK_API_VERSION_1_3) return false;
+    \\    if (version == 0x10500 and api_version < vk.VK_API_VERSION_1_2) return false;
+    \\    if (0x10400 <= version and
+    \\        (api_version < vk.VK_API_VERSION_1_2 and
+    \\            !extensions.device.VK_KHR_spirv_1_4)) return false;
+    \\    if (0x10300 <= version and api_version < vk.VK_API_VERSION_1_1) return false;
+    \\    if (0x10000 < version and api_version < vk.VK_API_VERSION_1_1) return false;
+    \\
+    \\    var offset: usize = 5;
+    \\    while (offset < code.len) {
+    \\        const op: spirv.SpvCapability = code[offset] & 0xffff;
+    \\        const count = (code[offset] >> 16) & 0xffff;
+    \\
+    \\        if (count == 0) return false;
+    \\        if (code.len < offset + count) return false;
+    \\
+    \\        if (op == spirv.SpvOpCapability) {
+    \\            if (count != 2) return false;
+    \\
+    \\            const capability = code[offset + 1];
+    \\            if (!validate_spirv_capability(api_version, extensions, pdf, pdf2, capability)) {
+    \\                log.debug(@src(), "Invalid SPIR-V capability: {d}", .{capability});
+    \\                return false;
+    \\            }
+    \\        } else if (op == spirv.SpvOpExtension) {
+    \\            if (count < 2) return false;
+    \\            const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1..].ptr);
+    \\            const name = std.mem.span(byte_slice);
+    \\            if (!validate_spirv_extension(api_version, extensions, name)) {
+    \\                log.debug(@src(), "Invalid SPIR-V extension: {s}", .{name});
+    \\                return false;
+    \\            }
+    \\        } else if (op == spirv.SpvOpFunction) {
+    \\            // Code starts here, stop validation
+    \\            break;
+    \\        }
+    \\        offset += count;
+    \\    }
+    \\
+    \\    return true;
+    \\}
+    \\
+;
 
 fn write_check_result(
     alloc: Allocator,
@@ -649,16 +713,21 @@ fn write_spirv_validation(
             const ext, const t = tuple;
             if (sext.version) |v| {
                 w.write(
-                    \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                    \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
                     \\        return extensions.{[type]t}.{[name]s} and vk.{[version]s} <= api_version;
                     \\
-                , .{ .name = ext.name, .type = t, .version = vk_version_to_api_version(v).? });
+                , .{
+                    .sname = sext.name,
+                    .name = ext.name,
+                    .type = t,
+                    .version = vk_version_to_api_version(v).?,
+                });
             } else {
                 w.write(
-                    \\    if (std.mem.eql(u8, extension_name, "{[name]s}"))
+                    \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
                     \\        return extensions.{[type]t}.{[name]s};
                     \\
-                , .{ .name = ext.name, .type = t });
+                , .{ .sname = sext.name, .name = ext.name, .type = t });
             }
         }
     }
@@ -670,7 +739,7 @@ fn write_spirv_validation(
 
     w.write(
         \\
-        \\pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, capability: spirv.SpvCapability) bool {{
+        \\pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, pdf2: *const vk.VkPhysicalDeviceFeatures2, capability: spirv.SpvCapability) bool {{
         \\    switch (capability) {{
         \\
     , .{});
@@ -684,30 +753,59 @@ fn write_spirv_validation(
         , .{ .cap = cap.name });
         for (cap.enable) |e| {
             switch (e) {
+                .property => {
+                    keep = true;
+                    // TODO add proper property testing
+                    _ = try writer.print(
+                        \\            return true;
+                        \\
+                    , .{});
+                    break;
+                },
                 .sfr => |sfr| {
                     var found: bool = false;
-                    for (PDF.TYPES) |pdf_type| {
-                        if (eql(pdf_type, sfr.@"struct")) {
-                            found = true;
-                            break;
+                    if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
+                        found = true;
+                    } else {
+                        for (PDF.TYPES) |pdf_type| {
+                            if (eql(pdf_type, sfr.@"struct")) {
+                                found = true;
+                                break;
+                            }
                         }
                     }
-                    if (!found) continue;
+
                     keep = true;
-                    _ = try writer.print(
-                        \\            if (pdf.{[field]s}.{[feature]s} != vk.VK_TRUE) return false;
-                        \\
-                    , .{
-                        .field = try root.format_name(alloc, sfr.@"struct", false),
-                        .feature = sfr.feature,
-                    });
+                    if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
+                        _ = try writer.print(
+                            \\            if (pdf2.features.{[feature]s} == vk.VK_TRUE and (
+                        , .{ .feature = sfr.feature });
+                    } else {
+                        if (!found) {
+                            _ = try writer.print(
+                                \\            if ((
+                            , .{});
+                        } else {
+                            _ = try writer.print(
+                                \\            if (pdf.{[field]s}.{[feature]s} == vk.VK_TRUE and (
+                            , .{
+                                .field = try root.format_name(alloc, sfr.@"struct", false),
+                                .feature = sfr.feature,
+                            });
+                        }
+                    }
 
                     var iter = std.mem.splitScalar(u8, sfr.requires, ',');
-                    while (iter.next()) |s| {
+                    var i: u32 = 0;
+                    while (iter.next()) |s| : (i += 1) {
+                        if (1 <= i)
+                            _ = try writer.print(
+                                \\ or 
+                            , .{});
+
                         if (std.mem.startsWith(u8, s, "VK_VERSION")) {
                             _ = try writer.print(
-                                \\            if (api_version < vk.{[version]s}) return false;
-                                \\
+                                \\vk.{[version]s} <= api_version
                             , .{ .version = vk_version_to_api_version(s).? });
                         } else {
                             var found2: bool = false;
@@ -715,18 +813,21 @@ fn write_spirv_validation(
                                 const ext, const t = tuple;
                                 found2 = true;
                                 _ = try writer.print(
-                                    \\            if (!extensions.{[type]t}.{[name]s}) return false;
-                                    \\
+                                    \\extensions.{[type]t}.{[name]s}
                                 , .{ .type = t, .name = ext.name });
                             }
                             if (!found2) keep = false;
                         }
                     }
+                    _ = try writer.print(
+                        \\)) return true;
+                        \\
+                    , .{});
                 },
                 .version => |v| {
                     keep = true;
                     _ = try writer.print(
-                        \\            if (api_version < vk.{[version]s}) return false;
+                        \\            if (vk.{[version]s} <= api_version) return true;
                         \\
                     , .{ .version = vk_version_to_api_version(v).? });
                 },
@@ -735,7 +836,7 @@ fn write_spirv_validation(
                         const ext, const t = tuple;
                         keep = true;
                         _ = try writer.print(
-                            \\            if (!extensions.{[type]t}.{[name]s}) return false;
+                            \\            if (extensions.{[type]t}.{[name]s}) return true;
                             \\
                         , .{ .type = t, .name = ext.name });
                     }
@@ -758,7 +859,7 @@ fn write_spirv_validation(
         \\            return false;
         \\        }}
         \\    }}
-        \\    return true;
+        \\    return false;
         \\}}
         \\
     , .{});

@@ -4975,7 +4975,7 @@ pub fn validate_VkSubmitInfo(extensions: *const Extensions, item: *const vk.VkSu
     if (!validate_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
         return false;
     for (0..item.waitSemaphoreCount) |i| {
-        if (!validate_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.pWaitDstStageMask[i]))) 
+        if (!validate_bitmask_VkPipelineStageFlagBits(extensions, @ptrCast(&item.pWaitDstStageMask[i])))
             return false;
     }
     if (!validate_pnext) return true;
@@ -10986,7 +10986,7 @@ pub fn validate_VkDescriptorSetLayoutBindingFlagsCreateInfo(extensions: *const E
     if (!validate_enum_VkStructureType(extensions, @ptrCast(&item.sType)))
         return false;
     for (0..item.bindingCount) |i| {
-        if (!validate_bitmask_VkDescriptorBindingFlagBits(extensions, @ptrCast(&item.pBindingFlags[i]))) 
+        if (!validate_bitmask_VkDescriptorBindingFlagBits(extensions, @ptrCast(&item.pBindingFlags[i])))
             return false;
     }
     if (!validate_pnext) return true;
@@ -20810,7 +20810,7 @@ pub fn validate_VkImageCompressionControlEXT(extensions: *const Extensions, item
     if (!validate_bitmask_VkImageCompressionFlagBitsEXT(extensions, @ptrCast(&item.flags)))
         return false;
     for (0..item.compressionControlPlaneCount) |i| {
-        if (!validate_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, @ptrCast(&item.pFixedRateFlags[i]))) 
+        if (!validate_bitmask_VkImageCompressionFixedRateFlagBitsEXT(extensions, @ptrCast(&item.pFixedRateFlags[i])))
             return false;
     }
     if (!validate_pnext) return true;
@@ -31694,445 +31694,628 @@ pub fn validate_enum_VkPhysicalDeviceDataGraphOperationTypeARM(extensions: *cons
 }
 
 pub fn validate_spirv_extension(api_version: u32, extensions: *const Extensions, extension_name: []const u8) bool {
-    if (std.mem.eql(u8, extension_name, "VK_KHR_variable_pointers"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_variable_pointers"))
         return extensions.device.VK_KHR_variable_pointers and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_draw_parameters"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_shader_draw_parameters"))
         return extensions.device.VK_KHR_shader_draw_parameters and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_8bit_storage"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_8bit_storage"))
         return extensions.device.VK_KHR_8bit_storage and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_16bit_storage"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_16bit_storage"))
         return extensions.device.VK_KHR_16bit_storage and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_clock"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_shader_clock"))
         return extensions.device.VK_KHR_shader_clock;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_float_controls"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_float_controls"))
         return extensions.device.VK_KHR_shader_float_controls and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_storage_buffer_storage_class"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_storage_buffer_storage_class"))
         return extensions.device.VK_KHR_storage_buffer_storage_class and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_post_depth_coverage"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_post_depth_coverage"))
         return extensions.device.VK_EXT_post_depth_coverage;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_stencil_export"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_stencil_export"))
         return extensions.device.VK_EXT_shader_stencil_export;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_subgroup_ballot"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_shader_ballot"))
         return extensions.device.VK_EXT_shader_subgroup_ballot;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_subgroup_vote"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_subgroup_vote"))
         return extensions.device.VK_EXT_shader_subgroup_vote;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_viewport_index_layer"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_viewport_index_layer"))
         return extensions.device.VK_EXT_shader_viewport_index_layer and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_descriptor_indexing"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_descriptor_indexing"))
         return extensions.device.VK_EXT_descriptor_indexing and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_vulkan_memory_model"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_vulkan_memory_model"))
         return extensions.device.VK_KHR_vulkan_memory_model and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_pipeline"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_ray_tracing"))
         return extensions.device.VK_KHR_ray_tracing_pipeline;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_query"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_ray_query"))
         return extensions.device.VK_KHR_ray_query;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_maintenance1"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_ray_cull_mask"))
         return extensions.device.VK_KHR_ray_tracing_maintenance1;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_fragment_density_map"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_fragment_invocation_density"))
         return extensions.device.VK_EXT_fragment_density_map;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_buffer_device_address"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_physical_storage_buffer"))
         return extensions.device.VK_KHR_buffer_device_address and vk.VK_API_VERSION_1_2 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_buffer_device_address"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_physical_storage_buffer"))
         return extensions.device.VK_EXT_buffer_device_address;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_fragment_shader_interlock"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_fragment_shader_interlock"))
         return extensions.device.VK_EXT_fragment_shader_interlock;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_demote_to_helper_invocation"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_demote_to_helper_invocation"))
         return extensions.device.VK_EXT_shader_demote_to_helper_invocation and vk.VK_API_VERSION_1_3 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_fragment_shading_rate"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_fragment_shading_rate"))
         return extensions.device.VK_KHR_fragment_shading_rate;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_non_semantic_info"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_non_semantic_info"))
         return extensions.device.VK_KHR_shader_non_semantic_info and vk.VK_API_VERSION_1_3 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_image_atomic_int64"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_image_int64"))
         return extensions.device.VK_EXT_shader_image_atomic_int64;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_terminate_invocation"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_terminate_invocation"))
         return extensions.device.VK_KHR_shader_terminate_invocation and vk.VK_API_VERSION_1_3 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_multiview"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_multiview"))
         return extensions.device.VK_KHR_multiview and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_workgroup_memory_explicit_layout"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_workgroup_memory_explicit_layout"))
         return extensions.device.VK_KHR_workgroup_memory_explicit_layout;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_atomic_float_add"))
         return extensions.device.VK_EXT_shader_atomic_float;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_fragment_shader_barycentric"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_fragment_shader_barycentric"))
         return extensions.device.VK_KHR_fragment_shader_barycentric;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_subgroup_uniform_control_flow"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_subgroup_uniform_control_flow"))
         return extensions.device.VK_KHR_shader_subgroup_uniform_control_flow;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float2"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_atomic_float_min_max"))
         return extensions.device.VK_EXT_shader_atomic_float2;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_atomic_float2"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_atomic_float16_add"))
         return extensions.device.VK_EXT_shader_atomic_float2;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_conservative_rasterization"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_fragment_fully_covered"))
         return extensions.device.VK_EXT_conservative_rasterization;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_integer_dot_product"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_integer_dot_product"))
         return extensions.device.VK_KHR_shader_integer_dot_product and vk.VK_API_VERSION_1_3 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_INTEL_shader_integer_functions2"))
+    if (std.mem.eql(u8, extension_name, "SPV_INTEL_shader_integer_functions2"))
         return extensions.device.VK_INTEL_shader_integer_functions2;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_device_group"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_device_group"))
         return extensions.device.VK_KHR_device_group and vk.VK_API_VERSION_1_1 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_QCOM_image_processing"))
+    if (std.mem.eql(u8, extension_name, "SPV_QCOM_image_processing"))
         return extensions.device.VK_QCOM_image_processing;
-    if (std.mem.eql(u8, extension_name, "VK_QCOM_image_processing2"))
+    if (std.mem.eql(u8, extension_name, "SPV_QCOM_image_processing2"))
         return extensions.device.VK_QCOM_image_processing2;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_mesh_shader"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_mesh_shader"))
         return extensions.device.VK_EXT_mesh_shader;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_ray_tracing_position_fetch"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_ray_tracing_position_fetch"))
         return extensions.device.VK_KHR_ray_tracing_position_fetch;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_tile_image"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_shader_tile_image"))
         return extensions.device.VK_EXT_shader_tile_image;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_opacity_micromap"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_opacity_micromap"))
         return extensions.device.VK_EXT_opacity_micromap;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_cooperative_matrix"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_cooperative_matrix"))
         return extensions.device.VK_KHR_cooperative_matrix;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_maximal_reconvergence"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_maximal_reconvergence"))
         return extensions.device.VK_KHR_shader_maximal_reconvergence;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_subgroup_rotate"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_subgroup_rotate"))
         return extensions.device.VK_KHR_shader_subgroup_rotate and vk.VK_API_VERSION_1_4 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_expect_assume"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_expect_assume"))
         return extensions.device.VK_KHR_shader_expect_assume and vk.VK_API_VERSION_1_4 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_float_controls2"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_float_controls2"))
         return extensions.device.VK_KHR_shader_float_controls2 and vk.VK_API_VERSION_1_4 <= api_version;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_quad_control"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_quad_control"))
         return extensions.device.VK_KHR_shader_quad_control;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_bfloat16"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_bfloat16"))
         return extensions.device.VK_KHR_shader_bfloat16;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_compute_shader_derivatives"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_compute_shader_derivatives"))
         return extensions.device.VK_KHR_compute_shader_derivatives;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_replicated_composites"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_replicated_composites"))
         return extensions.device.VK_EXT_shader_replicated_composites;
-    if (std.mem.eql(u8, extension_name, "VK_KHR_shader_relaxed_extended_instruction"))
+    if (std.mem.eql(u8, extension_name, "SPV_KHR_relaxed_extended_instruction"))
         return extensions.device.VK_KHR_shader_relaxed_extended_instruction;
-    if (std.mem.eql(u8, extension_name, "VK_QCOM_tile_shading"))
+    if (std.mem.eql(u8, extension_name, "SPV_QCOM_tile_shading"))
         return extensions.device.VK_QCOM_tile_shading;
-    if (std.mem.eql(u8, extension_name, "VK_EXT_shader_float8"))
+    if (std.mem.eql(u8, extension_name, "SPV_EXT_float8"))
         return extensions.device.VK_EXT_shader_float8;
     return false;
 }
 
-pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, capability: spirv.SpvCapability) bool {
+pub fn validate_spirv_capability(api_version: u32, extensions: *const Extensions, pdf: *const PDF, pdf2: *const vk.VkPhysicalDeviceFeatures2, capability: spirv.SpvCapability) bool {
     switch (capability) {
         spirv.SpvCapabilityMatrix => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityShader => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityInputAttachment => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilitySampled1D => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityImage1D => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilitySampledBuffer => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityImageBuffer => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityImageQuery => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
         },
         spirv.SpvCapabilityDerivativeControl => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
+        },
+        spirv.SpvCapabilityGeometry => {
+            if (pdf2.features.geometryShader == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityTessellation => {
+            if (pdf2.features.tessellationShader == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityFloat64 => {
+            if (pdf2.features.shaderFloat64 == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityInt64 => {
+            if (pdf2.features.shaderInt64 == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
         },
         spirv.SpvCapabilityInt64Atomics => {
-            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_image_atomic_int64) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_shader_atomic_int64)) return true;
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_shader_atomic_int64)) return true;
+            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics == vk.VK_TRUE and (extensions.device.VK_EXT_shader_image_atomic_int64)) return true;
         },
         spirv.SpvCapabilityAtomicFloat16AddEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
         },
         spirv.SpvCapabilityAtomicFloat32AddEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat32AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat32AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderImageFloat32AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat32AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat32AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderImageFloat32AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float)) return true;
         },
         spirv.SpvCapabilityAtomicFloat64AddEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat64AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat64AtomicAdd != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderBufferFloat64AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_features_ext.shaderSharedFloat64AtomicAdd == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float)) return true;
         },
         spirv.SpvCapabilityAtomicFloat16MinMaxEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat16AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat16AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
         },
         spirv.SpvCapabilityAtomicFloat32MinMaxEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat32AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat32AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderImageFloat32AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat32AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat32AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderImageFloat32AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
         },
         spirv.SpvCapabilityAtomicFloat64MinMaxEXT => {
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat64AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
-            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat64AtomicMinMax != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_atomic_float2) return false;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderBufferFloat64AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
+            if (pdf.vk_physical_device_shader_atomic_float_2_features_ext.shaderSharedFloat64AtomicMinMax == vk.VK_TRUE and (extensions.device.VK_EXT_shader_atomic_float2)) return true;
         },
         spirv.SpvCapabilityInt64ImageEXT => {
-            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_image_atomic_int64) return false;
+            if (pdf.vk_physical_device_shader_image_atomic_int64_features_ext.shaderImageInt64Atomics == vk.VK_TRUE and (extensions.device.VK_EXT_shader_image_atomic_int64)) return true;
+        },
+        spirv.SpvCapabilityInt16 => {
+            if (pdf2.features.shaderInt16 == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityTessellationPointSize => {
+            if (pdf2.features.shaderTessellationAndGeometryPointSize == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityGeometryPointSize => {
+            if (pdf2.features.shaderTessellationAndGeometryPointSize == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityImageGatherExtended => {
+            if (pdf2.features.shaderImageGatherExtended == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityStorageImageMultisample => {
+            if (pdf2.features.shaderStorageImageMultisample == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityUniformBufferArrayDynamicIndexing => {
+            if (pdf2.features.shaderUniformBufferArrayDynamicIndexing == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilitySampledImageArrayDynamicIndexing => {
+            if (pdf2.features.shaderSampledImageArrayDynamicIndexing == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityStorageBufferArrayDynamicIndexing => {
+            if (pdf2.features.shaderStorageBufferArrayDynamicIndexing == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityStorageImageArrayDynamicIndexing => {
+            if (pdf2.features.shaderStorageImageArrayDynamicIndexing == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityClipDistance => {
+            if (pdf2.features.shaderClipDistance == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityCullDistance => {
+            if (pdf2.features.shaderCullDistance == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityImageCubeArray => {
+            if (pdf2.features.imageCubeArray == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilitySampleRateShading => {
+            if (pdf2.features.sampleRateShading == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilitySparseResidency => {
+            if (pdf2.features.shaderResourceResidency == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityMinLod => {
+            if (pdf2.features.shaderResourceMinLod == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilitySampledCubeArray => {
+            if (pdf2.features.imageCubeArray == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityImageMSArray => {
+            if (pdf2.features.shaderStorageImageMultisample == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
         },
         spirv.SpvCapabilityStorageImageExtendedFormats => {
-            if (api_version < vk.VK_API_VERSION_1_0) return false;
+            if (vk.VK_API_VERSION_1_0 <= api_version) return true;
+        },
+        spirv.SpvCapabilityInterpolationFunction => {
+            if (pdf2.features.sampleRateShading == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
         },
         spirv.SpvCapabilityStorageImageReadWithoutFormat => {
-            if (api_version < vk.VK_API_VERSION_1_3) return false;
-            if (!extensions.device.VK_KHR_format_feature_flags2) return false;
+            if (pdf2.features.shaderStorageImageReadWithoutFormat == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+            if (vk.VK_API_VERSION_1_3 <= api_version) return true;
+            if (extensions.device.VK_KHR_format_feature_flags2) return true;
         },
         spirv.SpvCapabilityStorageImageWriteWithoutFormat => {
-            if (api_version < vk.VK_API_VERSION_1_3) return false;
-            if (!extensions.device.VK_KHR_format_feature_flags2) return false;
+            if (pdf2.features.shaderStorageImageWriteWithoutFormat == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
+            if (vk.VK_API_VERSION_1_3 <= api_version) return true;
+            if (extensions.device.VK_KHR_format_feature_flags2) return true;
+        },
+        spirv.SpvCapabilityMultiViewport => {
+            if (pdf2.features.multiViewport == vk.VK_TRUE and (vk.VK_API_VERSION_1_0 <= api_version)) return true;
         },
         spirv.SpvCapabilityDrawParameters => {
-            if (pdf.vk_physical_device_shader_draw_parameters_features.shaderDrawParameters != vk.VK_TRUE) return false;
-            if (api_version < vk.VK_API_VERSION_1_1) return false;
-            if (!extensions.device.VK_KHR_shader_draw_parameters) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_shader_draw_parameters_features.shaderDrawParameters == vk.VK_TRUE and (vk.VK_API_VERSION_1_1 <= api_version)) return true;
+            if (extensions.device.VK_KHR_shader_draw_parameters) return true;
         },
         spirv.SpvCapabilityMultiView => {
-            if (pdf.vk_physical_device_multiview_features.multiview != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_multiview) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_multiview_features.multiview == vk.VK_TRUE and (extensions.device.VK_KHR_multiview)) return true;
         },
         spirv.SpvCapabilityDeviceGroup => {
-            if (api_version < vk.VK_API_VERSION_1_1) return false;
-            if (!extensions.device.VK_KHR_device_group) return false;
+            if (vk.VK_API_VERSION_1_1 <= api_version) return true;
+            if (extensions.device.VK_KHR_device_group) return true;
         },
         spirv.SpvCapabilityVariablePointersStorageBuffer => {
-            if (pdf.vk_physical_device_variable_pointers_features.variablePointersStorageBuffer != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_variable_pointers) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_variable_pointers_features.variablePointersStorageBuffer == vk.VK_TRUE and (extensions.device.VK_KHR_variable_pointers)) return true;
         },
         spirv.SpvCapabilityVariablePointers => {
-            if (pdf.vk_physical_device_variable_pointers_features.variablePointers != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_variable_pointers) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_variable_pointers_features.variablePointers == vk.VK_TRUE and (extensions.device.VK_KHR_variable_pointers)) return true;
         },
         spirv.SpvCapabilityShaderClockKHR => {
-            if (!extensions.device.VK_KHR_shader_clock) return false;
+            if (extensions.device.VK_KHR_shader_clock) return true;
         },
         spirv.SpvCapabilityStencilExportEXT => {
-            if (!extensions.device.VK_EXT_shader_stencil_export) return false;
+            if (extensions.device.VK_EXT_shader_stencil_export) return true;
         },
         spirv.SpvCapabilitySubgroupBallotKHR => {
-            if (!extensions.device.VK_EXT_shader_subgroup_ballot) return false;
+            if (extensions.device.VK_EXT_shader_subgroup_ballot) return true;
         },
         spirv.SpvCapabilitySubgroupVoteKHR => {
-            if (!extensions.device.VK_EXT_shader_subgroup_vote) return false;
+            if (extensions.device.VK_EXT_shader_subgroup_vote) return true;
+        },
+        spirv.SpvCapabilityShaderViewportIndex => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+        },
+        spirv.SpvCapabilityShaderLayer => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
         },
         spirv.SpvCapabilityShaderViewportIndexLayerEXT => {
-            if (!extensions.device.VK_EXT_shader_viewport_index_layer) return false;
+            if (extensions.device.VK_EXT_shader_viewport_index_layer) return true;
         },
         spirv.SpvCapabilityStorageBuffer16BitAccess => {
-            if (pdf.vk_physical_device_16bit_storage_features.storageBuffer16BitAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_16bit_storage) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_16bit_storage_features.storageBuffer16BitAccess == vk.VK_TRUE and (extensions.device.VK_KHR_16bit_storage)) return true;
         },
         spirv.SpvCapabilityUniformAndStorageBuffer16BitAccess => {
-            if (pdf.vk_physical_device_16bit_storage_features.uniformAndStorageBuffer16BitAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_16bit_storage) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_16bit_storage_features.uniformAndStorageBuffer16BitAccess == vk.VK_TRUE and (extensions.device.VK_KHR_16bit_storage)) return true;
         },
         spirv.SpvCapabilityStoragePushConstant16 => {
-            if (pdf.vk_physical_device_16bit_storage_features.storagePushConstant16 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_16bit_storage) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_16bit_storage_features.storagePushConstant16 == vk.VK_TRUE and (extensions.device.VK_KHR_16bit_storage)) return true;
         },
         spirv.SpvCapabilityStorageInputOutput16 => {
-            if (pdf.vk_physical_device_16bit_storage_features.storageInputOutput16 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_16bit_storage) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version)) return true;
+            if (pdf.vk_physical_device_16bit_storage_features.storageInputOutput16 == vk.VK_TRUE and (extensions.device.VK_KHR_16bit_storage)) return true;
+        },
+        spirv.SpvCapabilityGroupNonUniform => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformVote => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformArithmetic => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformBallot => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformShuffle => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformShuffleRelative => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformClustered => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformQuad => {
+            return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformPartitionedNV => {
+            return true;
         },
         spirv.SpvCapabilitySampleMaskPostDepthCoverage => {
-            if (!extensions.device.VK_EXT_post_depth_coverage) return false;
+            if (extensions.device.VK_EXT_post_depth_coverage) return true;
         },
         spirv.SpvCapabilityShaderNonUniform => {
-            if (api_version < vk.VK_API_VERSION_1_2) return false;
-            if (!extensions.device.VK_EXT_descriptor_indexing) return false;
+            if (vk.VK_API_VERSION_1_2 <= api_version) return true;
+            if (extensions.device.VK_EXT_descriptor_indexing) return true;
+        },
+        spirv.SpvCapabilityRuntimeDescriptorArray => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityInputAttachmentArrayDynamicIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityUniformTexelBufferArrayDynamicIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityStorageTexelBufferArrayDynamicIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityUniformBufferArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilitySampledImageArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityStorageBufferArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityStorageImageArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityInputAttachmentArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityUniformTexelBufferArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
+        },
+        spirv.SpvCapabilityStorageTexelBufferArrayNonUniformIndexing => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_EXT_descriptor_indexing)) return true;
         },
         spirv.SpvCapabilityFragmentFullyCoveredEXT => {
-            if (!extensions.device.VK_EXT_conservative_rasterization) return false;
+            if (extensions.device.VK_EXT_conservative_rasterization) return true;
         },
-        spirv.SpvCapabilityComputeDerivativeGroupQuadsKHR => {
-            if (pdf.vk_physical_device_compute_shader_derivatives_features_khr.computeDerivativeGroupQuads != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_compute_shader_derivatives) return false;
+        spirv.SpvCapabilityFloat16 => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_shader_float16_int8)) return true;
         },
-        spirv.SpvCapabilityComputeDerivativeGroupLinearKHR => {
-            if (pdf.vk_physical_device_compute_shader_derivatives_features_khr.computeDerivativeGroupLinear != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_compute_shader_derivatives) return false;
+        spirv.SpvCapabilityInt8 => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_shader_float16_int8)) return true;
+        },
+        spirv.SpvCapabilityStorageBuffer8BitAccess => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_8bit_storage)) return true;
+        },
+        spirv.SpvCapabilityUniformAndStorageBuffer8BitAccess => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_8bit_storage)) return true;
+        },
+        spirv.SpvCapabilityStoragePushConstant8 => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_8bit_storage)) return true;
+        },
+        spirv.SpvCapabilityVulkanMemoryModel => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_vulkan_memory_model)) return true;
+        },
+        spirv.SpvCapabilityVulkanMemoryModelDeviceScope => {
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_vulkan_memory_model)) return true;
+        },
+        spirv.SpvCapabilityDenormPreserve => {
+            return true;
+        },
+        spirv.SpvCapabilityDenormFlushToZero => {
+            return true;
+        },
+        spirv.SpvCapabilitySignedZeroInfNanPreserve => {
+            return true;
+        },
+        spirv.SpvCapabilityRoundingModeRTE => {
+            return true;
+        },
+        spirv.SpvCapabilityRoundingModeRTZ => {
+            return true;
         },
         spirv.SpvCapabilityRayTracingKHR => {
-            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTracingPipeline != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_tracing_pipeline) return false;
+            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTracingPipeline == vk.VK_TRUE and (extensions.device.VK_KHR_ray_tracing_pipeline)) return true;
         },
         spirv.SpvCapabilityRayQueryKHR => {
-            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_query) return false;
+            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery == vk.VK_TRUE and (extensions.device.VK_KHR_ray_query)) return true;
         },
         spirv.SpvCapabilityRayTraversalPrimitiveCullingKHR => {
-            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTraversalPrimitiveCulling != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_tracing_pipeline) return false;
-            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_query) return false;
+            if (pdf.vk_physical_device_ray_tracing_pipeline_features_khr.rayTraversalPrimitiveCulling == vk.VK_TRUE and (extensions.device.VK_KHR_ray_tracing_pipeline)) return true;
+            if (pdf.vk_physical_device_ray_query_features_khr.rayQuery == vk.VK_TRUE and (extensions.device.VK_KHR_ray_query)) return true;
         },
         spirv.SpvCapabilityRayCullMaskKHR => {
-            if (pdf.vk_physical_device_ray_tracing_maintenance_1_features_khr.rayTracingMaintenance1 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_tracing_maintenance1) return false;
+            if (pdf.vk_physical_device_ray_tracing_maintenance_1_features_khr.rayTracingMaintenance1 == vk.VK_TRUE and (extensions.device.VK_KHR_ray_tracing_maintenance1)) return true;
         },
         spirv.SpvCapabilityTransformFeedback => {
-            if (pdf.vk_physical_device_transform_feedback_features_ext.transformFeedback != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_transform_feedback) return false;
+            if (pdf.vk_physical_device_transform_feedback_features_ext.transformFeedback == vk.VK_TRUE and (extensions.device.VK_EXT_transform_feedback)) return true;
         },
         spirv.SpvCapabilityGeometryStreams => {
-            if (pdf.vk_physical_device_transform_feedback_features_ext.geometryStreams != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_transform_feedback) return false;
+            if (pdf.vk_physical_device_transform_feedback_features_ext.geometryStreams == vk.VK_TRUE and (extensions.device.VK_EXT_transform_feedback)) return true;
         },
         spirv.SpvCapabilityPhysicalStorageBufferAddresses => {
-            if (pdf.vk_physical_device_buffer_device_address_features_ext.bufferDeviceAddress != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_buffer_device_address) return false;
+            if ((vk.VK_API_VERSION_1_2 <= api_version or extensions.device.VK_KHR_buffer_device_address)) return true;
+            if (pdf.vk_physical_device_buffer_device_address_features_ext.bufferDeviceAddress == vk.VK_TRUE and (extensions.device.VK_EXT_buffer_device_address)) return true;
         },
         spirv.SpvCapabilityIntegerFunctions2INTEL => {
-            if (pdf.vk_physical_device_shader_integer_functions_2_features_intel.shaderIntegerFunctions2 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_INTEL_shader_integer_functions2) return false;
+            if (pdf.vk_physical_device_shader_integer_functions_2_features_intel.shaderIntegerFunctions2 == vk.VK_TRUE and (extensions.device.VK_INTEL_shader_integer_functions2)) return true;
         },
         spirv.SpvCapabilityFragmentShaderSampleInterlockEXT => {
-            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderSampleInterlock != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_fragment_shader_interlock) return false;
+            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderSampleInterlock == vk.VK_TRUE and (extensions.device.VK_EXT_fragment_shader_interlock)) return true;
         },
         spirv.SpvCapabilityFragmentShaderPixelInterlockEXT => {
-            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderPixelInterlock != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_fragment_shader_interlock) return false;
+            if (pdf.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderPixelInterlock == vk.VK_TRUE and (extensions.device.VK_EXT_fragment_shader_interlock)) return true;
         },
         spirv.SpvCapabilityDemoteToHelperInvocation => {
-            if (pdf.vk_physical_device_shader_demote_to_helper_invocation_features_ext.shaderDemoteToHelperInvocation != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_demote_to_helper_invocation) return false;
+            if ((vk.VK_API_VERSION_1_3 <= api_version or extensions.device.VK_EXT_shader_demote_to_helper_invocation)) return true;
+            if (pdf.vk_physical_device_shader_demote_to_helper_invocation_features_ext.shaderDemoteToHelperInvocation == vk.VK_TRUE and (extensions.device.VK_EXT_shader_demote_to_helper_invocation)) return true;
         },
         spirv.SpvCapabilityFragmentShadingRateKHR => {
-            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.pipelineFragmentShadingRate != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
-            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.primitiveFragmentShadingRate != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
-            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.attachmentFragmentShadingRate != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_fragment_shading_rate) return false;
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.pipelineFragmentShadingRate == vk.VK_TRUE and (extensions.device.VK_KHR_fragment_shading_rate)) return true;
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.primitiveFragmentShadingRate == vk.VK_TRUE and (extensions.device.VK_KHR_fragment_shading_rate)) return true;
+            if (pdf.vk_physical_device_fragment_shading_rate_features_khr.attachmentFragmentShadingRate == vk.VK_TRUE and (extensions.device.VK_KHR_fragment_shading_rate)) return true;
         },
         spirv.SpvCapabilityWorkgroupMemoryExplicitLayoutKHR => {
-            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout == vk.VK_TRUE and (extensions.device.VK_KHR_workgroup_memory_explicit_layout)) return true;
         },
         spirv.SpvCapabilityWorkgroupMemoryExplicitLayout8BitAccessKHR => {
-            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout8BitAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout8BitAccess == vk.VK_TRUE and (extensions.device.VK_KHR_workgroup_memory_explicit_layout)) return true;
         },
         spirv.SpvCapabilityWorkgroupMemoryExplicitLayout16BitAccessKHR => {
-            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout16BitAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_workgroup_memory_explicit_layout) return false;
+            if (pdf.vk_physical_device_workgroup_memory_explicit_layout_features_khr.workgroupMemoryExplicitLayout16BitAccess == vk.VK_TRUE and (extensions.device.VK_KHR_workgroup_memory_explicit_layout)) return true;
         },
         spirv.SpvCapabilityDotProductInputAll => {
-            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+            if ((vk.VK_API_VERSION_1_3 <= api_version or extensions.device.VK_KHR_shader_integer_dot_product)) return true;
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct == vk.VK_TRUE and (extensions.device.VK_KHR_shader_integer_dot_product)) return true;
         },
         spirv.SpvCapabilityDotProductInput4x8Bit => {
-            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+            if ((vk.VK_API_VERSION_1_3 <= api_version or extensions.device.VK_KHR_shader_integer_dot_product)) return true;
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct == vk.VK_TRUE and (extensions.device.VK_KHR_shader_integer_dot_product)) return true;
         },
         spirv.SpvCapabilityDotProductInput4x8BitPacked => {
-            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
+            if ((vk.VK_API_VERSION_1_3 <= api_version or extensions.device.VK_KHR_shader_integer_dot_product)) return true;
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct == vk.VK_TRUE and (extensions.device.VK_KHR_shader_integer_dot_product)) return true;
         },
         spirv.SpvCapabilityDotProduct => {
-            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_integer_dot_product) return false;
-        },
-        spirv.SpvCapabilityFragmentBarycentricKHR => {
-            if (pdf.vk_physical_device_fragment_shader_barycentric_features_khr.fragmentShaderBarycentric != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_fragment_shader_barycentric) return false;
+            if ((vk.VK_API_VERSION_1_3 <= api_version or extensions.device.VK_KHR_shader_integer_dot_product)) return true;
+            if (pdf.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct == vk.VK_TRUE and (extensions.device.VK_KHR_shader_integer_dot_product)) return true;
         },
         spirv.SpvCapabilityTextureSampleWeightedQCOM => {
-            if (pdf.vk_physical_device_image_processing_features_qcom.textureSampleWeighted != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_QCOM_image_processing) return false;
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureSampleWeighted == vk.VK_TRUE and (extensions.device.VK_QCOM_image_processing)) return true;
         },
         spirv.SpvCapabilityTextureBoxFilterQCOM => {
-            if (pdf.vk_physical_device_image_processing_features_qcom.textureBoxFilter != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_QCOM_image_processing) return false;
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureBoxFilter == vk.VK_TRUE and (extensions.device.VK_QCOM_image_processing)) return true;
         },
         spirv.SpvCapabilityTextureBlockMatchQCOM => {
-            if (pdf.vk_physical_device_image_processing_features_qcom.textureBlockMatch != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_QCOM_image_processing) return false;
+            if (pdf.vk_physical_device_image_processing_features_qcom.textureBlockMatch == vk.VK_TRUE and (extensions.device.VK_QCOM_image_processing)) return true;
         },
         spirv.SpvCapabilityTextureBlockMatch2QCOM => {
-            if (pdf.vk_physical_device_image_processing_2_features_qcom.textureBlockMatch2 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_QCOM_image_processing2) return false;
+            if (pdf.vk_physical_device_image_processing_2_features_qcom.textureBlockMatch2 == vk.VK_TRUE and (extensions.device.VK_QCOM_image_processing2)) return true;
         },
         spirv.SpvCapabilityMeshShadingEXT => {
-            if (!extensions.device.VK_EXT_mesh_shader) return false;
+            if (extensions.device.VK_EXT_mesh_shader) return true;
         },
         spirv.SpvCapabilityRayTracingOpacityMicromapEXT => {
-            if (!extensions.device.VK_EXT_opacity_micromap) return false;
+            if (extensions.device.VK_EXT_opacity_micromap) return true;
         },
         spirv.SpvCapabilityRayTracingPositionFetchKHR => {
-            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_tracing_position_fetch) return false;
+            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch == vk.VK_TRUE and (extensions.device.VK_KHR_ray_tracing_position_fetch)) return true;
         },
         spirv.SpvCapabilityRayQueryPositionFetchKHR => {
-            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_ray_tracing_position_fetch) return false;
+            if (pdf.vk_physical_device_ray_tracing_position_fetch_features_khr.rayTracingPositionFetch == vk.VK_TRUE and (extensions.device.VK_KHR_ray_tracing_position_fetch)) return true;
         },
         spirv.SpvCapabilityTileImageColorReadAccessEXT => {
-            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageColorReadAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageColorReadAccess == vk.VK_TRUE and (extensions.device.VK_EXT_shader_tile_image)) return true;
         },
         spirv.SpvCapabilityTileImageDepthReadAccessEXT => {
-            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageDepthReadAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageDepthReadAccess == vk.VK_TRUE and (extensions.device.VK_EXT_shader_tile_image)) return true;
         },
         spirv.SpvCapabilityTileImageStencilReadAccessEXT => {
-            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageStencilReadAccess != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_tile_image) return false;
+            if (pdf.vk_physical_device_shader_tile_image_features_ext.shaderTileImageStencilReadAccess == vk.VK_TRUE and (extensions.device.VK_EXT_shader_tile_image)) return true;
         },
         spirv.SpvCapabilityCooperativeMatrixKHR => {
-            if (pdf.vk_physical_device_cooperative_matrix_features_khr.cooperativeMatrix != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_cooperative_matrix) return false;
+            if (pdf.vk_physical_device_cooperative_matrix_features_khr.cooperativeMatrix == vk.VK_TRUE and (extensions.device.VK_KHR_cooperative_matrix)) return true;
+        },
+        spirv.SpvCapabilityGroupNonUniformRotateKHR => {
+            if ((vk.VK_API_VERSION_1_4 <= api_version or extensions.device.VK_KHR_shader_subgroup_rotate)) return true;
+            if ((extensions.device.VK_KHR_shader_subgroup_rotate)) return true;
+        },
+        spirv.SpvCapabilityExpectAssumeKHR => {
+            if ((vk.VK_API_VERSION_1_4 <= api_version or extensions.device.VK_KHR_shader_expect_assume)) return true;
+            if ((extensions.device.VK_KHR_shader_expect_assume)) return true;
+        },
+        spirv.SpvCapabilityFloatControls2 => {
+            if ((vk.VK_API_VERSION_1_4 <= api_version or extensions.device.VK_KHR_shader_float_controls2)) return true;
+            if ((extensions.device.VK_KHR_shader_float_controls2)) return true;
         },
         spirv.SpvCapabilityQuadControlKHR => {
-            if (pdf.vk_physical_device_shader_quad_control_features_khr.shaderQuadControl != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_quad_control) return false;
+            if (pdf.vk_physical_device_shader_quad_control_features_khr.shaderQuadControl == vk.VK_TRUE and (extensions.device.VK_KHR_shader_quad_control)) return true;
         },
         spirv.SpvCapabilityBFloat16TypeKHR => {
-            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16Type != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16Type == vk.VK_TRUE and (extensions.device.VK_KHR_shader_bfloat16)) return true;
         },
         spirv.SpvCapabilityBFloat16DotProductKHR => {
-            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16DotProduct != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16DotProduct == vk.VK_TRUE and (extensions.device.VK_KHR_shader_bfloat16)) return true;
         },
         spirv.SpvCapabilityBFloat16CooperativeMatrixKHR => {
-            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16CooperativeMatrix != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_KHR_shader_bfloat16) return false;
+            if (pdf.vk_physical_device_shader_bfloat16_features_khr.shaderBFloat16CooperativeMatrix == vk.VK_TRUE and (extensions.device.VK_KHR_shader_bfloat16)) return true;
         },
         spirv.SpvCapabilityReplicatedCompositesEXT => {
-            if (pdf.vk_physical_device_shader_replicated_composites_features_ext.shaderReplicatedComposites != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_replicated_composites) return false;
+            if (pdf.vk_physical_device_shader_replicated_composites_features_ext.shaderReplicatedComposites == vk.VK_TRUE and (extensions.device.VK_EXT_shader_replicated_composites)) return true;
         },
         spirv.SpvCapabilityTileShadingQCOM => {
-            if (pdf.vk_physical_device_tile_shading_features_qcom.tileShading != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_QCOM_tile_shading) return false;
+            if (pdf.vk_physical_device_tile_shading_features_qcom.tileShading == vk.VK_TRUE and (extensions.device.VK_QCOM_tile_shading)) return true;
         },
         spirv.SpvCapabilityFloat8EXT => {
-            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8 != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_float8) return false;
+            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8 == vk.VK_TRUE and (extensions.device.VK_EXT_shader_float8)) return true;
         },
         spirv.SpvCapabilityFloat8CooperativeMatrixEXT => {
-            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8CooperativeMatrix != vk.VK_TRUE) return false;
-            if (!extensions.device.VK_EXT_shader_float8) return false;
+            if (pdf.vk_physical_device_shader_float8_features_ext.shaderFloat8CooperativeMatrix == vk.VK_TRUE and (extensions.device.VK_EXT_shader_float8)) return true;
         },
         else => |other| {
             log.debug(@src(), "Uknown SPRIV capability: {d}", .{other});
             return false;
-        }
+        },
     }
+    return false;
+}
+pub fn validate_shader_code(
+    create_info: *const vk.VkShaderModuleCreateInfo,
+    api_version: u32,
+    extensions: *const Extensions,
+    pdf: *const PDF,
+    pdf2: *const vk.VkPhysicalDeviceFeatures2,
+) bool {
+    var code: []const u32 = undefined;
+    code.ptr = create_info.pCode;
+    code.len = create_info.codeSize / @sizeOf(u32);
+
+    // Impossibly small shader
+    if (code.len < 5) return false;
+    if (code[0] != spirv.SpvMagicNumber) return false;
+
+    const version = code[1];
+    if (spirv.SPV_VERSION < version) return false;
+    if (version == 0x10600 and api_version < vk.VK_API_VERSION_1_3) return false;
+    if (version == 0x10500 and api_version < vk.VK_API_VERSION_1_2) return false;
+    if (0x10400 <= version and
+        (api_version < vk.VK_API_VERSION_1_2 and
+            !extensions.device.VK_KHR_spirv_1_4)) return false;
+    if (0x10300 <= version and api_version < vk.VK_API_VERSION_1_1) return false;
+    if (0x10000 < version and api_version < vk.VK_API_VERSION_1_1) return false;
+
+    var offset: usize = 5;
+    while (offset < code.len) {
+        const op: spirv.SpvCapability = code[offset] & 0xffff;
+        const count = (code[offset] >> 16) & 0xffff;
+
+        if (count == 0) return false;
+        if (code.len < offset + count) return false;
+
+        if (op == spirv.SpvOpCapability) {
+            if (count != 2) return false;
+
+            const capability = code[offset + 1];
+            if (!validate_spirv_capability(api_version, extensions, pdf, pdf2, capability)) {
+                log.err(@src(), "Invalid SPIR-V capability: {d}", .{capability});
+                return false;
+            }
+        } else if (op == spirv.SpvOpExtension) {
+            if (count < 2) return false;
+            const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1 ..].ptr);
+            const name = std.mem.span(byte_slice);
+            if (!validate_spirv_extension(api_version, extensions, name)) {
+                log.err(@src(), "Invalid SPIR-V extension: {s}", .{name});
+                return false;
+            }
+        } else if (op == spirv.SpvOpFunction) {
+            // Code starts here, stop validation
+            break;
+        }
+        offset += count;
+    }
+
     return true;
 }
