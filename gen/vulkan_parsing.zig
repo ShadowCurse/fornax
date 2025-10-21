@@ -160,31 +160,65 @@ pub const Database = struct {
         }
     };
 
+    /// Iterator over all extensions
     pub fn all_extensions(self: *const Self) AllExtensionsIterator {
         return .{ .db = self };
     }
 
-    pub fn extension_by_name(self: *const Self, name: []const u8) ?struct { *const Extension, Extension.Type } {
+    /// Find extension with the `extension_name`
+    pub fn extension_by_name(self: *const Self, extension_name: []const u8) ?struct {
+        *const Extension,
+        Extension.Type,
+    } {
         var iter = self.all_extensions();
         while (iter.next()) |tuple| {
             const ext, _ = tuple;
-            if (std.mem.eql(u8, ext.name, name))
+            if (std.mem.eql(u8, ext.name, extension_name))
                 return tuple;
         }
         return null;
     }
 
-    pub fn enum_by_name(self: *const Self, name: []const u8) ?*const Enum {
+    /// Find extension which has the struct in the list of types that the
+    /// extension adds
+    pub fn extension_which_adds_struct(
+        self: *const Self,
+        struct_name: []const u8,
+    ) ?*const Extension {
+        var search_name = struct_name;
+        if (self.struct_alias_of(struct_name)) |alias_of| search_name = alias_of.name;
+
+        var iter = self.all_extensions();
+        while (iter.next()) |tuple| {
+            const ext, _ = tuple;
+            for (ext.require) |*require| {
+                for (require.items) |item| {
+                    switch (item) {
+                        .type => |name| {
+                            if (std.mem.eql(u8, name, search_name)) return ext;
+                        },
+                        else => {},
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /// Find enum with `enum_name`
+    pub fn enum_by_name(self: *const Self, enum_name: []const u8) ?*const Enum {
         for (self.enums.items) |*e| {
-            if (std.mem.eql(u8, e.name, name))
+            if (std.mem.eql(u8, e.name, enum_name))
                 return e;
         }
         return null;
     }
 
-    pub fn struct_by_name(self: *const Self, name: []const u8) ?*const Struct {
+    /// Find struct with with the `struct_name`. If the `struct_name` is
+    /// an alias to other struct, returns other struct
+    pub fn struct_by_name(self: *const Self, struct_name: []const u8) ?*const Struct {
         for (self.types.structs) |*s| {
-            if (std.mem.eql(u8, s.name, name)) {
+            if (std.mem.eql(u8, s.name, struct_name)) {
                 if (s.alias) |alias| return self.struct_by_name(alias);
                 return s;
             }
@@ -192,9 +226,22 @@ pub const Database = struct {
         return null;
     }
 
-    pub fn is_struct_name(self: *const Self, name: []const u8) bool {
+    /// Find the struct which is the aliased by the `struct_name`
+    pub fn struct_alias_of(self: *const Self, struct_name: []const u8) ?*const Struct {
+        for (self.types.structs) |*s| {
+            if (s.alias) |alias| {
+                if (std.mem.eql(u8, alias, struct_name)) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    /// Check if the struct with `struct_name` exists
+    pub fn is_struct_name(self: *const Self, struct_name: []const u8) bool {
         for (self.types.structs) |*s|
-            if (std.mem.eql(u8, s.name, name)) return true;
+            if (std.mem.eql(u8, s.name, struct_name)) return true;
         return false;
     }
 };
