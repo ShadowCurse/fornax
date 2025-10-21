@@ -182,6 +182,16 @@ pub const Database = struct {
         return null;
     }
 
+    pub fn struct_by_name(self: *const Self, name: []const u8) ?*const Struct {
+        for (self.types.structs) |*s| {
+            if (std.mem.eql(u8, s.name, name)) {
+                if (s.alias) |alias| return self.struct_by_name(alias);
+                return s;
+            }
+        }
+        return null;
+    }
+
     pub fn is_struct_name(self: *const Self, name: []const u8) bool {
         for (self.types.structs) |*s|
             if (std.mem.eql(u8, s.name, name)) return true;
@@ -648,6 +658,7 @@ test "parse_bitmask" {
 pub const Struct = struct {
     name: []const u8 = &.{},
     extends: ?[]const u8 = null,
+    alias: ?[]const u8 = null,
     members: []const Member = &.{},
 
     pub const Member = struct {
@@ -859,10 +870,12 @@ pub fn parse_struct(alloc: Allocator, original_parser: *xml.Parser) !?Struct {
             result.name = attr.value;
         } else if (std.mem.eql(u8, attr.name, "structextends")) {
             result.extends = attr.value;
+        } else if (std.mem.eql(u8, attr.name, "alias")) {
+            result.alias = attr.value;
         }
     }
 
-    const attributes_end = parser.skip_attributes().?;
+    const attributes_end = parser.skip_attributes() orelse return null;
     if (attributes_end != .attribute_list_end_contained) {
         var members: std.ArrayListUnmanaged(Struct.Member) = .empty;
         while (parse_struct_member(&parser)) |member| {
@@ -881,26 +894,72 @@ test "parse_single_struct" {
 
     {
         const text =
-            \\<type category="struct" name="A" structextends="A">
-            \\    <member><type>A</type> <name>A</name><comment>AAA</comment></member>
+            \\<type category="struct" name="N" structextends="E">
+            \\    <member values="V"><type>T1</type> <name>N1</name></member>
+            \\    <member optional="true"><type>T2</type>* <name>N2</name></member>
+            \\    <member><type>T3</type> <name>N3</name></member>
+            \\    <member><type>T4</type> <name>N4</name></member>
             \\</type>----
         ;
         var parser: xml.Parser = .init(text);
         const s = (try parse_struct(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = s;
-        // std.log.err("{f}", .{s});
+        const expected: Struct = .{
+            .name = "N",
+            .extends = "E",
+            .alias = null,
+            .members = &.{
+                .{
+                    .name = "N1",
+                    .type = "T1",
+                    .value = "V",
+                    .len = null,
+                    .optional = false,
+                    .pointer = false,
+                },
+                .{
+                    .name = "N2",
+                    .type = "T2",
+                    .value = null,
+                    .len = null,
+                    .optional = true,
+                    .pointer = true,
+                },
+                .{
+                    .name = "N3",
+                    .type = "T3",
+                    .value = null,
+                    .len = null,
+                    .optional = false,
+                    .pointer = false,
+                },
+                .{
+                    .name = "N4",
+                    .type = "T4",
+                    .value = null,
+                    .len = null,
+                    .optional = false,
+                    .pointer = false,
+                },
+            },
+        };
+        try std.testing.expectEqualDeep(expected, s);
     }
 
     {
         const text =
-            \\<type category="struct" name="A" alias="A"/>----
+            \\<type category="struct" name="N" alias="A"/>----
         ;
         var parser: xml.Parser = .init(text);
         const s = (try parse_struct(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        _ = s;
-        // std.log.err("{f}", .{s});
+        const expected: Struct = .{
+            .name = "N",
+            .extends = null,
+            .alias = "A",
+            .members = &.{},
+        };
+        try std.testing.expectEqualDeep(expected, s);
     }
 }
 
@@ -1456,7 +1515,7 @@ test "parse_spirv" {
     const alloc = arena.allocator();
 
     var parser: xml.Parser = .init(text);
-    const s = try parse_spirv(alloc, &parser);
+    const s = try parse_spirv(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     const expected: Spirv = .{
         .extensions = &.{
