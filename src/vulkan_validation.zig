@@ -32034,9 +32034,6 @@ pub fn validate_spirv_capability(validation: *const Validation, capability: spir
         spirv.SpvCapabilityGroupNonUniformQuad => {
             return true;
         },
-        spirv.SpvCapabilityGroupNonUniformPartitionedNV => {
-            return true;
-        },
         spirv.SpvCapabilitySampleMaskPostDepthCoverage => {
             if (validation.extensions.device.VK_EXT_post_depth_coverage) return true;
         },
@@ -32139,9 +32136,6 @@ pub fn validate_spirv_capability(validation: *const Validation, capability: spir
             if ((vk.VK_API_VERSION_1_2 <= validation.api_version or validation.extensions.device.VK_KHR_buffer_device_address)) return true;
             if (validation.device_features.vk_physical_device_buffer_device_address_features_ext.bufferDeviceAddress == vk.VK_TRUE and (validation.extensions.device.VK_EXT_buffer_device_address)) return true;
         },
-        spirv.SpvCapabilityIntegerFunctions2INTEL => {
-            if (validation.device_features.vk_physical_device_shader_integer_functions_2_features_intel.shaderIntegerFunctions2 == vk.VK_TRUE and (validation.extensions.device.VK_INTEL_shader_integer_functions2)) return true;
-        },
         spirv.SpvCapabilityFragmentShaderSampleInterlockEXT => {
             if (validation.device_features.vk_physical_device_fragment_shader_interlock_features_ext.fragmentShaderSampleInterlock == vk.VK_TRUE and (validation.extensions.device.VK_EXT_fragment_shader_interlock)) return true;
         },
@@ -32181,18 +32175,6 @@ pub fn validate_spirv_capability(validation: *const Validation, capability: spir
         spirv.SpvCapabilityDotProduct => {
             if ((vk.VK_API_VERSION_1_3 <= validation.api_version or validation.extensions.device.VK_KHR_shader_integer_dot_product)) return true;
             if (validation.device_features.vk_physical_device_shader_integer_dot_product_features_khr.shaderIntegerDotProduct == vk.VK_TRUE and (validation.extensions.device.VK_KHR_shader_integer_dot_product)) return true;
-        },
-        spirv.SpvCapabilityTextureSampleWeightedQCOM => {
-            if (validation.device_features.vk_physical_device_image_processing_features_qcom.textureSampleWeighted == vk.VK_TRUE and (validation.extensions.device.VK_QCOM_image_processing)) return true;
-        },
-        spirv.SpvCapabilityTextureBoxFilterQCOM => {
-            if (validation.device_features.vk_physical_device_image_processing_features_qcom.textureBoxFilter == vk.VK_TRUE and (validation.extensions.device.VK_QCOM_image_processing)) return true;
-        },
-        spirv.SpvCapabilityTextureBlockMatchQCOM => {
-            if (validation.device_features.vk_physical_device_image_processing_features_qcom.textureBlockMatch == vk.VK_TRUE and (validation.extensions.device.VK_QCOM_image_processing)) return true;
-        },
-        spirv.SpvCapabilityTextureBlockMatch2QCOM => {
-            if (validation.device_features.vk_physical_device_image_processing_2_features_qcom.textureBlockMatch2 == vk.VK_TRUE and (validation.extensions.device.VK_QCOM_image_processing2)) return true;
         },
         spirv.SpvCapabilityMeshShadingEXT => {
             if (validation.extensions.device.VK_EXT_mesh_shader) return true;
@@ -32244,9 +32226,6 @@ pub fn validate_spirv_capability(validation: *const Validation, capability: spir
         },
         spirv.SpvCapabilityReplicatedCompositesEXT => {
             if (validation.device_features.vk_physical_device_shader_replicated_composites_features_ext.shaderReplicatedComposites == vk.VK_TRUE and (validation.extensions.device.VK_EXT_shader_replicated_composites)) return true;
-        },
-        spirv.SpvCapabilityTileShadingQCOM => {
-            if (validation.device_features.vk_physical_device_tile_shading_features_qcom.tileShading == vk.VK_TRUE and (validation.extensions.device.VK_QCOM_tile_shading)) return true;
         },
         spirv.SpvCapabilityFloat8EXT => {
             if (validation.device_features.vk_physical_device_shader_float8_features_ext.shaderFloat8 == vk.VK_TRUE and (validation.extensions.device.VK_EXT_shader_float8)) return true;

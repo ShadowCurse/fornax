@@ -4,7 +4,7 @@ const Allocator = std.mem.Allocator;
 const xml = @import("xml.zig");
 
 // Ignore list for extensions names
-const IGNORE_SUB_NAMES: []const []const u8 = &.{
+const IGNORE_EXTENSIONS: []const []const u8 = &.{
     "AMD",
     "ANDROID",
     "ARM",
@@ -48,6 +48,21 @@ const IGNORE_STRUCTS: []const []const u8 = &.{
     "GGP",
     "VkPipelineOfflineCreateInfo",
     "VkExternalFormatANDROID",
+};
+
+// Ignore list for structs
+const IGNORE_SPIRV: []const []const u8 = &.{
+    "AMD",
+    "AMDX",
+    "ARM",
+    "GGP",
+    "GOOGLE",
+    "HUAWEI",
+    "INTEL",
+    "NV",
+    "NVX",
+    "QCOM",
+    "SEC",
 };
 
 pub fn c_to_zig_type(name: []const u8) ?[]const u8 {
@@ -100,9 +115,9 @@ pub const Database = struct {
                     } else if (std.mem.eql(u8, es, "types")) {
                         types = try parse_types(alloc, &parser, IGNORE_STRUCTS);
                     } else if (std.mem.eql(u8, es, "extensions")) {
-                        extensions = try parse_extensions(alloc, &parser, IGNORE_SUB_NAMES);
+                        extensions = try parse_extensions(alloc, &parser, IGNORE_EXTENSIONS);
                     } else if (std.mem.eql(u8, es, "spirvextensions")) {
-                        spirv = try parse_spirv(alloc, &parser);
+                        spirv = try parse_spirv(alloc, &parser, IGNORE_SPIRV);
                     } else if (std.mem.eql(u8, es, "enums")) {
                         if (try parse_enum(alloc, &parser)) |e|
                             try enums.append(alloc, e)
@@ -1365,6 +1380,7 @@ test "parse_spirv_capability" {
 pub fn parse_spirv(
     alloc: Allocator,
     parser: *xml.Parser,
+    ignore_spirv: []const []const u8,
 ) !Spirv {
     if (!parser.check_peek_element_start("spirvextensions")) return .{};
     _ = parser.element_start();
@@ -1378,7 +1394,10 @@ pub fn parse_spirv(
         }
 
         if (parse_spirv_extension(parser)) |v| {
-            try extensions.append(alloc, v);
+            for (ignore_spirv) |ignore| {
+                if (std.mem.endsWith(u8, v.name, ignore))
+                    break;
+            } else try extensions.append(alloc, v);
         } else {
             parser.skip_current_element();
         }
@@ -1397,7 +1416,10 @@ pub fn parse_spirv(
         }
 
         if (try parse_spirv_capability(alloc, parser)) |v| {
-            try capabilities.append(alloc, v);
+            for (ignore_spirv) |ignore| {
+                if (std.mem.endsWith(u8, v.name, ignore))
+                    break;
+            } else try capabilities.append(alloc, v);
         } else {
             parser.skip_current_element();
         }
