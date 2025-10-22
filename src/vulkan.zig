@@ -507,8 +507,8 @@ fn filter_features(
         additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.attachmentFragmentShadingRate == vk.VK_TRUE or
         additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.primitiveFragmentShadingRate == vk.VK_TRUE)
     {
-        // other_features.shading_rate_nv.shadingRateImage = false;
-        // other_features.shading_rate_nv.shadingRateCoarseSampleOrder = false;
+        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateImage = vk.VK_FALSE;
+        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateCoarseSampleOrder = vk.VK_FALSE;
         additional_pdf.VkPhysicalDeviceFragmentDensityMapFeaturesEXT.fragmentDensityMap =
             vk.VK_FALSE;
     }
@@ -518,160 +518,77 @@ fn filter_features(
         current_pdf.features.robustBufferAccess =
             current_pdf.features.robustBufferAccess & wf.features.robustBufferAccess;
 
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
-            wf.pNext,
-        )) |item| {
-            const robustness2: *const vk.VkPhysicalDeviceRobustness2FeaturesKHR =
-                @ptrCast(@alignCast(item));
-            Inner.apply(vk.VkPhysicalDeviceRobustness2FeaturesKHR, &additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR, robustness2);
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
-            wf.pNext,
-        )) |item| {
-            const image_robustness: *const vk.VkPhysicalDeviceImageRobustnessFeatures =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+        const PATCH_TYPES: []const struct { u32, type, []const u8 } = &.{
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                vk.VkPhysicalDeviceRobustness2FeaturesKHR,
+                "VkPhysicalDeviceRobustness2FeaturesKHR",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
                 vk.VkPhysicalDeviceImageRobustnessFeatures,
-                &additional_pdf.VkPhysicalDeviceImageRobustnessFeatures,
-                image_robustness,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceImageRobustnessFeatures);
-
-        // if (find_pnext(
-        //     vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
-        //     wf.pNext,
-        // )) |item| {
-        //     const fragment_shading_rate_enums: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
-        //         @ptrCast(@alignCast(item));
-        //     additional_pdf
-        //         .vk_physical_device_fragment_shading_rate_enums_features_nv
-        //         .fragmentShadingRateEnums =
-        //         additional_pdf
-        //             .vk_physical_device_fragment_shading_rate_enums_features_nv
-        //             .fragmentShadingRateEnums &
-        //         fragment_shading_rate_enums.fragmentShadingRateEnums;
-        //
-        //     additional_pdf
-        //         .vk_physical_device_fragment_shading_rate_enums_features_nv
-        //         .noInvocationFragmentShadingRates =
-        //         additional_pdf.vk_physical_device_fragment_shading_rate_enums_features_nv
-        //             .noInvocationFragmentShadingRates &
-        //         fragment_shading_rate_enums.noInvocationFragmentShadingRates;
-        //
-        //     additional_pdf
-        //         .vk_physical_device_fragment_shading_rate_enums_features_nv
-        //         .supersampleFragmentShadingRates =
-        //         additional_pdf
-        //             .vk_physical_device_fragment_shading_rate_enums_features_nv
-        //             .supersampleFragmentShadingRates &
-        //         fragment_shading_rate_enums.supersampleFragmentShadingRates;
-        // } else Inner.reset(&additional_pdf.vk_physical_device_fragment_shading_rate_enums_features_nv);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
-            wf.pNext,
-        )) |item| {
-            const fragment_shading_rate: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
-                @ptrCast(@alignCast(item));
-
-            Inner.apply(
+                "VkPhysicalDeviceImageRobustnessFeatures",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
+                "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
-                &additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
-                fragment_shading_rate,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-            wf.pNext,
-        )) |item| {
-            const mesh_shader: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+                "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
                 vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
-                &additional_pdf.VkPhysicalDeviceMeshShaderFeaturesEXT,
-                mesh_shader,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesEXT);
-
-        // if (find_pnext(
-        //     vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
-        //     wf.pNext,
-        // )) |item| {
-        //     const mesh_shader_nv: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV =
-        //         @ptrCast(@alignCast(item));
-        //     additional_pdf.vk_physical_device_mesh_shader_features_nv.taskShader =
-        //         additional_pdf.vk_physical_device_mesh_shader_features_nv.taskShader &
-        //         mesh_shader_nv.taskShader;
-        //     additional_pdf.vk_physical_device_mesh_shader_features_nv.meshShader =
-        //         additional_pdf.vk_physical_device_mesh_shader_features_nv.meshShader &
-        //         mesh_shader_nv.meshShader;
-        // } else Inner.reset(&additional_pdf.vk_physical_device_mesh_shader_features_nv);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-            wf.pNext,
-        )) |item| {
-            const descriptor_buffer: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+                "VkPhysicalDeviceMeshShaderFeaturesEXT",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                vk.VkPhysicalDeviceMeshShaderFeaturesNV,
+                "VkPhysicalDeviceMeshShaderFeaturesNV",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
                 vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
-                &additional_pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
-                descriptor_buffer,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-            wf.pNext,
-        )) |item| {
-            const shader_object: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+                "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
                 vk.VkPhysicalDeviceShaderObjectFeaturesEXT,
-                &additional_pdf.VkPhysicalDeviceShaderObjectFeaturesEXT,
-                shader_object,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDeviceShaderObjectFeaturesEXT);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
-            wf.pNext,
-        )) |item| {
-            const prim_generated: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+                "VkPhysicalDeviceShaderObjectFeaturesEXT",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
                 vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
-                &additional_pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
-                prim_generated,
-            );
-        } else Inner.reset(&additional_pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT);
-
-        if (find_pnext(
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
-            wf.pNext,
-        )) |item| {
-            const image_2d_view_of_3d: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
-                @ptrCast(@alignCast(item));
-            Inner.apply(
+                "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
                 vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
-                &additional_pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
-                image_2d_view_of_3d,
-            );
-        } else {
-            Inner.reset(&additional_pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT);
+                "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
+            },
+        };
+        inline for (PATCH_TYPES) |pt| {
+            const stype, const T, const field = pt;
+
+            if (find_pnext(
+                stype,
+                wf.pNext,
+            )) |item| {
+                const found: *const T = @ptrCast(@alignCast(item));
+                Inner.apply(T, &@field(additional_pdf, field), found);
+            } else Inner.reset(&@field(additional_pdf, field));
         }
     } else {
         current_pdf.features.robustBufferAccess = vk.VK_FALSE;
         Inner.reset(&additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR);
         Inner.reset(&additional_pdf.VkPhysicalDeviceImageRobustnessFeatures);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
         Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
         Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesEXT);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesNV);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesNV);
         Inner.reset(&additional_pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
         Inner.reset(&additional_pdf.VkPhysicalDeviceShaderObjectFeaturesEXT);
         Inner.reset(&additional_pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT);

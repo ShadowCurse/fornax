@@ -6,14 +6,17 @@ const xml = @import("xml.zig");
 // Ignore list for extensions names
 const IGNORE_EXTENSIONS: []const []const u8 = &.{
     "AMD",
+    "android",
     "ANDROID",
     "ARM",
+    "extension",
     "FUCHSIA",
     "GGP",
     "GOOGLE",
     "HUAWEI",
     "LUNARG",
     "MESA",
+    "mir",
     "MSFT",
     "MVK",
     "NN",
@@ -22,46 +25,33 @@ const IGNORE_EXTENSIONS: []const []const u8 = &.{
     "QNX",
     "RESERVED",
     "SEC",
-    "android",
-    "extension",
-    "mir",
+    "VK_EXT_application_parameters",
+    "VK_KHR_object_refresh",
+    "VK_KHR_performance_query",
+    "VK_KHR_portability_subset",
     "wayland",
     "win32",
     "xcb",
     "xlib",
-    "VK_EXT_application_parameters",
-    "VK_KHR_performance_query",
-    "VK_KHR_portability_subset",
-    "VK_KHR_object_refresh",
 };
 
 // Ignore list for structs
 const IGNORE_STRUCTS: []const []const u8 = &.{
-    "NV",
-    "NVX",
-    "AMD",
     "AMDX",
-    "QCOM",
-    "ARM",
-    "SEC",
-    "GOOGLE",
     "GGP",
-    "VkPipelineOfflineCreateInfo",
+    "GOOGLE",
+    "HUAWEI",
+    "SEC",
     "VkExternalFormatANDROID",
+    "VkPipelineOfflineCreateInfo",
 };
 
 // Ignore list for structs
 const IGNORE_SPIRV: []const []const u8 = &.{
-    "AMD",
     "AMDX",
-    "ARM",
     "GGP",
     "GOOGLE",
     "HUAWEI",
-    "INTEL",
-    "NV",
-    "NVX",
-    "QCOM",
     "SEC",
 };
 

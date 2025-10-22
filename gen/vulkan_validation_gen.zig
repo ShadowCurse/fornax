@@ -840,10 +840,10 @@ fn get_spriv_types(
 const ADDITIONAL_PDFS: []const []const u8 = &.{
     "VkPhysicalDeviceRobustness2FeaturesKHR",
     "VkPhysicalDeviceImageRobustnessFeatures",
-    // "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
+    "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
     "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
     "VkPhysicalDeviceMeshShaderFeaturesEXT",
-    // "VkPhysicalDeviceMeshShaderFeaturesNV",
+    "VkPhysicalDeviceMeshShaderFeaturesNV",
     "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
     "VkPhysicalDeviceShaderObjectFeaturesEXT",
     "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",

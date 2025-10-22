@@ -4948,6 +4948,8 @@ pub fn size_of_VkDeviceQueueCreateInfo(item: *const vk.VkDeviceQueueCreateInfo, 
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_GLOBAL_PRIORITY_CREATE_INFO,
                 => size += size_of_VkDeviceQueueGlobalPriorityCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkDeviceQueueCreateInfo: {d}", .{v});
                 },
@@ -4975,14 +4977,28 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_APPLICATION_PARAMETERS_EXT,
                 => size += size_of_VkApplicationParametersEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_DEVICE_PRIVATE_DATA_CREATE_INFO,
                 => size += size_of_VkDevicePrivateDataCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
                 => size += size_of_VkPhysicalDevicePrivateDataFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
                 => size += size_of_VkPhysicalDeviceFeatures2(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
                 => size += size_of_VkPhysicalDeviceVariablePointersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_SEMAPHORE_SCI_SYNC_POOL_RESERVATION_CREATE_INFO_NV,
+                => size += size_of_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
                 => size += size_of_VkPhysicalDeviceMultiviewFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_DEVICE_CREATE_INFO,
@@ -5055,10 +5071,26 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceASTCDecodeFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceTransformFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
@@ -5069,6 +5101,8 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceRayQueryFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_MEMORY_OVERALLOCATION_CREATE_INFO_AMD,
+                => size += size_of_VkDeviceMemoryOverallocationCreateInfoAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_FEATURES_EXT,
@@ -5093,18 +5127,26 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceImagelessFramebufferFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
                 => size += size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentBarrierFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
                 => size += size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_RESERVATION_INFO_KHR,
                 => size += size_of_VkPerformanceQueryReservationInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
                 => size += size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderClockFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
                 => size += size_of_VkPhysicalDeviceIndexTypeUint8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
@@ -5131,6 +5173,8 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceVulkan13Features(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
                 => size += size_of_VkPhysicalDeviceVulkan14Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_FAULT_CALLBACK_INFO,
                 => size += size_of_VkFaultCallbackInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
@@ -5143,6 +5187,12 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV,
+                => size += size_of_VkDeviceDiagnosticsConfigCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
                 => size += size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
@@ -5157,16 +5207,14 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDevicePortabilitySubsetFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevice4444FormatsFeaturesEXT(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
                 => size += size_of_VkPhysicalDeviceShaderTerminateInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
@@ -5187,6 +5235,8 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceDepthClampControlFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
@@ -5219,6 +5269,8 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
@@ -5231,6 +5283,12 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceShaderIntegerDotProductFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
@@ -5239,6 +5297,8 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
@@ -5259,20 +5319,32 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceOpacityMicromapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
                 => size += size_of_VkPhysicalDevicePipelineRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceAddressBindingReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFaultFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFrameBoundaryFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
@@ -5281,8 +5353,16 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderObjectFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
@@ -5291,10 +5371,36 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceAntiLagFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
                 => size += size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
                 => size += size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+                => size += size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
@@ -5307,26 +5413,48 @@ pub fn size_of_VkDeviceCreateInfo(item: *const vk.VkDeviceCreateInfo, follow_pne
                 => size += size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
                 => size += size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
                 => size += size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentMeteringFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_COMPUTE_QUEUE_DEVICE_CREATE_INFO_NV,
+                => size += size_of_VkExternalComputeQueueDeviceCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceFormatPackFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDataGraphFeaturesARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkDeviceCreateInfo: {d}", .{v});
                 },
@@ -5390,6 +5518,18 @@ pub fn size_of_VkMemoryAllocateInfo(item: *const vk.VkMemoryAllocateInfo, follow
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_MEMORY_ALLOCATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationMemoryAllocateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO_NV,
+                => size += size_of_VkExportMemoryAllocateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+                => size += size_of_VkImportMemoryWin32HandleInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV,
+                => size += size_of_VkExportMemoryWin32HandleInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_SCI_BUF_INFO_NV,
+                => size += size_of_VkExportMemorySciBufInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_SCI_BUF_INFO_NV,
+                => size += size_of_VkImportMemorySciBufInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO,
                 => size += size_of_VkExportMemoryAllocateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
@@ -5422,6 +5562,8 @@ pub fn size_of_VkMemoryAllocateInfo(item: *const vk.VkMemoryAllocateInfo, follow
                 => size += size_of_VkImportMetalBufferInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMPORT_SCREEN_BUFFER_INFO_QNX,
                 => size += size_of_VkImportScreenBufferInfoQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_TENSOR_ARM,
+                => size += size_of_VkMemoryDedicatedAllocateInfoTensorARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkMemoryAllocateInfo: {d}", .{v});
                 },
@@ -5500,6 +5642,12 @@ pub fn size_of_VkWriteDescriptorSet(item: *const vk.VkWriteDescriptorSet, follow
                 => size += size_of_VkWriteDescriptorSetInlineUniformBlock(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR,
                 => size += size_of_VkWriteDescriptorSetAccelerationStructureKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_NV,
+                => size += size_of_VkWriteDescriptorSetAccelerationStructureNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV,
+                => size += size_of_VkWriteDescriptorSetPartitionedAccelerationStructureNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_ARM,
+                => size += size_of_VkWriteDescriptorSetTensorARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkWriteDescriptorSet: {d}", .{v});
                 },
@@ -5537,6 +5685,8 @@ pub fn size_of_VkBufferCreateInfo(item: *const vk.VkBufferCreateInfo, follow_pne
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO,
                 => size += size_of_VkBufferUsageFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_BUFFER_CREATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationBufferCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO,
                 => size += size_of_VkExternalMemoryBufferCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_BUFFER_OPAQUE_CAPTURE_ADDRESS_CREATE_INFO,
@@ -5651,6 +5801,10 @@ pub fn size_of_VkImageCreateInfo(item: *const vk.VkImageCreateInfo, follow_pnext
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DEDICATED_ALLOCATION_IMAGE_CREATE_INFO_NV,
+                => size += size_of_VkDedicatedAllocationImageCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_NV,
+                => size += size_of_VkExternalMemoryImageCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
                 => size += size_of_VkExternalMemoryImageCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -5677,6 +5831,8 @@ pub fn size_of_VkImageCreateInfo(item: *const vk.VkImageCreateInfo, follow_pnext
                 => size += size_of_VkImportMetalTextureInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMPORT_METAL_IO_SURFACE_INFO_EXT,
                 => size += size_of_VkImportMetalIOSurfaceInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+                => size += size_of_VkOpticalFlowImageFormatInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
                 => size += size_of_VkExternalFormatQNX(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA,
@@ -5716,6 +5872,8 @@ pub fn size_of_VkImageViewCreateInfo(item: *const vk.VkImageViewCreateInfo, foll
                 => size += size_of_VkImageViewMinLodCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
                 => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_SAMPLE_WEIGHT_CREATE_INFO_QCOM,
+                => size += size_of_VkImageViewSampleWeightCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkImageViewCreateInfo: {d}", .{v});
                 },
@@ -5792,6 +5950,8 @@ pub fn size_of_VkBindSparseInfo(item: *const vk.VkBindSparseInfo, follow_pnext: 
                 => size += size_of_VkTimelineSemaphoreSubmitInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
                 => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkBindSparseInfo: {d}", .{v});
                 },
@@ -5815,6 +5975,16 @@ pub fn size_of_VkBufferImageCopy(item: *const vk.VkBufferImageCopy, follow_pnext
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkBufferImageCopy);
+}
+pub fn size_of_VkCopyMemoryIndirectCommandNV(item: *const vk.VkCopyMemoryIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryIndirectCommandNV);
+}
+pub fn size_of_VkCopyMemoryToImageIndirectCommandNV(item: *const vk.VkCopyMemoryToImageIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyMemoryToImageIndirectCommandNV);
 }
 pub fn size_of_VkImageResolve(item: *const vk.VkImageResolve, follow_pnext: bool) usize {
     _ = item;
@@ -5894,6 +6064,8 @@ pub fn size_of_VkDescriptorPoolCreateInfo(item: *const vk.VkDescriptorPoolCreate
                 => size += size_of_VkDescriptorPoolInlineUniformBlockCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
                 => size += size_of_VkMutableDescriptorTypeCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkDescriptorPoolCreateInfo: {d}", .{v});
                 },
@@ -5983,14 +6155,16 @@ pub fn size_of_VkComputePipelineCreateInfo(item: *const vk.VkComputePipelineCrea
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_INDIRECT_BUFFER_INFO_NV,
+                => size += size_of_VkComputePipelineIndirectBufferInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
                 => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
                 => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
                 => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_SUBPASS_SHADING_PIPELINE_CREATE_INFO_HUAWEI,
-                => size += size_of_VkSubpassShadingPipelineCreateInfoHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+                => size += size_of_VkPipelineCompilerControlCreateInfoAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
                 => size += size_of_VkPipelineRobustnessCreateInfo(@ptrCast(next), false),
                 else => |v| {
@@ -6001,6 +6175,11 @@ pub fn size_of_VkComputePipelineCreateInfo(item: *const vk.VkComputePipelineCrea
     }
 
     return @sizeOf(vk.VkComputePipelineCreateInfo);
+}
+pub fn size_of_VkComputePipelineIndirectBufferInfoNV(item: *const vk.VkComputePipelineIndirectBufferInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkComputePipelineIndirectBufferInfoNV);
 }
 pub fn size_of_VkPipelineCreateFlags2CreateInfo(item: *const vk.VkPipelineCreateFlags2CreateInfo, follow_pnext: bool) usize {
     _ = item;
@@ -6082,6 +6261,16 @@ pub fn size_of_VkPipelineViewportStateCreateInfo(item: *const vk.VkPipelineViewp
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportWScalingStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportSwizzleStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportExclusiveScissorStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportShadingRateImageStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
                 => size += size_of_VkPipelineViewportDepthClipControlCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT,
@@ -6102,6 +6291,8 @@ pub fn size_of_VkPipelineRasterizationStateCreateInfo(item: *const vk.VkPipeline
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_RASTERIZATION_ORDER_AMD,
+                => size += size_of_VkPipelineRasterizationStateRasterizationOrderAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT,
                 => size += size_of_VkPipelineRasterizationConservativeStateCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT,
@@ -6130,8 +6321,14 @@ pub fn size_of_VkPipelineMultisampleStateCreateInfo(item: *const vk.VkPipelineMu
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_TO_COLOR_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageToColorStateCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
                 => size += size_of_VkPipelineSampleLocationsStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageModulationStateCreateInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_REDUCTION_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineCoverageReductionStateCreateInfoNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkPipelineMultisampleStateCreateInfo: {d}", .{v});
                 },
@@ -6215,16 +6412,28 @@ pub fn size_of_VkGraphicsPipelineCreateInfo(item: *const vk.VkGraphicsPipelineCr
                 => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
                 => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV,
+                => size += size_of_VkGraphicsPipelineShaderGroupsCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
                 => size += size_of_VkPipelineDiscardRectangleStateCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
                 => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_COMPILER_CONTROL_CREATE_INFO_AMD,
+                => size += size_of_VkPipelineCompilerControlCreateInfoAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
                 => size += size_of_VkPipelineLibraryCreateInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
                 => size += size_of_VkPipelineFragmentShadingRateStateCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_ENUM_STATE_CREATE_INFO_NV,
+                => size += size_of_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
                 => size += size_of_VkPipelineRenderingCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+                => size += size_of_VkAttachmentSampleCountInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
                 => size += size_of_VkGraphicsPipelineLibraryCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
@@ -6373,6 +6582,10 @@ pub fn size_of_VkSamplerCreateInfo(item: *const vk.VkSamplerCreateInfo, follow_p
                 => size += size_of_VkSamplerBorderColorComponentMappingCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
                 => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_CUBIC_WEIGHTS_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerCubicWeightsCreateInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_BLOCK_MATCH_WINDOW_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerBlockMatchWindowCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSamplerCreateInfo: {d}", .{v});
                 },
@@ -6391,6 +6604,8 @@ pub fn size_of_VkCommandPoolCreateInfo(item: *const vk.VkCommandPoolCreateInfo, 
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_COMMAND_POOL_MEMORY_RESERVATION_CREATE_INFO,
                 => size += size_of_VkCommandPoolMemoryReservationCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkCommandPoolCreateInfo: {d}", .{v});
                 },
@@ -6414,12 +6629,24 @@ pub fn size_of_VkCommandBufferInheritanceInfo(item: *const vk.VkCommandBufferInh
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT,
                 => size += size_of_VkCommandBufferInheritanceConditionalRenderingInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV,
+                => size += size_of_VkCommandBufferInheritanceViewportScissorInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO,
                 => size += size_of_VkCommandBufferInheritanceRenderingInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD,
+                => size += size_of_VkAttachmentSampleCountInfoAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM,
+                => size += size_of_VkTileMemoryBindInfoQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
                 => size += size_of_VkRenderingAttachmentLocationInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
                 => size += size_of_VkRenderingInputAttachmentIndexInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkCommandBufferInheritanceInfo: {d}", .{v});
                 },
@@ -6467,6 +6694,12 @@ pub fn size_of_VkRenderPassBeginInfo(item: *const vk.VkRenderPassBeginInfo, foll
                 => size += size_of_VkRenderPassSampleLocationsBeginInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO,
                 => size += size_of_VkRenderPassAttachmentBeginInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TRANSFORM_BEGIN_INFO_QCOM,
+                => size += size_of_VkRenderPassTransformBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+                => size += size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+                => size += size_of_VkRenderPassStripeBeginInfoARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkRenderPassBeginInfo: {d}", .{v});
                 },
@@ -6542,6 +6775,10 @@ pub fn size_of_VkRenderPassCreateInfo(item: *const vk.VkRenderPassCreateInfo, fo
                 => size += size_of_VkRenderPassCreationControlEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
                 => size += size_of_VkRenderPassCreationFeedbackCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkRenderPassCreateInfo: {d}", .{v});
                 },
@@ -6582,6 +6819,8 @@ pub fn size_of_VkFenceCreateInfo(item: *const vk.VkFenceCreateInfo, follow_pnext
                 => size += size_of_VkExportFenceCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_WIN32_HANDLE_INFO_KHR,
                 => size += size_of_VkExportFenceWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_FENCE_SCI_SYNC_INFO_NV,
+                => size += size_of_VkExportFenceSciSyncInfoNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkFenceCreateInfo: {d}", .{v});
                 },
@@ -6617,12 +6856,18 @@ pub fn size_of_VkSemaphoreCreateInfo(item: *const vk.VkSemaphoreCreateInfo, foll
                 => size += size_of_VkExportSemaphoreCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_WIN32_HANDLE_INFO_KHR,
                 => size += size_of_VkExportSemaphoreWin32HandleInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_SCI_SYNC_INFO_NV,
+                => size += size_of_VkExportSemaphoreSciSyncInfoNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SEMAPHORE_SCI_SYNC_CREATE_INFO_NV,
+                => size += size_of_VkSemaphoreSciSyncCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
                 => size += size_of_VkSemaphoreTypeCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECT_CREATE_INFO_EXT,
                 => size += size_of_VkExportMetalObjectCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMPORT_METAL_SHARED_EVENT_INFO_EXT,
                 => size += size_of_VkImportMetalSharedEventInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUERY_LOW_LATENCY_SUPPORT_NV,
+                => size += size_of_VkQueryLowLatencySupportNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSemaphoreCreateInfo: {d}", .{v});
                 },
@@ -6738,6 +6983,8 @@ pub fn size_of_VkSubmitInfo(item: *const vk.VkSubmitInfo, follow_pnext: bool) us
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
                 => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_D3D12_FENCE_SUBMIT_INFO_KHR,
@@ -6752,6 +6999,10 @@ pub fn size_of_VkSubmitInfo(item: *const vk.VkSubmitInfo, follow_pnext: bool) us
                 => size += size_of_VkPerformanceQuerySubmitInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
                 => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+                => size += size_of_VkLatencySubmissionPresentIdNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSubmitInfo: {d}", .{v});
                 },
@@ -6796,9 +7047,27 @@ pub fn size_of_VkDisplayPlaneCapabilitiesKHR(item: *const vk.VkDisplayPlaneCapab
     return @sizeOf(vk.VkDisplayPlaneCapabilitiesKHR);
 }
 pub fn size_of_VkDisplaySurfaceCreateInfoKHR(item: *const vk.VkDisplaySurfaceCreateInfoKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_SURFACE_STEREO_CREATE_INFO_NV,
+                => size += size_of_VkDisplaySurfaceStereoCreateInfoNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDisplaySurfaceCreateInfoKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDisplaySurfaceCreateInfoKHR);
+}
+pub fn size_of_VkDisplaySurfaceStereoCreateInfoNV(item: *const vk.VkDisplaySurfaceStereoCreateInfoNV, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
-    return @sizeOf(vk.VkDisplaySurfaceCreateInfoKHR);
+    return @sizeOf(vk.VkDisplaySurfaceStereoCreateInfoNV);
 }
 pub fn size_of_VkDisplayPresentInfoKHR(item: *const vk.VkDisplayPresentInfoKHR, follow_pnext: bool) usize {
     _ = item;
@@ -6899,18 +7168,24 @@ pub fn size_of_VkSwapchainCreateInfoKHR(item: *const vk.VkSwapchainCreateInfoKHR
                 => size += size_of_VkSwapchainCounterCreateInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR,
                 => size += size_of_VkDeviceGroupSwapchainCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_DISPLAY_NATIVE_HDR_CREATE_INFO_AMD,
+                => size += size_of_VkSwapchainDisplayNativeHdrCreateInfoAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO,
                 => size += size_of_VkImageFormatListCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT,
                 => size += size_of_VkSurfaceFullScreenExclusiveInfoEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_WIN32_INFO_EXT,
                 => size += size_of_VkSurfaceFullScreenExclusiveWin32InfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_BARRIER_CREATE_INFO_NV,
+                => size += size_of_VkSwapchainPresentBarrierCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
                 => size += size_of_VkImageCompressionControlEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR,
                 => size += size_of_VkSwapchainPresentModesCreateInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_SCALING_CREATE_INFO_KHR,
                 => size += size_of_VkSwapchainPresentScalingCreateInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SWAPCHAIN_LATENCY_CREATE_INFO_NV,
+                => size += size_of_VkSwapchainLatencyCreateInfoNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSwapchainCreateInfoKHR: {d}", .{v});
                 },
@@ -6953,6 +7228,10 @@ pub fn size_of_VkPresentInfoKHR(item: *const vk.VkPresentInfoKHR, follow_pnext: 
                 => size += size_of_VkSwapchainPresentFenceInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODE_INFO_KHR,
                 => size += size_of_VkSwapchainPresentModeInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SET_PRESENT_CONFIG_NV,
+                => size += size_of_VkSetPresentConfigNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkPresentInfoKHR: {d}", .{v});
                 },
@@ -7017,6 +7296,11 @@ pub fn size_of_VkApplicationParametersEXT(item: *const vk.VkApplicationParameter
     _ = follow_pnext;
     return @sizeOf(vk.VkApplicationParametersEXT);
 }
+pub fn size_of_VkPipelineRasterizationStateRasterizationOrderAMD(item: *const vk.VkPipelineRasterizationStateRasterizationOrderAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRasterizationStateRasterizationOrderAMD);
+}
 pub fn size_of_VkDebugMarkerObjectNameInfoEXT(item: *const vk.VkDebugMarkerObjectNameInfoEXT, follow_pnext: bool) usize {
     var size: usize = 0;
 
@@ -7043,6 +7327,106 @@ pub fn size_of_VkDebugMarkerMarkerInfoEXT(item: *const vk.VkDebugMarkerMarkerInf
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkDebugMarkerMarkerInfoEXT);
+}
+pub fn size_of_VkDedicatedAllocationImageCreateInfoNV(item: *const vk.VkDedicatedAllocationImageCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationImageCreateInfoNV);
+}
+pub fn size_of_VkDedicatedAllocationBufferCreateInfoNV(item: *const vk.VkDedicatedAllocationBufferCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationBufferCreateInfoNV);
+}
+pub fn size_of_VkDedicatedAllocationMemoryAllocateInfoNV(item: *const vk.VkDedicatedAllocationMemoryAllocateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDedicatedAllocationMemoryAllocateInfoNV);
+}
+pub fn size_of_VkExternalImageFormatPropertiesNV(item: *const vk.VkExternalImageFormatPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalImageFormatPropertiesNV);
+}
+pub fn size_of_VkExternalMemoryImageCreateInfoNV(item: *const vk.VkExternalMemoryImageCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryImageCreateInfoNV);
+}
+pub fn size_of_VkExportMemoryAllocateInfoNV(item: *const vk.VkExportMemoryAllocateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemoryAllocateInfoNV);
+}
+pub fn size_of_VkImportMemoryWin32HandleInfoNV(item: *const vk.VkImportMemoryWin32HandleInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemoryWin32HandleInfoNV);
+}
+pub fn size_of_VkExportMemoryWin32HandleInfoNV(item: *const vk.VkExportMemoryWin32HandleInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pAttributes) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkExportMemoryWin32HandleInfoNV);
+}
+pub fn size_of_VkExportMemorySciBufInfoNV(item: *const vk.VkExportMemorySciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportMemorySciBufInfoNV);
+}
+pub fn size_of_VkImportMemorySciBufInfoNV(item: *const vk.VkImportMemorySciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImportMemorySciBufInfoNV);
+}
+pub fn size_of_VkMemoryGetSciBufInfoNV(item: *const vk.VkMemoryGetSciBufInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetSciBufInfoNV);
+}
+pub fn size_of_VkMemorySciBufPropertiesNV(item: *const vk.VkMemorySciBufPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemorySciBufPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(item: *const vk.VkPhysicalDeviceExternalMemorySciBufFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemorySciBufFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciBufFeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciBufFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciBufFeaturesNV);
+}
+pub fn size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(item: *const vk.VkWin32KeyedMutexAcquireReleaseInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.acquireCount) |_|
+        size += @sizeOf(u32);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(vk.VkDeviceMemory);
+    for (0..item.releaseCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWin32KeyedMutexAcquireReleaseInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV);
 }
 pub fn size_of_VkDevicePrivateDataCreateInfo(item: *const vk.VkDevicePrivateDataCreateInfo, follow_pnext: bool) usize {
     _ = item;
@@ -7074,10 +7458,188 @@ pub fn size_of_VkPhysicalDevicePrivateDataFeaturesEXT(item: *const vk.VkPhysical
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDevicePrivateDataFeaturesEXT);
 }
+pub fn size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(item: *const vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(item: *const vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterAccelerationStructureFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(item: *const vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceClusterAccelerationStructurePropertiesNV);
+}
+pub fn size_of_VkStridedDeviceAddressNV(item: *const vk.VkStridedDeviceAddressNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkStridedDeviceAddressNV);
+}
+pub fn size_of_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(item: *const vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV(item: *const vk.VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV);
+}
+pub fn size_of_VkClusterAccelerationStructureMoveObjectsInfoNV(item: *const vk.VkClusterAccelerationStructureMoveObjectsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureMoveObjectsInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV(item: *const vk.VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildClustersBottomLevelInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureGetTemplateIndicesInfoNV(item: *const vk.VkClusterAccelerationStructureGetTemplateIndicesInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureGetTemplateIndicesInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildTriangleClusterInfoNV(item: *const vk.VkClusterAccelerationStructureBuildTriangleClusterInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildTriangleClusterInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV(item: *const vk.VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureInstantiateClusterInfoNV(item: *const vk.VkClusterAccelerationStructureInstantiateClusterInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureInstantiateClusterInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureClustersBottomLevelInputNV(item: *const vk.VkClusterAccelerationStructureClustersBottomLevelInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureClustersBottomLevelInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureTriangleClusterInputNV(item: *const vk.VkClusterAccelerationStructureTriangleClusterInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureTriangleClusterInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureMoveObjectsInputNV(item: *const vk.VkClusterAccelerationStructureMoveObjectsInputNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureMoveObjectsInputNV);
+}
+pub fn size_of_VkClusterAccelerationStructureInputInfoNV(item: *const vk.VkClusterAccelerationStructureInputInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureInputInfoNV);
+}
+pub fn size_of_VkClusterAccelerationStructureCommandsInfoNV(item: *const vk.VkClusterAccelerationStructureCommandsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkClusterAccelerationStructureCommandsInfoNV);
+}
 pub fn size_of_VkPhysicalDeviceMultiDrawPropertiesEXT(item: *const vk.VkPhysicalDeviceMultiDrawPropertiesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceMultiDrawPropertiesEXT);
+}
+pub fn size_of_VkGraphicsShaderGroupCreateInfoNV(item: *const vk.VkGraphicsShaderGroupCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    if (item.pVertexInputState) |ptr| size += size_of_VkPipelineVertexInputStateCreateInfo(@ptrCast(ptr), false);
+    if (item.pTessellationState) |ptr| size += size_of_VkPipelineTessellationStateCreateInfo(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGraphicsShaderGroupCreateInfoNV);
+}
+pub fn size_of_VkGraphicsPipelineShaderGroupsCreateInfoNV(item: *const vk.VkGraphicsPipelineShaderGroupsCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.groupCount) |i|
+        size += size_of_VkGraphicsShaderGroupCreateInfoNV(@ptrCast(&item.pGroups[i]), false);
+    for (0..item.pipelineCount) |_|
+        size += @sizeOf(vk.VkPipeline);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGraphicsPipelineShaderGroupsCreateInfoNV);
+}
+pub fn size_of_VkBindShaderGroupIndirectCommandNV(item: *const vk.VkBindShaderGroupIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindShaderGroupIndirectCommandNV);
+}
+pub fn size_of_VkBindIndexBufferIndirectCommandNV(item: *const vk.VkBindIndexBufferIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindIndexBufferIndirectCommandNV);
+}
+pub fn size_of_VkBindVertexBufferIndirectCommandNV(item: *const vk.VkBindVertexBufferIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindVertexBufferIndirectCommandNV);
+}
+pub fn size_of_VkSetStateFlagsIndirectCommandNV(item: *const vk.VkSetStateFlagsIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetStateFlagsIndirectCommandNV);
+}
+pub fn size_of_VkIndirectCommandsStreamNV(item: *const vk.VkIndirectCommandsStreamNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkIndirectCommandsStreamNV);
+}
+pub fn size_of_VkIndirectCommandsLayoutTokenNV(item: *const vk.VkIndirectCommandsLayoutTokenNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.indexTypeCount) |_|
+        size += @sizeOf(vk.VkIndexType);
+    for (0..item.indexTypeCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectCommandsLayoutTokenNV);
+}
+pub fn size_of_VkIndirectCommandsLayoutCreateInfoNV(item: *const vk.VkIndirectCommandsLayoutCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tokenCount) |i|
+        size += size_of_VkIndirectCommandsLayoutTokenNV(@ptrCast(&item.pTokens[i]), false);
+    for (0..item.streamCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkIndirectCommandsLayoutCreateInfoNV);
+}
+pub fn size_of_VkGeneratedCommandsInfoNV(item: *const vk.VkGeneratedCommandsInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.streamCount) |i|
+        size += size_of_VkIndirectCommandsStreamNV(@ptrCast(&item.pStreams[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGeneratedCommandsInfoNV);
+}
+pub fn size_of_VkGeneratedCommandsMemoryRequirementsInfoNV(item: *const vk.VkGeneratedCommandsMemoryRequirementsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeneratedCommandsMemoryRequirementsInfoNV);
+}
+pub fn size_of_VkPipelineIndirectDeviceAddressInfoNV(item: *const vk.VkPipelineIndirectDeviceAddressInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineIndirectDeviceAddressInfoNV);
+}
+pub fn size_of_VkBindPipelineIndirectCommandNV(item: *const vk.VkBindPipelineIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindPipelineIndirectCommandNV);
 }
 pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeatures2, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -7086,10 +7648,22 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_SCI_BUF_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemorySciBufFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIVATE_DATA_FEATURES,
                 => size += size_of_VkPhysicalDevicePrivateDataFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructureFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
                 => size += size_of_VkPhysicalDeviceVariablePointersFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SCI_SYNC_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
                 => size += size_of_VkPhysicalDeviceMultiviewFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_FEATURES_KHR,
@@ -7158,10 +7732,26 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceASTCDecodeFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceTransformFeedbackFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXCLUSIVE_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CORNER_SAMPLED_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INVOCATION_MASK_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_FOOTPRINT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEDICATED_ALLOCATION_IMAGE_ALIASING_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
@@ -7196,16 +7786,24 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceImagelessFramebufferFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES,
                 => size += size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_IMAGE_ARRAYS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_BARRIER_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentBarrierFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_FEATURES_KHR,
                 => size += size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COVERAGE_REDUCTION_MODE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_FUNCTIONS_2_FEATURES_INTEL,
                 => size += size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderClockFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES,
                 => size += size_of_VkPhysicalDeviceIndexTypeUint8Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES,
@@ -7232,6 +7830,8 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceVulkan13Features(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_4_FEATURES,
                 => size += size_of_VkPhysicalDeviceVulkan14Features(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceCustomBorderColorFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT,
@@ -7242,6 +7842,10 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceExtendedDynamicState2FeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceExtendedDynamicState3FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DIAGNOSTICS_CONFIG_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES,
                 => size += size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR,
@@ -7256,16 +7860,14 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDevicePortabilitySubsetFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevice4444FormatsFeaturesEXT(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceFragmentShadingRateFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES,
                 => size += size_of_VkPhysicalDeviceShaderTerminateInvocationFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceImage2DViewOf3DFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_SLICED_VIEW_OF_3D_FEATURES_EXT,
@@ -7286,6 +7888,8 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceDepthClampControlFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_RDMA_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_RELAXED_EXTENDED_INSTRUCTION_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT,
@@ -7316,6 +7920,8 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_AV1_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceVideoEncodeAV1FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_2_PLANE_444_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT,
@@ -7328,6 +7934,12 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceShaderIntegerDotProductFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MOTION_BLUR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_LINEAR_SWEPT_SPHERES_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
@@ -7336,6 +7948,8 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINEAR_COLOR_ATTACHMENT_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_BINARY_FEATURES_KHR,
@@ -7354,20 +7968,32 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceOpacityMicromapFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROPERTIES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_EARLY_AND_LATE_FRAGMENT_TESTS_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES,
                 => size += size_of_VkPhysicalDevicePipelineRobustnessFeatures(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_PROPERTIES_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ADDRESS_BINDING_REPORT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceAddressBindingReportFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FAULT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFaultFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_LIBRARY_GROUP_HANDLES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAME_BOUNDARY_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceFrameBoundaryFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_UNUSED_ATTACHMENTS_FEATURES_EXT,
@@ -7376,8 +8002,16 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_VIEWPORTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_POSITION_FETCH_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_RENDER_AREAS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderObjectFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_FEATURES_EXT,
@@ -7386,10 +8020,34 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceCooperativeMatrixFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD,
+                => size += size_of_VkPhysicalDeviceAntiLagFeaturesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_CLAMP_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_YCBCR_DEGAMMA_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUBIC_WEIGHTS_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_POOL_OVERALLOCATION_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_FEATURES_ANDROID,
                 => size += size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RELAXED_LINE_RASTERIZATION_FEATURES_IMG,
                 => size += size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM,
+                => size += size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MAXIMAL_RECONVERGENCE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
@@ -7402,26 +8060,46 @@ pub fn size_of_VkPhysicalDeviceFeatures2(item: *const vk.VkPhysicalDeviceFeature
                 => size += size_of_VkPhysicalDeviceDynamicRenderingLocalReadFeatures(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_QUAD_CONTROL_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAW_ACCESS_CHAINS_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMMAND_BUFFER_INHERITANCE_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA,
                 => size += size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_REPLICATED_COMPOSITES_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
                 => size += size_of_VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_VIVID_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_ROBUSTNESS_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
                 => size += size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_FEATURES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_FEATURES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV,
+                => size += size_of_VkPhysicalDevicePresentMeteringFeaturesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FORMAT_PACK_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceFormatPackFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorFeaturesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT8_FEATURES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_FEATURES_ARM,
+                => size += size_of_VkPhysicalDeviceDataGraphFeaturesARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceFeatures2: {d}", .{v});
                 },
@@ -7443,6 +8121,10 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceClusterAccelerationStructurePropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceMultiDrawPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES,
@@ -7455,6 +8137,8 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
                 => size += size_of_VkPhysicalDeviceMultiviewProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISCARD_RECTANGLE_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceDiscardRectanglePropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PER_VIEW_ATTRIBUTES_PROPERTIES_NVX,
+                => size += size_of_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES,
                 => size += size_of_VkPhysicalDeviceSubgroupProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_POINT_CLIPPING_PROPERTIES,
@@ -7489,6 +8173,10 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
                 => size += size_of_VkPhysicalDeviceExternalMemoryHostPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceConservativeRasterizationPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD,
+                => size += size_of_VkPhysicalDeviceShaderCorePropertiesAMD(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_2_AMD,
+                => size += size_of_VkPhysicalDeviceShaderCoreProperties2AMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES,
                 => size += size_of_VkPhysicalDeviceDescriptorIndexingProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES,
@@ -7505,28 +8193,38 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
                 => size += size_of_VkPhysicalDeviceTransformFeedbackPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_DECOMPRESSION_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceMemoryDecompressionPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADING_RATE_IMAGE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceShadingRateImagePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceMeshShaderPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceMeshShaderPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceAccelerationStructurePropertiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMap2PropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrixPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PERFORMANCE_QUERY_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDevicePerformanceQueryPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SM_BUILTINS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES,
                 => size += size_of_VkPhysicalDeviceTexelBufferAlignmentProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES,
                 => size += size_of_VkPhysicalDeviceSubgroupSizeControlProperties(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_SHADING_PROPERTIES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(@ptrCast(next), false),
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_PROPERTIES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES,
                 => size += size_of_VkPhysicalDeviceLineRasterizationProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
@@ -7541,12 +8239,16 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
                 => size += size_of_VkPhysicalDeviceCustomBorderColorPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceExtendedDynamicState3PropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceRobustness2PropertiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDevicePortabilitySubsetPropertiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceFragmentShadingRatePropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_VERTEX_ATTRIBUTES_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_PROPERTIES_EXT,
@@ -7577,24 +8279,60 @@ pub fn size_of_VkPhysicalDeviceProperties2(item: *const vk.VkPhysicalDevicePrope
                 => size += size_of_VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceOpacityMicromapPropertiesEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DISPLACEMENT_MICROMAP_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceDisplacementMicromapPropertiesNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_PROPERTIES,
                 => size += size_of_VkPhysicalDevicePipelineRobustnessProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessingPropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceOpticalFlowPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_BUILTINS_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_SPARSE_ADDRESS_SPACE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceShaderCorePropertiesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderObjectPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TILE_IMAGE_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceShaderTileImagePropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_PROPERTIES_KHR,
                 => size += size_of_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_MEMORY_HEAP_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_PROCESSING_2_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceImageProcessing2PropertiesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT,
                 => size += size_of_VkPhysicalDeviceLayeredDriverPropertiesMSFT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_PROPERTIES_ANDROID,
                 => size += size_of_VkPhysicalDeviceExternalFormatResolvePropertiesANDROID(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceSchedulingControlsPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RENDER_PASS_STRIPED_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceRenderPassStripedPropertiesARM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_PROPERTIES_EXT,
                 => size += size_of_VkPhysicalDeviceMapMemoryPlacedPropertiesEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA,
                 => size += size_of_VkPhysicalDeviceImageAlignmentControlPropertiesMESA(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_VECTOR_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceCooperativeVectorPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM,
+                => size += size_of_VkPhysicalDeviceTileShadingPropertiesQCOM(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_PROPERTIES_VALVE,
                 => size += size_of_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_COMPUTE_QUEUE_PROPERTIES_NV,
+                => size += size_of_VkPhysicalDeviceExternalComputeQueuePropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TENSOR_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceTensorPropertiesARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_TENSOR_PROPERTIES_ARM,
+                => size += size_of_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceProperties2: {d}", .{v});
                 },
@@ -7624,6 +8362,8 @@ pub fn size_of_VkFormatProperties2(item: *const vk.VkFormatProperties2, follow_p
                 => size += size_of_VkFormatProperties3(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_DRM_FORMAT_MODIFIER_PROPERTIES_LIST_2_EXT,
                 => size += size_of_VkDrmFormatModifierPropertiesList2EXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TENSOR_FORMAT_PROPERTIES_ARM,
+                => size += size_of_VkTensorFormatPropertiesARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkFormatProperties2: {d}", .{v});
                 },
@@ -7649,6 +8389,8 @@ pub fn size_of_VkImageFormatProperties2(item: *const vk.VkImageFormatProperties2
                 => size += size_of_VkExternalImageFormatProperties(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES,
                 => size += size_of_VkSamplerYcbcrConversionImageFormatProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD,
+                => size += size_of_VkTextureLODGatherFormatPropertiesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_USAGE_ANDROID,
                 => size += size_of_VkAndroidHardwareBufferUsageANDROID(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_FILTER_CUBIC_IMAGE_VIEW_IMAGE_FORMAT_PROPERTIES_EXT,
@@ -7692,6 +8434,8 @@ pub fn size_of_VkPhysicalDeviceImageFormatInfo2(item: *const vk.VkPhysicalDevice
                 => size += size_of_VkVideoProfileListInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT,
                 => size += size_of_VkImageCompressionControlEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_OPTICAL_FLOW_IMAGE_FORMAT_INFO_NV,
+                => size += size_of_VkOpticalFlowImageFormatInfoNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceImageFormatInfo2: {d}", .{v});
                 },
@@ -7717,6 +8461,10 @@ pub fn size_of_VkQueueFamilyProperties2(item: *const vk.VkQueueFamilyProperties2
                 => size += size_of_VkQueueFamilyOwnershipTransferPropertiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES,
                 => size += size_of_VkQueueFamilyGlobalPriorityProperties(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_NV,
+                => size += size_of_VkQueueFamilyCheckpointPropertiesNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_CHECKPOINT_PROPERTIES_2_NV,
+                => size += size_of_VkQueueFamilyCheckpointProperties2NV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_VIDEO_PROPERTIES_KHR,
                 => size += size_of_VkQueueFamilyVideoPropertiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_QUEUE_FAMILY_QUERY_RESULT_STATUS_PROPERTIES_KHR,
@@ -8192,6 +8940,75 @@ pub fn size_of_VkFenceGetFdInfoKHR(item: *const vk.VkFenceGetFdInfoKHR, follow_p
     _ = follow_pnext;
     return @sizeOf(vk.VkFenceGetFdInfoKHR);
 }
+pub fn size_of_VkExportFenceSciSyncInfoNV(item: *const vk.VkExportFenceSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportFenceSciSyncInfoNV);
+}
+pub fn size_of_VkImportFenceSciSyncInfoNV(item: *const vk.VkImportFenceSciSyncInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportFenceSciSyncInfoNV);
+}
+pub fn size_of_VkFenceGetSciSyncInfoNV(item: *const vk.VkFenceGetSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFenceGetSciSyncInfoNV);
+}
+pub fn size_of_VkExportSemaphoreSciSyncInfoNV(item: *const vk.VkExportSemaphoreSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExportSemaphoreSciSyncInfoNV);
+}
+pub fn size_of_VkImportSemaphoreSciSyncInfoNV(item: *const vk.VkImportSemaphoreSciSyncInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.handle) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkImportSemaphoreSciSyncInfoNV);
+}
+pub fn size_of_VkSemaphoreGetSciSyncInfoNV(item: *const vk.VkSemaphoreGetSciSyncInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreGetSciSyncInfoNV);
+}
+pub fn size_of_VkSciSyncAttributesInfoNV(item: *const vk.VkSciSyncAttributesInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSciSyncAttributesInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciSyncFeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciSyncFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciSyncFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalSciSync2FeaturesNV(item: *const vk.VkPhysicalDeviceExternalSciSync2FeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalSciSync2FeaturesNV);
+}
+pub fn size_of_VkSemaphoreSciSyncPoolCreateInfoNV(item: *const vk.VkSemaphoreSciSyncPoolCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSemaphoreSciSyncPoolCreateInfoNV);
+}
+pub fn size_of_VkSemaphoreSciSyncCreateInfoNV(item: *const vk.VkSemaphoreSciSyncCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pFence) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkSemaphoreSciSyncCreateInfoNV);
+}
+pub fn size_of_VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV(item: *const vk.VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceSemaphoreSciSyncPoolReservationCreateInfoNV);
+}
 pub fn size_of_VkPhysicalDeviceMultiviewFeatures(item: *const vk.VkPhysicalDeviceMultiviewFeatures, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -8536,14 +9353,15 @@ pub fn size_of_VkHdrMetadataEXT(item: *const vk.VkHdrMetadataEXT, follow_pnext: 
     _ = follow_pnext;
     return @sizeOf(vk.VkHdrMetadataEXT);
 }
-pub fn size_of_VkHdrVividDynamicMetadataHUAWEI(item: *const vk.VkHdrVividDynamicMetadataHUAWEI, follow_pnext: bool) usize {
-    var size: usize = 0;
-
-    for (0..item.dynamicMetadataSize) |_|
-        size += @sizeOf(void);
-
+pub fn size_of_VkDisplayNativeHdrSurfaceCapabilitiesAMD(item: *const vk.VkDisplayNativeHdrSurfaceCapabilitiesAMD, follow_pnext: bool) usize {
+    _ = item;
     _ = follow_pnext;
-    return size + @sizeOf(vk.VkHdrVividDynamicMetadataHUAWEI);
+    return @sizeOf(vk.VkDisplayNativeHdrSurfaceCapabilitiesAMD);
+}
+pub fn size_of_VkSwapchainDisplayNativeHdrCreateInfoAMD(item: *const vk.VkSwapchainDisplayNativeHdrCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainDisplayNativeHdrCreateInfoAMD);
 }
 pub fn size_of_VkIOSSurfaceCreateInfoMVK(item: *const vk.VkIOSSurfaceCreateInfoMVK, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -8569,6 +9387,34 @@ pub fn size_of_VkMetalSurfaceCreateInfoEXT(item: *const vk.VkMetalSurfaceCreateI
     _ = follow_pnext;
     return size + @sizeOf(vk.VkMetalSurfaceCreateInfoEXT);
 }
+pub fn size_of_VkViewportWScalingNV(item: *const vk.VkViewportWScalingNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkViewportWScalingNV);
+}
+pub fn size_of_VkPipelineViewportWScalingStateCreateInfoNV(item: *const vk.VkPipelineViewportWScalingStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkViewportWScalingNV(@ptrCast(&item.pViewportWScalings[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportWScalingStateCreateInfoNV);
+}
+pub fn size_of_VkViewportSwizzleNV(item: *const vk.VkViewportSwizzleNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkViewportSwizzleNV);
+}
+pub fn size_of_VkPipelineViewportSwizzleStateCreateInfoNV(item: *const vk.VkPipelineViewportSwizzleStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkViewportSwizzleNV(@ptrCast(&item.pViewportSwizzles[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportSwizzleStateCreateInfoNV);
+}
 pub fn size_of_VkPhysicalDeviceDiscardRectanglePropertiesEXT(item: *const vk.VkPhysicalDeviceDiscardRectanglePropertiesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -8582,6 +9428,11 @@ pub fn size_of_VkPipelineDiscardRectangleStateCreateInfoEXT(item: *const vk.VkPi
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkPipelineDiscardRectangleStateCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX(item: *const vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX);
 }
 pub fn size_of_VkInputAttachmentAspectReference(item: *const vk.VkInputAttachmentAspectReference, follow_pnext: bool) usize {
     _ = item;
@@ -8636,12 +9487,16 @@ pub fn size_of_VkSurfaceCapabilities2KHR(item: *const vk.VkSurfaceCapabilities2K
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_NATIVE_HDR_SURFACE_CAPABILITIES_AMD,
+                => size += size_of_VkDisplayNativeHdrSurfaceCapabilitiesAMD(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_KHR,
                 => size += size_of_VkSharedPresentSurfaceCapabilitiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_PROTECTED_CAPABILITIES_KHR,
                 => size += size_of_VkSurfaceProtectedCapabilitiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_FULL_SCREEN_EXCLUSIVE_EXT,
                 => size += size_of_VkSurfaceCapabilitiesFullScreenExclusiveEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_BARRIER_NV,
+                => size += size_of_VkSurfaceCapabilitiesPresentBarrierNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_ID_2_KHR,
                 => size += size_of_VkSurfaceCapabilitiesPresentId2KHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_PRESENT_WAIT_2_KHR,
@@ -8650,6 +9505,8 @@ pub fn size_of_VkSurfaceCapabilities2KHR(item: *const vk.VkSurfaceCapabilities2K
                 => size += size_of_VkSurfacePresentScalingCapabilitiesKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_COMPATIBILITY_KHR,
                 => size += size_of_VkSurfacePresentModeCompatibilityKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SURFACE_CAPABILITIES_NV,
+                => size += size_of_VkLatencySurfaceCapabilitiesNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSurfaceCapabilities2KHR: {d}", .{v});
                 },
@@ -8688,9 +9545,27 @@ pub fn size_of_VkDisplayPlaneProperties2KHR(item: *const vk.VkDisplayPlaneProper
     return @sizeOf(vk.VkDisplayPlaneProperties2KHR);
 }
 pub fn size_of_VkDisplayModeProperties2KHR(item: *const vk.VkDisplayModeProperties2KHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DISPLAY_MODE_STEREO_PROPERTIES_NV,
+                => size += size_of_VkDisplayModeStereoPropertiesNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDisplayModeProperties2KHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDisplayModeProperties2KHR);
+}
+pub fn size_of_VkDisplayModeStereoPropertiesNV(item: *const vk.VkDisplayModeStereoPropertiesNV, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
-    return @sizeOf(vk.VkDisplayModeProperties2KHR);
+    return @sizeOf(vk.VkDisplayModeStereoPropertiesNV);
 }
 pub fn size_of_VkDisplayPlaneInfo2KHR(item: *const vk.VkDisplayPlaneInfo2KHR, follow_pnext: bool) usize {
     _ = item;
@@ -8810,6 +9685,8 @@ pub fn size_of_VkMemoryRequirements2(item: *const vk.VkMemoryRequirements2, foll
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_MEMORY_DEDICATED_REQUIREMENTS,
                 => size += size_of_VkMemoryDedicatedRequirements(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_REQUIREMENTS_QCOM,
+                => size += size_of_VkTileMemoryRequirementsQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkMemoryRequirements2: {d}", .{v});
                 },
@@ -8908,6 +9785,8 @@ pub fn size_of_VkSamplerYcbcrConversionCreateInfo(item: *const vk.VkSamplerYcbcr
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_QNX,
                 => size += size_of_VkExternalFormatQNX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_YCBCR_DEGAMMA_CREATE_INFO_QCOM,
+                => size += size_of_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSamplerYcbcrConversionCreateInfo: {d}", .{v});
                 },
@@ -8962,6 +9841,11 @@ pub fn size_of_VkSamplerYcbcrConversionImageFormatPropertiesKHR(item: *const vk.
     _ = follow_pnext;
     return @sizeOf(vk.VkSamplerYcbcrConversionImageFormatPropertiesKHR);
 }
+pub fn size_of_VkTextureLODGatherFormatPropertiesAMD(item: *const vk.VkTextureLODGatherFormatPropertiesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTextureLODGatherFormatPropertiesAMD);
+}
 pub fn size_of_VkConditionalRenderingBeginInfoEXT(item: *const vk.VkConditionalRenderingBeginInfoEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -8986,6 +9870,11 @@ pub fn size_of_VkDeviceQueueInfo2(item: *const vk.VkDeviceQueueInfo2, follow_pne
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkDeviceQueueInfo2);
+}
+pub fn size_of_VkPipelineCoverageToColorStateCreateInfoNV(item: *const vk.VkPipelineCoverageToColorStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCoverageToColorStateCreateInfoNV);
 }
 pub fn size_of_VkPhysicalDeviceSamplerFilterMinmaxProperties(item: *const vk.VkPhysicalDeviceSamplerFilterMinmaxProperties, follow_pnext: bool) usize {
     _ = item;
@@ -9120,6 +10009,15 @@ pub fn size_of_VkDescriptorPoolInlineUniformBlockCreateInfoEXT(item: *const vk.V
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkDescriptorPoolInlineUniformBlockCreateInfoEXT);
+}
+pub fn size_of_VkPipelineCoverageModulationStateCreateInfoNV(item: *const vk.VkPipelineCoverageModulationStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.coverageModulationTableCount) |_|
+        size += @sizeOf(f32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineCoverageModulationStateCreateInfoNV);
 }
 pub fn size_of_VkImageFormatListCreateInfo(item: *const vk.VkImageFormatListCreateInfo, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -9386,6 +10284,16 @@ pub fn size_of_VkPhysicalDevicePresentationPropertiesANDROID(item: *const vk.VkP
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDevicePresentationPropertiesANDROID);
 }
+pub fn size_of_VkShaderResourceUsageAMD(item: *const vk.VkShaderResourceUsageAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderResourceUsageAMD);
+}
+pub fn size_of_VkShaderStatisticsInfoAMD(item: *const vk.VkShaderStatisticsInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkShaderStatisticsInfoAMD);
+}
 pub fn size_of_VkDeviceQueueGlobalPriorityCreateInfo(item: *const vk.VkDeviceQueueGlobalPriorityCreateInfo, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -9546,6 +10454,16 @@ pub fn size_of_VkCalibratedTimestampInfoEXT(item: *const vk.VkCalibratedTimestam
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkCalibratedTimestampInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderCorePropertiesAMD(item: *const vk.VkPhysicalDeviceShaderCorePropertiesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCorePropertiesAMD);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreProperties2AMD(item: *const vk.VkPhysicalDeviceShaderCoreProperties2AMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreProperties2AMD);
 }
 pub fn size_of_VkPipelineRasterizationConservativeStateCreateInfoEXT(item: *const vk.VkPipelineRasterizationConservativeStateCreateInfoEXT, follow_pnext: bool) usize {
     _ = item;
@@ -9746,6 +10664,10 @@ pub fn size_of_VkRenderPassCreateInfo2(item: *const vk.VkRenderPassCreateInfo2, 
                 => size += size_of_VkRenderPassCreationControlEXT(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT,
                 => size += size_of_VkRenderPassCreationFeedbackCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkRenderPassCreateInfo2: {d}", .{v});
                 },
@@ -10029,6 +10951,19 @@ pub fn size_of_VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT(item: *const vk
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT);
 }
+pub fn size_of_VkQueueFamilyCheckpointPropertiesNV(item: *const vk.VkQueueFamilyCheckpointPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyCheckpointPropertiesNV);
+}
+pub fn size_of_VkCheckpointDataNV(item: *const vk.VkCheckpointDataNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCheckpointMarker) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCheckpointDataNV);
+}
 pub fn size_of_VkPhysicalDeviceDepthStencilResolveProperties(item: *const vk.VkPhysicalDeviceDepthStencilResolveProperties, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -10077,20 +11012,150 @@ pub fn size_of_VkPipelineRasterizationStateStreamCreateInfoEXT(item: *const vk.V
     _ = follow_pnext;
     return @sizeOf(vk.VkPipelineRasterizationStateStreamCreateInfoEXT);
 }
+pub fn size_of_VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV(item: *const vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV);
+}
+pub fn size_of_VkPipelineRepresentativeFragmentTestStateCreateInfoNV(item: *const vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineRepresentativeFragmentTestStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceExclusiveScissorFeaturesNV(item: *const vk.VkPhysicalDeviceExclusiveScissorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExclusiveScissorFeaturesNV);
+}
+pub fn size_of_VkPipelineViewportExclusiveScissorStateCreateInfoNV(item: *const vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.exclusiveScissorCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pExclusiveScissors[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportExclusiveScissorStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceCornerSampledImageFeaturesNV(item: *const vk.VkPhysicalDeviceCornerSampledImageFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCornerSampledImageFeaturesNV);
+}
 pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesFeaturesNV(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesFeaturesNV);
 }
 pub fn size_of_VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR(item: *const vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR);
 }
-pub fn size_of_VkPhysicalDeviceInvocationMaskFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceInvocationMaskFeaturesHUAWEI, follow_pnext: bool) usize {
+pub fn size_of_VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV(item: *const vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceInvocationMaskFeaturesHUAWEI);
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderImageFootprintFeaturesNV(item: *const vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderImageFootprintFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV(item: *const vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCopyMemoryIndirectFeaturesNV(item: *const vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCopyMemoryIndirectFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCopyMemoryIndirectPropertiesNV(item: *const vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCopyMemoryIndirectPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceMemoryDecompressionFeaturesNV(item: *const vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryDecompressionFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceMemoryDecompressionPropertiesNV(item: *const vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMemoryDecompressionPropertiesNV);
+}
+pub fn size_of_VkShadingRatePaletteNV(item: *const vk.VkShadingRatePaletteNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.shadingRatePaletteEntryCount) |_|
+        size += @sizeOf(vk.VkShadingRatePaletteEntryNV);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkShadingRatePaletteNV);
+}
+pub fn size_of_VkPipelineViewportShadingRateImageStateCreateInfoNV(item: *const vk.VkPipelineViewportShadingRateImageStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.viewportCount) |i|
+        size += size_of_VkShadingRatePaletteNV(@ptrCast(&item.pShadingRatePalettes[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportShadingRateImageStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceShadingRateImageFeaturesNV(item: *const vk.VkPhysicalDeviceShadingRateImageFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShadingRateImageFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceShadingRateImagePropertiesNV(item: *const vk.VkPhysicalDeviceShadingRateImagePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShadingRateImagePropertiesNV);
+}
+pub fn size_of_VkCoarseSampleLocationNV(item: *const vk.VkCoarseSampleLocationNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCoarseSampleLocationNV);
+}
+pub fn size_of_VkCoarseSampleOrderCustomNV(item: *const vk.VkCoarseSampleOrderCustomNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.sampleLocationCount) |i|
+        size += size_of_VkCoarseSampleLocationNV(@ptrCast(&item.pSampleLocations[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCoarseSampleOrderCustomNV);
+}
+pub fn size_of_VkPipelineViewportCoarseSampleOrderStateCreateInfoNV(item: *const vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.customSampleOrderCount) |i|
+        size += size_of_VkCoarseSampleOrderCustomNV(@ptrCast(&item.pCustomSampleOrders[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPipelineViewportCoarseSampleOrderStateCreateInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderFeaturesNV(item: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceMeshShaderPropertiesNV(item: *const vk.VkPhysicalDeviceMeshShaderPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMeshShaderPropertiesNV);
+}
+pub fn size_of_VkDrawMeshTasksIndirectCommandNV(item: *const vk.VkDrawMeshTasksIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDrawMeshTasksIndirectCommandNV);
 }
 pub fn size_of_VkPhysicalDeviceMeshShaderFeaturesEXT(item: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -10107,6 +11172,11 @@ pub fn size_of_VkDrawMeshTasksIndirectCommandEXT(item: *const vk.VkDrawMeshTasks
     _ = follow_pnext;
     return @sizeOf(vk.VkDrawMeshTasksIndirectCommandEXT);
 }
+pub fn size_of_VkRayTracingShaderGroupCreateInfoNV(item: *const vk.VkRayTracingShaderGroupCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRayTracingShaderGroupCreateInfoNV);
+}
 pub fn size_of_VkRayTracingShaderGroupCreateInfoKHR(item: *const vk.VkRayTracingShaderGroupCreateInfoKHR, follow_pnext: bool) usize {
     var size: usize = 0;
 
@@ -10114,6 +11184,32 @@ pub fn size_of_VkRayTracingShaderGroupCreateInfoKHR(item: *const vk.VkRayTracing
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkRayTracingShaderGroupCreateInfoKHR);
+}
+pub fn size_of_VkRayTracingPipelineCreateInfoNV(item: *const vk.VkRayTracingPipelineCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stageCount) |i|
+        size += size_of_VkPipelineShaderStageCreateInfo(@ptrCast(&item.pStages[i]), false);
+    for (0..item.groupCount) |i|
+        size += size_of_VkRayTracingShaderGroupCreateInfoNV(@ptrCast(&item.pGroups[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkRayTracingPipelineCreateInfoNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkRayTracingPipelineCreateInfoNV);
 }
 pub fn size_of_VkRayTracingPipelineCreateInfoKHR(item: *const vk.VkRayTracingPipelineCreateInfoKHR, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -10135,6 +11231,8 @@ pub fn size_of_VkRayTracingPipelineCreateInfoKHR(item: *const vk.VkRayTracingPip
                 => size += size_of_VkPipelineCreateFlags2CreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_BINARY_INFO_KHR,
                 => size += size_of_VkPipelineBinaryInfoKHR(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV,
+                => size += size_of_VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
                 => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
@@ -10148,6 +11246,62 @@ pub fn size_of_VkRayTracingPipelineCreateInfoKHR(item: *const vk.VkRayTracingPip
 
     return size + @sizeOf(vk.VkRayTracingPipelineCreateInfoKHR);
 }
+pub fn size_of_VkGeometryTrianglesNV(item: *const vk.VkGeometryTrianglesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryTrianglesNV);
+}
+pub fn size_of_VkGeometryAABBNV(item: *const vk.VkGeometryAABBNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryAABBNV);
+}
+pub fn size_of_VkGeometryDataNV(item: *const vk.VkGeometryDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryDataNV);
+}
+pub fn size_of_VkGeometryNV(item: *const vk.VkGeometryNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkGeometryNV);
+}
+pub fn size_of_VkAccelerationStructureInfoNV(item: *const vk.VkAccelerationStructureInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.geometryCount) |i|
+        size += size_of_VkGeometryNV(@ptrCast(&item.pGeometries[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureInfoNV);
+}
+pub fn size_of_VkAccelerationStructureCreateInfoNV(item: *const vk.VkAccelerationStructureCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureCreateInfoNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkAccelerationStructureCreateInfoNV);
+}
+pub fn size_of_VkBindAccelerationStructureMemoryInfoNV(item: *const vk.VkBindAccelerationStructureMemoryInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.deviceIndexCount) |_|
+        size += @sizeOf(u32);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkBindAccelerationStructureMemoryInfoNV);
+}
 pub fn size_of_VkWriteDescriptorSetAccelerationStructureKHR(item: *const vk.VkWriteDescriptorSetAccelerationStructureKHR, follow_pnext: bool) usize {
     var size: usize = 0;
 
@@ -10156,6 +11310,20 @@ pub fn size_of_VkWriteDescriptorSetAccelerationStructureKHR(item: *const vk.VkWr
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkWriteDescriptorSetAccelerationStructureKHR);
+}
+pub fn size_of_VkWriteDescriptorSetAccelerationStructureNV(item: *const vk.VkWriteDescriptorSetAccelerationStructureNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.accelerationStructureCount) |_|
+        size += @sizeOf(vk.VkAccelerationStructureNV);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetAccelerationStructureNV);
+}
+pub fn size_of_VkAccelerationStructureMemoryRequirementsInfoNV(item: *const vk.VkAccelerationStructureMemoryRequirementsInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMemoryRequirementsInfoNV);
 }
 pub fn size_of_VkPhysicalDeviceAccelerationStructureFeaturesKHR(item: *const vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
@@ -10181,6 +11349,11 @@ pub fn size_of_VkPhysicalDeviceRayTracingPipelinePropertiesKHR(item: *const vk.V
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceRayTracingPipelinePropertiesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingPropertiesNV(item: *const vk.VkPhysicalDeviceRayTracingPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingPropertiesNV);
 }
 pub fn size_of_VkStridedDeviceAddressRegionKHR(item: *const vk.VkStridedDeviceAddressRegionKHR, follow_pnext: bool) usize {
     _ = item;
@@ -10258,6 +11431,11 @@ pub fn size_of_VkImageStencilUsageCreateInfoEXT(item: *const vk.VkImageStencilUs
     _ = follow_pnext;
     return @sizeOf(vk.VkImageStencilUsageCreateInfoEXT);
 }
+pub fn size_of_VkDeviceMemoryOverallocationCreateInfoAMD(item: *const vk.VkDeviceMemoryOverallocationCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceMemoryOverallocationCreateInfoAMD);
+}
 pub fn size_of_VkPhysicalDeviceFragmentDensityMapFeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -10272,6 +11450,11 @@ pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT(item: *const 
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM);
 }
 pub fn size_of_VkPhysicalDeviceFragmentDensityMapPropertiesEXT(item: *const vk.VkPhysicalDeviceFragmentDensityMapPropertiesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -10288,6 +11471,11 @@ pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT(item: *cons
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT);
 }
+pub fn size_of_VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM(item: *const vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM);
+}
 pub fn size_of_VkRenderPassFragmentDensityMapCreateInfoEXT(item: *const vk.VkRenderPassFragmentDensityMapCreateInfoEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -10301,6 +11489,11 @@ pub fn size_of_VkRenderPassFragmentDensityMapOffsetEndInfoEXT(item: *const vk.Vk
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkRenderPassFragmentDensityMapOffsetEndInfoEXT);
+}
+pub fn size_of_VkSubpassFragmentDensityMapOffsetEndInfoQCOM(item: *const vk.VkSubpassFragmentDensityMapOffsetEndInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSubpassFragmentDensityMapOffsetEndInfoQCOM);
 }
 pub fn size_of_VkPhysicalDeviceScalarBlockLayoutFeatures(item: *const vk.VkPhysicalDeviceScalarBlockLayoutFeatures, follow_pnext: bool) usize {
     _ = item;
@@ -10479,10 +11672,35 @@ pub fn size_of_VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT(item: *const
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT);
 }
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixFeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrixPropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixPropertiesNV);
+}
+pub fn size_of_VkCooperativeMatrixPropertiesNV(item: *const vk.VkCooperativeMatrixPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeMatrixPropertiesNV);
+}
 pub fn size_of_VkPhysicalDeviceYcbcrImageArraysFeaturesEXT(item: *const vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceYcbcrImageArraysFeaturesEXT);
+}
+pub fn size_of_VkImageViewHandleInfoNVX(item: *const vk.VkImageViewHandleInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewHandleInfoNVX);
+}
+pub fn size_of_VkImageViewAddressPropertiesNVX(item: *const vk.VkImageViewAddressPropertiesNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewAddressPropertiesNVX);
 }
 pub fn size_of_VkPipelineCreationFeedback(item: *const vk.VkPipelineCreationFeedback, follow_pnext: bool) usize {
     _ = item;
@@ -10523,6 +11741,21 @@ pub fn size_of_VkSurfaceCapabilitiesFullScreenExclusiveEXT(item: *const vk.VkSur
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkSurfaceCapabilitiesFullScreenExclusiveEXT);
+}
+pub fn size_of_VkPhysicalDevicePresentBarrierFeaturesNV(item: *const vk.VkPhysicalDevicePresentBarrierFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentBarrierFeaturesNV);
+}
+pub fn size_of_VkSurfaceCapabilitiesPresentBarrierNV(item: *const vk.VkSurfaceCapabilitiesPresentBarrierNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSurfaceCapabilitiesPresentBarrierNV);
+}
+pub fn size_of_VkSwapchainPresentBarrierCreateInfoNV(item: *const vk.VkSwapchainPresentBarrierCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainPresentBarrierCreateInfoNV);
 }
 pub fn size_of_VkPhysicalDevicePerformanceQueryFeaturesKHR(item: *const vk.VkPhysicalDevicePerformanceQueryFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
@@ -10572,6 +11805,21 @@ pub fn size_of_VkHeadlessSurfaceCreateInfoEXT(item: *const vk.VkHeadlessSurfaceC
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkHeadlessSurfaceCreateInfoEXT);
+}
+pub fn size_of_VkPhysicalDeviceCoverageReductionModeFeaturesNV(item: *const vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCoverageReductionModeFeaturesNV);
+}
+pub fn size_of_VkPipelineCoverageReductionStateCreateInfoNV(item: *const vk.VkPipelineCoverageReductionStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCoverageReductionStateCreateInfoNV);
+}
+pub fn size_of_VkFramebufferMixedSamplesCombinationNV(item: *const vk.VkFramebufferMixedSamplesCombinationNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkFramebufferMixedSamplesCombinationNV);
 }
 pub fn size_of_VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL(item: *const vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL, follow_pnext: bool) usize {
     _ = item;
@@ -10640,6 +11888,16 @@ pub fn size_of_VkPhysicalDeviceIndexTypeUint8FeaturesEXT(item: *const vk.VkPhysi
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceIndexTypeUint8FeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderSMBuiltinsPropertiesNV(item: *const vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSMBuiltinsPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderSMBuiltinsFeaturesNV(item: *const vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV);
 }
 pub fn size_of_VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT(item: *const vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -10780,21 +12038,6 @@ pub fn size_of_VkShaderRequiredSubgroupSizeCreateInfoEXT(item: *const vk.VkShade
     _ = follow_pnext;
     return @sizeOf(vk.VkShaderRequiredSubgroupSizeCreateInfoEXT);
 }
-pub fn size_of_VkSubpassShadingPipelineCreateInfoHUAWEI(item: *const vk.VkSubpassShadingPipelineCreateInfoHUAWEI, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
-    return @sizeOf(vk.VkSubpassShadingPipelineCreateInfoHUAWEI);
-}
-pub fn size_of_VkPhysicalDeviceSubpassShadingPropertiesHUAWEI(item: *const vk.VkPhysicalDeviceSubpassShadingPropertiesHUAWEI, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceSubpassShadingPropertiesHUAWEI);
-}
-pub fn size_of_VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI);
-}
 pub fn size_of_VkMemoryOpaqueCaptureAddressAllocateInfo(item: *const vk.VkMemoryOpaqueCaptureAddressAllocateInfo, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -10916,6 +12159,16 @@ pub fn size_of_VkPhysicalDeviceVulkan14Properties(item: *const vk.VkPhysicalDevi
     _ = follow_pnext;
     return size + @sizeOf(vk.VkPhysicalDeviceVulkan14Properties);
 }
+pub fn size_of_VkPipelineCompilerControlCreateInfoAMD(item: *const vk.VkPipelineCompilerControlCreateInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineCompilerControlCreateInfoAMD);
+}
+pub fn size_of_VkPhysicalDeviceCoherentMemoryFeaturesAMD(item: *const vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCoherentMemoryFeaturesAMD);
+}
 pub fn size_of_VkFaultData(item: *const vk.VkFaultData, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -10972,8 +12225,12 @@ pub fn size_of_VkAccelerationStructureGeometryTrianglesDataKHR(item: *const vk.V
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_MOTION_TRIANGLES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometryMotionTrianglesDataNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT,
                 => size += size_of_VkAccelerationStructureTrianglesOpacityMicromapEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_DISPLACEMENT_MICROMAP_NV,
+                => size += size_of_VkAccelerationStructureTrianglesDisplacementMicromapNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureGeometryTrianglesDataKHR: {d}", .{v});
                 },
@@ -10993,9 +12250,34 @@ pub fn size_of_VkAccelerationStructureGeometryInstancesDataKHR(item: *const vk.V
     _ = follow_pnext;
     return @sizeOf(vk.VkAccelerationStructureGeometryInstancesDataKHR);
 }
-pub fn size_of_VkAccelerationStructureGeometryKHR(item: *const vk.VkAccelerationStructureGeometryKHR, follow_pnext: bool) usize {
+pub fn size_of_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(item: *const vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryLinearSweptSpheresDataNV);
+}
+pub fn size_of_VkAccelerationStructureGeometrySpheresDataNV(item: *const vk.VkAccelerationStructureGeometrySpheresDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometrySpheresDataNV);
+}
+pub fn size_of_VkAccelerationStructureGeometryKHR(item: *const vk.VkAccelerationStructureGeometryKHR, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_LINEAR_SWEPT_SPHERES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometryLinearSweptSpheresDataNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_SPHERES_DATA_NV,
+                => size += size_of_VkAccelerationStructureGeometrySpheresDataNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureGeometryKHR: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return @sizeOf(vk.VkAccelerationStructureGeometryKHR);
 }
 pub fn size_of_VkAccelerationStructureBuildGeometryInfoKHR(item: *const vk.VkAccelerationStructureBuildGeometryInfoKHR, follow_pnext: bool) usize {
@@ -11021,6 +12303,8 @@ pub fn size_of_VkAccelerationStructureCreateInfoKHR(item: *const vk.VkAccelerati
             switch (next.sType) {
                 vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
                 => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_MOTION_INFO_NV,
+                => size += size_of_VkAccelerationStructureMotionInfoNV(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkAccelerationStructureCreateInfoKHR: {d}", .{v});
                 },
@@ -11035,15 +12319,30 @@ pub fn size_of_VkAabbPositionsKHR(item: *const vk.VkAabbPositionsKHR, follow_pne
     _ = follow_pnext;
     return @sizeOf(vk.VkAabbPositionsKHR);
 }
+pub fn size_of_VkAabbPositionsNV(item: *const vk.VkAabbPositionsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAabbPositionsNV);
+}
 pub fn size_of_VkTransformMatrixKHR(item: *const vk.VkTransformMatrixKHR, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkTransformMatrixKHR);
 }
+pub fn size_of_VkTransformMatrixNV(item: *const vk.VkTransformMatrixNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTransformMatrixNV);
+}
 pub fn size_of_VkAccelerationStructureInstanceKHR(item: *const vk.VkAccelerationStructureInstanceKHR, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkAccelerationStructureInstanceKHR);
+}
+pub fn size_of_VkAccelerationStructureInstanceNV(item: *const vk.VkAccelerationStructureInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureInstanceNV);
 }
 pub fn size_of_VkAccelerationStructureDeviceAddressInfoKHR(item: *const vk.VkAccelerationStructureDeviceAddressInfoKHR, follow_pnext: bool) usize {
     _ = item;
@@ -11128,6 +12427,98 @@ pub fn size_of_VkColorBlendAdvancedEXT(item: *const vk.VkColorBlendAdvancedEXT, 
     _ = follow_pnext;
     return @sizeOf(vk.VkColorBlendAdvancedEXT);
 }
+pub fn size_of_VkRenderPassTransformBeginInfoQCOM(item: *const vk.VkRenderPassTransformBeginInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassTransformBeginInfoQCOM);
+}
+pub fn size_of_VkCopyCommandTransformInfoQCOM(item: *const vk.VkCopyCommandTransformInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCopyCommandTransformInfoQCOM);
+}
+pub fn size_of_VkCommandBufferInheritanceRenderPassTransformInfoQCOM(item: *const vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCommandBufferInheritanceRenderPassTransformInfoQCOM);
+}
+pub fn size_of_VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV(item: *const vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV);
+}
+pub fn size_of_VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV(item: *const vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV);
+}
+pub fn size_of_VkBuildPartitionedAccelerationStructureIndirectCommandNV(item: *const vk.VkBuildPartitionedAccelerationStructureIndirectCommandNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBuildPartitionedAccelerationStructureIndirectCommandNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureFlagsNV(item: *const vk.VkPartitionedAccelerationStructureFlagsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureFlagsNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureWriteInstanceDataNV(item: *const vk.VkPartitionedAccelerationStructureWriteInstanceDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureWriteInstanceDataNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureUpdateInstanceDataNV(item: *const vk.VkPartitionedAccelerationStructureUpdateInstanceDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureUpdateInstanceDataNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureWritePartitionTranslationDataNV(item: *const vk.VkPartitionedAccelerationStructureWritePartitionTranslationDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPartitionedAccelerationStructureWritePartitionTranslationDataNV);
+}
+pub fn size_of_VkWriteDescriptorSetPartitionedAccelerationStructureNV(item: *const vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.accelerationStructureCount) |_|
+        size += @sizeOf(vk.VkDeviceAddress);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetPartitionedAccelerationStructureNV);
+}
+pub fn size_of_VkPartitionedAccelerationStructureInstancesInputNV(item: *const vk.VkPartitionedAccelerationStructureInstancesInputNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_FLAGS_NV,
+                => size += size_of_VkPartitionedAccelerationStructureFlagsNV(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkPartitionedAccelerationStructureInstancesInputNV: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkPartitionedAccelerationStructureInstancesInputNV);
+}
+pub fn size_of_VkBuildPartitionedAccelerationStructureInfoNV(item: *const vk.VkBuildPartitionedAccelerationStructureInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBuildPartitionedAccelerationStructureInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceDiagnosticsConfigFeaturesNV(item: *const vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDiagnosticsConfigFeaturesNV);
+}
+pub fn size_of_VkDeviceDiagnosticsConfigCreateInfoNV(item: *const vk.VkDeviceDiagnosticsConfigCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceDiagnosticsConfigCreateInfoNV);
+}
 pub fn size_of_VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures(item: *const vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -11193,34 +12584,6 @@ pub fn size_of_VkPhysicalDevice4444FormatsFeaturesEXT(item: *const vk.VkPhysical
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDevice4444FormatsFeaturesEXT);
 }
-pub fn size_of_VkPhysicalDeviceSubpassShadingFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceSubpassShadingFeaturesHUAWEI, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceSubpassShadingFeaturesHUAWEI);
-}
-pub fn size_of_VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI, follow_pnext: bool) usize {
-    var size: usize = 0;
-    if (follow_pnext) {
-        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
-        while (pnext) |next| {
-            pnext = next.pNext;
-            switch (next.sType) {
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_CULLING_SHADER_VRS_FEATURES_HUAWEI,
-                => size += size_of_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(@ptrCast(next), false),
-                else => |v| {
-                    log.debug(@src(), "Invalid pNext chain item for VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI: {d}", .{v});
-                },
-            }
-        }
-    }
-
-    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI);
-}
-pub fn size_of_VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI);
-}
 pub fn size_of_VkBufferCopy2(item: *const vk.VkBufferCopy2, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -11242,8 +12605,21 @@ pub fn size_of_VkImageCopy2KHR(item: *const vk.VkImageCopy2KHR, follow_pnext: bo
     return @sizeOf(vk.VkImageCopy2KHR);
 }
 pub fn size_of_VkImageBlit2(item: *const vk.VkImageBlit2, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCopyCommandTransformInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkImageBlit2: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return @sizeOf(vk.VkImageBlit2);
 }
 pub fn size_of_VkImageBlit2KHR(item: *const vk.VkImageBlit2KHR, follow_pnext: bool) usize {
@@ -11252,8 +12628,21 @@ pub fn size_of_VkImageBlit2KHR(item: *const vk.VkImageBlit2KHR, follow_pnext: bo
     return @sizeOf(vk.VkImageBlit2KHR);
 }
 pub fn size_of_VkBufferImageCopy2(item: *const vk.VkBufferImageCopy2, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM,
+                => size += size_of_VkCopyCommandTransformInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBufferImageCopy2: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return @sizeOf(vk.VkBufferImageCopy2);
 }
 pub fn size_of_VkBufferImageCopy2KHR(item: *const vk.VkBufferImageCopy2KHR, follow_pnext: bool) usize {
@@ -11305,7 +12694,20 @@ pub fn size_of_VkBlitImageInfo2(item: *const vk.VkBlitImageInfo2, follow_pnext: 
     for (0..item.regionCount) |i|
         size += size_of_VkImageBlit2(@ptrCast(&item.pRegions[i]), false);
 
-    _ = follow_pnext;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_BLIT_IMAGE_CUBIC_WEIGHTS_INFO_QCOM,
+                => size += size_of_VkBlitImageCubicWeightsInfoQCOM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkBlitImageInfo2: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return size + @sizeOf(vk.VkBlitImageInfo2);
 }
 pub fn size_of_VkBlitImageInfo2KHR(item: *const vk.VkBlitImageInfo2KHR, follow_pnext: bool) usize {
@@ -11397,6 +12799,21 @@ pub fn size_of_VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR(item: *const
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV(item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV(item: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV);
+}
+pub fn size_of_VkPipelineFragmentShadingRateEnumStateCreateInfoNV(item: *const vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPipelineFragmentShadingRateEnumStateCreateInfoNV);
 }
 pub fn size_of_VkAccelerationStructureBuildSizesInfoKHR(item: *const vk.VkAccelerationStructureBuildSizesInfoKHR, follow_pnext: bool) usize {
     _ = item;
@@ -11667,6 +13084,11 @@ pub fn size_of_VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT(item: *const v
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT);
 }
+pub fn size_of_VkPhysicalDeviceExternalMemoryRDMAFeaturesNV(item: *const vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalMemoryRDMAFeaturesNV);
+}
 pub fn size_of_VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -11773,7 +13195,22 @@ pub fn size_of_VkDependencyInfo(item: *const vk.VkDependencyInfo, follow_pnext: 
     for (0..item.imageMemoryBarrierCount) |i|
         size += size_of_VkImageMemoryBarrier2(@ptrCast(&item.pImageMemoryBarriers[i]), false);
 
-    _ = follow_pnext;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_MEMORY_BARRIER_ARM,
+                => size += size_of_VkTensorMemoryBarrierARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TENSOR_DEPENDENCY_INFO_ARM,
+                => size += size_of_VkTensorDependencyInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDependencyInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return size + @sizeOf(vk.VkDependencyInfo);
 }
 pub fn size_of_VkDependencyInfoKHR(item: *const vk.VkDependencyInfoKHR, follow_pnext: bool) usize {
@@ -11792,8 +13229,21 @@ pub fn size_of_VkSemaphoreSubmitInfoKHR(item: *const vk.VkSemaphoreSubmitInfoKHR
     return @sizeOf(vk.VkSemaphoreSubmitInfoKHR);
 }
 pub fn size_of_VkCommandBufferSubmitInfo(item: *const vk.VkCommandBufferSubmitInfo, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM,
+                => size += size_of_VkRenderPassStripeSubmitInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCommandBufferSubmitInfo: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return @sizeOf(vk.VkCommandBufferSubmitInfo);
 }
 pub fn size_of_VkCommandBufferSubmitInfoKHR(item: *const vk.VkCommandBufferSubmitInfoKHR, follow_pnext: bool) usize {
@@ -11816,12 +13266,18 @@ pub fn size_of_VkSubmitInfo2(item: *const vk.VkSubmitInfo2, follow_pnext: bool) 
         while (pnext) |next| {
             pnext = next.pNext;
             switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV,
+                => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoNV(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_KHR,
                 => size += size_of_VkWin32KeyedMutexAcquireReleaseInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_PERFORMANCE_QUERY_SUBMIT_INFO_KHR,
                 => size += size_of_VkPerformanceQuerySubmitInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT,
                 => size += size_of_VkFrameBoundaryEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV,
+                => size += size_of_VkLatencySubmissionPresentIdNV(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_FRAME_BOUNDARY_TENSORS_ARM,
+                => size += size_of_VkFrameBoundaryTensorsARM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkSubmitInfo2: {d}", .{v});
                 },
@@ -11835,6 +13291,19 @@ pub fn size_of_VkSubmitInfo2KHR(item: *const vk.VkSubmitInfo2KHR, follow_pnext: 
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkSubmitInfo2KHR);
+}
+pub fn size_of_VkQueueFamilyCheckpointProperties2NV(item: *const vk.VkQueueFamilyCheckpointProperties2NV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyCheckpointProperties2NV);
+}
+pub fn size_of_VkCheckpointData2NV(item: *const vk.VkCheckpointData2NV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCheckpointMarker) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCheckpointData2NV);
 }
 pub fn size_of_VkPhysicalDeviceSynchronization2Features(item: *const vk.VkPhysicalDeviceSynchronization2Features, follow_pnext: bool) usize {
     _ = item;
@@ -13119,6 +14588,19 @@ pub fn size_of_VkVideoEncodeAV1RateControlLayerInfoKHR(item: *const vk.VkVideoEn
     _ = follow_pnext;
     return @sizeOf(vk.VkVideoEncodeAV1RateControlLayerInfoKHR);
 }
+pub fn size_of_VkPhysicalDeviceInheritedViewportScissorFeaturesNV(item: *const vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceInheritedViewportScissorFeaturesNV);
+}
+pub fn size_of_VkCommandBufferInheritanceViewportScissorInfoNV(item: *const vk.VkCommandBufferInheritanceViewportScissorInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pViewportDepths) |ptr| size += size_of_VkViewport(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCommandBufferInheritanceViewportScissorInfoNV);
+}
 pub fn size_of_VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT(item: *const vk.VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -13163,6 +14645,53 @@ pub fn size_of_VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR(item: *const v
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR);
+}
+pub fn size_of_VkCuModuleCreateInfoNVX(item: *const vk.VkCuModuleCreateInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_CU_MODULE_TEXTURING_MODE_CREATE_INFO_NVX,
+                => size += size_of_VkCuModuleTexturingModeCreateInfoNVX(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkCuModuleCreateInfoNVX: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkCuModuleCreateInfoNVX);
+}
+pub fn size_of_VkCuModuleTexturingModeCreateInfoNVX(item: *const vk.VkCuModuleTexturingModeCreateInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCuModuleTexturingModeCreateInfoNVX);
+}
+pub fn size_of_VkCuFunctionCreateInfoNVX(item: *const vk.VkCuFunctionCreateInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCuFunctionCreateInfoNVX);
+}
+pub fn size_of_VkCuLaunchInfoNVX(item: *const vk.VkCuLaunchInfoNVX, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.paramCount) |_|
+        size += @sizeOf(void);
+    for (0..item.extraCount) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCuLaunchInfoNVX);
 }
 pub fn size_of_VkPhysicalDeviceDescriptorBufferFeaturesEXT(item: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -13210,8 +14739,21 @@ pub fn size_of_VkDescriptorBufferBindingPushDescriptorBufferHandleEXT(item: *con
     return @sizeOf(vk.VkDescriptorBufferBindingPushDescriptorBufferHandleEXT);
 }
 pub fn size_of_VkDescriptorGetInfoEXT(item: *const vk.VkDescriptorGetInfoEXT, follow_pnext: bool) usize {
-    _ = item;
-    _ = follow_pnext;
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_GET_TENSOR_INFO_ARM,
+                => size += size_of_VkDescriptorGetTensorInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDescriptorGetInfoEXT: {d}", .{v});
+                },
+            }
+        }
+    }
+
     return @sizeOf(vk.VkDescriptorGetInfoEXT);
 }
 pub fn size_of_VkBufferCaptureDescriptorDataInfoEXT(item: *const vk.VkBufferCaptureDescriptorDataInfoEXT, follow_pnext: bool) usize {
@@ -13282,6 +14824,56 @@ pub fn size_of_VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR(item: *con
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR);
 }
+pub fn size_of_VkPhysicalDeviceRayTracingMotionBlurFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingMotionBlurFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingValidationFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingValidationFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingValidationFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV);
+}
+pub fn size_of_VkAccelerationStructureGeometryMotionTrianglesDataNV(item: *const vk.VkAccelerationStructureGeometryMotionTrianglesDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureGeometryMotionTrianglesDataNV);
+}
+pub fn size_of_VkAccelerationStructureMotionInfoNV(item: *const vk.VkAccelerationStructureMotionInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMotionInfoNV);
+}
+pub fn size_of_VkSRTDataNV(item: *const vk.VkSRTDataNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSRTDataNV);
+}
+pub fn size_of_VkAccelerationStructureSRTMotionInstanceNV(item: *const vk.VkAccelerationStructureSRTMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureSRTMotionInstanceNV);
+}
+pub fn size_of_VkAccelerationStructureMatrixMotionInstanceNV(item: *const vk.VkAccelerationStructureMatrixMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMatrixMotionInstanceNV);
+}
+pub fn size_of_VkAccelerationStructureMotionInstanceNV(item: *const vk.VkAccelerationStructureMotionInstanceNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAccelerationStructureMotionInstanceNV);
+}
+pub fn size_of_VkMemoryGetRemoteAddressInfoNV(item: *const vk.VkMemoryGetRemoteAddressInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryGetRemoteAddressInfoNV);
+}
 pub fn size_of_VkImportMemoryBufferCollectionFUCHSIA(item: *const vk.VkImportMemoryBufferCollectionFUCHSIA, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -13339,6 +14931,35 @@ pub fn size_of_VkBufferCollectionConstraintsInfoFUCHSIA(item: *const vk.VkBuffer
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkBufferCollectionConstraintsInfoFUCHSIA);
+}
+pub fn size_of_VkCudaModuleCreateInfoNV(item: *const vk.VkCudaModuleCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaModuleCreateInfoNV);
+}
+pub fn size_of_VkCudaFunctionCreateInfoNV(item: *const vk.VkCudaFunctionCreateInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaFunctionCreateInfoNV);
+}
+pub fn size_of_VkCudaLaunchInfoNV(item: *const vk.VkCudaLaunchInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.paramCount) |_|
+        size += @sizeOf(void);
+    for (0..item.extraCount) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCudaLaunchInfoNV);
 }
 pub fn size_of_VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT(item: *const vk.VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -13409,6 +15030,16 @@ pub fn size_of_VkRenderingInfo(item: *const vk.VkRenderingInfo, follow_pnext: bo
                 => size += size_of_VkRenderingFragmentShadingRateAttachmentInfoKHR(@ptrCast(next), false),
                 vk.VK_STRUCTURE_TYPE_RENDERING_FRAGMENT_DENSITY_MAP_ATTACHMENT_INFO_EXT,
                 => size += size_of_VkRenderingFragmentDensityMapAttachmentInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_ATTRIBUTES_INFO_NVX,
+                => size += size_of_VkMultiviewPerViewAttributesInfoNVX(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_MULTIVIEW_PER_VIEW_RENDER_AREAS_RENDER_PASS_BEGIN_INFO_QCOM,
+                => size += size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_TILE_MEMORY_SIZE_INFO_QCOM,
+                => size += size_of_VkTileMemorySizeInfoQCOM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_BEGIN_INFO_ARM,
+                => size += size_of_VkRenderPassStripeBeginInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_RENDER_PASS_TILE_SHADING_CREATE_INFO_QCOM,
+                => size += size_of_VkRenderPassTileShadingCreateInfoQCOM(@ptrCast(next), false),
                 else => |v| {
                     log.debug(@src(), "Invalid pNext chain item for VkRenderingInfo: {d}", .{v});
                 },
@@ -13498,6 +15129,25 @@ pub fn size_of_VkCommandBufferInheritanceRenderingInfoKHR(item: *const vk.VkComm
     _ = follow_pnext;
     return @sizeOf(vk.VkCommandBufferInheritanceRenderingInfoKHR);
 }
+pub fn size_of_VkAttachmentSampleCountInfoAMD(item: *const vk.VkAttachmentSampleCountInfoAMD, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.colorAttachmentCount) |_|
+        size += @sizeOf(vk.VkSampleCountFlagBits);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAttachmentSampleCountInfoAMD);
+}
+pub fn size_of_VkAttachmentSampleCountInfoNV(item: *const vk.VkAttachmentSampleCountInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAttachmentSampleCountInfoNV);
+}
+pub fn size_of_VkMultiviewPerViewAttributesInfoNVX(item: *const vk.VkMultiviewPerViewAttributesInfoNVX, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMultiviewPerViewAttributesInfoNVX);
+}
 pub fn size_of_VkPhysicalDeviceImageViewMinLodFeaturesEXT(item: *const vk.VkPhysicalDeviceImageViewMinLodFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -13512,6 +15162,16 @@ pub fn size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT(ite
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM(item: *const vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceLinearColorAttachmentFeaturesNV(item: *const vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceLinearColorAttachmentFeaturesNV);
 }
 pub fn size_of_VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT(item: *const vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -13765,6 +15425,25 @@ pub fn size_of_VkAccelerationStructureTrianglesOpacityMicromapEXT(item: *const v
     _ = follow_pnext;
     return size + @sizeOf(vk.VkAccelerationStructureTrianglesOpacityMicromapEXT);
 }
+pub fn size_of_VkPhysicalDeviceDisplacementMicromapFeaturesNV(item: *const vk.VkPhysicalDeviceDisplacementMicromapFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDisplacementMicromapFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceDisplacementMicromapPropertiesNV(item: *const vk.VkPhysicalDeviceDisplacementMicromapPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDisplacementMicromapPropertiesNV);
+}
+pub fn size_of_VkAccelerationStructureTrianglesDisplacementMicromapNV(item: *const vk.VkAccelerationStructureTrianglesDisplacementMicromapNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.usageCountsCount) |i|
+        size += size_of_VkMicromapUsageEXT(@ptrCast(&item.pUsageCounts[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAccelerationStructureTrianglesDisplacementMicromapNV);
+}
 pub fn size_of_VkPipelinePropertiesIdentifierEXT(item: *const vk.VkPipelinePropertiesIdentifierEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -13774,6 +15453,11 @@ pub fn size_of_VkPhysicalDevicePipelinePropertiesFeaturesEXT(item: *const vk.VkP
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDevicePipelinePropertiesFeaturesEXT);
+}
+pub fn size_of_VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD(item: *const vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD);
 }
 pub fn size_of_VkExternalMemoryAcquireUnmodifiedEXT(item: *const vk.VkExternalMemoryAcquireUnmodifiedEXT, follow_pnext: bool) usize {
     _ = item;
@@ -13898,6 +15582,36 @@ pub fn size_of_VkPhysicalDevicePipelineRobustnessPropertiesEXT(item: *const vk.V
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDevicePipelineRobustnessPropertiesEXT);
 }
+pub fn size_of_VkImageViewSampleWeightCreateInfoQCOM(item: *const vk.VkImageViewSampleWeightCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkImageViewSampleWeightCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessingFeaturesQCOM(item: *const vk.VkPhysicalDeviceImageProcessingFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessingFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessingPropertiesQCOM(item: *const vk.VkPhysicalDeviceImageProcessingPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessingPropertiesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTilePropertiesFeaturesQCOM(item: *const vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTilePropertiesFeaturesQCOM);
+}
+pub fn size_of_VkTilePropertiesQCOM(item: *const vk.VkTilePropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTilePropertiesQCOM);
+}
+pub fn size_of_VkTileMemoryBindInfoQCOM(item: *const vk.VkTileMemoryBindInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemoryBindInfoQCOM);
+}
 pub fn size_of_VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT(item: *const vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -13922,6 +15636,45 @@ pub fn size_of_VkDeviceAddressBindingCallbackDataEXT(item: *const vk.VkDeviceAdd
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkDeviceAddressBindingCallbackDataEXT);
+}
+pub fn size_of_VkPhysicalDeviceOpticalFlowFeaturesNV(item: *const vk.VkPhysicalDeviceOpticalFlowFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpticalFlowFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceOpticalFlowPropertiesNV(item: *const vk.VkPhysicalDeviceOpticalFlowPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceOpticalFlowPropertiesNV);
+}
+pub fn size_of_VkOpticalFlowImageFormatInfoNV(item: *const vk.VkOpticalFlowImageFormatInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowImageFormatInfoNV);
+}
+pub fn size_of_VkOpticalFlowImageFormatPropertiesNV(item: *const vk.VkOpticalFlowImageFormatPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowImageFormatPropertiesNV);
+}
+pub fn size_of_VkOpticalFlowSessionCreateInfoNV(item: *const vk.VkOpticalFlowSessionCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowSessionCreateInfoNV);
+}
+pub fn size_of_VkOpticalFlowSessionCreatePrivateDataInfoNV(item: *const vk.VkOpticalFlowSessionCreatePrivateDataInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOpticalFlowSessionCreatePrivateDataInfoNV);
+}
+pub fn size_of_VkOpticalFlowExecuteInfoNV(item: *const vk.VkOpticalFlowExecuteInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkOpticalFlowExecuteInfoNV);
 }
 pub fn size_of_VkPhysicalDeviceFaultFeaturesEXT(item: *const vk.VkPhysicalDeviceFaultFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -13985,6 +15738,21 @@ pub fn size_of_VkDepthBiasRepresentationInfoEXT(item: *const vk.VkDepthBiasRepre
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkDepthBiasRepresentationInfoEXT);
+}
+pub fn size_of_VkDecompressMemoryRegionNV(item: *const vk.VkDecompressMemoryRegionNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDecompressMemoryRegionNV);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM(item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM(item: *const vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM);
 }
 pub fn size_of_VkFrameBoundaryEXT(item: *const vk.VkFrameBoundaryEXT, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -14120,6 +15888,26 @@ pub fn size_of_VkPhysicalDeviceDepthBiasControlFeaturesEXT(item: *const vk.VkPhy
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT);
 }
+pub fn size_of_VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV(item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV(item: *const vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV(item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV(item: *const vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV);
+}
 pub fn size_of_VkDirectDriverLoadingInfoLUNARG(item: *const vk.VkDirectDriverLoadingInfoLUNARG, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -14133,6 +15921,11 @@ pub fn size_of_VkDirectDriverLoadingListLUNARG(item: *const vk.VkDirectDriverLoa
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkDirectDriverLoadingListLUNARG);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM(item: *const vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM);
 }
 pub fn size_of_VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR(item: *const vk.VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
@@ -14152,6 +15945,33 @@ pub fn size_of_VkDeviceImageSubresourceInfoKHR(item: *const vk.VkDeviceImageSubr
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkDeviceImageSubresourceInfoKHR);
+}
+pub fn size_of_VkPhysicalDeviceShaderCorePropertiesARM(item: *const vk.VkPhysicalDeviceShaderCorePropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderCorePropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM(item: *const vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM);
+}
+pub fn size_of_VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM(item: *const vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.perViewRenderAreaCount) |i|
+        size += size_of_VkRect2D(@ptrCast(&item.pPerViewRenderAreas[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM);
+}
+pub fn size_of_VkQueryLowLatencySupportNV(item: *const vk.VkQueryLowLatencySupportNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pQueriedLowLatencyData) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkQueryLowLatencySupportNV);
 }
 pub fn size_of_VkMemoryMapInfo(item: *const vk.VkMemoryMapInfo, follow_pnext: bool) usize {
     var size: usize = 0;
@@ -14293,6 +16113,24 @@ pub fn size_of_VkPhysicalDeviceCooperativeMatrixPropertiesKHR(item: *const vk.Vk
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrixPropertiesKHR);
 }
+pub fn size_of_VkPhysicalDeviceAntiLagFeaturesAMD(item: *const vk.VkPhysicalDeviceAntiLagFeaturesAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceAntiLagFeaturesAMD);
+}
+pub fn size_of_VkAntiLagDataAMD(item: *const vk.VkAntiLagDataAMD, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pPresentationInfo) |ptr| size += size_of_VkAntiLagPresentationInfoAMD(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkAntiLagDataAMD);
+}
+pub fn size_of_VkAntiLagPresentationInfoAMD(item: *const vk.VkAntiLagPresentationInfoAMD, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkAntiLagPresentationInfoAMD);
+}
 pub fn size_of_VkBindMemoryStatus(item: *const vk.VkBindMemoryStatus, follow_pnext: bool) usize {
     var size: usize = 0;
 
@@ -14300,6 +16138,26 @@ pub fn size_of_VkBindMemoryStatus(item: *const vk.VkBindMemoryStatus, follow_pne
 
     _ = follow_pnext;
     return size + @sizeOf(vk.VkBindMemoryStatus);
+}
+pub fn size_of_VkPhysicalDeviceTileMemoryHeapFeaturesQCOM(item: *const vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileMemoryHeapFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTileMemoryHeapPropertiesQCOM(item: *const vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileMemoryHeapPropertiesQCOM);
+}
+pub fn size_of_VkTileMemorySizeInfoQCOM(item: *const vk.VkTileMemorySizeInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemorySizeInfoQCOM);
+}
+pub fn size_of_VkTileMemoryRequirementsQCOM(item: *const vk.VkTileMemoryRequirementsQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTileMemoryRequirementsQCOM);
 }
 pub fn size_of_VkBindMemoryStatusKHR(item: *const vk.VkBindMemoryStatusKHR, follow_pnext: bool) usize {
     _ = item;
@@ -14457,10 +16315,65 @@ pub fn size_of_VkBindDescriptorBufferEmbeddedSamplersInfoEXT(item: *const vk.VkB
 
     return @sizeOf(vk.VkBindDescriptorBufferEmbeddedSamplersInfoEXT);
 }
+pub fn size_of_VkPhysicalDeviceCubicClampFeaturesQCOM(item: *const vk.VkPhysicalDeviceCubicClampFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCubicClampFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceYcbcrDegammaFeaturesQCOM(item: *const vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceYcbcrDegammaFeaturesQCOM);
+}
+pub fn size_of_VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM(item: *const vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerYcbcrConversionYcbcrDegammaCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceCubicWeightsFeaturesQCOM(item: *const vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCubicWeightsFeaturesQCOM);
+}
+pub fn size_of_VkSamplerCubicWeightsCreateInfoQCOM(item: *const vk.VkSamplerCubicWeightsCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerCubicWeightsCreateInfoQCOM);
+}
+pub fn size_of_VkBlitImageCubicWeightsInfoQCOM(item: *const vk.VkBlitImageCubicWeightsInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBlitImageCubicWeightsInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessing2FeaturesQCOM(item: *const vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessing2FeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceImageProcessing2PropertiesQCOM(item: *const vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceImageProcessing2PropertiesQCOM);
+}
+pub fn size_of_VkSamplerBlockMatchWindowCreateInfoQCOM(item: *const vk.VkSamplerBlockMatchWindowCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSamplerBlockMatchWindowCreateInfoQCOM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV(item: *const vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV);
+}
 pub fn size_of_VkPhysicalDeviceLayeredDriverPropertiesMSFT(item: *const vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceLayeredDriverPropertiesMSFT);
+}
+pub fn size_of_VkPhysicalDevicePerStageDescriptorSetFeaturesNV(item: *const vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV);
 }
 pub fn size_of_VkPhysicalDeviceExternalFormatResolveFeaturesANDROID(item: *const vk.VkPhysicalDeviceExternalFormatResolveFeaturesANDROID, follow_pnext: bool) usize {
     _ = item;
@@ -14477,10 +16390,126 @@ pub fn size_of_VkAndroidHardwareBufferFormatResolvePropertiesANDROID(item: *cons
     _ = follow_pnext;
     return @sizeOf(vk.VkAndroidHardwareBufferFormatResolvePropertiesANDROID);
 }
+pub fn size_of_VkLatencySleepModeInfoNV(item: *const vk.VkLatencySleepModeInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySleepModeInfoNV);
+}
+pub fn size_of_VkLatencySleepInfoNV(item: *const vk.VkLatencySleepInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySleepInfoNV);
+}
+pub fn size_of_VkSetLatencyMarkerInfoNV(item: *const vk.VkSetLatencyMarkerInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetLatencyMarkerInfoNV);
+}
+pub fn size_of_VkGetLatencyMarkerInfoNV(item: *const vk.VkGetLatencyMarkerInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.timingCount) |i|
+        size += size_of_VkLatencyTimingsFrameReportNV(@ptrCast(&item.pTimings[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkGetLatencyMarkerInfoNV);
+}
+pub fn size_of_VkLatencyTimingsFrameReportNV(item: *const vk.VkLatencyTimingsFrameReportNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencyTimingsFrameReportNV);
+}
+pub fn size_of_VkOutOfBandQueueTypeInfoNV(item: *const vk.VkOutOfBandQueueTypeInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkOutOfBandQueueTypeInfoNV);
+}
+pub fn size_of_VkLatencySubmissionPresentIdNV(item: *const vk.VkLatencySubmissionPresentIdNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkLatencySubmissionPresentIdNV);
+}
+pub fn size_of_VkSwapchainLatencyCreateInfoNV(item: *const vk.VkSwapchainLatencyCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSwapchainLatencyCreateInfoNV);
+}
+pub fn size_of_VkLatencySurfaceCapabilitiesNV(item: *const vk.VkLatencySurfaceCapabilitiesNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.presentModeCount) |_|
+        size += @sizeOf(vk.VkPresentModeKHR);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkLatencySurfaceCapabilitiesNV);
+}
+pub fn size_of_VkPhysicalDeviceCudaKernelLaunchFeaturesNV(item: *const vk.VkPhysicalDeviceCudaKernelLaunchFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCudaKernelLaunchFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCudaKernelLaunchPropertiesNV(item: *const vk.VkPhysicalDeviceCudaKernelLaunchPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCudaKernelLaunchPropertiesNV);
+}
+pub fn size_of_VkDeviceQueueShaderCoreControlCreateInfoARM(item: *const vk.VkDeviceQueueShaderCoreControlCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDeviceQueueShaderCoreControlCreateInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceSchedulingControlsFeaturesARM(item: *const vk.VkPhysicalDeviceSchedulingControlsFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSchedulingControlsFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceSchedulingControlsPropertiesARM(item: *const vk.VkPhysicalDeviceSchedulingControlsPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceSchedulingControlsPropertiesARM);
+}
 pub fn size_of_VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG(item: *const vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG);
+}
+pub fn size_of_VkPhysicalDeviceRenderPassStripedFeaturesARM(item: *const vk.VkPhysicalDeviceRenderPassStripedFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRenderPassStripedFeaturesARM);
+}
+pub fn size_of_VkPhysicalDeviceRenderPassStripedPropertiesARM(item: *const vk.VkPhysicalDeviceRenderPassStripedPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRenderPassStripedPropertiesARM);
+}
+pub fn size_of_VkRenderPassStripeInfoARM(item: *const vk.VkRenderPassStripeInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassStripeInfoARM);
+}
+pub fn size_of_VkRenderPassStripeBeginInfoARM(item: *const vk.VkRenderPassStripeBeginInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stripeInfoCount) |i|
+        size += size_of_VkRenderPassStripeInfoARM(@ptrCast(&item.pStripeInfos[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassStripeBeginInfoARM);
+}
+pub fn size_of_VkRenderPassStripeSubmitInfoARM(item: *const vk.VkRenderPassStripeSubmitInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.stripeSemaphoreInfoCount) |i|
+        size += size_of_VkSemaphoreSubmitInfo(@ptrCast(&item.pStripeSemaphoreInfos[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkRenderPassStripeSubmitInfoARM);
+}
+pub fn size_of_VkPhysicalDevicePipelineOpacityMicromapFeaturesARM(item: *const vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM);
 }
 pub fn size_of_VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR(item: *const vk.VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR, follow_pnext: bool) usize {
     _ = item;
@@ -14562,6 +16591,11 @@ pub fn size_of_VkPhysicalDeviceShaderQuadControlFeaturesKHR(item: *const vk.VkPh
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceShaderQuadControlFeaturesKHR);
 }
+pub fn size_of_VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV(item: *const vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV);
+}
 pub fn size_of_VkPhysicalDeviceMapMemoryPlacedFeaturesEXT(item: *const vk.VkPhysicalDeviceMapMemoryPlacedFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
@@ -14584,6 +16618,16 @@ pub fn size_of_VkPhysicalDeviceShaderBfloat16FeaturesKHR(item: *const vk.VkPhysi
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceShaderBfloat16FeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceRawAccessChainsFeaturesNV(item: *const vk.VkPhysicalDeviceRawAccessChainsFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceRawAccessChainsFeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCommandBufferInheritanceFeaturesNV(item: *const vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCommandBufferInheritanceFeaturesNV);
 }
 pub fn size_of_VkPhysicalDeviceImageAlignmentControlFeaturesMESA(item: *const vk.VkPhysicalDeviceImageAlignmentControlFeaturesMESA, follow_pnext: bool) usize {
     _ = item;
@@ -14620,10 +16664,20 @@ pub fn size_of_VkDepthClampRangeEXT(item: *const vk.VkDepthClampRangeEXT, follow
     _ = follow_pnext;
     return @sizeOf(vk.VkDepthClampRangeEXT);
 }
-pub fn size_of_VkPhysicalDeviceHdrVividFeaturesHUAWEI(item: *const vk.VkPhysicalDeviceHdrVividFeaturesHUAWEI, follow_pnext: bool) usize {
+pub fn size_of_VkPhysicalDeviceCooperativeMatrix2FeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV, follow_pnext: bool) usize {
     _ = item;
     _ = follow_pnext;
-    return @sizeOf(vk.VkPhysicalDeviceHdrVividFeaturesHUAWEI);
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrix2FeaturesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeMatrix2PropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeMatrix2PropertiesNV);
+}
+pub fn size_of_VkCooperativeMatrixFlexibleDimensionsPropertiesNV(item: *const vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeMatrixFlexibleDimensionsPropertiesNV);
 }
 pub fn size_of_VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT(item: *const vk.VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -14634,6 +16688,59 @@ pub fn size_of_VkPhysicalDeviceDepthClampZeroOneFeaturesKHR(item: *const vk.VkPh
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPhysicalDeviceDepthClampZeroOneFeaturesKHR);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeVectorFeaturesNV(item: *const vk.VkPhysicalDeviceCooperativeVectorFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeVectorFeaturesNV);
+}
+pub fn size_of_VkCooperativeVectorPropertiesNV(item: *const vk.VkCooperativeVectorPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkCooperativeVectorPropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceCooperativeVectorPropertiesNV(item: *const vk.VkPhysicalDeviceCooperativeVectorPropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceCooperativeVectorPropertiesNV);
+}
+pub fn size_of_VkConvertCooperativeVectorMatrixInfoNV(item: *const vk.VkConvertCooperativeVectorMatrixInfoNV, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDstSize) |ptr| size += @sizeOf(ptr.*);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkConvertCooperativeVectorMatrixInfoNV);
+}
+pub fn size_of_VkPhysicalDeviceTileShadingFeaturesQCOM(item: *const vk.VkPhysicalDeviceTileShadingFeaturesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileShadingFeaturesQCOM);
+}
+pub fn size_of_VkPhysicalDeviceTileShadingPropertiesQCOM(item: *const vk.VkPhysicalDeviceTileShadingPropertiesQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTileShadingPropertiesQCOM);
+}
+pub fn size_of_VkRenderPassTileShadingCreateInfoQCOM(item: *const vk.VkRenderPassTileShadingCreateInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkRenderPassTileShadingCreateInfoQCOM);
+}
+pub fn size_of_VkPerTileBeginInfoQCOM(item: *const vk.VkPerTileBeginInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerTileBeginInfoQCOM);
+}
+pub fn size_of_VkPerTileEndInfoQCOM(item: *const vk.VkPerTileEndInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPerTileEndInfoQCOM);
+}
+pub fn size_of_VkDispatchTileInfoQCOM(item: *const vk.VkDispatchTileInfoQCOM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDispatchTileInfoQCOM);
 }
 pub fn size_of_VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE(item: *const vk.VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE, follow_pnext: bool) usize {
     _ = item;
@@ -14649,6 +16756,229 @@ pub fn size_of_VkPipelineFragmentDensityMapLayeredCreateInfoVALVE(item: *const v
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE);
+}
+pub fn size_of_VkSetPresentConfigNV(item: *const vk.VkSetPresentConfigNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkSetPresentConfigNV);
+}
+pub fn size_of_VkPhysicalDevicePresentMeteringFeaturesNV(item: *const vk.VkPhysicalDevicePresentMeteringFeaturesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDevicePresentMeteringFeaturesNV);
+}
+pub fn size_of_VkExternalComputeQueueDeviceCreateInfoNV(item: *const vk.VkExternalComputeQueueDeviceCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueDeviceCreateInfoNV);
+}
+pub fn size_of_VkExternalComputeQueueCreateInfoNV(item: *const vk.VkExternalComputeQueueCreateInfoNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueCreateInfoNV);
+}
+pub fn size_of_VkExternalComputeQueueDataParamsNV(item: *const vk.VkExternalComputeQueueDataParamsNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalComputeQueueDataParamsNV);
+}
+pub fn size_of_VkPhysicalDeviceExternalComputeQueuePropertiesNV(item: *const vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceExternalComputeQueuePropertiesNV);
+}
+pub fn size_of_VkPhysicalDeviceFormatPackFeaturesARM(item: *const vk.VkPhysicalDeviceFormatPackFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceFormatPackFeaturesARM);
+}
+pub fn size_of_VkTensorDescriptionARM(item: *const vk.VkTensorDescriptionARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(i64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(i64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorDescriptionARM);
+}
+pub fn size_of_VkTensorCreateInfoARM(item: *const vk.VkTensorCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDescription) |ptr| size += size_of_VkTensorDescriptionARM(@ptrCast(ptr), false);
+    for (0..item.queueFamilyIndexCount) |_|
+        size += @sizeOf(u32);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_TENSOR_CREATE_INFO_ARM,
+                => size += size_of_VkExternalMemoryTensorCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkTensorCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkTensorCreateInfoARM);
+}
+pub fn size_of_VkTensorViewCreateInfoARM(item: *const vk.VkTensorViewCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_OPAQUE_CAPTURE_DESCRIPTOR_DATA_CREATE_INFO_EXT,
+                => size += size_of_VkOpaqueCaptureDescriptorDataCreateInfoEXT(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkTensorViewCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkTensorViewCreateInfoARM);
+}
+pub fn size_of_VkTensorMemoryRequirementsInfoARM(item: *const vk.VkTensorMemoryRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorMemoryRequirementsInfoARM);
+}
+pub fn size_of_VkBindTensorMemoryInfoARM(item: *const vk.VkBindTensorMemoryInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindTensorMemoryInfoARM);
+}
+pub fn size_of_VkWriteDescriptorSetTensorARM(item: *const vk.VkWriteDescriptorSetTensorARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tensorViewCount) |_|
+        size += @sizeOf(vk.VkTensorViewARM);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkWriteDescriptorSetTensorARM);
+}
+pub fn size_of_VkTensorFormatPropertiesARM(item: *const vk.VkTensorFormatPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorFormatPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceTensorPropertiesARM(item: *const vk.VkPhysicalDeviceTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTensorPropertiesARM);
+}
+pub fn size_of_VkTensorMemoryBarrierARM(item: *const vk.VkTensorMemoryBarrierARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorMemoryBarrierARM);
+}
+pub fn size_of_VkTensorDependencyInfoARM(item: *const vk.VkTensorDependencyInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pTensorMemoryBarriers) |ptr| size += size_of_VkTensorMemoryBarrierARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorDependencyInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceTensorFeaturesARM(item: *const vk.VkPhysicalDeviceTensorFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceTensorFeaturesARM);
+}
+pub fn size_of_VkDeviceTensorMemoryRequirementsARM(item: *const vk.VkDeviceTensorMemoryRequirementsARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pCreateInfo) |ptr| size += size_of_VkTensorCreateInfoARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDeviceTensorMemoryRequirementsARM);
+}
+pub fn size_of_VkCopyTensorInfoARM(item: *const vk.VkCopyTensorInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.regionCount) |i|
+        size += size_of_VkTensorCopyARM(@ptrCast(&item.pRegions[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkCopyTensorInfoARM);
+}
+pub fn size_of_VkTensorCopyARM(item: *const vk.VkTensorCopyARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+    for (0..item.dimensionCount) |_|
+        size += @sizeOf(u64);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkTensorCopyARM);
+}
+pub fn size_of_VkMemoryDedicatedAllocateInfoTensorARM(item: *const vk.VkMemoryDedicatedAllocateInfoTensorARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkMemoryDedicatedAllocateInfoTensorARM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferTensorPropertiesARM(item: *const vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferTensorPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceDescriptorBufferTensorFeaturesARM(item: *const vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDescriptorBufferTensorFeaturesARM);
+}
+pub fn size_of_VkTensorCaptureDescriptorDataInfoARM(item: *const vk.VkTensorCaptureDescriptorDataInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorCaptureDescriptorDataInfoARM);
+}
+pub fn size_of_VkTensorViewCaptureDescriptorDataInfoARM(item: *const vk.VkTensorViewCaptureDescriptorDataInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkTensorViewCaptureDescriptorDataInfoARM);
+}
+pub fn size_of_VkDescriptorGetTensorInfoARM(item: *const vk.VkDescriptorGetTensorInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDescriptorGetTensorInfoARM);
+}
+pub fn size_of_VkFrameBoundaryTensorsARM(item: *const vk.VkFrameBoundaryTensorsARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.tensorCount) |_|
+        size += @sizeOf(vk.VkTensorARM);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkFrameBoundaryTensorsARM);
+}
+pub fn size_of_VkPhysicalDeviceExternalTensorInfoARM(item: *const vk.VkPhysicalDeviceExternalTensorInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pDescription) |ptr| size += size_of_VkTensorDescriptionARM(@ptrCast(ptr), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkPhysicalDeviceExternalTensorInfoARM);
+}
+pub fn size_of_VkExternalTensorPropertiesARM(item: *const vk.VkExternalTensorPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalTensorPropertiesARM);
+}
+pub fn size_of_VkExternalMemoryTensorCreateInfoARM(item: *const vk.VkExternalMemoryTensorCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkExternalMemoryTensorCreateInfoARM);
 }
 pub fn size_of_VkPhysicalDeviceShaderFloat8FeaturesEXT(item: *const vk.VkPhysicalDeviceShaderFloat8FeaturesEXT, follow_pnext: bool) usize {
     _ = item;
@@ -14667,4 +16997,206 @@ pub fn size_of_VkSurfaceCreateInfoOHOS(item: *const vk.VkSurfaceCreateInfoOHOS, 
     _ = item;
     _ = follow_pnext;
     return @sizeOf(vk.VkSurfaceCreateInfoOHOS);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphFeaturesARM(item: *const vk.VkPhysicalDeviceDataGraphFeaturesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphFeaturesARM);
+}
+pub fn size_of_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(item: *const vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineConstantARM(item: *const vk.VkDataGraphPipelineConstantARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    if (item.pConstantData) |ptr| size += @sizeOf(ptr.*);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+                => size += size_of_VkTensorDescriptionARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CONSTANT_TENSOR_SEMI_STRUCTURED_SPARSITY_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineConstantTensorSemiStructuredSparsityInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineConstantARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineConstantARM);
+}
+pub fn size_of_VkDataGraphPipelineResourceInfoARM(item: *const vk.VkDataGraphPipelineResourceInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_TENSOR_DESCRIPTION_ARM,
+                => size += size_of_VkTensorDescriptionARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineResourceInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return @sizeOf(vk.VkDataGraphPipelineResourceInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineCompilerControlCreateInfoARM(item: *const vk.VkDataGraphPipelineCompilerControlCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pVendorOptions)) |i|
+        size += @sizeOf(i);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelineCompilerControlCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineCreateInfoARM(item: *const vk.VkDataGraphPipelineCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.resourceInfoCount) |i|
+        size += size_of_VkDataGraphPipelineResourceInfoARM(@ptrCast(&item.pResourceInfos[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO,
+                => size += size_of_VkPipelineCreationFeedbackCreateInfo(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_COMPILER_CONTROL_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineCompilerControlCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineShaderModuleCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_IDENTIFIER_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphPipelineIdentifierCreateInfoARM(@ptrCast(next), false),
+                vk.VK_STRUCTURE_TYPE_DATA_GRAPH_PROCESSING_ENGINE_CREATE_INFO_ARM,
+                => size += size_of_VkDataGraphProcessingEngineCreateInfoARM(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineShaderModuleCreateInfoARM(item: *const vk.VkDataGraphPipelineShaderModuleCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (std.mem.span(item.pName)) |i|
+        size += @sizeOf(i);
+    if (item.pSpecializationInfo) |ptr| size += size_of_VkSpecializationInfo(@ptrCast(ptr), false);
+    for (0..item.constantCount) |i|
+        size += size_of_VkDataGraphPipelineConstantARM(@ptrCast(&item.pConstants[i]), false);
+
+    if (follow_pnext) {
+        var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item.pNext));
+        while (pnext) |next| {
+            pnext = next.pNext;
+            switch (next.sType) {
+                vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                => size += size_of_VkShaderModuleCreateInfo(@ptrCast(next), false),
+                else => |v| {
+                    log.debug(@src(), "Invalid pNext chain item for VkDataGraphPipelineShaderModuleCreateInfoARM: {d}", .{v});
+                },
+            }
+        }
+    }
+
+    return size + @sizeOf(vk.VkDataGraphPipelineShaderModuleCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionCreateInfoARM(item: *const vk.VkDataGraphPipelineSessionCreateInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionBindPointRequirementsInfoARM(item: *const vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionBindPointRequirementsInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionBindPointRequirementARM(item: *const vk.VkDataGraphPipelineSessionBindPointRequirementARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionBindPointRequirementARM);
+}
+pub fn size_of_VkDataGraphPipelineSessionMemoryRequirementsInfoARM(item: *const vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineSessionMemoryRequirementsInfoARM);
+}
+pub fn size_of_VkBindDataGraphPipelineSessionMemoryInfoARM(item: *const vk.VkBindDataGraphPipelineSessionMemoryInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkBindDataGraphPipelineSessionMemoryInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineInfoARM(item: *const vk.VkDataGraphPipelineInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineInfoARM);
+}
+pub fn size_of_VkDataGraphPipelinePropertyQueryResultARM(item: *const vk.VkDataGraphPipelinePropertyQueryResultARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.dataSize) |_|
+        size += @sizeOf(void);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelinePropertyQueryResultARM);
+}
+pub fn size_of_VkDataGraphPipelineIdentifierCreateInfoARM(item: *const vk.VkDataGraphPipelineIdentifierCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.identifierSize) |_|
+        size += @sizeOf(u8);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphPipelineIdentifierCreateInfoARM);
+}
+pub fn size_of_VkDataGraphPipelineDispatchInfoARM(item: *const vk.VkDataGraphPipelineDispatchInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkDataGraphPipelineDispatchInfoARM);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphProcessingEngineARM(item: *const vk.VkPhysicalDeviceDataGraphProcessingEngineARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphProcessingEngineARM);
+}
+pub fn size_of_VkPhysicalDeviceDataGraphOperationSupportARM(item: *const vk.VkPhysicalDeviceDataGraphOperationSupportARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceDataGraphOperationSupportARM);
+}
+pub fn size_of_VkQueueFamilyDataGraphPropertiesARM(item: *const vk.VkQueueFamilyDataGraphPropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyDataGraphPropertiesARM);
+}
+pub fn size_of_VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM(item: *const vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM);
+}
+pub fn size_of_VkQueueFamilyDataGraphProcessingEnginePropertiesARM(item: *const vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM, follow_pnext: bool) usize {
+    _ = item;
+    _ = follow_pnext;
+    return @sizeOf(vk.VkQueueFamilyDataGraphProcessingEnginePropertiesARM);
+}
+pub fn size_of_VkDataGraphProcessingEngineCreateInfoARM(item: *const vk.VkDataGraphProcessingEngineCreateInfoARM, follow_pnext: bool) usize {
+    var size: usize = 0;
+
+    for (0..item.processingEngineCount) |i|
+        size += size_of_VkPhysicalDeviceDataGraphProcessingEngineARM(@ptrCast(&item.pProcessingEngines[i]), false);
+
+    _ = follow_pnext;
+    return size + @sizeOf(vk.VkDataGraphProcessingEngineCreateInfoARM);
 }
