@@ -9,7 +9,6 @@ const parsing = @import("parsing.zig");
 const vv = @import("vulkan_validation.zig");
 const vulkan = @import("vulkan.zig");
 
-const PDF = @import("physical_device_features.zig");
 const Database = @import("database.zig");
 
 const Validation = vv.Validation;
@@ -172,16 +171,16 @@ pub fn main() !void {
         instance.instance,
         args.enable_validation,
     );
-    var device_features: PDF = .{};
-    var device_features_2: vk.VkPhysicalDeviceFeatures2 = .{};
+    var pdf: vk.VkPhysicalDeviceFeatures2 = .{};
+    var additional_pdf: vv.AdditionalPDF = .{};
     const device = try vulkan.create_vk_device(
         tmp_alloc,
         &instance,
         &physical_device,
         parsed_application_info.application_info,
         parsed_application_info.device_features2,
-        &device_features_2,
-        &device_features,
+        &pdf,
+        &additional_pdf,
         args.enable_validation,
     );
     const extensions: vv.Extensions = try .init(
@@ -195,8 +194,8 @@ pub fn main() !void {
     const validation: Validation = .{
         .api_version = instance.api_version,
         .extensions = &extensions,
-        .device_features = &device_features,
-        .device_features_2 = &device_features_2,
+        .pdf = &pdf,
+        .additional_pdf = &additional_pdf,
     };
 
     var thread_pool: ThreadPool = undefined;

@@ -14,7 +14,6 @@ const vulkan = @import("vulkan.zig");
 const vv = @import("vulkan_validation.zig");
 
 const Validation = vv.Validation;
-const PDF = @import("physical_device_features.zig");
 
 const Allocator = std.mem.Allocator;
 

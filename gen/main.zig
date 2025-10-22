@@ -1,7 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const physical_device_features = @import("physical_device_features_gen.zig");
 const vkp = @import("vulkan_parsing.zig");
 const vulkan_utils = @import("vulkan_utils_gen.zig");
 const vulkan_validation = @import("vulkan_validation_gen.zig");
@@ -220,8 +219,6 @@ pub fn get_type(alloc: Allocator, stype: []const u8) ![]const u8 {
 }
 
 pub fn main() !void {
-    try physical_device_features.gen();
-
     const db: vkp.Database = try .init(
         std.heap.page_allocator,
         "thirdparty/Vulkan-Headers/registry/vk.xml",
