@@ -16,6 +16,7 @@ const HEADER =
     \\const log = @import("log.zig");
     \\const Allocator = std.mem.Allocator;
     \\
+    \\
 ;
 
 pub fn gen(db: *const vkp.Database) !void {
@@ -142,14 +143,65 @@ fn write_check_result(
     db: *const vkp.Database,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
+
+    const vk_result = db.enum_by_name("VkResult").?;
+    var used_enums: std.StringArrayHashMapUnmanaged([]const u8) = .empty;
+    {
+        var iter = db.all_extensions();
+        while (iter.next()) |tuple| {
+            const ext, _ = tuple;
+            for (ext.require) |*req| {
+                for (req.items) |item| {
+                    switch (item) {
+                        .@"enum" => |ee| {
+                            const enum_name = if (ee.alias) |a| a else ee.name;
+                            if (eql(ee.extends, "VkResult")) {
+                                if (used_enums.getPtr(enum_name) != null) continue;
+                                try used_enums.put(alloc, enum_name, ext.name);
+                            }
+                        },
+                        else => {},
+                    }
+                }
+            }
+        }
+    }
+
     w.write(
-        \\pub fn check_result(result: vk.VkResult) !void {{
+        \\pub const Error = error {{
+        \\
+    , .{});
+    for (vk_result.items) |*item| {
+        if (eql(item.name, "VK_SUCCESS")) continue;
+        w.write(
+            \\        {[name]s},
+            \\
+        ,
+            .{ .name = item.name },
+        );
+    }
+    for (used_enums.keys()) |name| {
+        w.write(
+            \\        {[name]s},
+            \\
+        ,
+            .{ .name = name },
+        );
+    }
+    w.write(
+        \\    VK_UNKNOWN,
+        \\}};
+        \\
+        \\
+    , .{});
+
+    w.write(
+        \\pub fn check_result(result: vk.VkResult) Error!void {{
         \\    switch (result) {{
         \\        vk.VK_SUCCESS => return,
         \\
     , .{});
-    const e = db.enum_by_name("VkResult").?;
-    for (e.items) |*item| {
+    for (vk_result.items) |*item| {
         if (eql(item.name, "VK_SUCCESS")) continue;
         w.write(
             \\        vk.{[name]s} => {{
@@ -161,38 +213,23 @@ fn write_check_result(
             .{ .name = item.name, .comment = item.comment },
         );
     }
-    var used_enums: std.StringArrayHashMapUnmanaged(void) = .empty;
-    var iter = db.all_extensions();
-    while (iter.next()) |tuple| {
-        const ext, _ = tuple;
-        for (ext.require) |*req| {
-            for (req.items) |item| {
-                switch (item) {
-                    .@"enum" => |ee| {
-                        const enum_name = if (ee.alias) |a| a else ee.name;
-                        if (eql(ee.extends, "VkResult")) {
-                            if (used_enums.getPtr(enum_name) != null) continue;
-                            try used_enums.put(alloc, enum_name, {});
-                            w.write(
-                                \\        vk.{[name]s} => {{
-                                \\            log.err(@src(), "Vulkan error: {[name]s} ({[extension]s})", .{{}});
-                                \\            return error.{s};
-                                \\        }},
-                                \\
-                            ,
-                                .{ .name = enum_name, .extension = ext.name },
-                            );
-                        }
-                    },
-                    else => {},
-                }
-            }
-        }
+    var iter = used_enums.iterator();
+    while (iter.next()) |entry| {
+        if (eql(entry.key_ptr.*, "VK_SUCCESS")) continue;
+        w.write(
+            \\        vk.{[name]s} => {{
+            \\            log.err(@src(), "Vulkan error: {[name]s} ({[extension]s})", .{{}});
+            \\            return error.{s};
+            \\        }},
+            \\
+        ,
+            .{ .name = entry.key_ptr.*, .extension = entry.value_ptr.* },
+        );
     }
     w.write(
         \\        else => {{
         \\            log.err(@src(), "Vulkan error: UNKNOWN {{}}", .{{result}});
-        \\            return error.UNKNOWN;
+        \\            return error.VK_UNKNOWN;
         \\        }},
         \\    }}
         \\}}

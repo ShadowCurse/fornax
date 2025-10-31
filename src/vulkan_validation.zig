@@ -8,7 +8,58 @@ const vk = @import("volk");
 const spirv = @import("spirv");
 const log = @import("log.zig");
 const Allocator = std.mem.Allocator;
-pub fn check_result(result: vk.VkResult) !void {
+
+pub const Error = error {
+        VK_NOT_READY,
+        VK_TIMEOUT,
+        VK_EVENT_SET,
+        VK_EVENT_RESET,
+        VK_INCOMPLETE,
+        VK_ERROR_OUT_OF_HOST_MEMORY,
+        VK_ERROR_OUT_OF_DEVICE_MEMORY,
+        VK_ERROR_INITIALIZATION_FAILED,
+        VK_ERROR_DEVICE_LOST,
+        VK_ERROR_MEMORY_MAP_FAILED,
+        VK_ERROR_LAYER_NOT_PRESENT,
+        VK_ERROR_EXTENSION_NOT_PRESENT,
+        VK_ERROR_FEATURE_NOT_PRESENT,
+        VK_ERROR_INCOMPATIBLE_DRIVER,
+        VK_ERROR_TOO_MANY_OBJECTS,
+        VK_ERROR_FORMAT_NOT_SUPPORTED,
+        VK_ERROR_FRAGMENTED_POOL,
+        VK_ERROR_UNKNOWN,
+        VK_ERROR_SURFACE_LOST_KHR,
+        VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,
+        VK_SUBOPTIMAL_KHR,
+        VK_ERROR_OUT_OF_DATE_KHR,
+        VK_ERROR_INCOMPATIBLE_DISPLAY_KHR,
+        VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR,
+        VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR,
+        VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR,
+        VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR,
+        VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR,
+        VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR,
+        VK_ERROR_OUT_OF_POOL_MEMORY,
+        VK_ERROR_INVALID_EXTERNAL_HANDLE,
+        VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT,
+        VK_ERROR_FRAGMENTATION,
+        VK_ERROR_NOT_PERMITTED,
+        VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
+        VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,
+        VK_THREAD_IDLE_KHR,
+        VK_THREAD_DONE_KHR,
+        VK_OPERATION_DEFERRED_KHR,
+        VK_OPERATION_NOT_DEFERRED_KHR,
+        VK_PIPELINE_COMPILE_REQUIRED,
+        VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR,
+        VK_ERROR_COMPRESSION_EXHAUSTED_EXT,
+        VK_INCOMPATIBLE_SHADER_BINARY_EXT,
+        VK_PIPELINE_BINARY_MISSING_KHR,
+        VK_ERROR_NOT_ENOUGH_SPACE_KHR,
+    VK_UNKNOWN,
+};
+
+pub fn check_result(result: vk.VkResult) Error!void {
     switch (result) {
         vk.VK_SUCCESS => return,
         vk.VK_NOT_READY => {
@@ -197,7 +248,7 @@ pub fn check_result(result: vk.VkResult) !void {
         },
         else => {
             log.err(@src(), "Vulkan error: UNKNOWN {}", .{result});
-            return error.UNKNOWN;
+            return error.VK_UNKNOWN;
         },
     }
 }
