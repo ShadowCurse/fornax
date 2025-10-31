@@ -14,12 +14,18 @@ const vulkan = @import("vulkan.zig");
 const vv = @import("vulkan_validation.zig");
 
 const Validation = vv.Validation;
-
 const Allocator = std.mem.Allocator;
 
 file: std.fs.File,
 entries: EntriesType,
 arena: std.heap.ArenaAllocator,
+
+pub const CrcError = error{CrcMissmatch};
+pub const MinizError = error{ CannotUncompressPayload, DecompressedSizeMissmatch };
+pub const GetPayloadError = std.fs.File.PReadError ||
+    std.mem.Allocator.Error ||
+    CrcError ||
+    MinizError;
 
 const Database = @This();
 
@@ -109,7 +115,7 @@ pub const Entry = struct {
         alloc: Allocator,
         tmp_alloc: Allocator,
         db: *const Database,
-    ) ![]const u8 {
+    ) GetPayloadError![]const u8 {
         switch (self.payload_flag) {
             .not_compressed => {
                 const payload = try alloc.alloc(u8, self.payload_stored_size);
@@ -126,7 +132,7 @@ pub const Entry = struct {
                         payload.len,
                     );
                     if (calculated_crc != self.payload_crc)
-                        return error.crc_missmatch;
+                        return error.CrcMissmatch;
                 }
                 return payload;
             },
@@ -145,7 +151,7 @@ pub const Entry = struct {
                         payload.len,
                     );
                     if (calculated_crc != self.payload_crc)
-                        return error.crc_missmatch;
+                        return error.CrcMissmatch;
                 }
 
                 const decompressed_payload = try alloc.alloc(u8, self.payload_decompressed_size);
@@ -156,9 +162,9 @@ pub const Entry = struct {
                     payload.ptr,
                     payload.len,
                 ) != miniz.MZ_OK)
-                    return error.cannot_uncompress_payload;
+                    return error.CannotUncompressPayload;
                 if (decompressed_len != self.payload_decompressed_size)
-                    return error.decompressed_size_missmatch;
+                    return error.DecompressedSizeMissmatch;
                 return decompressed_payload;
             },
         }
@@ -488,10 +494,8 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.check_version_and_hash(result);
-                if (!vv.validate_shader_code(validation, @ptrCast(result.create_info))) {
-                    log.err(@src(), "Invalid shader module 0x{x}", .{self.hash});
+                if (!vv.validate_shader_code(validation, @ptrCast(result.create_info)))
                     return error.InvalidShaderCode;
-                }
 
                 self.handle = try CREATE.create_shader_module(
                     vk_device,
