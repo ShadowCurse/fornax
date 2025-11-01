@@ -579,7 +579,7 @@ pub fn parse_threaded(
 ) !void {
     var remaining_entries = root_entries;
     if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        const chunk_size = remaining_entries.len / thread_contexts.len;
         for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
             remaining_entries = remaining_entries[chunk_size..];
@@ -712,7 +712,7 @@ pub fn create_threaded(
 ) !void {
     var remaining_entries = root_entries;
     if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / (thread_contexts.len - 1);
+        const chunk_size = remaining_entries.len / thread_contexts.len;
         for (thread_contexts[1..]) |*tc| {
             const chunk = remaining_entries[0..chunk_size];
             remaining_entries = remaining_entries[chunk_size..];
