@@ -835,7 +835,12 @@ test "parse" {
             .shared_alloc = alloc,
             .progress = &progress,
             .db = &db,
-            .validation = undefined,
+            .validation = &.{
+                .api_version = 0,
+                .extensions = &.{},
+                .pdf = &.{},
+                .additional_pdf = &.{},
+            },
             .vk_device = undefined,
         };
 
@@ -918,7 +923,12 @@ test "parse" {
             .shared_alloc = alloc,
             .progress = &progress,
             .db = &db,
-            .validation = undefined,
+            .validation = &.{
+                .api_version = 0,
+                .extensions = &.{},
+                .pdf = &.{},
+                .additional_pdf = &.{},
+            },
             .vk_device = undefined,
         };
 

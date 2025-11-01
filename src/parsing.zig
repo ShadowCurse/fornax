@@ -2154,8 +2154,8 @@ test "test_parse_vk_shader_module_create_info" {
     const json =
         \\{
         \\  "varintOffset": 0,
-        \\  "varintSize": 0,
-        \\  "codeSize": 1,
+        \\  "varintSize": 1,
+        \\  "codeSize": 4,
         \\  "flags": 69
         \\}
     ;
@@ -2182,7 +2182,7 @@ test "test_parse_vk_shader_module_create_info" {
     );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(1, item.codeSize);
+    try std.testing.expectEqual(4, item.codeSize);
     try std.testing.expect(item.pCode != null);
 }
 
