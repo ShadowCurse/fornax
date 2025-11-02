@@ -622,7 +622,6 @@ pub fn create_inner(
 
     for (root_entries) |*root_entry| {
         defer _ = context.arena.reset(.retain_capacity);
-        defer _ = root_entry.arena.reset(.free_all);
         defer progress.completeOne();
 
         const tmp_alloc = context.arena.allocator();
@@ -675,6 +674,7 @@ pub fn create_inner(
                 },
             }
         } else {
+            _ = root_entry.arena.reset(.free_all);
             switch (root_entry.entry.tag) {
                 .graphics_pipeline => {
                     _ = created_graphics.fetchAdd(1, .release);
