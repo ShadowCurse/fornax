@@ -11,7 +11,7 @@ $ zig build
 ```
 or in `ReleaseFast` mode
 ```bash
-$ zig build -Doptimize=ReleaseFast
+$ zig build -Doptimize=ReleaseFast -Duse_llvm
 ```
 
 ## Run
