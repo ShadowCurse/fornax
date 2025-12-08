@@ -12,9 +12,16 @@ const log = @import("log.zig");
 const parsing = @import("parsing.zig");
 const vulkan = @import("vulkan.zig");
 const vv = @import("vulkan_validation.zig");
+const profiler = @import("profiler.zig");
 
 const Validation = vv.Validation;
 const Allocator = std.mem.Allocator;
+
+pub const MEASUREMENTS = profiler.Measurements(
+    "database",
+    profiler.all_function_names_in_struct(@This()) ++
+        profiler.all_function_names_in_struct(Entry),
+);
 
 file: std.fs.File,
 entries: EntriesType,
@@ -116,6 +123,9 @@ pub const Entry = struct {
         tmp_alloc: Allocator,
         db: *const Database,
     ) GetPayloadError![]const u8 {
+        const prof_point = MEASUREMENTS.start(@src());
+        defer MEASUREMENTS.end(prof_point);
+
         switch (self.payload_flag) {
             .not_compressed => {
                 const payload = try alloc.alloc(u8, self.payload_stored_size);
@@ -203,6 +213,9 @@ pub const Entry = struct {
         db: *Database,
         validation: *const Validation,
     ) ParseResult {
+        const prof_point = MEASUREMENTS.start_named("parse");
+        defer MEASUREMENTS.end(prof_point);
+
         if (self.status.cmpxchgStrong(.not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
             log.assert(
                 @src(),
@@ -257,12 +270,15 @@ pub const Entry = struct {
         return .parsed;
     }
 
-    fn process_result_with_dependencies(
+    pub fn process_result_with_dependencies(
         self: *Entry,
         alloc: Allocator,
         db: *Database,
         result: *const parsing.ResultWithDependencies,
     ) !void {
+        const prof_point = MEASUREMENTS.start(@src());
+        defer MEASUREMENTS.end(prof_point);
+
         try self.check_version_and_hash(result);
         self.create_info = result.create_info;
         const dependencies = try alloc.alloc(Dependency, result.dependencies.len);
@@ -277,7 +293,7 @@ pub const Entry = struct {
         self.dependencies = dependencies;
     }
 
-    fn parse_inner(
+    pub fn parse_inner(
         self: *Entry,
         comptime PARSE: type,
         dependency_alloc: Allocator,
@@ -287,6 +303,9 @@ pub const Entry = struct {
         validation: *const Validation,
         payload: []const u8,
     ) !void {
+        const prof_point = MEASUREMENTS.start_named("parse_inner");
+        defer MEASUREMENTS.end(prof_point);
+
         switch (self.tag) {
             .sampler => {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
@@ -417,6 +436,9 @@ pub const Entry = struct {
         validation: *const Validation,
         vk_device: vk.VkDevice,
     ) CreateResult {
+        const prof_point = MEASUREMENTS.start_named("create");
+        defer MEASUREMENTS.end(prof_point);
+
         for (self.dependencies) |dep| {
             const d_status = dep.entry.status.load(.seq_cst);
             if (d_status == .invalid) {
@@ -454,7 +476,7 @@ pub const Entry = struct {
         return .created;
     }
 
-    fn create_inner(
+    pub fn create_inner(
         self: *Entry,
         comptime PARSE: type,
         comptime CREATE: type,
@@ -463,6 +485,9 @@ pub const Entry = struct {
         validation: *const Validation,
         vk_device: vk.VkDevice,
     ) !void {
+        const prof_point = MEASUREMENTS.start_named("create_inner");
+        defer MEASUREMENTS.end(prof_point);
+
         for (self.dependencies, 0..) |dep, i| {
             log.assert(
                 @src(),
@@ -523,6 +548,9 @@ pub const Entry = struct {
     }
 
     pub fn decrement_dependencies(self: *Entry) void {
+        const prof_point = MEASUREMENTS.start(@src());
+        defer MEASUREMENTS.end(prof_point);
+
         if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
             return;
 
@@ -535,6 +563,9 @@ pub const Entry = struct {
         comptime DESTROY: type,
         vk_device: vk.VkDevice,
     ) void {
+        const prof_point = MEASUREMENTS.start_named("destroy_dependencies");
+        defer MEASUREMENTS.end(prof_point);
+
         if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
             return;
 
@@ -545,6 +576,9 @@ pub const Entry = struct {
     }
 
     pub fn destroy(self: *Entry, comptime DESTROY: type, vk_device: vk.VkDevice) void {
+        const prof_point = MEASUREMENTS.start_named("destroy");
+        defer MEASUREMENTS.end(prof_point);
+
         const status = self.status.load(.seq_cst);
         if (status != .created) return;
 
@@ -641,6 +675,9 @@ pub const FileEntry = extern struct {
 };
 
 pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8) !Database {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     log.info(@src(), "Openning database as path: {s}", .{path});
     // const file = try std.fs.openFileAbsolute(path, .{});
     const file = try std.fs.cwd().openFile(path, .{});

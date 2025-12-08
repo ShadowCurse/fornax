@@ -10,8 +10,14 @@ const vk = @import("volk");
 const a = @import("spirv");
 const log = @import("log.zig");
 const vv = @import("vulkan_validation.zig");
+const profiler = @import("profiler.zig");
 
 const Allocator = std.mem.Allocator;
+
+pub const MEASUREMENTS = profiler.Measurements(
+    "vulkan",
+    profiler.all_function_names_in_struct(@This()),
+);
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
 const VK_ADDITIONAL_EXTENSIONS_NAMES = [_][*c]const u8{"VK_EXT_debug_utils"};
@@ -56,6 +62,9 @@ pub fn contains_all_layers(
     layers: []const vk.VkLayerProperties,
     to_find: []const [*c]const u8,
 ) bool {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var found_layers: u32 = 0;
     for (layers) |l| {
         var required = "--------";
@@ -82,6 +91,9 @@ pub fn contains_all_layers(
 }
 
 pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionProperties {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var extensions_count: u32 = 0;
     try vv.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
         null,
@@ -98,6 +110,9 @@ pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionPr
 }
 
 pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayerProperties {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var layer_property_count: u32 = 0;
     try vv.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
     const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
@@ -119,6 +134,9 @@ pub fn create_vk_instance(
     requested_app_info: ?*const vk.VkApplicationInfo,
     enable_validation: bool,
 ) !Instance {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const api_version = vk.volkGetInstanceVersion();
     log.info(
         @src(),
@@ -215,6 +233,9 @@ pub fn create_vk_instance(
 }
 
 pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const create_info = vk.VkDebugReportCallbackCreateInfoEXT{
         .sType = vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
         .pfnCallback = debug_callback,
@@ -257,6 +278,9 @@ pub fn get_physical_devices(
     arena_alloc: Allocator,
     vk_instance: vk.VkInstance,
 ) ![]const vk.VkPhysicalDevice {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var physical_device_count: u32 = 0;
     try vv.check_result(vk.vkEnumeratePhysicalDevices.?(
         vk_instance,
@@ -280,6 +304,9 @@ pub fn get_physical_device_exensions(
     physical_device: vk.VkPhysicalDevice,
     extension_name: [*c]const u8,
 ) ![]const vk.VkExtensionProperties {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var extensions_count: u32 = 0;
     try vv.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
@@ -301,6 +328,9 @@ pub fn get_physical_device_layers(
     arena_alloc: Allocator,
     physical_device: vk.VkPhysicalDevice,
 ) ![]const vk.VkLayerProperties {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var layer_property_count: u32 = 0;
     try vv.check_result(vk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
@@ -327,6 +357,9 @@ pub fn select_physical_device(
     vk_instance: vk.VkInstance,
     enable_validation: bool,
 ) !PhysicalDevice {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const physical_devices = try get_physical_devices(arena_alloc, vk_instance);
 
     for (physical_devices) |physical_device| {
@@ -417,6 +450,9 @@ pub fn usable_device_extension(
     all_ext_props: []const vk.VkExtensionProperties,
     api_version: u32,
 ) bool {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const e = std.mem.span(ext);
     if (std.mem.eql(u8, e, vk.VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME))
         // illigal to enable with maintenance1
@@ -470,7 +506,10 @@ pub fn usable_device_extension(
     return true;
 }
 
-fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
+pub fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item));
     while (pnext) |next| {
         pnext = next.pNext;
@@ -479,11 +518,14 @@ fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
     return null;
 }
 
-fn filter_features(
+pub fn filter_features(
     current_pdf: *vk.VkPhysicalDeviceFeatures2,
     additional_pdf: *vv.AdditionalPDF,
     wanted_pdf: ?*const vk.VkPhysicalDeviceFeatures2,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const Inner = struct {
         fn reset(item: anytype) void {
             const child = @typeInfo(@TypeOf(item)).pointer.child;
@@ -596,10 +638,13 @@ fn filter_features(
     }
 }
 
-fn filter_active_extensions(
+pub fn filter_active_extensions(
     current_features: *vk.VkPhysicalDeviceFeatures2,
     all_extenson_names: [][*c]const u8,
 ) [][*c]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const Inner = struct {
         fn remove_from_slice(slice: [][*c]const u8, value: [:0]const u8) [][*c]const u8 {
             for (slice, 0..) |name, i| {
@@ -830,6 +875,9 @@ pub fn create_vk_device(
     additional_pdf: *vv.AdditionalPDF,
     enable_validation: bool,
 ) !Device {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const queue_priority: f32 = 1.0;
     const queue_create_info = vk.VkDeviceQueueCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -965,6 +1013,9 @@ pub fn create_vk_sampler(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkSamplerCreateInfo,
 ) !vk.VkSampler {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var sampler: vk.VkSampler = undefined;
     try vv.check_result(vk.vkCreateSampler.?(
         vk_device,
@@ -979,6 +1030,9 @@ pub fn destroy_vk_sampler(
     vk_device: vk.VkDevice,
     sampler: vk.VkSampler,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroySampler.?(vk_device, sampler, null);
 }
 
@@ -986,6 +1040,9 @@ pub fn create_descriptor_set_layout(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
 ) !vk.VkDescriptorSetLayout {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var descriptor_set_layout: vk.VkDescriptorSetLayout = undefined;
     try vv.check_result(vk.vkCreateDescriptorSetLayout.?(
         vk_device,
@@ -1000,6 +1057,9 @@ pub fn destroy_descriptor_set_layout(
     vk_device: vk.VkDevice,
     layout: vk.VkDescriptorSetLayout,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroyDescriptorSetLayout.?(vk_device, layout, null);
 }
 
@@ -1007,6 +1067,9 @@ pub fn create_pipeline_layout(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkPipelineLayoutCreateInfo,
 ) !vk.VkPipelineLayout {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var pipeline_layout: vk.VkPipelineLayout = undefined;
     try vv.check_result(vk.vkCreatePipelineLayout.?(
         vk_device,
@@ -1021,6 +1084,9 @@ pub fn destroy_pipeline_layout(
     vk_device: vk.VkDevice,
     layout: vk.VkPipelineLayout,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroyPipelineLayout.?(vk_device, layout, null);
 }
 
@@ -1028,6 +1094,9 @@ pub fn create_shader_module(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkShaderModuleCreateInfo,
 ) !vk.VkShaderModule {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var shader_module: vk.VkShaderModule = undefined;
     try vv.check_result(vk.vkCreateShaderModule.?(
         vk_device,
@@ -1042,6 +1111,9 @@ pub fn destroy_shader_module(
     vk_device: vk.VkDevice,
     shader_module: vk.VkShaderModule,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroyShaderModule.?(vk_device, shader_module, null);
 }
 
@@ -1049,6 +1121,9 @@ pub fn create_render_pass(
     vk_device: vk.VkDevice,
     create_info: *align(8) const anyopaque,
 ) !vk.VkRenderPass {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const base_type: *const vk.VkBaseInStructure = @ptrCast(create_info);
     var render_pass: vk.VkRenderPass = undefined;
     switch (base_type.sType) {
@@ -1075,6 +1150,9 @@ pub fn destroy_render_pass(
     vk_device: vk.VkDevice,
     render_pass: vk.VkRenderPass,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroyRenderPass.?(vk_device, render_pass, null);
 }
 
@@ -1082,7 +1160,9 @@ pub fn create_graphics_pipeline(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkGraphicsPipelineCreateInfo,
 ) !vk.VkPipeline {
-    // vu.print_chain(create_info);
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var pipeline: vk.VkPipeline = undefined;
     try vv.check_result(vk.vkCreateGraphicsPipelines.?(
         vk_device,
@@ -1099,6 +1179,9 @@ pub fn create_compute_pipeline(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkComputePipelineCreateInfo,
 ) !vk.VkPipeline {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var pipeline: vk.VkPipeline = undefined;
     try vv.check_result(vk.vkCreateComputePipelines.?(
         vk_device,
@@ -1115,6 +1198,9 @@ pub fn create_raytracing_pipeline(
     vk_device: vk.VkDevice,
     create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
 ) !vk.VkPipeline {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var pipeline: vk.VkPipeline = undefined;
     try vv.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
         vk_device,
@@ -1132,5 +1218,8 @@ pub fn destroy_pipeline(
     vk_device: vk.VkDevice,
     pipeline: vk.VkPipeline,
 ) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     vk.vkDestroyPipeline.?(vk_device, pipeline, null);
 }

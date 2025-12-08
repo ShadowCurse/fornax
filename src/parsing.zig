@@ -10,9 +10,16 @@ const vk = @import("volk");
 const log = @import("log.zig");
 const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
+const profiler = @import("profiler.zig");
+
 const Database = @import("database.zig");
 
 const Allocator = std.mem.Allocator;
+
+pub const MEASUREMENTS = profiler.Measurements(
+    "parsing",
+    profiler.all_function_names_in_struct(@This()),
+);
 
 pub const Context = struct {
     alloc: Allocator,
@@ -48,6 +55,9 @@ pub fn parse_application_info(
     database: *const Database,
     json_str: []const u8,
 ) Error!ParsedApplicationInfo {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const vk_application_info = try alloc.create(vk.VkApplicationInfo);
     const vk_physical_device_features2 = try alloc.create(vk.VkPhysicalDeviceFeatures2);
@@ -122,6 +132,9 @@ pub fn parse_sampler(
     database: *const Database,
     json_str: []const u8,
 ) Error!Result {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkSamplerCreateInfo);
     create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
@@ -181,6 +194,9 @@ pub fn parse_descriptor_set_layout(
     database: *const Database,
     json_str: []const u8,
 ) Error!ResultWithDependencies {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info =
         try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
@@ -244,6 +260,9 @@ pub fn parse_pipeline_layout(
     database: *const Database,
     json_str: []const u8,
 ) Error!ResultWithDependencies {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
 
@@ -306,6 +325,9 @@ pub fn parse_shader_module(
     database: *const Database,
     payload: []const u8,
 ) Error!Result {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     // For shader modules the payload is divided in to 2 parts: json and code.
     // json part is 0 teriminated.
     const json_str = std.mem.span(@as([*c]const u8, @ptrCast(payload.ptr)));
@@ -376,6 +398,9 @@ pub fn parse_render_pass(
     database: *const Database,
     json_str: []const u8,
 ) Error!Result {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
 
     var result: Result = .{
@@ -442,6 +467,9 @@ pub fn parse_compute_pipeline(
     database: *const Database,
     json_str: []const u8,
 ) Error!ResultWithDependencies {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkComputePipelineCreateInfo);
 
@@ -505,6 +533,9 @@ pub fn parse_raytracing_pipeline(
     database: *const Database,
     json_str: []const u8,
 ) Error!ResultWithDependencies {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkRayTracingPipelineCreateInfoKHR);
 
@@ -565,6 +596,9 @@ pub fn parse_graphics_pipeline(
     database: *const Database,
     json_str: []const u8,
 ) Error!ResultWithDependencies {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
 
@@ -622,7 +656,10 @@ test "parse_graphics_pipeline" {
     try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
-fn print_unexpected_token(token: std.json.Token) void {
+pub fn print_unexpected_token(token: std.json.Token) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (token) {
         .object_begin => log.err(
             @src(),
@@ -721,7 +758,10 @@ fn print_unexpected_token(token: std.json.Token) void {
     }
 }
 
-fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .number => |v| return v,
         else => |t| {
@@ -731,7 +771,10 @@ fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
     }
 }
 
-fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .string => |s| return s,
         else => |t| {
@@ -741,7 +784,10 @@ fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
     }
 }
 
-fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .string => |s| return s,
         .number => |v| return v,
@@ -752,7 +798,10 @@ fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]cons
     }
 }
 
-fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     loop: switch (try scanner.next()) {
         .string => |s| return s,
         .object_begin => continue :loop try scanner.next(),
@@ -764,7 +813,10 @@ fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u
     }
 }
 
-fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
+pub fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     loop: switch (try scanner.next()) {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return false,
@@ -776,7 +828,10 @@ fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
     }
 }
 
-fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
+pub fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .array_begin => return true,
         .array_end => return false,
@@ -787,7 +842,10 @@ fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
     }
 }
 
-fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     loop: switch (try scanner.next()) {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
@@ -799,7 +857,10 @@ fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u
     }
 }
 
-fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     loop: switch (try scanner.next()) {
         .array_begin => continue :loop try scanner.next(),
         .array_end => return null,
@@ -811,7 +872,10 @@ fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u
     }
 }
 
-fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
+pub fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .object_begin => return,
         else => |t| {
@@ -821,7 +885,10 @@ fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
     }
 }
 
-fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
+pub fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     switch (try scanner.next()) {
         .array_begin => return,
         else => |t| {
@@ -832,6 +899,9 @@ fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
 }
 
 pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
+    const prof_point = MEASUREMENTS.start_named("parse_simple_type");
+    defer MEASUREMENTS.end(prof_point);
+
     const output_type = @typeInfo(@TypeOf(output)).pointer.child;
     const output_fields = @typeInfo(output_type).@"struct".fields;
     log.comptime_assert(
@@ -880,7 +950,10 @@ pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
     }
 }
 
-fn parse_number_array(comptime T: type, context: *Context) Error![]T {
+pub fn parse_number_array(comptime T: type, context: *Context) Error![]T {
+    const prof_point = MEASUREMENTS.start_named("parse_number_array");
+    defer MEASUREMENTS.end(prof_point);
+
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     while (try scanner_array_next_number(context.scanner)) |v| {
@@ -890,7 +963,10 @@ fn parse_number_array(comptime T: type, context: *Context) Error![]T {
     return try context.alloc.dupe(T, tmp.items);
 }
 
-fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) Error!void {
+pub fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const v = try scanner_next_string(context.scanner);
     const hash = try std.fmt.parseInt(u64, v, 16);
     if (hash == 0)
@@ -906,7 +982,14 @@ fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*
     }
 }
 
-fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Context) Error![]T {
+pub fn parse_handle_array(
+    comptime T: type,
+    tag: Database.Entry.Tag,
+    context: *Context,
+) Error![]T {
+    const prof_point = MEASUREMENTS.start_named("parse_handle_array");
+    defer MEASUREMENTS.end(prof_point);
+
     try scanner_array_begin(context.scanner);
     var tmp: std.ArrayListUnmanaged(T) = .empty;
     var denpendencies_found: u32 = 0;
@@ -941,11 +1024,14 @@ fn parse_handle_array(comptime T: type, tag: Database.Entry.Tag, context: *Conte
     return final_array;
 }
 
-fn parse_object_array(
+pub fn parse_object_array(
     comptime T: type,
     comptime PARSE_FN: fn (*Context, *T) Error!void,
     context: *Context,
 ) Error![]T {
+    const prof_point = MEASUREMENTS.start_named("parse_object_array");
+    defer MEASUREMENTS.end(prof_point);
+
     const Inner = struct {
         fn migrate_dependencies(
             c: *Context,
@@ -1045,6 +1131,9 @@ pub fn parse_vk_physical_device_mesh_shader_features_ext(
     context: *Context,
     obj: *vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
     return parse_simple_type(context, obj);
 }
@@ -1053,6 +1142,9 @@ pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
     context: *Context,
     obj: *vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR };
     return parse_simple_type(context, obj);
 }
@@ -1061,6 +1153,9 @@ pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
     context: *Context,
     obj: *vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
     };
@@ -1080,6 +1175,9 @@ pub fn parse_vk_physical_device_robustness_2_features_khr(
     context: *Context,
     obj: *vk.VkPhysicalDeviceRobustness2FeaturesEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR };
     try parse_simple_type(context, obj);
 }
@@ -1088,6 +1186,9 @@ pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
     context: *Context,
     obj: *vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
     try parse_simple_type(context, obj);
 }
@@ -1096,6 +1197,9 @@ pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
     context: *Context,
     obj: *vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
     };
@@ -1106,6 +1210,9 @@ pub fn parse_vk_pipeline_create_flags_2_create_info(
     context: *Context,
     obj: *vk.VkPipelineCreateFlags2CreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
     try parse_simple_type(context, obj);
 }
@@ -1114,6 +1221,9 @@ pub fn parse_vk_pipeline_discard_rectangle_state_create_info_ext(
     context: *Context,
     item: *vk.VkPipelineDiscardRectangleStateCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -1143,6 +1253,9 @@ pub fn parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(
     context: *Context,
     item: *vk.VkPipelineFragmentShadingRateStateCreateInfoKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
     };
@@ -1168,6 +1281,9 @@ pub fn parse_vk_pipeline_rendering_create_info(
     context: *Context,
     item: *vk.VkPipelineRenderingCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
     };
@@ -1196,6 +1312,9 @@ pub fn parse_vk_rendering_attachment_location_info(
     context: *Context,
     item: *vk.VkRenderingAttachmentLocationInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "colorAttachmentLocations")) {
@@ -1213,6 +1332,9 @@ pub fn parse_vk_rendering_input_attachment_index_info(
     context: *Context,
     item: *vk.VkRenderingInputAttachmentIndexInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "colorAttachmentInputIndices")) {
@@ -1240,6 +1362,9 @@ pub fn parse_vk_pipeline_fragment_density_map_layered_create_info_valve(
     context: *Context,
     obj: *vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
     };
@@ -1250,6 +1375,9 @@ pub fn parse_vk_graphics_pipeline_library_create_info_ext(
     context: *Context,
     obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT };
     try parse_simple_type(context, obj);
 }
@@ -1258,6 +1386,9 @@ pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
     context: *Context,
     obj: *vk.VkPipelineVertexInputDivisorStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO };
     const Inner = struct {
         fn parse_vk_vertex_input_binding_divisor_description(
@@ -1291,6 +1422,9 @@ pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
     context: *Context,
     obj: *vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
     };
@@ -1301,6 +1435,9 @@ pub fn parse_vk_pipeline_rasterization_line_state_create_info(
     context: *Context,
     obj: *vk.VkPipelineRasterizationLineStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
     };
@@ -1311,6 +1448,9 @@ pub fn parse_vk_pipeline_robustness_create_info(
     context: *Context,
     obj: *vk.VkPipelineRobustnessCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
     };
@@ -1321,6 +1461,9 @@ pub fn parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(
     context: *Context,
     obj: *vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
     };
@@ -1331,16 +1474,22 @@ pub fn parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(
     context: *Context,
     obj: *vk.VkPipelineViewportDepthClipControlCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
     };
     try parse_simple_type(context, obj);
 }
 
-fn parse_vk_mutable_descriptor_type_list_ext(
+pub fn parse_vk_mutable_descriptor_type_list_ext(
     context: *Context,
     item: *vk.VkMutableDescriptorTypeListEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     const descriptor_types = try parse_number_array(u32, context);
     item.pDescriptorTypes = @ptrCast(descriptor_types.ptr);
@@ -1351,6 +1500,9 @@ pub fn parse_vk_mutable_descriptor_type_create_info_ext(
     context: *Context,
     obj: *vk.VkMutableDescriptorTypeCreateInfoEXT,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     obj.* = .{
         .sType = vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
     };
@@ -1432,6 +1584,9 @@ test "test_parse_vk_mutable_descriptor_type_create_info_ext" {
 }
 
 pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const Inner = struct {
         const Chain = struct {
             c: *Context,
@@ -1638,10 +1793,13 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
     return first_in_chain;
 }
 
-fn parse_vk_application_info(
+pub fn parse_vk_application_info(
     context: *Context,
     item: *vk.VkApplicationInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "applicationName")) {
@@ -1705,10 +1863,13 @@ test "test_parse_vk_application_info" {
     try std.testing.expectEqual(69, item.apiVersion);
 }
 
-fn parse_vk_physical_device_features2(
+pub fn parse_vk_physical_device_features2(
     context: *Context,
     item: *vk.VkPhysicalDeviceFeatures2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "robustBufferAccess")) {
@@ -1754,10 +1915,13 @@ test "test_parse_vk_physical_device_features2" {
     });
 }
 
-fn parse_vk_sampler_create_info(
+pub fn parse_vk_sampler_create_info(
     context: *Context,
     item: *vk.VkSamplerCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -1821,10 +1985,13 @@ test "test_parse_vk_sampler_create_info" {
     try std.testing.expectEqual(69, item.unnormalizedCoordinates);
 }
 
-fn parse_vk_descriptor_set_layout_create_info(
+pub fn parse_vk_descriptor_set_layout_create_info(
     context: *Context,
     item: *vk.VkDescriptorSetLayoutCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -1879,10 +2046,13 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
     try std.testing.expect(item.pBindings != null);
 }
 
-fn parse_vk_descriptor_set_layout_binding(
+pub fn parse_vk_descriptor_set_layout_binding(
     context: *Context,
     item: *vk.VkDescriptorSetLayoutBinding,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "descriptorType")) {
@@ -1963,10 +2133,13 @@ test "test_parse_vk_descriptor_set_layout_binding" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.pImmutableSamplers[0]));
 }
 
-fn parse_vk_pipeline_layout_create_info(
+pub fn parse_vk_pipeline_layout_create_info(
     context: *Context,
     item: *vk.VkPipelineLayoutCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -2050,10 +2223,13 @@ test "test_parse_vk_pipeline_layout_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.pSetLayouts[0]));
 }
 
-fn parse_vk_push_constant_range(
+pub fn parse_vk_push_constant_range(
     context: *Context,
     item: *vk.VkPushConstantRange,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -2086,11 +2262,14 @@ test "test_parse_vk_push_constant_range" {
     try std.testing.expectEqual(69, item.size);
 }
 
-fn parse_vk_shader_module_create_info(
+pub fn parse_vk_shader_module_create_info(
     context: *Context,
     item: *vk.VkShaderModuleCreateInfo,
     shader_code_payload: []const u8,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const Inner = struct {
         fn decode_shader_payload(input: []const u8, output: []u32) bool {
             var offset: u64 = 0;
@@ -2186,10 +2365,13 @@ test "test_parse_vk_shader_module_create_info" {
     try std.testing.expect(item.pCode != null);
 }
 
-fn parse_vk_render_pass_create_info(
+pub fn parse_vk_render_pass_create_info(
     context: *Context,
     item: *vk.VkRenderPassCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -2264,10 +2446,13 @@ test "test_parse_vk_render_pass_create_info" {
     try std.testing.expect(item.pDependencies != null);
 }
 
-fn parse_vk_render_pass_create_info2(
+pub fn parse_vk_render_pass_create_info2(
     context: *Context,
     item: *vk.VkRenderPassCreateInfo2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -2350,10 +2535,13 @@ test "test_parse_vk_render_pass_create_info2" {
     try std.testing.expectEqual(69, item.pCorrelatedViewMasks[1]);
 }
 
-fn parse_vk_subpass_dependency(
+pub fn parse_vk_subpass_dependency(
     context: *Context,
     item: *vk.VkSubpassDependency,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -2394,10 +2582,13 @@ test "test_parse_vk_subpass_dependency" {
     try std.testing.expectEqual(69, item.dependencyFlags);
 }
 
-fn parse_vk_subpass_dependency2(
+pub fn parse_vk_subpass_dependency2(
     context: *Context,
     item: *vk.VkSubpassDependency2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 };
     try parse_simple_type(context, item);
 }
@@ -2445,10 +2636,13 @@ test "test_parse_vk_subpass_dependency2" {
     try std.testing.expectEqual(69, item.viewOffset);
 }
 
-fn parse_vk_attachment_description(
+pub fn parse_vk_attachment_description(
     context: *Context,
     item: *vk.VkAttachmentDescription,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -2493,10 +2687,13 @@ test "test_parse_vk_attachment_description" {
     try std.testing.expectEqual(69, item.finalLayout);
 }
 
-fn parse_vk_attachment_description2(
+pub fn parse_vk_attachment_description2(
     context: *Context,
     item: *vk.VkAttachmentDescription2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 };
     try parse_simple_type(context, item);
 }
@@ -2546,10 +2743,13 @@ test "test_parse_vk_attachment_description2" {
     try std.testing.expectEqual(69, item.finalLayout);
 }
 
-fn parse_vk_subpass_description(
+pub fn parse_vk_subpass_description(
     context: *Context,
     item: *vk.VkSubpassDescription,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -2636,10 +2836,13 @@ test "test_parse_vk_subpass_description" {
     try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
 }
 
-fn parse_vk_subpass_description2(
+pub fn parse_vk_subpass_description2(
     context: *Context,
     item: *vk.VkSubpassDescription2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
@@ -2736,10 +2939,13 @@ test "test_parse_vk_subpass_description2" {
     try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
 }
 
-fn parse_vk_attachment_reference(
+pub fn parse_vk_attachment_reference(
     context: *Context,
     item: *vk.VkAttachmentReference,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -2770,10 +2976,13 @@ test "test_parse_vk_attachment_reference" {
     try std.testing.expectEqual(69, item.layout);
 }
 
-fn parse_vk_attachment_reference2(
+pub fn parse_vk_attachment_reference2(
     context: *Context,
     item: *vk.VkAttachmentReference2,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 };
     try parse_simple_type(context, item);
 }
@@ -2810,10 +3019,13 @@ test "test_parse_vk_attachment_reference2" {
     try std.testing.expectEqual(69, item.aspectMask);
 }
 
-fn parse_vk_graphics_pipeline_create_info(
+pub fn parse_vk_graphics_pipeline_create_info(
     context: *Context,
     item: *vk.VkGraphicsPipelineCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -2988,10 +3200,13 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.renderPass));
 }
 
-fn parse_vk_pipeline_shader_stage_create_info(
+pub fn parse_vk_pipeline_shader_stage_create_info(
     context: *Context,
     item: *vk.VkPipelineShaderStageCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3072,10 +3287,13 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.module));
 }
 
-fn parse_vk_pipeline_vertex_input_state_create_info(
+pub fn parse_vk_pipeline_vertex_input_state_create_info(
     context: *Context,
     item: *vk.VkPipelineVertexInputStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3141,10 +3359,13 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
     try std.testing.expect(item.pVertexAttributeDescriptions != null);
 }
 
-fn parse_vk_pipeline_input_assembly_state_create_info(
+pub fn parse_vk_pipeline_input_assembly_state_create_info(
     context: *Context,
     item: *vk.VkPipelineInputAssemblyStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -3182,10 +3403,13 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
     try std.testing.expectEqual(69, item.primitiveRestartEnable);
 }
 
-fn parse_vk_pipeline_tessellation_state_create_info(
+pub fn parse_vk_pipeline_tessellation_state_create_info(
     context: *Context,
     item: *vk.VkPipelineTessellationStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -3221,10 +3445,13 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
     try std.testing.expectEqual(69, item.patchControlPoints);
 }
 
-fn parse_vk_pipeline_viewport_state_create_info(
+pub fn parse_vk_pipeline_viewport_state_create_info(
     context: *Context,
     item: *vk.VkPipelineViewportStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3298,10 +3525,13 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
     try std.testing.expect(item.pScissors != null);
 }
 
-fn parse_vk_pipeline_rasterization_state_create_info(
+pub fn parse_vk_pipeline_rasterization_state_create_info(
     context: *Context,
     item: *vk.VkPipelineRasterizationStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
     try parse_simple_type(context, item);
 }
@@ -3355,10 +3585,13 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
     try std.testing.expectEqual(69, item.lineWidth);
 }
 
-fn parse_vk_pipeline_multisample_state_create_info(
+pub fn parse_vk_pipeline_multisample_state_create_info(
     context: *Context,
     item: *vk.VkPipelineMultisampleStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3434,10 +3667,13 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
     try std.testing.expectEqual(69, item.alphaToOneEnable);
 }
 
-fn parse_vk_stencil_op_state(
+pub fn parse_vk_stencil_op_state(
     context: *Context,
     item: *vk.VkStencilOpState,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3478,10 +3714,13 @@ test "test_parse_vk_stencil_op_state" {
     try std.testing.expectEqual(69, item.reference);
 }
 
-fn parse_vk_pipeline_depth_stencil_state_create_info(
+pub fn parse_vk_pipeline_depth_stencil_state_create_info(
     context: *Context,
     item: *vk.VkPipelineDepthStencilStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3568,10 +3807,13 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
     try std.testing.expectEqual(69, item.maxDepthBounds);
 }
 
-fn parse_vk_pipeline_color_blend_state_create_info(
+pub fn parse_vk_pipeline_color_blend_state_create_info(
     context: *Context,
     item: *vk.VkPipelineColorBlendStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3650,10 +3892,13 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
     try std.testing.expectEqual([4]f32{ 69.69, 69.69, 69.69, 69.69 }, item.blendConstants);
 }
 
-fn parse_vk_pipeline_dynamic_state_create_info(
+pub fn parse_vk_pipeline_dynamic_state_create_info(
     context: *Context,
     item: *vk.VkPipelineDynamicStateCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -3706,10 +3951,13 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
     try std.testing.expect(item.pDynamicStates != null);
 }
 
-fn parse_vk_vertex_input_attribute_description(
+pub fn parse_vk_vertex_input_attribute_description(
     context: *Context,
     item: *vk.VkVertexInputAttributeDescription,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3744,10 +3992,13 @@ test "test_parse_vk_vertex_input_attribute_description" {
     try std.testing.expectEqual(69, item.offset);
 }
 
-fn parse_vk_vertex_input_binding_description(
+pub fn parse_vk_vertex_input_binding_description(
     context: *Context,
     item: *vk.VkVertexInputBindingDescription,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3780,10 +4031,13 @@ test "test_parse_vk_vertex_input_binding_description" {
     try std.testing.expectEqual(69, item.inputRate);
 }
 
-fn parse_vk_pipeline_color_blend_attachment_state(
+pub fn parse_vk_pipeline_color_blend_attachment_state(
     context: *Context,
     item: *vk.VkPipelineColorBlendAttachmentState,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3826,10 +4080,13 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
     try std.testing.expectEqual(69, item.colorWriteMask);
 }
 
-fn parse_vk_viewport(
+pub fn parse_vk_viewport(
     context: *Context,
     item: *vk.VkViewport,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3868,10 +4125,13 @@ test "test_parse_vk_viewport" {
     try std.testing.expectEqual(69.69, item.maxDepth);
 }
 
-fn parse_vk_rect_2d(
+pub fn parse_vk_rect_2d(
     context: *Context,
     item: *vk.VkRect2D,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "x")) {
             const v = try scanner_next_number(context.scanner);
@@ -3922,10 +4182,13 @@ test "test_parse_vk_rect_2d" {
     try std.testing.expectEqual(69, item.extent.height);
 }
 
-fn parse_vk_specialization_map_entry(
+pub fn parse_vk_specialization_map_entry(
     context: *Context,
     item: *vk.VkSpecializationMapEntry,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{};
     try parse_simple_type(context, item);
 }
@@ -3958,10 +4221,13 @@ test "test_parse_vk_specialization_map_entry" {
     try std.testing.expectEqual(69, item.size);
 }
 
-fn parse_vk_specialization_info(
+pub fn parse_vk_specialization_info(
     context: *Context,
     item: *vk.VkSpecializationInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "dataSize")) {
             const v = try scanner_next_number(context.scanner);
@@ -4017,10 +4283,13 @@ test "test_parse_vk_specialization_info" {
     try std.testing.expect(item.pData != null);
 }
 
-fn parse_vk_compute_pipeline_create_info(
+pub fn parse_vk_compute_pipeline_create_info(
     context: *Context,
     item: *vk.VkComputePipelineCreateInfo,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -4106,10 +4375,13 @@ test "test_parse_vk_compute_pipeline_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
 }
 
-fn parse_vk_raytracing_pipeline_create_info(
+pub fn parse_vk_raytracing_pipeline_create_info(
     context: *Context,
     item: *vk.VkRayTracingPipelineCreateInfoKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -4232,10 +4504,13 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
 }
 
-fn parse_vk_ray_tracing_shader_group_create_info(
+pub fn parse_vk_ray_tracing_shader_group_create_info(
     context: *Context,
     item: *vk.VkRayTracingShaderGroupCreateInfoKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
     try parse_simple_type(context, item);
 }
@@ -4278,10 +4553,13 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
     try std.testing.expectEqual(null, item.pShaderGroupCaptureReplayHandle);
 }
 
-fn parse_vk_pipeline_library_create_info(
+pub fn parse_vk_pipeline_library_create_info(
     context: *Context,
     item: *vk.VkPipelineLibraryCreateInfoKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
@@ -4348,10 +4626,13 @@ test "test_parse_vk_pipeline_library_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.pLibraries[0]));
 }
 
-fn parse_vk_ray_tracing_pipeline_interface_create_info(
+pub fn parse_vk_ray_tracing_pipeline_interface_create_info(
     context: *Context,
     item: *vk.VkRayTracingPipelineInterfaceCreateInfoKHR,
 ) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR };
     try parse_simple_type(context, item);
 }

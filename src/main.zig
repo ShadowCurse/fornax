@@ -8,6 +8,7 @@ const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const vv = @import("vulkan_validation.zig");
 const vulkan = @import("vulkan.zig");
+const profiler = @import("profiler.zig");
 
 const Database = @import("database.zig");
 
@@ -16,6 +17,25 @@ const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
     .level = .Info,
+};
+
+pub const profiler_options = profiler.Options{
+    .enabled = false,
+};
+
+pub const MEASUREMENTS = profiler.Measurements("main", &.{
+    "main",
+    "parse",
+    "parse_threaded",
+    "create",
+    "create_threaded",
+});
+
+const ALL_MEASUREMENTS = &.{
+    MEASUREMENTS,
+    parsing.MEASUREMENTS,
+    vulkan.MEASUREMENTS,
+    Database.MEASUREMENTS,
 };
 
 const Args = struct {
@@ -96,6 +116,11 @@ pub fn log_args(args: *const Args) void {
 }
 
 pub fn main() !void {
+    profiler.start();
+
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const arena_alloc = arena.allocator();
     var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -263,6 +288,8 @@ pub fn main() !void {
     // is replayed and will not try to replay shaders again.
     // if (control_block) |cb|
     //     cb.progress_complete.store(1, .release);
+
+    profiler.print(ALL_MEASUREMENTS);
 
     var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
         db.arena.queryCapacity();
@@ -459,6 +486,11 @@ var parsed_compute_failures: std.atomic.Value(u32) = .init(0);
 var parsed_raytracing_failures: std.atomic.Value(u32) = .init(0);
 
 pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
+    profiler.thread_take_id();
+
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     parse_inner(parsing, context, root_entries) catch unreachable;
 }
 pub fn parse_inner(
@@ -577,6 +609,9 @@ pub fn parse_threaded(
     thread_contexts: []align(64) ThreadContext,
     root_entries: []RootEntry,
 ) !void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var remaining_entries = root_entries;
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / thread_contexts.len;
@@ -603,6 +638,9 @@ var created_compute_failures: std.atomic.Value(u32) = .init(0);
 var created_raytracing_failures: std.atomic.Value(u32) = .init(0);
 
 pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     create_inner(parsing, vulkan, vulkan, context, root_entries) catch unreachable;
 }
 pub fn create_inner(
@@ -710,6 +748,9 @@ pub fn create_threaded(
     thread_contexts: []align(64) ThreadContext,
     root_entries: []RootEntry,
 ) !void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     var remaining_entries = root_entries;
     if (thread_contexts.len != 1) {
         const chunk_size = remaining_entries.len / thread_contexts.len;
