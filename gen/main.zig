@@ -229,6 +229,6 @@ pub fn main() !void {
 }
 
 comptime {
-    _ = @import("xml.zig");
+    _ = @import("xml_parser.zig");
     _ = @import("vulkan_parsing.zig");
 }

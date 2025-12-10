@@ -4,7 +4,6 @@ const Allocator = std.mem.Allocator;
 const root = @import("root");
 const vk = @import("volk");
 const vkp = @import("vulkan_parsing.zig");
-const xml = @import("xml.zig");
 
 const PATH = "src/vulkan_utils.zig";
 const HEADER =

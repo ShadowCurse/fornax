@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const xml = @import("xml.zig");
+const XmlParser = @import("xml_parser.zig");
 
 // Ignore list for extensions names
 const IGNORE_EXTENSIONS: []const []const u8 = &.{
@@ -95,7 +95,7 @@ pub const Database = struct {
         var extensions: Extensions = undefined;
         var enums: std.ArrayListUnmanaged(Enum) = .empty;
         var spirv: Spirv = undefined;
-        var parser: xml.Parser = .init(buffer);
+        var parser: XmlParser = .init(buffer);
         while (parser.peek_next()) |token| {
             switch (token) {
                 .element_start => |es| {
@@ -291,7 +291,7 @@ pub const Extension = struct {
     }
 };
 
-pub fn parse_extension_require(alloc: Allocator, original_parser: *xml.Parser) !?Extension.Require {
+pub fn parse_extension_require(alloc: Allocator, original_parser: *XmlParser) !?Extension.Require {
     if (!original_parser.check_peek_element_start("require")) return null;
 
     var parser = original_parser.*;
@@ -371,7 +371,7 @@ test "parse_extension_require" {
             \\</require>----
         ;
 
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const r = (try parse_extension_require(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Extension.Require = .{
@@ -399,7 +399,7 @@ test "parse_extension_require" {
             \\</require>----
         ;
 
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const r = (try parse_extension_require(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Extension.Require = .{
@@ -417,13 +417,13 @@ test "parse_extension_require" {
         const text =
             \\<require comment="A"/>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         _ = try parse_extension_require(alloc, &parser);
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     }
 }
 
-pub fn parse_extension(alloc: Allocator, original_parser: *xml.Parser) !?struct {
+pub fn parse_extension(alloc: Allocator, original_parser: *XmlParser) !?struct {
     Extension,
     Extension.Type,
 } {
@@ -510,7 +510,7 @@ test "parse_single_extension" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var parser: xml.Parser = .init(text);
+    var parser: XmlParser = .init(text);
     const e = (try parse_extension(alloc, &parser)).?;
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     _ = e;
@@ -519,7 +519,7 @@ test "parse_single_extension" {
 
 pub fn parse_extensions(
     alloc: Allocator,
-    parser: *xml.Parser,
+    parser: *XmlParser,
     ignore_subnames: []const []const u8,
 ) !Extensions {
     if (!parser.check_peek_element_start("extensions")) return .{};
@@ -569,7 +569,7 @@ test "parse_extensions" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var parser: xml.Parser = .init(text);
+    var parser: XmlParser = .init(text);
     const e = try parse_extensions(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     const expected: Extensions = .{
@@ -594,7 +594,7 @@ pub const Basetype = struct {
     name: []const u8,
 };
 
-pub fn parse_basetype(original_parser: *xml.Parser) ?Basetype {
+pub fn parse_basetype(original_parser: *XmlParser) ?Basetype {
     if (!original_parser.check_peek_element_start("type")) return null;
 
     var parser = original_parser.*;
@@ -624,14 +624,14 @@ test "parse_basetype" {
         const text =
             \\<type category="basetype"> <name> </name>;</type>
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const b = parse_basetype(&parser);
         try std.testing.expectEqual(null, b);
     }
     const text =
         \\<type category="basetype"> <type>A</type> <name>A</name>;</type>----
     ;
-    var parser: xml.Parser = .init(text);
+    var parser: XmlParser = .init(text);
     const b = parse_basetype(&parser).?;
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     _ = b;
@@ -647,7 +647,7 @@ pub const Bitmask = struct {
     }
 };
 
-pub fn parse_bitmask(original_parser: *xml.Parser) ?Bitmask {
+pub fn parse_bitmask(original_parser: *XmlParser) ?Bitmask {
     if (!original_parser.check_peek_element_start("type")) return null;
 
     var parser = original_parser.*;
@@ -684,7 +684,7 @@ test "parse_bitmask" {
         const text =
             \\<type requires="A" category="bitmask">typedef <type> </type> <name>B</name>;</type>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const b = parse_bitmask(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         _ = b;
@@ -741,7 +741,7 @@ pub const Struct = struct {
     }
 };
 
-pub fn parse_struct_member(original_parser: *xml.Parser) ?Struct.Member {
+pub fn parse_struct_member(original_parser: *XmlParser) ?Struct.Member {
     if (!original_parser.check_peek_element_start("member")) return null;
 
     var parser = original_parser.*;
@@ -790,7 +790,7 @@ test "parse_struct_member" {
         const text =
             \\<member><type>T</type> <name>N</name><comment>CCC</comment></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -803,7 +803,7 @@ test "parse_struct_member" {
         const text =
             \\<member values="V"><type>T</type> <name>N</name></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -817,7 +817,7 @@ test "parse_struct_member" {
         const text =
             \\<member noautovalidity="true" optional="true"> <type>T</type>* <name>N</name><comment>C</comment></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -832,7 +832,7 @@ test "parse_struct_member" {
         const text =
             \\<member optional="true"><type>T</type> <name>N</name></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -846,7 +846,7 @@ test "parse_struct_member" {
         const text =
             \\<member len="null-terminated"> <type>T</type> <name>N</name></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -860,7 +860,7 @@ test "parse_struct_member" {
         const text =
             \\<member len="L">B <type>T</type>* <name>N</name></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -875,7 +875,7 @@ test "parse_struct_member" {
         const text =
             \\<member len="L,null-terminated">B <type>T</type>* <name>N</name></member>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const m = parse_struct_member(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct.Member = .{
@@ -888,7 +888,7 @@ test "parse_struct_member" {
     }
 }
 
-pub fn parse_struct(alloc: Allocator, original_parser: *xml.Parser) !?Struct {
+pub fn parse_struct(alloc: Allocator, original_parser: *XmlParser) !?Struct {
     if (!original_parser.check_peek_element_start("type")) return null;
 
     var parser = original_parser.*;
@@ -938,7 +938,7 @@ test "parse_single_struct" {
             \\    <member><type>T4</type> <name>N4</name></member>
             \\</type>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const s = (try parse_struct(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct = .{
@@ -987,7 +987,7 @@ test "parse_single_struct" {
         const text =
             \\<type category="struct" name="N" alias="A"/>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const s = (try parse_struct(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Struct = .{
@@ -1002,7 +1002,7 @@ test "parse_single_struct" {
 
 pub fn parse_types(
     alloc: Allocator,
-    parser: *xml.Parser,
+    parser: *XmlParser,
     ignore_structs: []const []const u8,
 ) !Types {
     if (!parser.check_peek_element_start("types")) return .{};
@@ -1058,7 +1058,7 @@ test "parse_types" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var parser: xml.Parser = .init(text);
+    var parser: XmlParser = .init(text);
     const types = try parse_types(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     try std.testing.expectEqual(2, types.structs.len);
@@ -1090,7 +1090,7 @@ pub const Enum = struct {
     }
 };
 
-pub fn parse_enum_item(original_parser: *xml.Parser) ?Enum.Item {
+pub fn parse_enum_item(original_parser: *XmlParser) ?Enum.Item {
     if (!original_parser.check_peek_element_start("enum")) return null;
 
     var parser = original_parser.*;
@@ -1119,7 +1119,7 @@ test "parse_single_enum_item" {
         const text =
             \\<enum value="8" name="A"/>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = parse_enum_item(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         _ = e;
@@ -1129,7 +1129,7 @@ test "parse_single_enum_item" {
         const text =
             \\<enum bitpos="8" name="A" comment="A"/>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = parse_enum_item(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         _ = e;
@@ -1140,14 +1140,14 @@ test "parse_single_enum_item" {
         const text =
             \\<enum api="vulkan"  name="A" alias="B" deprecated="aliased"/>
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = parse_enum_item(&parser);
         try std.testing.expectEqualSlices(u8, text, parser.buffer);
         try std.testing.expectEqual(null, e);
     }
 }
 
-pub fn parse_enum(alloc: Allocator, original_parser: *xml.Parser) !?Enum {
+pub fn parse_enum(alloc: Allocator, original_parser: *XmlParser) !?Enum {
     if (!original_parser.check_peek_element_start("enums")) return null;
 
     var parser = original_parser.*;
@@ -1199,7 +1199,7 @@ test "parse_enum" {
             \\    <enum api="vulkan"  name="A" alias="A" deprecated="aliased"/>
             \\</enums>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = (try parse_enum(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         _ = e;
@@ -1211,7 +1211,7 @@ test "parse_enum" {
             \\<enums name="A" type="bitmask">
             \\</enums>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = (try parse_enum(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         _ = e;
@@ -1254,7 +1254,7 @@ pub const Spirv = struct {
     };
 };
 
-pub fn parse_spirv_extension(original_parser: *xml.Parser) ?Spirv.Extension {
+pub fn parse_spirv_extension(original_parser: *XmlParser) ?Spirv.Extension {
     if (!original_parser.check_peek_element_start("spirvextension")) return null;
 
     var parser = original_parser.*;
@@ -1293,7 +1293,7 @@ test "parse_spirv_extension" {
             \\    <enable extension="E"/>
             \\</spirvextension>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = parse_spirv_extension(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Extension = .{
@@ -1310,7 +1310,7 @@ test "parse_spirv_extension" {
             \\    <enable extension="E"/>
             \\</spirvextension>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const e = parse_spirv_extension(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Extension = .{
@@ -1322,7 +1322,7 @@ test "parse_spirv_extension" {
     }
 }
 
-pub fn parse_spirv_capability(alloc: Allocator, original_parser: *xml.Parser) !?Spirv.Capability {
+pub fn parse_spirv_capability(alloc: Allocator, original_parser: *XmlParser) !?Spirv.Capability {
     if (!original_parser.check_peek_element_start("spirvcapability")) return null;
 
     var parser = original_parser.*;
@@ -1396,7 +1396,7 @@ test "parse_spirv_capability" {
             \\    <enable version="V"/>
             \\</spirvcapability>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const c = (try parse_spirv_capability(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Capability = .{
@@ -1415,7 +1415,7 @@ test "parse_spirv_capability" {
             \\    <enable struct="S3" feature="F3" requires="R3"/>
             \\</spirvcapability>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const c = (try parse_spirv_capability(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Capability = .{
@@ -1436,7 +1436,7 @@ test "parse_spirv_capability" {
             \\    <enable extension="E"/>
             \\</spirvcapability>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const c = (try parse_spirv_capability(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Capability = .{
@@ -1455,7 +1455,7 @@ test "parse_spirv_capability" {
             \\    <enable property="P" member="M" value="V" requires="R"/>
             \\</spirvcapability>----
         ;
-        var parser: xml.Parser = .init(text);
+        var parser: XmlParser = .init(text);
         const c = (try parse_spirv_capability(alloc, &parser)).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Spirv.Capability = .{
@@ -1475,7 +1475,7 @@ test "parse_spirv_capability" {
 
 pub fn parse_spirv(
     alloc: Allocator,
-    parser: *xml.Parser,
+    parser: *XmlParser,
     ignore_spirv: []const []const u8,
 ) !Spirv {
     if (!parser.check_peek_element_start("spirvextensions")) return .{};
@@ -1551,7 +1551,7 @@ test "parse_spirv" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var parser: xml.Parser = .init(text);
+    var parser: XmlParser = .init(text);
     const s = try parse_spirv(alloc, &parser, &.{});
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     const expected: Spirv = .{
