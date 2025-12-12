@@ -11,6 +11,7 @@ const vulkan = @import("vulkan.zig");
 const profiler = @import("profiler.zig");
 const control_block = @import("control_block.zig");
 
+const Barrier = @import("barrier.zig");
 const Database = @import("database.zig");
 
 const Validation = vv.Validation;
@@ -223,22 +224,7 @@ pub fn main() !void {
         .additional_pdf = &additional_pdf,
     };
 
-    var thread_pool: ThreadPool = undefined;
-    try init_thread_pool_context(&thread_pool, thread_count);
-    var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
-    const shared_alloc = shared_arena.allocator();
-    const tread_contexts = try init_thread_contexts(
-        arena_alloc,
-        shared_alloc,
-        thread_count,
-        &progress_root,
-        &db,
-        &validation,
-        device.device,
-    );
-
     const total_pipelines = graphics_pipelines + compute_pipelines + raytracing_pipelines;
-
     const root_entries: []RootEntry = try arena_alloc.alloc(RootEntry, total_pipelines);
     var re = root_entries;
     for (
@@ -259,30 +245,27 @@ pub fn main() !void {
     ) |*entry, *root|
         root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
 
-    try parse_threaded(&thread_pool, tread_contexts, root_entries);
-    log.info(@src(), "Parsing results: {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d}", .{
-        Database.Entry.Tag.graphics_pipeline,
-        parsed_graphics.raw,
-        parsed_graphics_failures.raw,
-        Database.Entry.Tag.compute_pipeline,
-        parsed_compute.raw,
-        parsed_compute_failures.raw,
-        Database.Entry.Tag.raytracing_pipeline,
-        parsed_raytracing.raw,
-        parsed_raytracing_failures.raw,
-    });
-    try create_threaded(&thread_pool, tread_contexts, root_entries);
-    log.info(@src(), "Creation results: {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d} {t}: valid: {d} invalid: {d}", .{
-        Database.Entry.Tag.graphics_pipeline,
-        created_graphics.raw,
-        created_graphics_failures.raw,
-        Database.Entry.Tag.compute_pipeline,
-        created_compute.raw,
-        created_compute_failures.raw,
-        Database.Entry.Tag.raytracing_pipeline,
-        created_raytracing.raw,
-        created_raytracing_failures.raw,
-    });
+    var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
+    const shared_alloc = shared_arena.allocator();
+    var barrier: Barrier = .{ .total_threads = thread_count };
+    const contexts = try init_contexts(
+        arena_alloc,
+        shared_alloc,
+        &progress_root,
+        &barrier,
+        &db,
+        root_entries,
+        thread_count,
+        &validation,
+        device.device,
+    );
+    const secondary_threads = try spawn_secondary_threads(
+        arena_alloc,
+        secondary_thread_process,
+        contexts[1..],
+    );
+    _ = secondary_threads;
+    process(&contexts[0]);
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
@@ -293,8 +276,7 @@ pub fn main() !void {
 
     var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
         db.arena.queryCapacity();
-    for (tread_contexts) |*context|
-        total_used_bytes += context.arena.queryCapacity();
+    for (contexts) |*c| total_used_bytes += c.arena.queryCapacity();
     log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
     const rusage = std.posix.getrusage(0);
     log.info(@src(), "Resource usage: max rss: {d}MB minor faults: {d} major faults: {d}", .{
@@ -312,36 +294,39 @@ pub fn actual_thread_count(num_threads: ?u32) u32 {
     return thread_count;
 }
 
-const RootEntry = struct {
-    entry: *Database.Entry,
-    arena: std.heap.ArenaAllocator,
-};
-
-pub const ThreadContext = struct {
+pub const Context = struct {
     arena: std.heap.ArenaAllocator,
     shared_alloc: Allocator,
     progress: *std.Progress.Node,
+    barrier: *Barrier,
     db: *Database,
+    root_entries: []RootEntry,
+    thread_count: u32,
     validation: *const Validation,
     vk_device: vk.VkDevice,
 };
 
-pub fn init_thread_contexts(
+pub fn init_contexts(
     alloc: Allocator,
     shared_alloc: Allocator,
-    thread_count: u32,
     progress: *std.Progress.Node,
+    barrier: *Barrier,
     db: *Database,
+    root_entries: []RootEntry,
+    thread_count: u32,
     validation: *const Validation,
     vk_device: vk.VkDevice,
-) ![]align(64) ThreadContext {
-    const contexts = try alloc.alignedAlloc(ThreadContext, .@"64", thread_count);
+) ![]align(64) Context {
+    const contexts = try alloc.alignedAlloc(Context, .@"64", thread_count);
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
             .shared_alloc = shared_alloc,
             .progress = progress,
+            .barrier = barrier,
             .db = db,
+            .root_entries = root_entries,
+            .thread_count = thread_count,
             .validation = validation,
             .vk_device = vk_device,
         };
@@ -349,13 +334,34 @@ pub fn init_thread_contexts(
     return contexts;
 }
 
-pub const ThreadPool = struct {
-    wait_group: std.Thread.WaitGroup,
-    pool: std.Thread.Pool,
+fn spawn_secondary_threads(
+    alloc: Allocator,
+    comptime function: fn (*Context) void,
+    contexts: []Context,
+) ![]std.Thread {
+    const threads = try alloc.alloc(std.Thread, contexts.len);
+    for (threads, contexts) |*t, *c| t.* = try std.Thread.spawn(.{}, function, .{c});
+    return threads;
+}
+
+const RootEntry = struct {
+    entry: *Database.Entry,
+    arena: std.heap.ArenaAllocator,
 };
-pub fn init_thread_pool_context(context: *ThreadPool, thread_count: u32) !void {
-    context.wait_group = .{};
-    try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = thread_count });
+
+pub fn secondary_thread_process(context: *Context) void {
+    profiler.thread_take_id();
+    process(context);
+}
+
+pub fn process(context: *Context) void {
+    const chunk_size = context.root_entries.len / context.thread_count;
+    const offset = chunk_size * profiler.thread_id.?;
+    const len = @min(context.root_entries.len - offset, chunk_size);
+    const thread_root_entries = context.root_entries[offset..][0..len];
+    parse(context, thread_root_entries);
+    context.barrier.wait();
+    create(context, thread_root_entries);
 }
 
 pub fn print_time(
@@ -395,16 +401,7 @@ pub fn print_time(
     );
 }
 
-var parsed_graphics: std.atomic.Value(u32) = .init(0);
-var parsed_compute: std.atomic.Value(u32) = .init(0);
-var parsed_raytracing: std.atomic.Value(u32) = .init(0);
-var parsed_graphics_failures: std.atomic.Value(u32) = .init(0);
-var parsed_compute_failures: std.atomic.Value(u32) = .init(0);
-var parsed_raytracing_failures: std.atomic.Value(u32) = .init(0);
-
-pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
-    profiler.thread_take_id();
-
+pub fn parse(context: *Context, root_entries: []RootEntry) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
@@ -412,7 +409,7 @@ pub fn parse(context: *ThreadContext, root_entries: []RootEntry) void {
 }
 pub fn parse_inner(
     comptime PARSE: type,
-    context: *ThreadContext,
+    context: *Context,
     root_entries: []RootEntry,
 ) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
@@ -461,74 +458,17 @@ pub fn parse_inner(
                         e.status.store(.invalid, .seq_cst);
                         e.decrement_dependencies();
                     }
-                    switch (root_entry.entry.tag) {
-                        .graphics_pipeline => {
-                            _ = parsed_graphics_failures.fetchAdd(1, .release);
-                        },
-                        .compute_pipeline => {
-                            _ = parsed_compute_failures.fetchAdd(1, .release);
-                        },
-                        .raytracing_pipeline => {
-                            _ = parsed_raytracing_failures.fetchAdd(1, .release);
-                        },
-                        else => {},
-                    }
                     control_block.record_failed_entry(root_entry.entry.tag);
                     break;
                 },
             }
         } else {
-            switch (root_entry.entry.tag) {
-                .graphics_pipeline => {
-                    _ = parsed_graphics.fetchAdd(1, .release);
-                },
-                .compute_pipeline => {
-                    _ = parsed_compute.fetchAdd(1, .release);
-                },
-                .raytracing_pipeline => {
-                    _ = parsed_raytracing.fetchAdd(1, .release);
-                },
-                else => {},
-            }
             control_block.record_parsed_entry(root_entry.entry.tag);
         }
     }
 }
 
-pub fn parse_threaded(
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    root_entries: []RootEntry,
-) !void {
-    const prof_point = MEASUREMENTS.start(@src());
-    defer MEASUREMENTS.end(prof_point);
-
-    var remaining_entries = root_entries;
-    if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / thread_contexts.len;
-        for (thread_contexts[1..]) |*tc| {
-            const chunk = remaining_entries[0..chunk_size];
-            remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, parse, .{ tc, chunk });
-        }
-    }
-    thread_pool.pool.spawnWg(
-        &thread_pool.wait_group,
-        parse,
-        .{ &thread_contexts[0], remaining_entries },
-    );
-    thread_pool.wait_group.wait();
-    thread_pool.wait_group.reset();
-}
-
-var created_graphics: std.atomic.Value(u32) = .init(0);
-var created_compute: std.atomic.Value(u32) = .init(0);
-var created_raytracing: std.atomic.Value(u32) = .init(0);
-var created_graphics_failures: std.atomic.Value(u32) = .init(0);
-var created_compute_failures: std.atomic.Value(u32) = .init(0);
-var created_raytracing_failures: std.atomic.Value(u32) = .init(0);
-
-pub fn create(context: *ThreadContext, root_entries: []RootEntry) void {
+pub fn create(context: *Context, root_entries: []RootEntry) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
@@ -538,7 +478,7 @@ pub fn create_inner(
     comptime PARSE: type,
     comptime CREATE: type,
     comptime DESTROY: type,
-    context: *ThreadContext,
+    context: *Context,
     root_entries: []RootEntry,
 ) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
@@ -587,65 +527,14 @@ pub fn create_inner(
                         e.status.store(.invalid, .seq_cst);
                         e.destroy_dependencies(DESTROY, context.vk_device);
                     }
-                    switch (root_entry.entry.tag) {
-                        .graphics_pipeline => {
-                            _ = created_graphics_failures.fetchAdd(1, .release);
-                        },
-                        .compute_pipeline => {
-                            _ = created_compute_failures.fetchAdd(1, .release);
-                        },
-                        .raytracing_pipeline => {
-                            _ = created_raytracing_failures.fetchAdd(1, .release);
-                        },
-                        else => {},
-                    }
                     break;
                 },
             }
         } else {
             _ = root_entry.arena.reset(.free_all);
-            switch (root_entry.entry.tag) {
-                .graphics_pipeline => {
-                    _ = created_graphics.fetchAdd(1, .release);
-                },
-                .compute_pipeline => {
-                    _ = created_compute.fetchAdd(1, .release);
-                },
-                .raytracing_pipeline => {
-                    _ = created_raytracing.fetchAdd(1, .release);
-                },
-                else => {},
-            }
             control_block.record_successful_entry(root_entry.entry.tag);
         }
     }
-}
-
-pub fn create_threaded(
-    thread_pool: *ThreadPool,
-    thread_contexts: []align(64) ThreadContext,
-    root_entries: []RootEntry,
-) !void {
-    const prof_point = MEASUREMENTS.start(@src());
-    defer MEASUREMENTS.end(prof_point);
-
-    var remaining_entries = root_entries;
-    if (thread_contexts.len != 1) {
-        const chunk_size = remaining_entries.len / thread_contexts.len;
-        for (thread_contexts[1..]) |*tc| {
-            const chunk = remaining_entries[0..chunk_size];
-            remaining_entries = remaining_entries[chunk_size..];
-            thread_pool.pool.spawnWg(&thread_pool.wait_group, create, .{ tc, chunk });
-        }
-    }
-    thread_pool.pool.spawnWg(
-        &thread_pool.wait_group,
-        create,
-        .{ &thread_contexts[0], remaining_entries },
-    );
-
-    thread_pool.wait_group.wait();
-    thread_pool.wait_group.reset();
 }
 
 test "parse" {
@@ -749,11 +638,14 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: ThreadContext = .{
+        var thread_context: Context = .{
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
+            .barrier = undefined,
             .db = &db,
+            .root_entries = &.{},
+            .thread_count = 1,
             .validation = &.{
                 .api_version = 0,
                 .extensions = &.{},
@@ -837,11 +729,14 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: ThreadContext = .{
+        var thread_context: Context = .{
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
+            .barrier = undefined,
             .db = &db,
+            .root_entries = &.{},
+            .thread_count = 1,
             .validation = &.{
                 .api_version = 0,
                 .extensions = &.{},
@@ -947,11 +842,14 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: ThreadContext = .{
+        var thread_context: Context = .{
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
+            .barrier = undefined,
             .db = &db,
+            .root_entries = &.{},
+            .thread_count = 1,
             .validation = undefined,
             .vk_device = undefined,
         };
@@ -1067,11 +965,14 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: ThreadContext = .{
+        var thread_context: Context = .{
             .arena = .init(alloc),
             .shared_alloc = alloc,
             .progress = &progress,
+            .barrier = undefined,
             .db = &db,
+            .root_entries = &.{},
+            .thread_count = 1,
             .validation = undefined,
             .vk_device = undefined,
         };
