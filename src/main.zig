@@ -9,6 +9,7 @@ const parsing = @import("parsing.zig");
 const vv = @import("vulkan_validation.zig");
 const vulkan = @import("vulkan.zig");
 const profiler = @import("profiler.zig");
+const control_block = @import("control_block.zig");
 
 const Database = @import("database.zig");
 
@@ -139,8 +140,10 @@ pub fn main() !void {
         return;
     }
 
-    if (args.shmem_fd) |shmem_fd|
-        try open_control_block(shmem_fd);
+    if (args.shmem_fd) |shmem_fd| try control_block.mmap(shmem_fd);
+
+    const thread_count = actual_thread_count(args.num_threads);
+    log.info(@src(), "Using {d} threads", .{thread_count});
 
     var progress = std.Progress.start(.{});
     defer progress.end();
@@ -156,16 +159,13 @@ pub fn main() !void {
     const graphics_pipelines = db.entries.getPtrConst(.graphics_pipeline).values().len;
     const compute_pipelines = db.entries.getPtrConst(.compute_pipeline).values().len;
     const raytracing_pipelines = db.entries.getPtrConst(.raytracing_pipeline).values().len;
-    if (control_block) |cb| {
-        cb.static_total_count_graphics.store(@intCast(graphics_pipelines), .release);
-        cb.static_total_count_compute.store(@intCast(compute_pipelines), .release);
-        cb.static_total_count_raytracing.store(@intCast(raytracing_pipelines), .release);
-
-        cb.num_running_processes.store(args.num_threads.? + 1, .release);
-        cb.num_processes_memory_stats.store(args.num_threads.? + 1, .release);
-
-        cb.progress_started.store(1, .release);
-    }
+    control_block.set_initial_state(
+        @intCast(graphics_pipelines),
+        @intCast(compute_pipelines),
+        @intCast(raytracing_pipelines),
+        thread_count,
+        thread_count,
+    );
 
     const app_infos = db.entries.getPtrConst(.application_info).values();
     if (app_infos.len == 0)
@@ -224,13 +224,13 @@ pub fn main() !void {
     };
 
     var thread_pool: ThreadPool = undefined;
-    try init_thread_pool_context(&thread_pool, args.num_threads);
+    try init_thread_pool_context(&thread_pool, thread_count);
     var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
     const shared_alloc = shared_arena.allocator();
     const tread_contexts = try init_thread_contexts(
         arena_alloc,
         shared_alloc,
-        args.num_threads,
+        thread_count,
         &progress_root,
         &db,
         &validation,
@@ -304,86 +304,18 @@ pub fn main() !void {
     });
 }
 
+pub fn actual_thread_count(num_threads: ?u32) u32 {
+    var thread_count: u32 = @truncate(std.Thread.getCpuCount() catch 1);
+    if (num_threads) |nt| {
+        if (nt != 0) thread_count = nt;
+    }
+    return thread_count;
+}
+
 const RootEntry = struct {
     entry: *Database.Entry,
     arena: std.heap.ArenaAllocator,
 };
-
-pub const MAX_PROCESS_STATS = 256;
-pub const CONTROL_BLOCK_MAGIC = 0x19bcde1d;
-pub const SharedControlBlock = struct {
-    version_cookie: u32,
-    futex_lock: u32,
-
-    successful_modules: std.atomic.Value(u32),
-    successful_graphics: std.atomic.Value(u32),
-    successful_compute: std.atomic.Value(u32),
-    successful_raytracing: std.atomic.Value(u32),
-    skipped_graphics: std.atomic.Value(u32),
-    skipped_compute: std.atomic.Value(u32),
-    skipped_raytracing: std.atomic.Value(u32),
-    cached_graphics: std.atomic.Value(u32),
-    cached_compute: std.atomic.Value(u32),
-    cached_raytracing: std.atomic.Value(u32),
-    clean_process_deaths: std.atomic.Value(u32),
-    dirty_process_deaths: std.atomic.Value(u32),
-    parsed_graphics: std.atomic.Value(u32),
-    parsed_compute: std.atomic.Value(u32),
-    parsed_raytracing: std.atomic.Value(u32),
-    parsed_graphics_failures: std.atomic.Value(u32),
-    parsed_compute_failures: std.atomic.Value(u32),
-    parsed_raytracing_failures: std.atomic.Value(u32),
-    parsed_module_failures: std.atomic.Value(u32),
-    total_graphics: std.atomic.Value(u32),
-    total_compute: std.atomic.Value(u32),
-    total_raytracing: std.atomic.Value(u32),
-    total_modules: std.atomic.Value(u32),
-    banned_modules: std.atomic.Value(u32),
-    module_validation_failures: std.atomic.Value(u32),
-    progress_started: std.atomic.Value(u32),
-    progress_complete: std.atomic.Value(u32),
-
-    // Need to set before `progress_started` is set
-    // This is a total number of pipelines
-    static_total_count_graphics: std.atomic.Value(u32),
-    static_total_count_compute: std.atomic.Value(u32),
-    static_total_count_raytracing: std.atomic.Value(u32),
-
-    num_running_processes: std.atomic.Value(u32),
-    num_processes_memory_stats: std.atomic.Value(u32),
-    metadata_shared_size_mib: std.atomic.Value(u32),
-    process_reserved_memory_mib: [MAX_PROCESS_STATS]std.atomic.Value(u32),
-    process_shared_memory_mib: [MAX_PROCESS_STATS]std.atomic.Value(u32),
-    process_heartbeats: [MAX_PROCESS_STATS]std.atomic.Value(u32),
-
-    dirty_pages_mib: std.atomic.Value(i32),
-    io_stall_percentage: std.atomic.Value(i32),
-
-    write_count: u32,
-    read_count: u32,
-    read_offset: u32,
-    write_offset: u32,
-    ring_buffer_offset: u32,
-    ring_buffer_size: u32,
-};
-
-var control_block: ?*SharedControlBlock = null;
-pub fn open_control_block(shmem_fd: i32) !void {
-    const fstat = try std.posix.fstat(shmem_fd);
-    if (fstat.size < @as(i64, @intCast(@sizeOf(SharedControlBlock))))
-        return error.SharedMemoryIsSmallerThanControlBlock;
-    const mem = try std.posix.mmap(
-        null,
-        @intCast(fstat.size),
-        std.posix.PROT.READ | std.posix.PROT.WRITE,
-        .{ .TYPE = .SHARED },
-        shmem_fd,
-        0,
-    );
-    control_block = @ptrCast(@alignCast(mem.ptr));
-    if (control_block.?.version_cookie != CONTROL_BLOCK_MAGIC)
-        return error.InvalidControlBlockMagic;
-}
 
 pub const ThreadContext = struct {
     arena: std.heap.ArenaAllocator,
@@ -397,19 +329,13 @@ pub const ThreadContext = struct {
 pub fn init_thread_contexts(
     alloc: Allocator,
     shared_alloc: Allocator,
-    num_threads: ?u32,
+    thread_count: u32,
     progress: *std.Progress.Node,
     db: *Database,
     validation: *const Validation,
     vk_device: vk.VkDevice,
 ) ![]align(64) ThreadContext {
-    const host_threads = std.Thread.getCpuCount() catch 1;
-    const n_threads = if (num_threads) |nt| blk: {
-        if (nt == 0) break :blk host_threads else break :blk nt;
-    } else host_threads;
-
-    const contexts = try alloc.alignedAlloc(ThreadContext, .@"64", n_threads);
-
+    const contexts = try alloc.alignedAlloc(ThreadContext, .@"64", thread_count);
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
@@ -427,18 +353,9 @@ pub const ThreadPool = struct {
     wait_group: std.Thread.WaitGroup,
     pool: std.Thread.Pool,
 };
-pub fn init_thread_pool_context(
-    context: *ThreadPool,
-    num_threads: ?u32,
-) !void {
-    const host_threads = std.Thread.getCpuCount() catch 1;
-    const n_threads = if (num_threads) |nt| blk: {
-        if (nt == 0) break :blk host_threads else break :blk nt;
-    } else host_threads;
-    log.info(@src(), "Using {d} threads", .{n_threads});
-
+pub fn init_thread_pool_context(context: *ThreadPool, thread_count: u32) !void {
     context.wait_group = .{};
-    try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = n_threads });
+    try context.pool.init(.{ .allocator = std.heap.smp_allocator, .n_jobs = thread_count });
 }
 
 pub fn print_time(
@@ -556,20 +473,7 @@ pub fn parse_inner(
                         },
                         else => {},
                     }
-                    if (control_block) |cb| {
-                        switch (root_entry.entry.tag) {
-                            .graphics_pipeline => {
-                                _ = cb.parsed_graphics_failures.fetchAdd(1, .release);
-                            },
-                            .compute_pipeline => {
-                                _ = cb.parsed_compute_failures.fetchAdd(1, .release);
-                            },
-                            .raytracing_pipeline => {
-                                _ = cb.parsed_raytracing_failures.fetchAdd(1, .release);
-                            },
-                            else => {},
-                        }
-                    }
+                    control_block.record_failed_entry(root_entry.entry.tag);
                     break;
                 },
             }
@@ -586,20 +490,7 @@ pub fn parse_inner(
                 },
                 else => {},
             }
-            if (control_block) |cb| {
-                switch (root_entry.entry.tag) {
-                    .graphics_pipeline => {
-                        _ = cb.parsed_graphics.fetchAdd(1, .release);
-                    },
-                    .compute_pipeline => {
-                        _ = cb.parsed_compute.fetchAdd(1, .release);
-                    },
-                    .raytracing_pipeline => {
-                        _ = cb.parsed_raytracing.fetchAdd(1, .release);
-                    },
-                    else => {},
-                }
-            }
+            control_block.record_parsed_entry(root_entry.entry.tag);
         }
     }
 }
@@ -725,20 +616,7 @@ pub fn create_inner(
                 },
                 else => {},
             }
-            if (control_block) |cb| {
-                switch (root_entry.entry.tag) {
-                    .graphics_pipeline => {
-                        _ = cb.successful_graphics.fetchAdd(1, .release);
-                    },
-                    .compute_pipeline => {
-                        _ = cb.successful_compute.fetchAdd(1, .release);
-                    },
-                    .raytracing_pipeline => {
-                        _ = cb.successful_raytracing.fetchAdd(1, .release);
-                    },
-                    else => {},
-                }
-            }
+            control_block.record_successful_entry(root_entry.entry.tag);
         }
     }
 }
