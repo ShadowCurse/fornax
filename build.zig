@@ -6,12 +6,52 @@ const std = @import("std");
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const args: Args = .init(b);
 
     const miniz_mod = create_miniz_module(b, target, optimize);
     const volk_mod = create_volk_module(b, target, optimize);
     const spirv_mod = create_spirv_module(b, target, optimize);
 
     create_gen_exe(b, target, optimize, volk_mod);
+    create_glacier_exe(b, target, optimize, &args, miniz_mod, volk_mod, spirv_mod);
+}
+
+const Args = struct {
+    use_llvm: bool,
+    no_driver: bool,
+    disable_shader_cache: bool,
+    shader_cache_dir: ?[]const u8,
+
+    const Self = @This();
+    fn init(b: *std.Build) Self {
+        return .{
+            .use_llvm = b.option(bool, "use_llvm", "Use LLVM backend") != null,
+            .no_driver = b.option(bool, "no_driver", "Replace driver calls with stubs") != null,
+            .disable_shader_cache = b.option(
+                bool,
+                "disable_shader_cache",
+                "Set MESA_SHADER_CACHE_DISABLE",
+            ) != null,
+            .shader_cache_dir = b.option(
+                []const u8,
+                "shader_cache_dir",
+                "Set MESA_SHADER_CACHE_DIR",
+            ),
+        };
+    }
+};
+
+fn create_glacier_exe(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    args: *const Args,
+    miniz_mod: *std.Build.Module,
+    volk_mod: *std.Build.Module,
+    spirv_mod: *std.Build.Module,
+) void {
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "no_driver", args.no_driver);
 
     const exe_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
@@ -23,24 +63,25 @@ pub fn build(b: *std.Build) !void {
             .{ .name = "spirv", .module = spirv_mod },
         },
     });
+    exe_mod.addOptions("build_options", build_options);
 
-    const use_llvm = b.option(bool, "use_llvm", "Use LLVM backend") != null;
     const exe = b.addExecutable(.{
         .name = "glacier",
         .root_module = exe_mod,
-        .use_llvm = use_llvm,
+        .use_llvm = args.use_llvm,
     });
     b.installArtifact(exe);
-    {
-        const run_cmd = b.addRunArtifact(exe);
-        if (b.option(bool, "use_radv", "Use RADV driver") == null) {
-            run_cmd.setEnvironmentVariable("AMD_VULKAN_ICD", "RADV");
-        }
-        run_cmd.step.dependOn(b.getInstallStep());
-        if (b.args) |args| run_cmd.addArgs(args);
-        const run_step = b.step("run", "Run the app");
-        run_step.dependOn(&run_cmd.step);
-    }
+
+    const run_cmd = b.addRunArtifact(exe);
+    if (args.disable_shader_cache)
+        run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DISABLE", "1");
+    if (args.shader_cache_dir) |scd|
+        run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DIR", scd);
+    if (b.args) |a| run_cmd.addArgs(a);
+    run_cmd.step.dependOn(b.getInstallStep());
+
+    const run_step = b.step("run", "Run the app");
+    run_step.dependOn(&run_cmd.step);
 
     const exe_unit_tests = b.addTest(.{
         .name = "unit_test",
@@ -54,7 +95,7 @@ pub fn build(b: *std.Build) !void {
     test_step.dependOn(&run_exe_unit_tests.step);
 }
 
-pub fn create_gen_exe(
+fn create_gen_exe(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,

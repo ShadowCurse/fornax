@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
+const build_options = @import("build_options");
 const vk = @import("volk");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
@@ -364,6 +365,63 @@ pub fn process(context: *Context) void {
     create(context, thread_root_entries);
 }
 
+const DryCreate = struct {
+    const Self = @This();
+
+    pub const create_vk_sampler = Self.create;
+    pub const create_descriptor_set_layout = Self.create;
+    pub const create_pipeline_layout = Self.create;
+    pub const parse_shader_module = Self.create;
+    pub const create_shader_module = Self.create;
+    pub const create_render_pass = Self.create;
+    pub const create_raytracing_pipeline = Self.create;
+    pub const create_compute_pipeline = Self.create;
+    pub const create_graphics_pipeline = Self.create;
+
+    fn create(vk_device: vk.VkDevice, create_info: *align(8) const anyopaque) !?*anyopaque {
+        var result: *anyopaque = @ptrFromInt(0x69);
+        asm volatile (""
+            :
+            : [vk_device] "r" (vk_device),
+            : .{ .memory = true });
+        asm volatile (""
+            :
+            : [create_info] "r" (create_info),
+            : .{ .memory = true });
+        asm volatile (""
+            : [result] "=r" (result),
+        );
+        return result;
+    }
+};
+
+const DryDestroy = struct {
+    const Self = @This();
+
+    pub const destroy_vk_sampler = Self.destroy;
+    pub const destroy_descriptor_set_layout = Self.destroy;
+    pub const destroy_pipeline_layout = Self.destroy;
+    pub const parse_shader_module = Self.destroy;
+    pub const destroy_shader_module = Self.destroy;
+    pub const destroy_render_pass = Self.destroy;
+    pub const destroy_pipeline = Self.destroy;
+
+    fn destroy(vk_device: vk.VkDevice, handle: *const anyopaque) void {
+        asm volatile (""
+            :
+            : [vk_device] "r" (vk_device),
+        );
+        asm volatile (""
+            :
+            : [handle] "r" (handle),
+        );
+    }
+};
+
+const PARSE = parsing;
+const CREATE = if (build_options.no_driver) DryCreate else vulkan;
+const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
+
 pub fn print_time(
     stage_name: []const u8,
     start: std.time.Instant,
@@ -405,10 +463,10 @@ pub fn parse(context: *Context, root_entries: []RootEntry) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    parse_inner(parsing, context, root_entries) catch unreachable;
+    parse_inner(PARSE, context, root_entries) catch unreachable;
 }
 pub fn parse_inner(
-    comptime PARSE: type,
+    comptime P: type,
     context: *Context,
     root_entries: []RootEntry,
 ) !void {
@@ -436,7 +494,7 @@ pub fn parse_inner(
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.parse(
-                PARSE,
+                P,
                 shared_alloc,
                 alloc,
                 tmp_alloc,
@@ -472,12 +530,12 @@ pub fn create(context: *Context, root_entries: []RootEntry) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    create_inner(parsing, vulkan, vulkan, context, root_entries) catch unreachable;
+    create_inner(PARSE, CREATE, DESTROY, context, root_entries) catch unreachable;
 }
 pub fn create_inner(
-    comptime PARSE: type,
-    comptime CREATE: type,
-    comptime DESTROY: type,
+    comptime P: type,
+    comptime C: type,
+    comptime D: type,
     context: *Context,
     root_entries: []RootEntry,
 ) !void {
@@ -501,8 +559,8 @@ pub fn create_inner(
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.create(
-                PARSE,
-                CREATE,
+                P,
+                C,
                 tmp_alloc,
                 context.db,
                 context.validation,
@@ -518,14 +576,14 @@ pub fn create_inner(
                 .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
                 .created => {
                     counters.getPtr(curr_entry.tag).* += 1;
-                    curr_entry.destroy(DESTROY, context.vk_device);
+                    curr_entry.destroy(D, context.vk_device);
                 },
                 .invalid => {
-                    curr_entry.destroy_dependencies(DESTROY, context.vk_device);
+                    curr_entry.destroy_dependencies(D, context.vk_device);
                     for (queue.items) |t| {
                         const e, _ = t;
                         e.status.store(.invalid, .seq_cst);
-                        e.destroy_dependencies(DESTROY, context.vk_device);
+                        e.destroy_dependencies(D, context.vk_device);
                     }
                     break;
                 },
