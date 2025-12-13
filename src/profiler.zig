@@ -2,9 +2,9 @@ const std = @import("std");
 const log = @import("log.zig");
 const builtin = @import("builtin");
 
-pub var global_start: u64 = 0;
 pub var global_freq: u64 = 0;
 pub var global_last_thread_id: std.atomic.Value(u32) = .init(0);
+pub var times: [options.num_threads]Time = .{Time{}} ** options.num_threads;
 pub threadlocal var current: ?*Measurement = null;
 pub threadlocal var thread_id: ?u32 = null;
 
@@ -71,6 +71,15 @@ pub fn all_function_names_in_struct(comptime T: type) []const [:0]const u8 {
     return result;
 }
 
+pub const Time = struct {
+    start: u64 = 0,
+    end: u64 = 0,
+
+    fn delta(self: Time) u64 {
+        return self.end - self.start;
+    }
+};
+
 pub const Measurement = struct {
     without_children: u64 = 0,
     with_children: u64 = 0,
@@ -80,13 +89,24 @@ pub const Measurement = struct {
     _: u64 = 0,
 };
 
-pub fn start() void {
-    global_freq = get_perf_counter_frequency();
-    global_start = get_perf_counter();
-    thread_take_id();
+pub fn start_measurement() void {
+    take_thread_id();
+    if (thread_id == 0)
+        global_freq = get_perf_counter_frequency();
+    times[thread_id.?].start = get_perf_counter();
 }
 
-pub fn thread_take_id() void {
+pub fn end_measurement() void {
+    times[thread_id.?].end = get_perf_counter();
+}
+
+pub fn take_thread_id() void {
+    log.assert(
+        @src(),
+        thread_id == null,
+        "{d} attempted taking multiple thread ids",
+        .{std.Thread.getCurrentId()},
+    );
     thread_id = global_last_thread_id.fetchAdd(1, .seq_cst);
 }
 
@@ -160,20 +180,19 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
                 return longest + FILE.len;
             }
 
-            pub fn print(comptime NAME_ALIGN: u64, thread_number: u64) void {
+            pub fn print(comptime NAME_ALIGN: u64, tid: u32) void {
                 const freq: f64 = @floatFromInt(global_freq);
-                const global_end = get_perf_counter();
-                const global_elapsed: f64 = @floatFromInt(global_end - global_start);
-                inline for (NAMES, measurements[thread_number][0..NAMES.len]) |name, m| {
+                const elapsed: f64 = @floatFromInt(times[tid].delta());
+                inline for (NAMES, measurements[tid][0..NAMES.len]) |name, m| {
                     if (m.hit_count != 0) {
                         const without_children_ms: f64 =
                             @as(f64, @floatFromInt(m.without_children)) / freq * 1000.0;
                         const without_children: f64 =
-                            @as(f64, @floatFromInt(m.without_children)) / global_elapsed * 100.0;
+                            @as(f64, @floatFromInt(m.without_children)) / elapsed * 100.0;
                         const with_children_ms: f64 =
                             @as(f64, @floatFromInt(m.with_children)) / freq * 1000.0;
                         const with_children: f64 =
-                            @as(f64, @floatFromInt(m.with_children)) / global_elapsed * 100.0;
+                            @as(f64, @floatFromInt(m.with_children)) / elapsed * 100.0;
                         const full_name = std.fmt.comptimePrint("{s}:{s}", .{ FILE, name });
                         log.info(
                             @src(),
@@ -181,7 +200,7 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
                                 std.fmt.comptimePrint("{d}", .{NAME_ALIGN + 1}) ++
                                 "} | hit: {d:>9} | exclusive: {d:>12} | cycles {d:>12.3} ms | {d:>7.3}% | inclusive: {d:>12} | cycles {d:>12.3} ms | {d:>7.3}%",
                             .{
-                                thread_number,
+                                tid,
                                 full_name,
                                 m.hit_count,
                                 m.without_children,
@@ -200,7 +219,6 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
 
 pub fn print(comptime types: []const type) void {
     @setEvalBranchQuota(50_000);
-    log.info(@src(), "Counter frequency: {d}", .{global_freq});
 
     if (options.enabled) {
         const longest_name_aligment = comptime blk: {
@@ -208,14 +226,13 @@ pub fn print(comptime types: []const type) void {
             for (types) |t| longest = @max(longest, t.max_name_aligment());
             break :blk longest;
         };
-        for (0..options.num_threads) |thread_number| {
-            inline for (types) |t| t.print(longest_name_aligment, thread_number);
+        for (0..global_last_thread_id.raw) |tid| {
+            inline for (types) |t| t.print(longest_name_aligment, @intCast(tid));
+
+            const freq: f64 = @floatFromInt(global_freq);
+            const elapsed: f64 = @floatFromInt(times[tid].delta());
+            const time_ms = elapsed / freq * 1000.0;
+            log.info(@src(), "t: {d:>3} | total time: {d:>12.3} ms", .{ tid, time_ms });
         }
     }
-
-    const freq: f64 = @floatFromInt(global_freq);
-    const global_end = get_perf_counter();
-    const global_elapsed: f64 = @floatFromInt(global_end - global_start);
-    const global_time_ms = global_elapsed / freq * 1000.0;
-    log.info(@src(), "Total {d:>6.6}ms", .{global_time_ms});
 }

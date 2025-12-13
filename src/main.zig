@@ -23,11 +23,12 @@ pub const log_options = log.Options{
 };
 
 pub const profiler_options = profiler.Options{
-    .enabled = false,
+    .enabled = build_options.profile,
 };
 
 pub const MEASUREMENTS = profiler.Measurements("main", &.{
     "main",
+    "process",
     "parse",
     "parse_threaded",
     "create",
@@ -119,7 +120,9 @@ pub fn log_args(args: *const Args) void {
 }
 
 pub fn main() !void {
-    profiler.start();
+    profiler.start_measurement();
+    defer profiler.print(ALL_MEASUREMENTS);
+    defer profiler.end_measurement();
 
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
@@ -265,15 +268,13 @@ pub fn main() !void {
         secondary_thread_process,
         contexts[1..],
     );
-    _ = secondary_threads;
     process(&contexts[0]);
+    for (secondary_threads) |st| st.join();
 
     // Don't set the completion because otherwise Steam will remember that everything
     // is replayed and will not try to replay shaders again.
     // if (control_block) |cb|
     //     cb.progress_complete.store(1, .release);
-
-    profiler.print(ALL_MEASUREMENTS);
 
     var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
         db.arena.queryCapacity();
@@ -351,11 +352,16 @@ const RootEntry = struct {
 };
 
 pub fn secondary_thread_process(context: *Context) void {
-    profiler.thread_take_id();
+    profiler.start_measurement();
+    defer profiler.end_measurement();
+
     process(context);
 }
 
 pub fn process(context: *Context) void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
     const chunk_size = context.root_entries.len / context.thread_count;
     const offset = chunk_size * profiler.thread_id.?;
     const len = @min(context.root_entries.len - offset, chunk_size);

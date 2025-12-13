@@ -18,6 +18,7 @@ pub fn build(b: *std.Build) !void {
 
 const Args = struct {
     use_llvm: bool,
+    profile: bool,
     no_driver: bool,
     disable_shader_cache: bool,
     shader_cache_dir: ?[]const u8,
@@ -26,6 +27,7 @@ const Args = struct {
     fn init(b: *std.Build) Self {
         return .{
             .use_llvm = b.option(bool, "use_llvm", "Use LLVM backend") != null,
+            .profile = b.option(bool, "profile", "Enable profiling") != null,
             .no_driver = b.option(bool, "no_driver", "Replace driver calls with stubs") != null,
             .disable_shader_cache = b.option(
                 bool,
@@ -51,6 +53,7 @@ fn create_glacier_exe(
     spirv_mod: *std.Build.Module,
 ) void {
     const build_options = b.addOptions();
+    build_options.addOption(bool, "profile", args.profile);
     build_options.addOption(bool, "no_driver", args.no_driver);
 
     const exe_mod = b.createModule(.{
