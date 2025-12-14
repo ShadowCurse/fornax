@@ -1098,4 +1098,5 @@ test "parse" {
 
 comptime {
     _ = @import("parsing.zig");
+    _ = @import("crc32.zig");
 }

@@ -13,6 +13,7 @@ const parsing = @import("parsing.zig");
 const vulkan = @import("vulkan.zig");
 const vv = @import("vulkan_validation.zig");
 const profiler = @import("profiler.zig");
+const crc32 = @import("crc32.zig");
 
 const Validation = vv.Validation;
 const Allocator = std.mem.Allocator;
@@ -147,7 +148,7 @@ pub const Entry = struct {
                 return payload;
             },
             .compressed => {
-                const payload = try tmp_alloc.alloc(u8, self.payload_stored_size);
+                const payload = try tmp_alloc.alignedAlloc(u8, .@"64", self.payload_stored_size);
                 log.assert(
                     @src(),
                     try db.file.pread(payload, self.payload_file_offset) == payload.len,
@@ -155,11 +156,7 @@ pub const Entry = struct {
                     .{},
                 );
                 if (self.payload_crc != 0) {
-                    const calculated_crc = miniz.mz_crc32(
-                        miniz.MZ_CRC32_INIT,
-                        payload.ptr,
-                        payload.len,
-                    );
+                    const calculated_crc = crc32.crc32_simd(0, payload);
                     if (calculated_crc != self.payload_crc)
                         return error.CrcMissmatch;
                 }

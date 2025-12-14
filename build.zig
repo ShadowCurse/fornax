@@ -174,7 +174,6 @@ pub fn create_miniz_module(
             "thirdparty/miniz/miniz.c",
             "thirdparty/miniz/miniz_tdef.c",
             "thirdparty/miniz/miniz_tinfl.c",
-            "thirdparty/miniz/miniz_zip.c",
         },
     });
     return miniz_mod;
