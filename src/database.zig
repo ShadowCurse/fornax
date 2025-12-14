@@ -679,6 +679,13 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
     // const file = try std.fs.openFileAbsolute(path, .{});
     const file = try std.fs.cwd().openFile(path, .{});
     const file_stat = try file.stat();
+    // Initial parsing here and goes through the file sequentialy
+    _ = std.os.linux.fadvise(
+        file.handle,
+        0,
+        @intCast(file_stat.size),
+        std.os.linux.POSIX_FADV.SEQUENTIAL,
+    );
 
     var header: Header = undefined;
     log.assert(@src(), try file.read(@ptrCast(&header)) == @sizeOf(Header), "", .{});
@@ -738,6 +745,15 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
         log.info(@src(), "Found {s:<21} {d:>8}", .{ @tagName(e.key), map.count() });
         e.value.* = try map.clone(arena_alloc);
     }
+
+    // Later file is accessed by multiple threads at random offsets
+    _ = std.os.linux.fadvise(
+        file.handle,
+        0,
+        @intCast(file_stat.size),
+        std.os.linux.POSIX_FADV.RANDOM,
+    );
+
     return .{
         .file = file,
         .entries = final_entries,
