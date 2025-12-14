@@ -679,18 +679,22 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
     // const file = try std.fs.openFileAbsolute(path, .{});
     const file = try std.fs.cwd().openFile(path, .{});
     const file_stat = try file.stat();
+    const file_size = file_stat.size;
+    var file_offset: u64 = 0;
+
     // Initial parsing here and goes through the file sequentialy
     _ = std.os.linux.fadvise(
         file.handle,
         0,
-        @intCast(file_stat.size),
+        @intCast(file_size),
         std.os.linux.POSIX_FADV.SEQUENTIAL,
     );
 
     var header: Header = undefined;
-    log.assert(@src(), try file.read(@ptrCast(&header)) == @sizeOf(Header), "", .{});
-    if (!std.mem.eql(u8, &header.magic, MAGIC))
-        return error.InvalidMagicValue;
+    log.assert(@src(), try file.pread(@ptrCast(&header), file_offset) == @sizeOf(Header), "", .{});
+    file_offset += @sizeOf(Header);
+
+    if (!std.mem.eql(u8, &header.magic, MAGIC)) return error.InvalidMagicValue;
 
     log.info(@src(), "Stored header version: {d}", .{header.version});
 
@@ -699,32 +703,34 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
     const arena_alloc = arena.allocator();
 
     var entries: EntriesType = .initFill(.empty);
-    var remaining_file_mem = file_stat.size - @sizeOf(Header);
 
     const progress_node = progress.start("reading database", 0);
     defer progress_node.end();
-    while (0 < remaining_file_mem) {
+    while (file_offset < file_stat.size) {
         progress_node.completeOne();
         // If entry is incomplete, stop
-        if (remaining_file_mem < @sizeOf(FileEntry)) break;
+        if (file_size - file_offset < @sizeOf(FileEntry)) break;
 
         var entry: FileEntry = undefined;
-        log.assert(@src(), try file.read(@ptrCast(&entry)) == @sizeOf(FileEntry), "", .{});
-        remaining_file_mem -= @sizeOf(FileEntry);
+        log.assert(
+            @src(),
+            try file.pread(@ptrCast(&entry), file_offset) == @sizeOf(FileEntry),
+            "",
+            .{},
+        );
+        file_offset += @sizeOf(FileEntry);
 
         // If payload for the entry is incomplete, stop
-        if (remaining_file_mem < entry.stored_size) break;
-        try file.seekBy(entry.stored_size);
+        if (file_size - file_offset < entry.stored_size) break;
 
-        const payload_file_offset: u64 = file_stat.size - remaining_file_mem;
-        remaining_file_mem -= entry.stored_size;
+        const payload_file_offset: u64 = file_offset;
+        file_offset += entry.stored_size;
         const entry_tag = entry.get_tag() catch {
             log.debug(@src(), "Skipping corrupted FileEntry", .{});
             continue;
         };
         // There is no used for these blobs, so skip them.
-        if (entry_tag == .application_blob_link)
-            continue;
+        if (entry_tag == .application_blob_link) continue;
 
         const entry_hash = try entry.get_hash();
         try entries.getPtr(entry_tag).put(tmp_alloc, entry_hash, .{
