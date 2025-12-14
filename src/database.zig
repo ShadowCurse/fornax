@@ -213,7 +213,7 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start_named("parse");
         defer MEASUREMENTS.end(prof_point);
 
-        if (self.status.cmpxchgStrong(.not_parsed, .parsing, .seq_cst, .seq_cst)) |old| {
+        if (self.status.cmpxchgStrong(.not_parsed, .parsing, .acq_rel, .acquire)) |old| {
             log.assert(
                 @src(),
                 old == .parsing or old == .parsed or old == .invalid,
@@ -238,7 +238,7 @@ pub const Entry = struct {
                     "Cannot read the payload for {t} 0x{x:0>16}: {t}",
                     .{ self.tag, self.hash, err },
                 );
-                self.status.store(.invalid, .seq_cst);
+                self.status.store(.invalid, .release);
                 return .invalid;
             };
             self.parse_inner(
@@ -258,12 +258,12 @@ pub const Entry = struct {
                 if (err == parsing.ScannerError.InvalidJson)
                     log.debug(@src(), "payload: {s}", .{payload});
 
-                self.status.store(.invalid, .seq_cst);
+                self.status.store(.invalid, .release);
                 return .invalid;
             };
         }
 
-        self.status.store(.parsed, .seq_cst);
+        self.status.store(.parsed, .release);
         return .parsed;
     }
 
@@ -285,7 +285,7 @@ pub const Entry = struct {
                 .entry = dep_entry,
                 .ptr_to_handle = dep.ptr_to_handle,
             };
-            _ = dep_entry.dependent_by.fetchAdd(1, .seq_cst);
+            _ = dep_entry.dependent_by.fetchAdd(1, .release);
         }
         self.dependencies = dependencies;
     }
@@ -437,15 +437,15 @@ pub const Entry = struct {
         defer MEASUREMENTS.end(prof_point);
 
         for (self.dependencies) |dep| {
-            const d_status = dep.entry.status.load(.seq_cst);
+            const d_status = dep.entry.status.load(.acquire);
             if (d_status == .invalid) {
-                self.status.store(.invalid, .seq_cst);
+                self.status.store(.invalid, .release);
                 return .invalid;
             }
             if (d_status != .created) return .dependencies;
         }
 
-        if (self.status.cmpxchgStrong(.parsed, .creating, .seq_cst, .seq_cst)) |old| {
+        if (self.status.cmpxchgStrong(.parsed, .creating, .acq_rel, .acquire)) |old| {
             log.assert(
                 @src(),
                 old == .creating or old == .created or old == .invalid,
@@ -466,10 +466,10 @@ pub const Entry = struct {
                 "Cannot create object: {t} 0x{x:0>16}: {t}",
                 .{ self.tag, self.hash, err },
             );
-            self.status.store(.invalid, .seq_cst);
+            self.status.store(.invalid, .release);
             return .invalid;
         };
-        self.status.store(.created, .seq_cst);
+        self.status.store(.created, .release);
         return .created;
     }
 
@@ -548,11 +548,9 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start(@src());
         defer MEASUREMENTS.end(prof_point);
 
-        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
-            return;
-
-        for (self.dependencies) |dep|
-            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .acq_rel, .acquire) == null) {
+            for (self.dependencies) |dep| _ = dep.entry.dependent_by.fetchSub(1, .acq_rel);
+        }
     }
 
     pub fn destroy_dependencies(
@@ -563,12 +561,11 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start_named("destroy_dependencies");
         defer MEASUREMENTS.end(prof_point);
 
-        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
-            return;
-
-        for (self.dependencies) |dep| {
-            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
-            dep.entry.destroy(DESTROY, vk_device);
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .acq_rel, .acquire) == null) {
+            for (self.dependencies) |dep| {
+                _ = dep.entry.dependent_by.fetchSub(1, .acq_rel);
+                dep.entry.destroy(DESTROY, vk_device);
+            }
         }
     }
 
@@ -576,39 +573,38 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start_named("destroy");
         defer MEASUREMENTS.end(prof_point);
 
-        const status = self.status.load(.seq_cst);
+        const status = self.status.load(.acquire);
         if (status != .created) return;
 
-        const dependent_by = self.dependent_by.load(.seq_cst);
+        const dependent_by = self.dependent_by.load(.acquire);
         if (dependent_by != 0) return;
 
-        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .seq_cst, .seq_cst) != null)
-            return;
-
-        switch (self.tag) {
-            .application_info => {},
-            .sampler => DESTROY.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
-            .descriptor_set_layout => DESTROY.destroy_descriptor_set_layout(
-                vk_device,
-                @ptrCast(self.handle),
-            ),
-            .pipeline_layout => DESTROY.destroy_pipeline_layout(
-                vk_device,
-                @ptrCast(self.handle),
-            ),
-            .shader_module,
-            => DESTROY.destroy_shader_module(vk_device, @ptrCast(self.handle)),
-            .render_pass,
-            => DESTROY.destroy_render_pass(vk_device, @ptrCast(self.handle)),
-            .graphics_pipeline,
-            .compute_pipeline,
-            .raytracing_pipeline,
-            => DESTROY.destroy_pipeline(vk_device, @ptrCast(self.handle)),
-            .application_blob_link => {},
-        }
-        for (self.dependencies) |dep| {
-            _ = dep.entry.dependent_by.fetchSub(1, .seq_cst);
-            dep.entry.destroy(DESTROY, vk_device);
+        if (self.dependencies_destroyed.cmpxchgStrong(false, true, .acq_rel, .acquire) == null) {
+            switch (self.tag) {
+                .application_info => {},
+                .sampler => DESTROY.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
+                .descriptor_set_layout => DESTROY.destroy_descriptor_set_layout(
+                    vk_device,
+                    @ptrCast(self.handle),
+                ),
+                .pipeline_layout => DESTROY.destroy_pipeline_layout(
+                    vk_device,
+                    @ptrCast(self.handle),
+                ),
+                .shader_module,
+                => DESTROY.destroy_shader_module(vk_device, @ptrCast(self.handle)),
+                .render_pass,
+                => DESTROY.destroy_render_pass(vk_device, @ptrCast(self.handle)),
+                .graphics_pipeline,
+                .compute_pipeline,
+                .raytracing_pipeline,
+                => DESTROY.destroy_pipeline(vk_device, @ptrCast(self.handle)),
+                .application_blob_link => {},
+            }
+            for (self.dependencies) |dep| {
+                _ = dep.entry.dependent_by.fetchSub(1, .acq_rel);
+                dep.entry.destroy(DESTROY, vk_device);
+            }
         }
     }
 };
