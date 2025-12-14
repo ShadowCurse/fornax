@@ -249,6 +249,8 @@ pub fn main() !void {
     ) |*entry, *root|
         root.* = .{ .entry = entry, .arena = .init(std.heap.page_allocator) };
 
+    var work_queue: WorkQueue = .{ .entries = root_entries };
+
     var shared_arena: std.heap.ThreadSafeAllocator = .{ .child_allocator = db.arena.allocator() };
     const shared_alloc = shared_arena.allocator();
     var barrier: Barrier = .{ .total_threads = thread_count };
@@ -258,7 +260,7 @@ pub fn main() !void {
         &progress_root,
         &barrier,
         &db,
-        root_entries,
+        &work_queue,
         thread_count,
         &validation,
         device.device,
@@ -302,7 +304,7 @@ pub const Context = struct {
     progress: *std.Progress.Node,
     barrier: *Barrier,
     db: *Database,
-    root_entries: []RootEntry,
+    work_queue: *WorkQueue,
     thread_count: u32,
     validation: *const Validation,
     vk_device: vk.VkDevice,
@@ -314,7 +316,7 @@ pub fn init_contexts(
     progress: *std.Progress.Node,
     barrier: *Barrier,
     db: *Database,
-    root_entries: []RootEntry,
+    work_queue: *WorkQueue,
     thread_count: u32,
     validation: *const Validation,
     vk_device: vk.VkDevice,
@@ -327,7 +329,7 @@ pub fn init_contexts(
             .progress = progress,
             .barrier = barrier,
             .db = db,
-            .root_entries = root_entries,
+            .work_queue = work_queue,
             .thread_count = thread_count,
             .validation = validation,
             .vk_device = vk_device,
@@ -351,6 +353,26 @@ const RootEntry = struct {
     arena: std.heap.ArenaAllocator,
 };
 
+const WorkQueue = struct {
+    entries: []RootEntry,
+    next_parse: std.atomic.Value(u32) = .init(0),
+    next_create: std.atomic.Value(u32) = .init(0),
+
+    const Self = @This();
+    fn take_next_parse(self: *Self) ?*RootEntry {
+        var result: ?*RootEntry = null;
+        const next = self.next_parse.fetchAdd(1, .acq_rel);
+        if (next < self.entries.len) result = &self.entries[next];
+        return result;
+    }
+    fn take_next_create(self: *Self) ?*RootEntry {
+        var result: ?*RootEntry = null;
+        const next = self.next_create.fetchAdd(1, .acq_rel);
+        if (next < self.entries.len) result = &self.entries[next];
+        return result;
+    }
+};
+
 pub fn secondary_thread_process(context: *Context) void {
     profiler.start_measurement();
     defer profiler.end_measurement();
@@ -362,13 +384,13 @@ pub fn process(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    const chunk_size = context.root_entries.len / context.thread_count;
-    const offset = chunk_size * profiler.thread_id.?;
-    const len = @min(context.root_entries.len - offset, chunk_size);
-    const thread_root_entries = context.root_entries[offset..][0..len];
-    parse(context, thread_root_entries);
+    // const chunk_size = context.root_entries.len / context.thread_count;
+    // const offset = chunk_size * profiler.thread_id.?;
+    // const len = @min(context.root_entries.len - offset, chunk_size);
+    // const thread_root_entries = context.root_entries[offset..][0..len];
+    parse(context);
     context.barrier.wait();
-    create(context, thread_root_entries);
+    create(context);
 }
 
 const DryCreate = struct {
@@ -431,7 +453,6 @@ const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
 pub fn print_time(
     stage_name: []const u8,
     start: std.time.Instant,
-    starting_count: usize,
     counters: *const std.EnumArray(Database.Entry.Tag, u32),
 ) void {
     const now = std.time.Instant.now() catch unreachable;
@@ -439,11 +460,10 @@ pub fn print_time(
     const thread_id = std.Thread.getCurrentId();
     log.debug(
         @src(),
-        "Thread {d}: {s} {d:>6} pipelines in {d:>6.3}ms. Visited {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6}",
+        "Thread {d}: {s} finished in {d:>6.3}ms. Visited {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6}",
         .{
             thread_id,
             stage_name,
-            starting_count,
             dt,
             Database.Entry.Tag.sampler,
             counters.get(.sampler),
@@ -465,34 +485,30 @@ pub fn print_time(
     );
 }
 
-pub fn parse(context: *Context, root_entries: []RootEntry) void {
+pub fn parse(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    parse_inner(PARSE, context, root_entries) catch unreachable;
+    parse_inner(PARSE, context) catch unreachable;
 }
-pub fn parse_inner(
-    comptime P: type,
-    context: *Context,
-    root_entries: []RootEntry,
-) !void {
+pub fn parse_inner(comptime P: type, context: *Context) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const start = try std.time.Instant.now();
-    const start_count = root_entries.len;
-    defer print_time("parsed", start, start_count, &counters);
+    const work_queue = context.work_queue;
+    const shared_alloc = context.shared_alloc;
+    const tmp_alloc = context.arena.allocator();
+    defer print_time("parsed", start, &counters);
 
-    var progress = context.progress.start("parsing", root_entries.len);
+    var progress = context.progress.start("parsing", 0);
     defer progress.end();
 
-    for (root_entries) |*root_entry| {
+    while (work_queue.take_next_parse()) |root_entry| {
         defer _ = context.arena.reset(.retain_capacity);
         defer progress.completeOne();
 
         counters.getPtr(root_entry.entry.tag).* += 1;
 
-        const shared_alloc = context.shared_alloc;
         const alloc = root_entry.arena.allocator();
-        const tmp_alloc = context.arena.allocator();
 
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
         try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
@@ -532,32 +548,31 @@ pub fn parse_inner(
     }
 }
 
-pub fn create(context: *Context, root_entries: []RootEntry) void {
+pub fn create(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    create_inner(PARSE, CREATE, DESTROY, context, root_entries) catch unreachable;
+    create_inner(PARSE, CREATE, DESTROY, context) catch unreachable;
 }
 pub fn create_inner(
     comptime P: type,
     comptime C: type,
     comptime D: type,
     context: *Context,
-    root_entries: []RootEntry,
 ) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const start = try std.time.Instant.now();
-    const start_count = root_entries.len;
-    defer print_time("created", start, start_count, &counters);
+    const work_queue = context.work_queue;
+    const tmp_alloc = context.arena.allocator();
 
-    var progress = context.progress.start("creation", root_entries.len);
+    const start = try std.time.Instant.now();
+    defer print_time("created", start, &counters);
+
+    var progress = context.progress.start("creation", 0);
     defer progress.end();
 
-    for (root_entries) |*root_entry| {
+    while (work_queue.take_next_create()) |root_entry| {
         defer _ = context.arena.reset(.retain_capacity);
         defer progress.completeOne();
-
-        const tmp_alloc = context.arena.allocator();
 
         var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
         try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
