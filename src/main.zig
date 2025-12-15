@@ -387,10 +387,6 @@ pub fn process(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    // const chunk_size = context.root_entries.len / context.thread_count;
-    // const offset = chunk_size * profiler.thread_id.?;
-    // const len = @min(context.root_entries.len - offset, chunk_size);
-    // const thread_root_entries = context.root_entries[offset..][0..len];
     parse(context);
     context.barrier.wait();
     create(context);
@@ -453,6 +449,27 @@ const PARSE = parsing;
 const CREATE = if (build_options.no_driver) DryCreate else vulkan;
 const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
 
+const Task = struct {
+    root_entry: *RootEntry = undefined,
+    in_progress: bool = false,
+    queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty,
+    arena: std.heap.ArenaAllocator = undefined,
+};
+const Tasks = struct {
+    tasks: [MAX_TASKS]Task = .{Task{}} ** MAX_TASKS,
+    current: u8 = 0,
+
+    const MAX_TASKS = 8;
+    const Self = @This();
+
+    fn next(self: *Self) *Task {
+        const task = &self.tasks[self.current];
+        self.current += 1;
+        self.current %= MAX_TASKS;
+        return task;
+    }
+};
+
 pub fn print_time(
     stage_name: []const u8,
     start: std.time.Instant,
@@ -497,56 +514,80 @@ pub fn parse(context: *Context) void {
 pub fn parse_inner(comptime P: type, context: *Context) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const start = try std.time.Instant.now();
-    const work_queue = context.work_queue;
-    const shared_alloc = context.shared_alloc;
-    const tmp_alloc = context.arena.allocator();
     defer print_time("parsed", start, &counters);
 
     var progress = context.progress.start("parsing", 0);
     defer progress.end();
 
-    while (work_queue.take_next_parse()) |root_entry| {
-        defer _ = context.arena.reset(.retain_capacity);
+    const work_queue = context.work_queue;
+    const shared_alloc = context.shared_alloc;
+    const thread_alloc = context.arena.allocator();
+    defer _ = context.arena.reset(.retain_capacity);
+
+    var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
+    const gpa_alloc = gpa_allocator.allocator();
+
+    var in_progress: u8 = 0;
+    var tasks: Tasks = .{};
+    for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
+    while (true) {
         defer progress.completeOne();
 
-        counters.getPtr(root_entry.entry.tag).* += 1;
+        const task = tasks.next();
+        if (!task.in_progress) {
+            if (work_queue.take_next_parse()) |root_entry| {
+                in_progress += 1;
+                task.root_entry = root_entry;
+                task.in_progress = true;
+                task.queue = .empty;
+                _ = task.arena.reset(.retain_capacity);
+                try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
+            }
+        }
+        if (in_progress == 0) break;
 
-        const alloc = root_entry.arena.allocator();
+        counters.getPtr(task.root_entry.entry.tag).* += 1;
 
-        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
-        while (queue.pop()) |tuple| {
+        const tmp_alloc = task.arena.allocator();
+        while (task.queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.parse(
                 P,
                 shared_alloc,
-                alloc,
-                tmp_alloc,
+                task.root_entry.arena.allocator(),
+                thread_alloc,
                 context.db,
                 context.validation,
             )) {
                 .parsed => {
                     if (next_dep != curr_entry.dependencies.len) {
-                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
+                        try task.queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
-                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
+                        try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
                         counters.getPtr(dep.entry.tag).* += 1;
                     }
                 },
-                .deferred => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
+                .parsing => {
+                    try task.queue.append(tmp_alloc, .{ curr_entry, next_dep });
+                    break;
+                },
                 .invalid => {
-                    for (queue.items) |t| {
-                        const e, _ = t;
+                    for (0..task.queue.items.len) |i| {
+                        const e, _ = task.queue.items[task.queue.items.len - i - 1];
                         e.status.store(.invalid, .seq_cst);
                         e.decrement_dependencies();
                     }
-                    control_block.record_failed_entry(root_entry.entry.tag);
+                    control_block.record_failed_entry(task.root_entry.entry.tag);
+                    in_progress -= 1;
+                    task.in_progress = false;
                     break;
                 },
             }
         } else {
-            control_block.record_parsed_entry(root_entry.entry.tag);
+            in_progress -= 1;
+            task.in_progress = false;
+            control_block.record_parsed_entry(task.root_entry.entry.tag);
         }
     }
 }
@@ -564,22 +605,39 @@ pub fn create_inner(
     context: *Context,
 ) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const work_queue = context.work_queue;
-    const tmp_alloc = context.arena.allocator();
-
     const start = try std.time.Instant.now();
     defer print_time("created", start, &counters);
 
     var progress = context.progress.start("creation", 0);
     defer progress.end();
 
-    while (work_queue.take_next_create()) |root_entry| {
-        defer _ = context.arena.reset(.retain_capacity);
+    const work_queue = context.work_queue;
+    const thread_alloc = context.arena.allocator();
+
+    var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
+    const gpa_alloc = gpa_allocator.allocator();
+
+    var in_progress: u8 = 0;
+    var tasks: Tasks = .{};
+    for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
+    while (true) {
         defer progress.completeOne();
 
-        var queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty;
-        try queue.append(tmp_alloc, .{ root_entry.entry, 0 });
-        while (queue.pop()) |tuple| {
+        const task = tasks.next();
+        if (!task.in_progress) {
+            if (work_queue.take_next_create()) |root_entry| {
+                in_progress += 1;
+                task.root_entry = root_entry;
+                task.in_progress = true;
+                task.queue = .empty;
+                _ = task.arena.reset(.retain_capacity);
+                try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
+            }
+        }
+        if (in_progress == 0) break;
+
+        const tmp_alloc = task.arena.allocator();
+        while (task.queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.create(
@@ -592,29 +650,37 @@ pub fn create_inner(
             )) {
                 .dependencies => {
                     if (next_dep != curr_entry.dependencies.len) {
-                        try queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
+                        try task.queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
-                        try queue.append(tmp_alloc, .{ dep.entry, 0 });
+                        try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
                     }
                 },
-                .creating => try queue.append(tmp_alloc, .{ curr_entry, next_dep }),
+                .creating => {
+                    try task.queue.append(tmp_alloc, .{ curr_entry, next_dep });
+                    break;
+                },
                 .created => {
                     counters.getPtr(curr_entry.tag).* += 1;
                     curr_entry.destroy(D, context.vk_device);
                 },
                 .invalid => {
                     curr_entry.destroy_dependencies(D, context.vk_device);
-                    for (queue.items) |t| {
-                        const e, _ = t;
-                        e.status.store(.invalid, .seq_cst);
+                    for (0..task.queue.items.len) |i| {
+                        const e, _ = task.queue.items[task.queue.items.len - i - 1];
+                        e.status.store(.invalid, .release);
                         e.destroy_dependencies(D, context.vk_device);
                     }
+                    in_progress -= 1;
+                    task.in_progress = false;
+                    _ = task.arena.reset(.retain_capacity);
                     break;
                 },
             }
         } else {
-            _ = root_entry.arena.reset(.free_all);
-            control_block.record_successful_entry(root_entry.entry.tag);
+            in_progress -= 1;
+            task.in_progress = false;
+            _ = task.arena.reset(.retain_capacity);
+            control_block.record_successful_entry(task.root_entry.entry.tag);
         }
     }
 }

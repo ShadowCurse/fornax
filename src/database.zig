@@ -198,7 +198,7 @@ pub const Entry = struct {
 
     pub const ParseResult = enum {
         parsed,
-        deferred,
+        parsing,
         invalid,
     };
     pub fn parse(
@@ -222,7 +222,7 @@ pub const Entry = struct {
             );
             return switch (old) {
                 .parsed => .parsed,
-                .parsing => .deferred,
+                .parsing => .parsing,
                 .invalid => .invalid,
                 else => unreachable,
             };
