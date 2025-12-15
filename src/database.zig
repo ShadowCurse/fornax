@@ -204,6 +204,7 @@ pub const Entry = struct {
     pub fn parse(
         self: *Entry,
         comptime PARSE: type,
+        comptime VALIDATE: type,
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
@@ -243,6 +244,7 @@ pub const Entry = struct {
             };
             self.parse_inner(
                 PARSE,
+                VALIDATE,
                 dependency_alloc,
                 entry_alloc,
                 tmp_alloc,
@@ -293,6 +295,7 @@ pub const Entry = struct {
     pub fn parse_inner(
         self: *Entry,
         comptime PARSE: type,
+        comptime VALIDATE: type,
         dependency_alloc: Allocator,
         entry_alloc: Allocator,
         tmp_alloc: Allocator,
@@ -308,7 +311,7 @@ pub const Entry = struct {
                 const result = try PARSE.parse_sampler(entry_alloc, tmp_alloc, db, payload);
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vv.validate_VkSamplerCreateInfo(
+                if (!VALIDATE.validate_VkSamplerCreateInfo(
                     validation.extensions,
                     @ptrCast(result.create_info),
                     true,
@@ -323,11 +326,9 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.validate_VkDescriptorSetLayoutCreateInfo(
+                if (!VALIDATE.validate_VkDescriptorSetLayoutCreateInfo(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkDescriptorSetLayoutCreateInfo;
@@ -336,11 +337,9 @@ pub const Entry = struct {
                 const result =
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.validate_VkPipelineLayoutCreateInfo(
+                if (!VALIDATE.validate_VkPipelineLayoutCreateInfo(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkPipelineLayoutCreateInfo;
@@ -354,11 +353,9 @@ pub const Entry = struct {
                 );
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
-                if (!vv.validate_VkRenderPassCreateInfo(
+                if (!VALIDATE.validate_VkRenderPassCreateInfo(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkRenderPassCreateInfo;
@@ -371,11 +368,9 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.validate_VkGraphicsPipelineCreateInfo(
+                if (!VALIDATE.validate_VkGraphicsPipelineCreateInfo(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkGraphicsPipelineCreateInfo;
@@ -388,11 +383,9 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.validate_VkComputePipelineCreateInfo(
+                if (!VALIDATE.validate_VkComputePipelineCreateInfo(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkComputePipelineCreateInfo;
@@ -405,11 +398,9 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
-                if (!vv.validate_VkRayTracingPipelineCreateInfoKHR(
+                if (!VALIDATE.validate_VkRayTracingPipelineCreateInfoKHR(
                     validation.extensions,
-                    @ptrCast(
-                        result.create_info,
-                    ),
+                    @ptrCast(result.create_info),
                     true,
                 ))
                     return error.CheckFailedVkRayTracingPipelineCreateInfoKHR;

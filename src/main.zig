@@ -509,9 +509,9 @@ pub fn parse(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    parse_inner(PARSE, context) catch unreachable;
+    parse_inner(PARSE, vv, context) catch unreachable;
 }
-pub fn parse_inner(comptime P: type, context: *Context) !void {
+pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void {
     var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
     const start = try std.time.Instant.now();
     defer print_time("parsed", start, &counters);
@@ -554,6 +554,7 @@ pub fn parse_inner(comptime P: type, context: *Context) !void {
 
             switch (curr_entry.parse(
                 P,
+                V,
                 shared_alloc,
                 task.root_entry.arena.allocator(),
                 thread_alloc,
@@ -737,6 +738,24 @@ test "parse" {
         fn destroy(_: vk.VkDevice, _: *const anyopaque) void {
             unreachable;
         }
+
+        fn validate(
+            _: *const vv.Extensions,
+            _: *const vk.VkRayTracingPipelineCreateInfoKHR,
+            _: bool,
+        ) bool {
+            return true;
+        }
+    };
+
+    const TestValidate = struct {
+        pub const validate_VkSamplerCreateInfo = Dummy.validate;
+        pub const validate_VkDescriptorSetLayoutCreateInfo = Dummy.validate;
+        pub const validate_VkPipelineLayoutCreateInfo = Dummy.validate;
+        pub const validate_VkRenderPassCreateInfo = Dummy.validate;
+        pub const validate_VkGraphicsPipelineCreateInfo = Dummy.validate;
+        pub const validate_VkComputePipelineCreateInfo = Dummy.validate;
+        pub const validate_VkRayTracingPipelineCreateInfoKHR = Dummy.validate;
     };
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -786,23 +805,6 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: Context = .{
-            .arena = .init(alloc),
-            .shared_alloc = alloc,
-            .progress = &progress,
-            .barrier = undefined,
-            .db = &db,
-            .root_entries = &.{},
-            .thread_count = 1,
-            .validation = &.{
-                .api_version = 0,
-                .extensions = &.{},
-                .pdf = &.{},
-                .additional_pdf = &.{},
-            },
-            .vk_device = undefined,
-        };
-
         try Dummy.put_pipelines(alloc, &db, &.{
             .{ .hash = 1 },
             .{ .hash = 2 },
@@ -817,7 +819,20 @@ test "parse" {
             .payload_file_offset = 0,
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
-        try parse_inner(TestParse, &thread_context, &root_entries);
+        var work_queue: WorkQueue = .{ .entries = &root_entries };
+        var validation: vv.Validation = undefined;
+        var thread_context: Context = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .barrier = undefined,
+            .db = &db,
+            .work_queue = &work_queue,
+            .thread_count = 1,
+            .validation = &validation,
+            .vk_device = undefined,
+        };
+        try parse_inner(TestParse, TestValidate, &thread_context);
         try std.testing.expectEqual(.parsed, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
@@ -877,23 +892,6 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: Context = .{
-            .arena = .init(alloc),
-            .shared_alloc = alloc,
-            .progress = &progress,
-            .barrier = undefined,
-            .db = &db,
-            .root_entries = &.{},
-            .thread_count = 1,
-            .validation = &.{
-                .api_version = 0,
-                .extensions = &.{},
-                .pdf = &.{},
-                .additional_pdf = &.{},
-            },
-            .vk_device = undefined,
-        };
-
         try Dummy.put_pipelines(alloc, &db, &.{
             .{ .hash = 1 },
             .{ .hash = 2 },
@@ -909,7 +907,20 @@ test "parse" {
             .payload_file_offset = 0,
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
-        try parse_inner(TestParse, &thread_context, &root_entries);
+        var work_queue: WorkQueue = .{ .entries = &root_entries };
+        var validation: vv.Validation = undefined;
+        var thread_context: Context = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .barrier = undefined,
+            .db = &db,
+            .work_queue = &work_queue,
+            .thread_count = 1,
+            .validation = &validation,
+            .vk_device = undefined,
+        };
+        try parse_inner(TestParse, TestValidate, &thread_context);
         try std.testing.expectEqual(.invalid, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
@@ -990,18 +1001,6 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: Context = .{
-            .arena = .init(alloc),
-            .shared_alloc = alloc,
-            .progress = &progress,
-            .barrier = undefined,
-            .db = &db,
-            .root_entries = &.{},
-            .thread_count = 1,
-            .validation = undefined,
-            .vk_device = undefined,
-        };
-
         try Dummy.put_pipelines(
             alloc,
             &db,
@@ -1032,7 +1031,19 @@ test "parse" {
             },
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
-        try create_inner(Parse, Create, Destroy, &thread_context, &root_entries);
+        var work_queue: WorkQueue = .{ .entries = &root_entries };
+        var thread_context: Context = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .barrier = undefined,
+            .db = &db,
+            .work_queue = &work_queue,
+            .thread_count = 1,
+            .validation = undefined,
+            .vk_device = undefined,
+        };
+        try create_inner(Parse, Create, Destroy, &thread_context);
 
         try std.testing.expectEqual(0xB, Global.gp0_1);
         try std.testing.expectEqual(0xC, Global.gp0_2);
@@ -1113,18 +1124,6 @@ test "parse" {
         };
 
         var db: Database = .{ .file = tmp_file, .entries = .initFill(.empty), .arena = arena };
-        var thread_context: Context = .{
-            .arena = .init(alloc),
-            .shared_alloc = alloc,
-            .progress = &progress,
-            .barrier = undefined,
-            .db = &db,
-            .root_entries = &.{},
-            .thread_count = 1,
-            .validation = undefined,
-            .vk_device = undefined,
-        };
-
         try Dummy.put_pipelines(
             alloc,
             &db,
@@ -1155,7 +1154,19 @@ test "parse" {
             },
         };
         var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
-        try create_inner(Parse, Create, Destroy, &thread_context, &root_entries);
+        var work_queue: WorkQueue = .{ .entries = &root_entries };
+        var thread_context: Context = .{
+            .arena = .init(alloc),
+            .shared_alloc = alloc,
+            .progress = &progress,
+            .barrier = undefined,
+            .db = &db,
+            .work_queue = &work_queue,
+            .thread_count = 1,
+            .validation = undefined,
+            .vk_device = undefined,
+        };
+        try create_inner(Parse, Create, Destroy, &thread_context);
 
         try std.testing.expectEqual(0, Global.gp0_1);
         try std.testing.expectEqual(0, Global.gp0_2);
