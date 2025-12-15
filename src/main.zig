@@ -219,7 +219,7 @@ pub fn main() !void {
         instance.all_extension_names,
         device.all_extension_names,
     );
-    _ = tmp_arena.reset(.free_all);
+    _ = tmp_arena.reset(.retain_capacity);
 
     const validation: Validation = .{
         .api_version = instance.api_version,
@@ -265,6 +265,9 @@ pub fn main() !void {
         &validation,
         device.device,
     );
+    // Reuse already existing arena
+    contexts[0].arena = tmp_arena;
+
     const secondary_threads = try spawn_secondary_threads(
         arena_alloc,
         secondary_thread_process,
