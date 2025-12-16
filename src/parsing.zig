@@ -1736,7 +1736,11 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                     try parse_vk_pipeline_fragment_density_map_layered_create_info_valve(c, obj);
                 },
                 else => {
-                    log.err(@src(), "Unknown pnext chain type: {d}", .{stype});
+                    log.err(
+                        @src(),
+                        "Unknown pnext chain type: {s}({d})",
+                        .{ vu.stype_to_name(stype), stype },
+                    );
                     return error.UnknownPnextChain;
                 },
             }
@@ -1767,8 +1771,18 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                 if (std.mem.eql(u8, ss, "sType")) {
                     const v = try scanner_next_number(c.scanner);
                     const stype = try std.fmt.parseInt(u32, v, 10);
-                    if (stype != vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR)
+                    if (stype != vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR) {
+                        log.err(
+                            @src(),
+                            "Expected VkPipelineLibraryCreateInfoKHR({d}) found {s}({d})",
+                            .{
+                                vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
+                                vu.stype_to_name(stype),
+                                stype,
+                            },
+                        );
                         return error.InvalidsTypeForLibraries;
+                    }
                 } else {
                     const v = try scanner_next_number_or_string(c.scanner);
                     log.warn(@src(), "Skipping unknown field {s}: {s}", .{ ss, v });

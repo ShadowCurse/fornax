@@ -1400,6 +1400,8 @@ pub fn gen(db: *const vkp.Database) !void {
     _ = arena.reset(.retain_capacity);
     try write_chain_size(alloc, &file, db);
     _ = arena.reset(.retain_capacity);
+    try write_stype_to_name(alloc, &file, db);
+    _ = arena.reset(.retain_capacity);
 }
 
 const PRINT_STRUCT =
@@ -1921,4 +1923,52 @@ fn write_chain_size(
                 , .{@"struct".name});
         }
     }
+}
+
+fn write_stype_to_name(
+    alloc: Allocator,
+    file: *const std.fs.File,
+    db: *const vkp.Database,
+) !void {
+    const IGNORED = [_][]const u8{
+        "NV",
+        "QCOM",
+        "ANDROID",
+        "VkFaultData",
+        "VkPipelinePoolSize",
+        "VkFaultCallbackInfo",
+        "VkRefreshObjectListKHR",
+        "VkApplicationParametersEXT",
+        "VkCommandPoolMemoryConsumption",
+        "VkPhysicalDeviceVulkanSC10Features",
+        "VkDeviceObjectReservationCreateInfo",
+        "VkPerformanceQueryReservationInfoKHR",
+        "VkPhysicalDeviceVulkanSC10Properties",
+        "VkCommandPoolMemoryReservationCreateInfo",
+        "VkPhysicalDevicePortabilitySubsetFeaturesKHR",
+        "VkPhysicalDevicePortabilitySubsetPropertiesKHR",
+    };
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\pub fn stype_to_name(stype: u32) []const u8 {{
+        \\    return switch (stype) {{
+        \\
+    , .{});
+    outer: for (db.types.structs) |@"struct"| {
+        if (@"struct".stype()) |stype| {
+            for (IGNORED) |ignore| {
+                if (std.mem.endsWith(u8, @"struct".name, ignore)) continue :outer;
+            }
+            w.write(
+                \\        vk.{s} => "{s}",
+                \\
+            , .{ stype, @"struct".name });
+        }
+    }
+    w.write(
+        \\        else => "Unknown",
+        \\    }};
+        \\}}
+        \\
+    , .{});
 }
