@@ -470,41 +470,6 @@ const Tasks = struct {
     }
 };
 
-pub fn print_time(
-    stage_name: []const u8,
-    start: std.time.Instant,
-    counters: *const std.EnumArray(Database.Entry.Tag, u32),
-) void {
-    const now = std.time.Instant.now() catch unreachable;
-    const dt = @as(f64, @floatFromInt(now.since(start))) / 1000_000.0;
-    const thread_id = std.Thread.getCurrentId();
-    log.debug(
-        @src(),
-        "Thread {d}: {s} finished in {d:>6.3}ms. Visited {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6} {t}: {d:>6}",
-        .{
-            thread_id,
-            stage_name,
-            dt,
-            Database.Entry.Tag.sampler,
-            counters.get(.sampler),
-            Database.Entry.Tag.descriptor_set_layout,
-            counters.get(.descriptor_set_layout),
-            Database.Entry.Tag.pipeline_layout,
-            counters.get(.pipeline_layout),
-            Database.Entry.Tag.shader_module,
-            counters.get(.shader_module),
-            Database.Entry.Tag.render_pass,
-            counters.get(.render_pass),
-            Database.Entry.Tag.graphics_pipeline,
-            counters.get(.graphics_pipeline),
-            Database.Entry.Tag.compute_pipeline,
-            counters.get(.compute_pipeline),
-            Database.Entry.Tag.raytracing_pipeline,
-            counters.get(.raytracing_pipeline),
-        },
-    );
-}
-
 pub fn parse(context: *Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
@@ -512,10 +477,6 @@ pub fn parse(context: *Context) void {
     parse_inner(PARSE, vv, context) catch unreachable;
 }
 pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void {
-    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const start = try std.time.Instant.now();
-    defer print_time("parsed", start, &counters);
-
     var progress = context.progress.start("parsing", 0);
     defer progress.end();
 
@@ -546,8 +507,6 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
         }
         if (in_progress == 0) break;
 
-        counters.getPtr(task.root_entry.entry.tag).* += 1;
-
         const tmp_alloc = task.arena.allocator();
         while (task.queue.pop()) |tuple| {
             const curr_entry, const next_dep = tuple;
@@ -566,7 +525,6 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                         try task.queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
                         try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
-                        counters.getPtr(dep.entry.tag).* += 1;
                     }
                 },
                 .parsing => {
@@ -605,10 +563,6 @@ pub fn create_inner(
     comptime D: type,
     context: *Context,
 ) !void {
-    var counters: std.EnumArray(Database.Entry.Tag, u32) = .initFill(0);
-    const start = try std.time.Instant.now();
-    defer print_time("created", start, &counters);
-
     var progress = context.progress.start("creation", 0);
     defer progress.end();
 
@@ -661,7 +615,6 @@ pub fn create_inner(
                     break;
                 },
                 .created => {
-                    counters.getPtr(curr_entry.tag).* += 1;
                     curr_entry.destroy(D, context.vk_device);
                 },
                 .invalid => {
