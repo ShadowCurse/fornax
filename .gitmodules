@@ -15,3 +15,6 @@
 [submodule "thirdparty/SPIRV-Headers"]
 	path = thirdparty/SPIRV-Headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers
+[submodule "thirdparty/vulkan-object"]
+	path = thirdparty/vulkan-object
+	url = https://github.com/KhronosGroup/vulkan-object.git
