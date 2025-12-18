@@ -19,7 +19,7 @@ def extension_to_toml(item):
     print("promoted_to =", item.promotedTo if item.promotedTo else "null")
     print("deprecated_by =", item.deprecatedBy if item.deprecatedBy else "null")
     print("obsoleted_by =", item.obsoletedBy if item.obsoletedBy else "null")
-    print("special_use =", ",".join(item.specialUse))
+    print(f"special_use = [", ",".join(item.specialUse), "]", sep = "")
     # ratified
 
     handles_names = [handle.name for handle in item.handles]
