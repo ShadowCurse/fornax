@@ -1371,6 +1371,19 @@ pub fn parse_vk_pipeline_fragment_density_map_layered_create_info_valve(
     try parse_simple_type(context, obj);
 }
 
+pub fn parse_vk_structure_type_depth_bias_representation_info_ext(
+    context: *Context,
+    obj: *vk.VkDepthBiasRepresentationInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{
+        .sType = vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+    };
+    try parse_simple_type(context, obj);
+}
+
 pub fn parse_vk_graphics_pipeline_library_create_info_ext(
     context: *Context,
     obj: *vk.VkGraphicsPipelineLibraryCreateInfoEXT,
@@ -1734,6 +1747,11 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                 => {
                     const obj = try chain.chain(vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE);
                     try parse_vk_pipeline_fragment_density_map_layered_create_info_valve(c, obj);
+                },
+                vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+                => {
+                    const obj = try chain.chain(vk.VkDepthBiasRepresentationInfoEXT);
+                    try parse_vk_structure_type_depth_bias_representation_info_ext(c, obj);
                 },
                 else => {
                     log.err(
