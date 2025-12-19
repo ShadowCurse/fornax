@@ -28,11 +28,15 @@ file: std.fs.File,
 entries: EntriesType,
 arena: std.heap.ArenaAllocator,
 
+pub const FileReadError = error{NotEnoughBytesInFile};
 pub const CrcError = error{CrcMissmatch};
 pub const MinizError = error{ CannotUncompressPayload, DecompressedSizeMissmatch };
-pub const GetPayloadError = std.fs.File.PReadError ||
+pub const ReadAndCheckCrcError =
+    std.fs.File.PReadError ||
     std.mem.Allocator.Error ||
-    CrcError ||
+    FileReadError ||
+    CrcError;
+pub const GetPayloadError = ReadAndCheckCrcError ||
     MinizError;
 
 const Database = @This();
@@ -129,38 +133,11 @@ pub const Entry = struct {
 
         switch (self.payload_flag) {
             .not_compressed => {
-                const payload = try alloc.alloc(u8, self.payload_stored_size);
-                log.assert(
-                    @src(),
-                    try db.file.pread(payload, self.payload_file_offset) == payload.len,
-                    "",
-                    .{},
-                );
-                if (self.payload_crc != 0) {
-                    const calculated_crc = miniz.mz_crc32(
-                        miniz.MZ_CRC32_INIT,
-                        payload.ptr,
-                        payload.len,
-                    );
-                    if (calculated_crc != self.payload_crc)
-                        return error.CrcMissmatch;
-                }
+                const payload = try self.read_and_check_crc(alloc, db);
                 return payload;
             },
             .compressed => {
-                const payload = try tmp_alloc.alignedAlloc(u8, .@"64", self.payload_stored_size);
-                log.assert(
-                    @src(),
-                    try db.file.pread(payload, self.payload_file_offset) == payload.len,
-                    "",
-                    .{},
-                );
-                if (self.payload_crc != 0) {
-                    const calculated_crc = crc32.crc32_simd(0, payload);
-                    if (calculated_crc != self.payload_crc)
-                        return error.CrcMissmatch;
-                }
-
+                const payload = try self.read_and_check_crc(tmp_alloc, db);
                 const decompressed_payload = try alloc.alloc(u8, self.payload_decompressed_size);
                 var decompressed_len: u64 = self.payload_decompressed_size;
                 if (miniz.mz_uncompress(
@@ -175,6 +152,25 @@ pub const Entry = struct {
                 return decompressed_payload;
             },
         }
+    }
+
+    pub fn read_and_check_crc(
+        self: *const Entry,
+        alloc: Allocator,
+        db: *const Database,
+    ) ReadAndCheckCrcError![]const u8 {
+        const payload = try alloc.alignedAlloc(u8, .@"64", self.payload_stored_size);
+
+        const read_bytes = try db.file.pread(payload, self.payload_file_offset);
+        if (read_bytes != payload.len) return error.NotEnoughBytesInFile;
+
+        if (self.payload_crc != 0) {
+            const calculated_crc = crc32.crc32_simd(0, payload);
+            if (calculated_crc != self.payload_crc)
+                return error.CrcMissmatch;
+        }
+
+        return payload;
     }
 
     pub fn check_version_and_hash(self: *const Entry, v: anytype) !void {
