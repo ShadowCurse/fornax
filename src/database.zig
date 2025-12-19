@@ -427,6 +427,7 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start_named("create");
         defer MEASUREMENTS.end(prof_point);
 
+        if (self.status.load(.acquire) == .invalid) return .invalid;
         for (self.dependencies) |dep| {
             const d_status = dep.entry.status.load(.acquire);
             if (d_status == .invalid) {
