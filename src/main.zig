@@ -532,8 +532,19 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                     break;
                 },
                 .invalid => {
+                    log.debug(
+                        @src(),
+                        "Encountered invalid entry during parsing {t} 0x{x:0>16}",
+                        .{ curr_entry.tag, curr_entry.hash },
+                    );
+                    curr_entry.decrement_dependencies();
                     for (0..task.queue.items.len) |i| {
                         const e, _ = task.queue.items[task.queue.items.len - i - 1];
+                        log.debug(
+                            @src(),
+                            "Invalidating parent: {t} 0x{x:0>16}",
+                            .{ e.tag, e.hash },
+                        );
                         e.status.store(.invalid, .seq_cst);
                         e.decrement_dependencies();
                     }
@@ -618,9 +629,19 @@ pub fn create_inner(
                     curr_entry.destroy(D, context.vk_device);
                 },
                 .invalid => {
+                    log.debug(
+                        @src(),
+                        "Encountered invalid entry during creating {t} 0x{x:0>16}",
+                        .{ curr_entry.tag, curr_entry.hash },
+                    );
                     curr_entry.destroy_dependencies(D, context.vk_device);
                     for (0..task.queue.items.len) |i| {
                         const e, _ = task.queue.items[task.queue.items.len - i - 1];
+                        log.debug(
+                            @src(),
+                            "Invalidating parent: {t} 0x{x:0>16}",
+                            .{ e.tag, e.hash },
+                        );
                         e.status.store(.invalid, .release);
                         e.destroy_dependencies(D, context.vk_device);
                     }

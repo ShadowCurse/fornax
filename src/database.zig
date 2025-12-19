@@ -218,8 +218,8 @@ pub const Entry = struct {
             log.assert(
                 @src(),
                 old == .parsing or old == .parsed or old == .invalid,
-                "Encountered strange entry state: {t}",
-                .{old},
+                "Entry: {t} 0x{x:0>16} has invalid parse state: {t}",
+                .{ self.tag, self.hash, old },
             );
             return switch (old) {
                 .parsed => .parsed,
@@ -236,7 +236,7 @@ pub const Entry = struct {
             const payload = self.get_payload(tmp_alloc, tmp_alloc, db) catch |err| {
                 log.debug(
                     @src(),
-                    "Cannot read the payload for {t} 0x{x:0>16}: {t}",
+                    "Entry: {t} 0x{x:0>16} failed to read the payload: {t}",
                     .{ self.tag, self.hash, err },
                 );
                 self.status.store(.invalid, .release);
@@ -254,7 +254,7 @@ pub const Entry = struct {
             ) catch |err| {
                 log.debug(
                     @src(),
-                    "Cannot parse object: {t} 0x{x:0>16}: {t}",
+                    "Entry: {t} 0x{x:0>16} failed parse: {t}",
                     .{ self.tag, self.hash, err },
                 );
                 if (err == parsing.ScannerError.InvalidJson)
@@ -265,6 +265,7 @@ pub const Entry = struct {
             };
         }
 
+        log.debug(@src(), "Entry: {t} 0x{x:0>16} parsed", .{ self.tag, self.hash });
         self.status.store(.parsed, .release);
         return .parsed;
     }
@@ -441,8 +442,8 @@ pub const Entry = struct {
             log.assert(
                 @src(),
                 old == .creating or old == .created or old == .invalid,
-                "Encountered strange entry state: {t}",
-                .{old},
+                "Entry: {t} 0x{x:0>16} has invalid create state: {t}",
+                .{ self.tag, self.hash, old },
             );
             return switch (old) {
                 .created => .created,
@@ -455,12 +456,14 @@ pub const Entry = struct {
         self.create_inner(PARSE, CREATE, tmp_alloc, db, validation, vk_device) catch |err| {
             log.debug(
                 @src(),
-                "Cannot create object: {t} 0x{x:0>16}: {t}",
+                "Entry: {t} 0x{x:0>16} cannot be created: {t}",
                 .{ self.tag, self.hash, err },
             );
             self.status.store(.invalid, .release);
             return .invalid;
         };
+
+        log.debug(@src(), "Entry: {t} 0x{x:0>16} created", .{ self.tag, self.hash });
         self.status.store(.created, .release);
         return .created;
     }
@@ -477,12 +480,12 @@ pub const Entry = struct {
         const prof_point = MEASUREMENTS.start_named("create_inner");
         defer MEASUREMENTS.end(prof_point);
 
-        for (self.dependencies, 0..) |dep, i| {
+        for (self.dependencies) |dep| {
             log.assert(
                 @src(),
                 dep.entry.handle != null,
-                "Trying to patch create_info with empty handle of dependency {d} for {t} 0x{x:0>16}",
-                .{ i, self.tag, self.hash },
+                "Entry: {t} 0x{x:0>16} has null handle for dependency {t} 0x{x:0>16}",
+                .{ self.tag, self.hash, dep.entry.tag, dep.entry.hash },
             );
             dep.ptr_to_handle.?.* = dep.entry.handle;
         }
