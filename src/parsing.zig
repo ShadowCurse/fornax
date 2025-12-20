@@ -8,7 +8,6 @@
 const std = @import("std");
 const vk = @import("volk");
 const log = @import("log.zig");
-const root = @import("main.zig");
 const vu = @import("vulkan_utils.zig");
 const profiler = @import("profiler.zig");
 

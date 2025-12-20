@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) !void {
     const spirv_mod = create_spirv_module(b, target, optimize);
 
     create_gen_exe(b, target, optimize, volk_mod);
-    create_glacier_exe(b, target, optimize, &args, miniz_mod, volk_mod, spirv_mod);
+    create_replay_exe(b, target, optimize, &args, miniz_mod, volk_mod, spirv_mod);
 }
 
 const Args = struct {
@@ -43,7 +43,7 @@ const Args = struct {
     }
 };
 
-fn create_glacier_exe(
+fn create_replay_exe(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
@@ -56,8 +56,8 @@ fn create_glacier_exe(
     build_options.addOption(bool, "profile", args.profile);
     build_options.addOption(bool, "no_driver", args.no_driver);
 
-    const exe_mod = b.createModule(.{
-        .root_source_file = b.path("src/main.zig"),
+    const root_mudule = b.createModule(.{
+        .root_source_file = b.path("src/replay.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
@@ -66,14 +66,21 @@ fn create_glacier_exe(
             .{ .name = "spirv", .module = spirv_mod },
         },
     });
-    exe_mod.addOptions("build_options", build_options);
+    root_mudule.addOptions("build_options", build_options);
 
     const exe = b.addExecutable(.{
-        .name = "glacier",
-        .root_module = exe_mod,
+        .name = "replay",
+        .root_module = root_mudule,
         .use_llvm = args.use_llvm,
     });
-    b.installArtifact(exe);
+    const install_step = b.addInstallArtifact(exe, .{});
+
+    const unit_tests = b.addTest(.{
+        .name = "replay_unit_test",
+        .root_module = root_mudule,
+        .filters = b.args orelse &.{},
+    });
+    const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
 
     const run_cmd = b.addRunArtifact(exe);
     if (args.disable_shader_cache)
@@ -81,21 +88,14 @@ fn create_glacier_exe(
     if (args.shader_cache_dir) |scd|
         run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DIR", scd);
     if (b.args) |a| run_cmd.addArgs(a);
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    const run_step = b.step("run", "Run the app");
+    run_cmd.step.dependOn(&install_step.step);
+    const run_step = b.step("replay_run", "Run the `replay` binary");
     run_step.dependOn(&run_cmd.step);
 
-    const exe_unit_tests = b.addTest(.{
-        .name = "unit_test",
-        .root_module = exe_mod,
-        .filters = b.args orelse &.{},
-    });
-    b.installArtifact(exe_unit_tests);
-    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-    run_exe_unit_tests.step.dependOn(b.getInstallStep());
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_exe_unit_tests.step);
+    const unit_tests_run_cmd = b.addRunArtifact(unit_tests);
+    unit_tests_run_cmd.step.dependOn(&unit_tests_install_step.step);
+    const test_step = b.step("replay_test", "Run `repaly` unit tests");
+    test_step.dependOn(&unit_tests_run_cmd.step);
 }
 
 fn create_gen_exe(
@@ -104,7 +104,7 @@ fn create_gen_exe(
     optimize: std.builtin.OptimizeMode,
     volk_mod: *std.Build.Module,
 ) void {
-    const gen_mod = b.createModule(.{
+    const root_module = b.createModule(.{
         .root_source_file = b.path("gen/main.zig"),
         .target = target,
         .optimize = optimize,
@@ -113,26 +113,28 @@ fn create_gen_exe(
         },
     });
 
-    const exe_unit_tests = b.addTest(.{
+    const exe = b.addExecutable(.{
+        .name = "gen",
+        .root_module = root_module,
+    });
+    const install_step = b.addInstallArtifact(exe, .{});
+
+    const unit_tests = b.addTest(.{
         .name = "gen_unit_test",
-        .root_module = gen_mod,
+        .root_module = root_module,
         .filters = b.args orelse &.{},
     });
-    b.installArtifact(exe_unit_tests);
-    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-    run_exe_unit_tests.step.dependOn(b.getInstallStep());
-    const test_step = b.step("gen_test", "Run gen unit tests");
-    test_step.dependOn(&run_exe_unit_tests.step);
+    const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
 
-    const gen = b.addExecutable(.{
-        .name = "gen",
-        .root_module = gen_mod,
-    });
-    b.installArtifact(gen);
-
-    const run_cmd = b.addRunArtifact(gen);
-    const run_step = b.step("gen", "Gen");
+    const run_cmd = b.addRunArtifact(exe);
+    run_cmd.step.dependOn(&install_step.step);
+    const run_step = b.step("gen_run", "Run the `gen` binary");
     run_step.dependOn(&run_cmd.step);
+
+    const unit_tests_run_cmd = b.addRunArtifact(unit_tests);
+    unit_tests_run_cmd.step.dependOn(&unit_tests_install_step.step);
+    const test_step = b.step("gen_test", "Run `gen` unit tests");
+    test_step.dependOn(&unit_tests_run_cmd.step);
 }
 
 pub fn create_miniz_module(
