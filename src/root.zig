@@ -60,7 +60,6 @@ pub const WorkQueue = struct {
 
 pub const Task = struct {
     root_entry: *RootEntry = undefined,
-    in_progress: bool = false,
     queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty,
     arena: std.heap.ArenaAllocator = undefined,
 };

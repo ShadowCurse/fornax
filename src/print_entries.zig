@@ -159,24 +159,30 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *root.Context) !
     var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
     const gpa_alloc = gpa_allocator.allocator();
 
-    var in_progress: u8 = 0;
     var tasks: root.Tasks = .{};
     for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
     while (true) {
         defer progress.completeOne();
 
         const task = tasks.next();
-        if (!task.in_progress) {
+        if (task.queue.items.len == 0) {
             if (work_queue.take_next_parse()) |root_entry| {
-                in_progress += 1;
+                log.debug(
+                    @src(),
+                    "Adding new parse task: {t} 0x{x:0>16}",
+                    .{ root_entry.entry.tag, root_entry.entry.hash },
+                );
                 task.root_entry = root_entry;
-                task.in_progress = true;
                 task.queue = .empty;
                 _ = task.arena.reset(.retain_capacity);
                 try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
             }
         }
-        if (in_progress == 0) break;
+        for (&tasks.tasks) |*t| {
+            if (t.queue.items.len != 0) break;
+        } else {
+            break;
+        }
 
         const tmp_alloc = task.arena.allocator();
         while (task.queue.pop()) |tuple| {
@@ -209,24 +215,20 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *root.Context) !
                         .{ curr_entry.tag, curr_entry.hash },
                     );
                     curr_entry.decrement_dependencies();
-                    for (0..task.queue.items.len) |i| {
-                        const e, _ = task.queue.items[task.queue.items.len - i - 1];
+                    while (task.queue.pop()) |t| {
+                        const e, _ = t;
                         log.debug(
                             @src(),
                             "Invalidating parent: {t} 0x{x:0>16}",
                             .{ e.tag, e.hash },
                         );
-                        e.status.store(.invalid, .seq_cst);
+                        e.status.store(.invalid, .release);
                         e.decrement_dependencies();
                     }
-                    in_progress -= 1;
-                    task.in_progress = false;
                     break;
                 },
             }
         } else {
-            in_progress -= 1;
-            task.in_progress = false;
         }
     }
 }
