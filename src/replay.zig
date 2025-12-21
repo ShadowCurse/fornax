@@ -30,9 +30,7 @@ pub const MEASUREMENTS = profiler.Measurements("main", &.{
     "main",
     "process",
     "parse",
-    "parse_threaded",
     "create",
-    "create_threaded",
 });
 
 const ALL_MEASUREMENTS = &.{
@@ -80,45 +78,6 @@ const Args = struct {
     database_paths: args_parser.RemainingArgs = .{},
 };
 
-pub fn log_args(args: *const Args) void {
-    log.info(@src(), "Args:", .{});
-    log.info(@src(), "help: {}", .{args.help});
-    log.info(@src(), "device_index: {?}", .{args.device_index});
-    log.info(@src(), "enable_validation: {}", .{args.enable_validation});
-    log.info(@src(), "spirv_val: {}", .{args.spirv_val});
-    log.info(@src(), "on_disk_pipeline_cache: {?s}", .{args.on_disk_pipeline_cache});
-    log.info(@src(), "on_disk_validation_cache: {?s}", .{args.on_disk_validation_cache});
-    log.info(@src(), "on_disk_validation_blacklist: {?s}", .{args.on_disk_validation_blacklist});
-    log.info(@src(), "on_disk_validation_whitelist: {?s}", .{args.on_disk_validation_whitelist});
-    log.info(@src(), "on_disk_replay_whitelist: {?s}", .{args.on_disk_replay_whitelist});
-    log.info(@src(), "on_disk_replay_whitelist_mask: {?s}", .{args.on_disk_replay_whitelist_mask});
-    log.info(@src(), "num_threads: {?}", .{args.num_threads});
-    log.info(@src(), "loop: {?}", .{args.loop});
-    log.info(@src(), "pipeline_hash: {?}", .{args.pipeline_hash});
-    log.info(@src(), "graphics_pipeline_range: {?}", .{args.graphics_pipeline_range});
-    log.info(@src(), "compute_pipeline_range: {?}", .{args.compute_pipeline_range});
-    log.info(@src(), "raytracing_pipeline_range: {?}", .{args.raytracing_pipeline_range});
-    log.info(@src(), "enable_pipeline_stats: {?s}", .{args.enable_pipeline_stats});
-    log.info(@src(), "on_disk_module_identifier: {?s}", .{args.on_disk_module_identifier});
-    log.info(@src(), "quiet_slave: {}", .{args.quiet_slave});
-    log.info(@src(), "master_process: {}", .{args.master_process});
-    log.info(@src(), "slave_process: {}", .{args.slave_process});
-    log.info(@src(), "progress: {}", .{args.progress});
-    log.info(@src(), "shmem_fd: {?}", .{args.shmem_fd});
-    log.info(@src(), "control_fd: {?}", .{args.control_fd});
-    log.info(@src(), "shader_cache_size: {?}", .{args.shader_cache_size});
-    log.info(@src(), "log_memory: {}", .{args.log_memory});
-    log.info(@src(), "null_device: {}", .{args.null_device});
-    log.info(@src(), "timeout_seconds: {?}", .{args.timeout_seconds});
-    log.info(@src(), "implicit_whitelist: {?}", .{args.implicit_whitelist});
-    log.info(@src(), "replayer_cache: {?s}", .{args.replayer_cache});
-    log.info(@src(), "disable_signal_handler: {}", .{args.disable_signal_handler});
-    log.info(@src(), "disable_rate_limiter: {}", .{args.disable_rate_limiter});
-    log.info(@src(), "databases:", .{});
-    for (args.database_paths.values) |p|
-        log.info(@src(), "{s}", .{p});
-}
-
 pub fn main() !void {
     profiler.start_measurement();
     defer profiler.print(ALL_MEASUREMENTS);
@@ -137,11 +96,11 @@ pub fn main() !void {
     if (std.posix.getenv("GLACIER_LOG_PATH")) |log_path| {
         const log_file = try std.fs.createFileAbsolute(log_path, .{});
         log.output_fd = log_file.handle;
-        log_args(&args);
+        args_parser.print_args(args);
     }
 
     if (args.help or args.database_paths.values.len == 0) {
-        try args_parser.print_help(Args);
+        args_parser.print_help(Args);
         return;
     }
 

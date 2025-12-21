@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
+const log = @import("log.zig");
 const Allocator = std.mem.Allocator;
 
 pub const RemainingArgs = struct { values: []const [*:0]const u8 = &.{} };
@@ -78,19 +79,47 @@ fn find_arg(comptime field: std.builtin.Type.StructField) ?struct { u32, []const
     return null;
 }
 
-pub fn print_help(comptime T: type) !void {
+fn field_name_to_arg_name(comptime field_name: []const u8) [field_name.len]u8 {
+    var arg_name: [field_name.len]u8 = undefined;
+    _ = std.mem.replace(u8, field_name, "_", "-", &arg_name);
+    return arg_name;
+}
+
+pub fn print_help(comptime T: type) void {
     const type_fields = comptime @typeInfo(T).@"struct".fields;
 
-    var buffer: [1024]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&buffer);
-    const writer = &stdout_writer.interface;
-    defer writer.flush() catch unreachable;
-    try writer.print("Usage:\n", .{});
-
+    log.output("Usage:\n", .{});
     inline for (type_fields) |field| {
-        const name = std.fmt.comptimePrint("--{s}", .{field.name});
-        var arg_name: [name.len]u8 = undefined;
-        _ = std.mem.replace(u8, name, "_", "-", &arg_name);
-        try writer.print("\t{s}\n", .{arg_name});
+        const arg_name = field_name_to_arg_name(field.name);
+        log.output("\t--{s}\n", .{&arg_name});
+    }
+}
+
+pub fn print_args(args: anytype) void {
+    const type_fields = comptime @typeInfo(@TypeOf(args)).@"struct".fields;
+    inline for (type_fields) |field| {
+        const arg_name = field_name_to_arg_name(field.name);
+        switch (field.type) {
+            void => {
+                log.output("\t{s}\n", .{&arg_name});
+            },
+            bool => {
+                log.output("\t{s}: {}\n", .{ &arg_name, @field(args, field.name) });
+            },
+            ?i32 => {
+                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field.name) });
+            },
+            ?u32 => {
+                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field.name) });
+            },
+            ?[]const u8 => {
+                log.output("\t{s}: {?s}\n", .{ &arg_name, @field(args, field.name) });
+            },
+            RemainingArgs => {
+                for (@field(args, field.name).values) |p|
+                    log.output("\t{s}: {s}\n", .{ &arg_name, p });
+            },
+            else => unreachable,
+        }
     }
 }
