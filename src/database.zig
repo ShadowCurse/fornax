@@ -112,12 +112,12 @@ pub const Entry = struct {
         for (0..G.padding) |_|
             log.output("    ", .{});
         log.output(
-            "{t} hash: 0x{x:0>16} depended_by: {d}\n",
-            .{ self.tag, self.hash, self.dependent_by.raw },
+            "{t} hash: 0x{x:0>16} status: {t} depended_by: {d}\n",
+            .{ self.tag, self.hash, self.status.raw, self.dependent_by.raw },
         );
         for (self.dependencies) |dep| {
             G.padding += 1;
-            try dep.print_graph(db);
+            try dep.entry.print_graph(db);
             G.padding -= 1;
         }
     }
