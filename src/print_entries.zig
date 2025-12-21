@@ -25,7 +25,6 @@ pub const profiler_options = profiler.Options{
 pub const MEASUREMENTS = profiler.Measurements("main", &.{
     "main",
     "process",
-    "parse",
 });
 
 const ALL_MEASUREMENTS = &.{
@@ -138,97 +137,5 @@ pub fn process(context: *root.Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    parse(context);
-}
-
-pub fn parse(context: *root.Context) void {
-    const prof_point = MEASUREMENTS.start(@src());
-    defer MEASUREMENTS.end(prof_point);
-
-    parse_inner(parsing, vv, context) catch unreachable;
-}
-pub fn parse_inner(comptime P: type, comptime V: type, context: *root.Context) !void {
-    var progress = context.progress.start("parsing", 0);
-    defer progress.end();
-
-    const work_queue = context.work_queue;
-    const shared_alloc = context.shared_alloc;
-    const thread_alloc = context.arena.allocator();
-    defer _ = context.arena.reset(.retain_capacity);
-
-    var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
-    const gpa_alloc = gpa_allocator.allocator();
-
-    var tasks: root.Tasks = .{};
-    for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
-    while (true) {
-        defer progress.completeOne();
-
-        const task = tasks.next();
-        if (task.queue.items.len == 0) {
-            if (work_queue.take_next_parse()) |root_entry| {
-                log.debug(
-                    @src(),
-                    "Adding new parse task: {t} 0x{x:0>16}",
-                    .{ root_entry.entry.tag, root_entry.entry.hash },
-                );
-                task.root_entry = root_entry;
-                task.queue = .empty;
-                _ = task.arena.reset(.retain_capacity);
-                try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
-            }
-        }
-        for (&tasks.tasks) |*t| {
-            if (t.queue.items.len != 0) break;
-        } else {
-            break;
-        }
-
-        const tmp_alloc = task.arena.allocator();
-        while (task.queue.pop()) |tuple| {
-            const curr_entry, const next_dep = tuple;
-
-            switch (curr_entry.parse(
-                P,
-                V,
-                shared_alloc,
-                task.root_entry.arena.allocator(),
-                thread_alloc,
-                context.db,
-                context.validation,
-            )) {
-                .parsed => {
-                    if (next_dep != curr_entry.dependencies.len) {
-                        try task.queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
-                        const dep = curr_entry.dependencies[next_dep];
-                        try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
-                    }
-                },
-                .parsing => {
-                    try task.queue.append(tmp_alloc, .{ curr_entry, next_dep });
-                    break;
-                },
-                .invalid => {
-                    log.debug(
-                        @src(),
-                        "Encountered invalid entry during parsing {t} 0x{x:0>16}",
-                        .{ curr_entry.tag, curr_entry.hash },
-                    );
-                    curr_entry.decrement_dependencies();
-                    while (task.queue.pop()) |t| {
-                        const e, _ = t;
-                        log.debug(
-                            @src(),
-                            "Invalidating parent: {t} 0x{x:0>16}",
-                            .{ e.tag, e.hash },
-                        );
-                        e.status.store(.invalid, .release);
-                        e.decrement_dependencies();
-                    }
-                    break;
-                },
-            }
-        } else {
-        }
-    }
+    root.parse(parsing, vv, context) catch unreachable;
 }
