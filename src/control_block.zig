@@ -61,7 +61,7 @@ pub const SharedControlBlock = struct {
     ring_buffer_size: u32,
 };
 
-pub fn mmap(shmem_fd: i32) !void {
+fn mmap(shmem_fd: std.posix.fd_t) !*SharedControlBlock {
     const fstat = try std.posix.fstat(shmem_fd);
     if (fstat.size < @as(i64, @intCast(@sizeOf(SharedControlBlock))))
         return error.SharedMemoryIsSmallerThanControlBlock;
@@ -74,26 +74,26 @@ pub fn mmap(shmem_fd: i32) !void {
         shmem_fd,
         0,
     );
-    control_block = @ptrCast(@alignCast(mem.ptr));
-    if (control_block.?.version_cookie != CONTROL_BLOCK_MAGIC)
+    const cb: *SharedControlBlock = @ptrCast(@alignCast(mem.ptr));
+    if (cb.version_cookie != CONTROL_BLOCK_MAGIC)
         return error.InvalidControlBlockMagic;
+    return cb;
 }
 
-pub fn set_initial_state(
-    static_total_count_graphics: u32,
-    static_total_count_compute: u32,
-    static_total_count_raytracing: u32,
-    num_running_processes: u32,
-    num_processes_memory_stats: u32,
-) void {
-    if (control_block) |cb| {
-        cb.static_total_count_graphics.store(static_total_count_graphics, .release);
-        cb.static_total_count_compute.store(static_total_count_compute, .release);
-        cb.static_total_count_raytracing.store(static_total_count_raytracing, .release);
-        cb.num_running_processes.store(num_running_processes, .release);
-        cb.num_processes_memory_stats.store(num_processes_memory_stats, .release);
-        cb.progress_started.store(1, .release);
-    }
+pub fn init(shmem_fd: std.posix.fd_t, db: *const Database, num_threads: u32) !void {
+    const cb = try mmap(shmem_fd);
+    const graphics_pipelines = db.entries.getPtrConst(.graphics_pipeline).values().len;
+    const compute_pipelines = db.entries.getPtrConst(.compute_pipeline).values().len;
+    const raytracing_pipelines = db.entries.getPtrConst(.raytracing_pipeline).values().len;
+
+    cb.static_total_count_graphics.store(@intCast(graphics_pipelines), .release);
+    cb.static_total_count_compute.store(@intCast(compute_pipelines), .release);
+    cb.static_total_count_raytracing.store(@intCast(raytracing_pipelines), .release);
+    cb.num_running_processes.store(num_threads, .release);
+    cb.num_processes_memory_stats.store(num_threads, .release);
+    cb.progress_started.store(1, .release);
+
+    control_block = cb;
 }
 
 pub fn record_successful_entry(tag: Database.Entry.Tag) void {

@@ -6,25 +6,86 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const vk = @import("volk");
 const a = @import("spirv");
 const log = @import("log.zig");
-const vv = @import("vulkan_validation.zig");
+const parsing = @import("parsing.zig");
 const profiler = @import("profiler.zig");
+const vv = @import("vulkan_validation.zig");
+const volk = @import("volk");
+const vulkan = @import("vulkan.zig");
 
 const Allocator = std.mem.Allocator;
+const Database = @import("database.zig");
 
 pub const MEASUREMENTS = profiler.Measurements(
     "vulkan",
     profiler.all_function_names_in_struct(@This()),
 );
 
+pub fn init(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    db: *const Database,
+    enable_vulkan_validation_layers: bool,
+    validation: *vv.Validation,
+) !volk.VkDevice {
+    const app_infos = db.entries.getPtrConst(.application_info).values();
+    if (app_infos.len == 0)
+        return error.NoApplicationInfoInTheDatabase;
+    const app_info_entry = &app_infos[0];
+    const app_info_payload = try app_info_entry.get_payload(arena_alloc, tmp_alloc, db);
+    const parsed_application_info = try parsing.parse_application_info(
+        arena_alloc,
+        tmp_alloc,
+        db,
+        app_info_payload,
+    );
+    if (parsed_application_info.version != 6)
+        return error.ApllicationInfoVersionMissmatch;
+
+    try vv.check_result(volk.volkInitialize());
+    const instance = try vulkan.create_vk_instance(
+        tmp_alloc,
+        parsed_application_info.application_info,
+        enable_vulkan_validation_layers,
+    );
+    volk.volkLoadInstance(instance.instance);
+    if (enable_vulkan_validation_layers)
+        _ = try vulkan.init_debug_callback(instance.instance);
+
+    const physical_device = try vulkan.select_physical_device(
+        tmp_alloc,
+        instance.instance,
+        enable_vulkan_validation_layers,
+    );
+
+    const device = try vulkan.create_vk_device(
+        tmp_alloc,
+        &instance,
+        &physical_device,
+        parsed_application_info.application_info,
+        parsed_application_info.device_features2,
+        &validation.pdf,
+        &validation.additional_pdf,
+        enable_vulkan_validation_layers,
+    );
+    validation.api_version = instance.api_version;
+    validation.extensions = try .init(
+        tmp_alloc,
+        instance.api_version,
+        instance.all_extension_names,
+        device.all_extension_names,
+    );
+
+    return device.device;
+}
+
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
 const VK_ADDITIONAL_EXTENSIONS_NAMES = [_][*c]const u8{"VK_EXT_debug_utils"};
 
 pub fn contains_all_extensions(
     log_prefix: ?[]const u8,
-    extensions: []const vk.VkExtensionProperties,
+    extensions: []const volk.VkExtensionProperties,
     to_find: []const [*c]const u8,
 ) bool {
     var found_extensions: u32 = 0;
@@ -48,9 +109,9 @@ pub fn contains_all_extensions(
             log.debug(@src(), "({s})({s}) Extension version: {d}.{d}.{d} Name: {s}", .{
                 required,
                 lp,
-                vk.VK_API_VERSION_MAJOR(e.specVersion),
-                vk.VK_API_VERSION_MINOR(e.specVersion),
-                vk.VK_API_VERSION_PATCH(e.specVersion),
+                volk.VK_API_VERSION_MAJOR(e.specVersion),
+                volk.VK_API_VERSION_MINOR(e.specVersion),
+                volk.VK_API_VERSION_PATCH(e.specVersion),
                 e.extensionName,
             });
     }
@@ -59,7 +120,7 @@ pub fn contains_all_extensions(
 
 pub fn contains_all_layers(
     log_prefix: ?[]const u8,
-    layers: []const vk.VkLayerProperties,
+    layers: []const volk.VkLayerProperties,
     to_find: []const [*c]const u8,
 ) bool {
     const prof_point = MEASUREMENTS.start(@src());
@@ -81,27 +142,27 @@ pub fn contains_all_layers(
                 required,
                 lp,
                 l.layerName,
-                vk.VK_API_VERSION_MAJOR(l.specVersion),
-                vk.VK_API_VERSION_MINOR(l.specVersion),
-                vk.VK_API_VERSION_PATCH(l.specVersion),
+                volk.VK_API_VERSION_MAJOR(l.specVersion),
+                volk.VK_API_VERSION_MINOR(l.specVersion),
+                volk.VK_API_VERSION_PATCH(l.specVersion),
                 l.description,
             });
     }
     return found_layers == to_find.len;
 }
 
-pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionProperties {
+pub fn get_instance_extensions(arena_alloc: Allocator) ![]const volk.VkExtensionProperties {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     var extensions_count: u32 = 0;
-    try vv.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    try vv.check_result(volk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         null,
     ));
-    const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vv.check_result(vk.vkEnumerateInstanceExtensionProperties.?(
+    const extensions = try arena_alloc.alloc(volk.VkExtensionProperties, extensions_count);
+    try vv.check_result(volk.vkEnumerateInstanceExtensionProperties.?(
         null,
         &extensions_count,
         extensions.ptr,
@@ -109,14 +170,14 @@ pub fn get_instance_extensions(arena_alloc: Allocator) ![]const vk.VkExtensionPr
     return extensions;
 }
 
-pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayerProperties {
+pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const volk.VkLayerProperties {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     var layer_property_count: u32 = 0;
-    try vv.check_result(vk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
-    const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vv.check_result(vk.vkEnumerateInstanceLayerProperties.?(
+    try vv.check_result(volk.vkEnumerateInstanceLayerProperties.?(&layer_property_count, null));
+    const layers = try arena_alloc.alloc(volk.VkLayerProperties, layer_property_count);
+    try vv.check_result(volk.vkEnumerateInstanceLayerProperties.?(
         &layer_property_count,
         layers.ptr,
     ));
@@ -124,27 +185,27 @@ pub fn get_instance_layer_properties(arena_alloc: Allocator) ![]const vk.VkLayer
 }
 
 pub const Instance = struct {
-    instance: vk.VkInstance,
+    instance: volk.VkInstance,
     api_version: u32,
     has_properties_2: bool,
     all_extension_names: []const [*c]const u8,
 };
 pub fn create_vk_instance(
     arena_alloc: Allocator,
-    requested_app_info: ?*const vk.VkApplicationInfo,
+    requested_app_info: ?*const volk.VkApplicationInfo,
     enable_validation: bool,
 ) !Instance {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    const api_version = vk.volkGetInstanceVersion();
+    const api_version = volk.volkGetInstanceVersion();
     log.info(
         @src(),
         "Supported vulkan version: {d}.{d}.{d}",
         .{
-            vk.VK_API_VERSION_MAJOR(api_version),
-            vk.VK_API_VERSION_MINOR(api_version),
-            vk.VK_API_VERSION_PATCH(api_version),
+            volk.VK_API_VERSION_MAJOR(api_version),
+            volk.VK_API_VERSION_MINOR(api_version),
+            volk.VK_API_VERSION_PATCH(api_version),
         },
     );
     if (requested_app_info) |app_info| {
@@ -152,9 +213,9 @@ pub fn create_vk_instance(
             @src(),
             "Requested app info vulkan version: {d}.{d}.{d}",
             .{
-                vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
-                vk.VK_API_VERSION_MINOR(app_info.apiVersion),
-                vk.VK_API_VERSION_PATCH(app_info.apiVersion),
+                volk.VK_API_VERSION_MAJOR(app_info.apiVersion),
+                volk.VK_API_VERSION_MINOR(app_info.apiVersion),
+                volk.VK_API_VERSION_PATCH(app_info.apiVersion),
             },
         );
         if (api_version < app_info.apiVersion) {
@@ -170,7 +231,7 @@ pub fn create_vk_instance(
     const has_properties_2 = contains_all_extensions(
         null,
         extensions,
-        &.{vk.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
+        &.{volk.VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME},
     );
 
     const all_extension_names = try arena_alloc.alloc([*c]const u8, extensions.len);
@@ -187,24 +248,24 @@ pub fn create_vk_instance(
     const app_info = if (requested_app_info) |app_info|
         app_info
     else
-        &vk.VkApplicationInfo{
-            .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        &volk.VkApplicationInfo{
+            .sType = volk.VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pApplicationName = "glacier",
-            .applicationVersion = vk.VK_MAKE_VERSION(0, 0, 1),
+            .applicationVersion = volk.VK_MAKE_VERSION(0, 0, 1),
             .pEngineName = "glacier",
-            .engineVersion = vk.VK_MAKE_VERSION(0, 0, 1),
+            .engineVersion = volk.VK_MAKE_VERSION(0, 0, 1),
             .apiVersion = api_version,
             .pNext = null,
         };
     log.info(@src(), "Creating instance with application name: {s} engine name: {s} api version: {d}.{d}.{d}", .{
         app_info.pApplicationName,
         app_info.pEngineName,
-        vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
-        vk.VK_API_VERSION_MINOR(app_info.apiVersion),
-        vk.VK_API_VERSION_PATCH(app_info.apiVersion),
+        volk.VK_API_VERSION_MAJOR(app_info.apiVersion),
+        volk.VK_API_VERSION_MINOR(app_info.apiVersion),
+        volk.VK_API_VERSION_PATCH(app_info.apiVersion),
     });
-    const instance_create_info = vk.VkInstanceCreateInfo{
-        .sType = vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+    const instance_create_info = volk.VkInstanceCreateInfo{
+        .sType = volk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = app_info,
         .ppEnabledExtensionNames = all_extension_names.ptr,
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
@@ -212,15 +273,15 @@ pub fn create_vk_instance(
         .enabledLayerCount = @as(u32, @intCast(enabled_layers.len)),
     };
 
-    var vk_instance: vk.VkInstance = undefined;
-    try vv.check_result(vk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
+    var vk_instance: volk.VkInstance = undefined;
+    try vv.check_result(volk.vkCreateInstance.?(&instance_create_info, null, &vk_instance));
     log.debug(
         @src(),
         "Created instance api version: {d}.{d}.{d} has_properties_2: {}",
         .{
-            vk.VK_API_VERSION_MAJOR(api_version),
-            vk.VK_API_VERSION_MINOR(api_version),
-            vk.VK_API_VERSION_PATCH(api_version),
+            volk.VK_API_VERSION_MAJOR(api_version),
+            volk.VK_API_VERSION_MINOR(api_version),
+            volk.VK_API_VERSION_PATCH(api_version),
             has_properties_2,
         },
     );
@@ -232,21 +293,21 @@ pub fn create_vk_instance(
     };
 }
 
-pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT {
+pub fn init_debug_callback(instance: volk.VkInstance) !volk.VkDebugReportCallbackEXT {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    const create_info = vk.VkDebugReportCallbackCreateInfoEXT{
-        .sType = vk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
+    const create_info = volk.VkDebugReportCallbackCreateInfoEXT{
+        .sType = volk.VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
         .pfnCallback = debug_callback,
-        .flags = vk.VK_DEBUG_REPORT_ERROR_BIT_EXT |
-            vk.VK_DEBUG_REPORT_WARNING_BIT_EXT,
+        .flags = volk.VK_DEBUG_REPORT_ERROR_BIT_EXT |
+            volk.VK_DEBUG_REPORT_WARNING_BIT_EXT,
         .pUserData = null,
     };
 
-    var callback: vk.VkDebugReportCallbackEXT = undefined;
+    var callback: volk.VkDebugReportCallbackEXT = undefined;
     try vv.check_result(
-        vk.vkCreateDebugReportCallbackEXT.?(
+        volk.vkCreateDebugReportCallbackEXT.?(
             instance,
             &create_info,
             null,
@@ -257,41 +318,41 @@ pub fn init_debug_callback(instance: vk.VkInstance) !vk.VkDebugReportCallbackEXT
 }
 
 pub fn debug_callback(
-    flags: vk.VkDebugReportFlagsEXT,
-    _: vk.VkDebugReportObjectTypeEXT,
+    flags: volk.VkDebugReportFlagsEXT,
+    _: volk.VkDebugReportObjectTypeEXT,
     _: u64,
     _: usize,
     _: i32,
     layer: [*c]const u8,
     message: [*c]const u8,
     _: ?*anyopaque,
-) callconv(.c) vk.VkBool32 {
-    if (flags & vk.VK_DEBUG_REPORT_WARNING_BIT_EXT != 0)
+) callconv(.c) volk.VkBool32 {
+    if (flags & volk.VK_DEBUG_REPORT_WARNING_BIT_EXT != 0)
         log.warn(@src(), "Layer: {s} Message: {s}", .{ layer, message });
-    if (flags & vk.VK_DEBUG_REPORT_ERROR_BIT_EXT != 0)
+    if (flags & volk.VK_DEBUG_REPORT_ERROR_BIT_EXT != 0)
         log.err(@src(), "Layer: {s} Message: {s}", .{ layer, message });
 
-    return vk.VK_FALSE;
+    return volk.VK_FALSE;
 }
 
 pub fn get_physical_devices(
     arena_alloc: Allocator,
-    vk_instance: vk.VkInstance,
-) ![]const vk.VkPhysicalDevice {
+    vk_instance: volk.VkInstance,
+) ![]const volk.VkPhysicalDevice {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     var physical_device_count: u32 = 0;
-    try vv.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vv.check_result(volk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         null,
     ));
     const physical_devices = try arena_alloc.alloc(
-        vk.VkPhysicalDevice,
+        volk.VkPhysicalDevice,
         physical_device_count,
     );
-    try vv.check_result(vk.vkEnumeratePhysicalDevices.?(
+    try vv.check_result(volk.vkEnumeratePhysicalDevices.?(
         vk_instance,
         &physical_device_count,
         physical_devices.ptr,
@@ -301,21 +362,21 @@ pub fn get_physical_devices(
 
 pub fn get_physical_device_exensions(
     arena_alloc: Allocator,
-    physical_device: vk.VkPhysicalDevice,
+    physical_device: volk.VkPhysicalDevice,
     extension_name: [*c]const u8,
-) ![]const vk.VkExtensionProperties {
+) ![]const volk.VkExtensionProperties {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     var extensions_count: u32 = 0;
-    try vv.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    try vv.check_result(volk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
         null,
     ));
-    const extensions = try arena_alloc.alloc(vk.VkExtensionProperties, extensions_count);
-    try vv.check_result(vk.vkEnumerateDeviceExtensionProperties.?(
+    const extensions = try arena_alloc.alloc(volk.VkExtensionProperties, extensions_count);
+    try vv.check_result(volk.vkEnumerateDeviceExtensionProperties.?(
         physical_device,
         extension_name,
         &extensions_count,
@@ -326,19 +387,19 @@ pub fn get_physical_device_exensions(
 
 pub fn get_physical_device_layers(
     arena_alloc: Allocator,
-    physical_device: vk.VkPhysicalDevice,
-) ![]const vk.VkLayerProperties {
+    physical_device: volk.VkPhysicalDevice,
+) ![]const volk.VkLayerProperties {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     var layer_property_count: u32 = 0;
-    try vv.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    try vv.check_result(volk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         null,
     ));
-    const layers = try arena_alloc.alloc(vk.VkLayerProperties, layer_property_count);
-    try vv.check_result(vk.vkEnumerateDeviceLayerProperties.?(
+    const layers = try arena_alloc.alloc(volk.VkLayerProperties, layer_property_count);
+    try vv.check_result(volk.vkEnumerateDeviceLayerProperties.?(
         physical_device,
         &layer_property_count,
         layers.ptr,
@@ -347,14 +408,14 @@ pub fn get_physical_device_layers(
 }
 
 pub const PhysicalDevice = struct {
-    device: vk.VkPhysicalDevice,
+    device: volk.VkPhysicalDevice,
     graphics_queue_family: u32,
     has_validation_cache: bool,
 };
 
 pub fn select_physical_device(
     arena_alloc: Allocator,
-    vk_instance: vk.VkInstance,
+    vk_instance: volk.VkInstance,
     enable_validation: bool,
 ) !PhysicalDevice {
     const prof_point = MEASUREMENTS.start(@src());
@@ -363,8 +424,8 @@ pub fn select_physical_device(
     const physical_devices = try get_physical_devices(arena_alloc, vk_instance);
 
     for (physical_devices) |physical_device| {
-        var properties: vk.VkPhysicalDeviceProperties = undefined;
-        vk.vkGetPhysicalDeviceProperties.?(physical_device, &properties);
+        var properties: volk.VkPhysicalDeviceProperties = undefined;
+        volk.vkGetPhysicalDeviceProperties.?(physical_device, &properties);
 
         log.debug(@src(),
             \\ Physical device:
@@ -376,12 +437,12 @@ pub fn select_physical_device(
             \\    Device type: {d}
         , .{
             properties.deviceName,
-            vk.VK_API_VERSION_MAJOR(properties.apiVersion),
-            vk.VK_API_VERSION_MINOR(properties.apiVersion),
-            vk.VK_API_VERSION_PATCH(properties.apiVersion),
-            vk.VK_API_VERSION_MAJOR(properties.driverVersion),
-            vk.VK_API_VERSION_MINOR(properties.driverVersion),
-            vk.VK_API_VERSION_PATCH(properties.driverVersion),
+            volk.VK_API_VERSION_MAJOR(properties.apiVersion),
+            volk.VK_API_VERSION_MINOR(properties.apiVersion),
+            volk.VK_API_VERSION_PATCH(properties.apiVersion),
+            volk.VK_API_VERSION_MAJOR(properties.driverVersion),
+            volk.VK_API_VERSION_MINOR(properties.driverVersion),
+            volk.VK_API_VERSION_PATCH(properties.driverVersion),
             properties.vendorID,
             properties.deviceID,
             properties.deviceType,
@@ -400,26 +461,26 @@ pub fn select_physical_device(
             break :blk contains_all_extensions(
                 null,
                 validation_extensions,
-                &.{vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME},
+                &.{volk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME},
             );
         } else false;
 
         // Because the exact queue does not matter much,
         // select the first queue with graphics capability.
         var queue_family_count: u32 = 0;
-        vk.vkGetPhysicalDeviceQueueFamilyProperties.?(physical_device, &queue_family_count, null);
+        volk.vkGetPhysicalDeviceQueueFamilyProperties.?(physical_device, &queue_family_count, null);
         const queue_families = try arena_alloc.alloc(
-            vk.VkQueueFamilyProperties,
+            volk.VkQueueFamilyProperties,
             queue_family_count,
         );
-        vk.vkGetPhysicalDeviceQueueFamilyProperties.?(
+        volk.vkGetPhysicalDeviceQueueFamilyProperties.?(
             physical_device,
             &queue_family_count,
             queue_families.ptr,
         );
         var graphics_queue_family: ?u32 = null;
         for (queue_families, 0..) |qf, i| {
-            if (qf.queueFlags & vk.VK_QUEUE_GRAPHICS_BIT != 0) {
+            if (qf.queueFlags & volk.VK_QUEUE_GRAPHICS_BIT != 0) {
                 graphics_queue_family = @intCast(i);
                 break;
             }
@@ -447,49 +508,49 @@ pub fn select_physical_device(
 
 pub fn usable_device_extension(
     ext: [*c]const u8,
-    all_ext_props: []const vk.VkExtensionProperties,
+    all_ext_props: []const volk.VkExtensionProperties,
     api_version: u32,
 ) bool {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     const e = std.mem.span(ext);
-    if (std.mem.eql(u8, e, vk.VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME))
+    if (std.mem.eql(u8, e, volk.VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME))
         // illigal to enable with maintenance1
         return false;
-    if (std.mem.eql(u8, e, vk.VK_NV_RAY_TRACING_EXTENSION_NAME))
+    if (std.mem.eql(u8, e, volk.VK_NV_RAY_TRACING_EXTENSION_NAME))
         // causes problems with pipeline replaying
         return false;
-    if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_INFO_EXTENSION_NAME))
+    if (std.mem.eql(u8, e, volk.VK_AMD_SHADER_INFO_EXTENSION_NAME))
         // Mesa disables shader cache when thisi is enabled.
         return false;
-    if (std.mem.eql(u8, e, vk.VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
+    if (std.mem.eql(u8, e, volk.VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
         for (all_ext_props) |other_ext| {
             const other_e = std.mem.span(@as([*c]const u8, @ptrCast(&other_ext.extensionName)));
-            if (std.mem.eql(u8, other_e, vk.VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
+            if (std.mem.eql(u8, other_e, volk.VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
                 return false;
         };
-    if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME))
+    if (std.mem.eql(u8, e, volk.VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME))
         for (all_ext_props) |other_ext| {
             const other_e = std.mem.span(@as([*c]const u8, @ptrCast(&other_ext.extensionName)));
-            if (std.mem.eql(u8, other_e, vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
+            if (std.mem.eql(u8, other_e, volk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
                 return false;
         };
 
     const VK_1_1_EXTS: []const []const u8 = &.{
-        vk.VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME,
-        vk.VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-        vk.VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
-        vk.VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-        vk.VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-        vk.VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
-        vk.VK_KHR_RAY_QUERY_EXTENSION_NAME,
-        vk.VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
-        vk.VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME,
-        vk.VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME,
-        vk.VK_NV_SHADER_SM_BUILTINS_EXTENSION_NAME,
-        vk.VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME,
-        vk.VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
+        volk.VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME,
+        volk.VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+        volk.VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
+        volk.VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
+        volk.VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+        volk.VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        volk.VK_KHR_RAY_QUERY_EXTENSION_NAME,
+        volk.VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+        volk.VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME,
+        volk.VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME,
+        volk.VK_NV_SHADER_SM_BUILTINS_EXTENSION_NAME,
+        volk.VK_NV_SHADER_SUBGROUP_PARTITIONED_EXTENSION_NAME,
+        volk.VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME,
     };
 
     var is_vk_1_1_ext: bool = false;
@@ -499,7 +560,7 @@ pub fn usable_device_extension(
             break;
         };
 
-    if (api_version < vk.VK_API_VERSION_1_1 and is_vk_1_1_ext) {
+    if (api_version < volk.VK_API_VERSION_1_1 and is_vk_1_1_ext) {
         return false;
     }
 
@@ -510,7 +571,7 @@ pub fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var pnext: ?*const vk.VkBaseInStructure = @ptrCast(@alignCast(item));
+    var pnext: ?*const volk.VkBaseInStructure = @ptrCast(@alignCast(item));
     while (pnext) |next| {
         pnext = next.pNext;
         if (next.sType == stype) return @ptrCast(@constCast(next));
@@ -519,9 +580,9 @@ pub fn find_pnext(stype: u32, item: ?*const anyopaque) ?*anyopaque {
 }
 
 pub fn filter_features(
-    current_pdf: *vk.VkPhysicalDeviceFeatures2,
+    current_pdf: *volk.VkPhysicalDeviceFeatures2,
     additional_pdf: *vv.AdditionalPDF,
-    wanted_pdf: ?*const vk.VkPhysicalDeviceFeatures2,
+    wanted_pdf: ?*const volk.VkPhysicalDeviceFeatures2,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
@@ -531,13 +592,13 @@ pub fn filter_features(
             const child = @typeInfo(@TypeOf(item)).pointer.child;
             const type_info = @typeInfo(child).@"struct";
             inline for (type_info.fields) |field| {
-                if (field.type == vk.VkBool32) @field(item, field.name) = vk.VK_FALSE;
+                if (field.type == volk.VkBool32) @field(item, field.name) = volk.VK_FALSE;
             }
         }
         fn apply(comptime T: type, item1: *T, item2: *const T) void {
             const type_info = @typeInfo(T).@"struct";
             inline for (type_info.fields) |field| {
-                if (field.type == vk.VkBool32) {
+                if (field.type == volk.VkBool32) {
                     @field(item1, field.name) =
                         @field(item1, field.name) & @field(item2, field.name);
                 }
@@ -545,14 +606,14 @@ pub fn filter_features(
         }
     };
     // These feature bits conflict according to validation layers.
-    if (additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.pipelineFragmentShadingRate == vk.VK_TRUE or
-        additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.attachmentFragmentShadingRate == vk.VK_TRUE or
-        additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.primitiveFragmentShadingRate == vk.VK_TRUE)
+    if (additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.pipelineFragmentShadingRate == volk.VK_TRUE or
+        additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.attachmentFragmentShadingRate == volk.VK_TRUE or
+        additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR.primitiveFragmentShadingRate == volk.VK_TRUE)
     {
-        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateImage = vk.VK_FALSE;
-        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateCoarseSampleOrder = vk.VK_FALSE;
+        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateImage = volk.VK_FALSE;
+        additional_pdf.VkPhysicalDeviceShadingRateImageFeaturesNV.shadingRateCoarseSampleOrder = volk.VK_FALSE;
         additional_pdf.VkPhysicalDeviceFragmentDensityMapFeaturesEXT.fragmentDensityMap =
-            vk.VK_FALSE;
+            volk.VK_FALSE;
     }
 
     // Only enable robustness if requested since it affects compilation on most implementations.
@@ -562,53 +623,53 @@ pub fn filter_features(
 
         const PATCH_TYPES: []const struct { u32, type, []const u8 } = &.{
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
-                vk.VkPhysicalDeviceRobustness2FeaturesKHR,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                volk.VkPhysicalDeviceRobustness2FeaturesKHR,
                 "VkPhysicalDeviceRobustness2FeaturesKHR",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
-                vk.VkPhysicalDeviceImageRobustnessFeatures,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES,
+                volk.VkPhysicalDeviceImageRobustnessFeatures,
                 "VkPhysicalDeviceImageRobustnessFeatures",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
-                vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                volk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
                 "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
-                vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                volk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
                 "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
-                vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                volk.VkPhysicalDeviceMeshShaderFeaturesEXT,
                 "VkPhysicalDeviceMeshShaderFeaturesEXT",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
-                vk.VkPhysicalDeviceMeshShaderFeaturesNV,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                volk.VkPhysicalDeviceMeshShaderFeaturesNV,
                 "VkPhysicalDeviceMeshShaderFeaturesNV",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
-                vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                volk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
                 "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
-                vk.VkPhysicalDeviceShaderObjectFeaturesEXT,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                volk.VkPhysicalDeviceShaderObjectFeaturesEXT,
                 "VkPhysicalDeviceShaderObjectFeaturesEXT",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
-                vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+                volk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
                 "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
             },
             .{
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
-                vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+                volk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
                 "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
             },
         };
@@ -624,7 +685,7 @@ pub fn filter_features(
             } else Inner.reset(&@field(additional_pdf, field));
         }
     } else {
-        current_pdf.features.robustBufferAccess = vk.VK_FALSE;
+        current_pdf.features.robustBufferAccess = volk.VK_FALSE;
         Inner.reset(&additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR);
         Inner.reset(&additional_pdf.VkPhysicalDeviceImageRobustnessFeatures);
         Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
@@ -639,7 +700,7 @@ pub fn filter_features(
 }
 
 pub fn filter_active_extensions(
-    current_features: *vk.VkPhysicalDeviceFeatures2,
+    current_features: *volk.VkPhysicalDeviceFeatures2,
     all_extenson_names: [][*c]const u8,
 ) [][*c]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
@@ -657,7 +718,7 @@ pub fn filter_active_extensions(
             return slice;
         }
     };
-    var current_pnext: ?*const vk.VkBaseInStructure =
+    var current_pnext: ?*const volk.VkBaseInStructure =
         @ptrCast(@alignCast(current_features.pNext));
     current_features.pNext = null;
     var last_pnext: *?*anyopaque = &current_features.pNext;
@@ -667,12 +728,12 @@ pub fn filter_active_extensions(
         var accept: bool = true;
 
         switch (current.sType) {
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
-                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
+                const feature: *const volk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
                     @ptrCast(@alignCast(current));
-                if (feature.fragmentShadingRateEnums == vk.VK_FALSE and
-                    feature.noInvocationFragmentShadingRates == vk.VK_FALSE and
-                    feature.supersampleFragmentShadingRates == vk.VK_FALSE)
+                if (feature.fragmentShadingRateEnums == volk.VK_FALSE and
+                    feature.noInvocationFragmentShadingRates == volk.VK_FALSE and
+                    feature.supersampleFragmentShadingRates == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -681,17 +742,17 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME,
+                        volk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
+                const feature: *const volk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
                     @ptrCast(@alignCast(current));
-                if (feature.attachmentFragmentShadingRate == vk.VK_FALSE and
-                    feature.pipelineFragmentShadingRate == vk.VK_FALSE and
-                    feature.primitiveFragmentShadingRate == vk.VK_FALSE)
+                if (feature.attachmentFragmentShadingRate == volk.VK_FALSE and
+                    feature.pipelineFragmentShadingRate == volk.VK_FALSE and
+                    feature.primitiveFragmentShadingRate == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -700,17 +761,17 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+                        volk.VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceRobustness2FeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.nullDescriptor == vk.VK_FALSE and
-                    feature.robustBufferAccess2 == vk.VK_FALSE and
-                    feature.robustImageAccess2 == vk.VK_FALSE)
+                if (feature.nullDescriptor == volk.VK_FALSE and
+                    feature.robustBufferAccess2 == volk.VK_FALSE and
+                    feature.robustImageAccess2 == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -719,15 +780,15 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                        volk.VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceImageRobustnessFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.robustImageAccess == vk.VK_FALSE) {
+                if (feature.robustImageAccess == volk.VK_FALSE) {
                     log.debug(
                         @src(),
                         "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT  from device extensions",
@@ -735,19 +796,19 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
+                        volk.VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceMeshShaderFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.meshShader == vk.VK_FALSE and
-                    feature.taskShader == vk.VK_FALSE and
-                    feature.multiviewMeshShader == vk.VK_FALSE and
-                    feature.primitiveFragmentShadingRateMeshShader == vk.VK_FALSE and
-                    feature.meshShaderQueries == vk.VK_FALSE)
+                if (feature.meshShader == volk.VK_FALSE and
+                    feature.taskShader == volk.VK_FALSE and
+                    feature.multiviewMeshShader == volk.VK_FALSE and
+                    feature.primitiveFragmentShadingRateMeshShader == volk.VK_FALSE and
+                    feature.meshShaderQueries == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -756,33 +817,33 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_MESH_SHADER_EXTENSION_NAME,
+                        volk.VK_EXT_MESH_SHADER_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
-                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
+                const feature: *const volk.VkPhysicalDeviceMeshShaderFeaturesNV =
                     @ptrCast(@alignCast(current));
-                if (feature.meshShader == vk.VK_FALSE and
-                    feature.taskShader == vk.VK_FALSE)
+                if (feature.meshShader == volk.VK_FALSE and
+                    feature.taskShader == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
                         "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV from device extensions",
                         .{},
                     );
-                    result = Inner.remove_from_slice(result, vk.VK_NV_MESH_SHADER_EXTENSION_NAME);
+                    result = Inner.remove_from_slice(result, volk.VK_NV_MESH_SHADER_EXTENSION_NAME);
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.descriptorBuffer == vk.VK_FALSE and
-                    feature.descriptorBufferCaptureReplay == vk.VK_FALSE and
-                    feature.descriptorBufferImageLayoutIgnored == vk.VK_FALSE and
-                    feature.descriptorBufferPushDescriptors == vk.VK_FALSE)
+                if (feature.descriptorBuffer == volk.VK_FALSE and
+                    feature.descriptorBufferCaptureReplay == volk.VK_FALSE and
+                    feature.descriptorBufferImageLayoutIgnored == volk.VK_FALSE and
+                    feature.descriptorBufferPushDescriptors == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -791,15 +852,15 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+                        volk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceShaderObjectFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.shaderObject == vk.VK_FALSE) {
+                if (feature.shaderObject == volk.VK_FALSE) {
                     log.debug(
                         @src(),
                         "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT from device extensions",
@@ -807,17 +868,17 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+                        volk.VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.primitivesGeneratedQuery == vk.VK_FALSE and
-                    feature.primitivesGeneratedQueryWithNonZeroStreams == vk.VK_FALSE and
-                    feature.primitivesGeneratedQueryWithRasterizerDiscard == vk.VK_FALSE)
+                if (feature.primitivesGeneratedQuery == volk.VK_FALSE and
+                    feature.primitivesGeneratedQueryWithNonZeroStreams == volk.VK_FALSE and
+                    feature.primitivesGeneratedQueryWithRasterizerDiscard == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -826,16 +887,16 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
+                        volk.VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
                     );
                     accept = false;
                 }
             },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
+            volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
+                const feature: *const volk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
                     @ptrCast(@alignCast(current));
-                if (feature.image2DViewOf3D == vk.VK_FALSE and
-                    feature.sampler2DViewOf3D == vk.VK_FALSE)
+                if (feature.image2DViewOf3D == volk.VK_FALSE and
+                    feature.sampler2DViewOf3D == volk.VK_FALSE)
                 {
                     log.debug(
                         @src(),
@@ -844,7 +905,7 @@ pub fn filter_active_extensions(
                     );
                     result = Inner.remove_from_slice(
                         result,
-                        vk.VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
+                        volk.VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
                     );
                     accept = false;
                 }
@@ -862,16 +923,16 @@ pub fn filter_active_extensions(
 }
 
 pub const Device = struct {
-    device: vk.VkDevice,
+    device: volk.VkDevice,
     all_extension_names: []const [*c]const u8,
 };
 pub fn create_vk_device(
     arena_alloc: Allocator,
     instance: *const Instance,
     physical_device: *const PhysicalDevice,
-    application_create_info: *const vk.VkApplicationInfo,
-    wanted_physical_device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
-    pdf: *vk.VkPhysicalDeviceFeatures2,
+    application_create_info: *const volk.VkApplicationInfo,
+    wanted_physical_device_features2: ?*const volk.VkPhysicalDeviceFeatures2,
+    pdf: *volk.VkPhysicalDeviceFeatures2,
     additional_pdf: *vv.AdditionalPDF,
     enable_validation: bool,
 ) !Device {
@@ -879,8 +940,8 @@ pub fn create_vk_device(
     defer MEASUREMENTS.end(prof_point);
 
     const queue_priority: f32 = 1.0;
-    const queue_create_info = vk.VkDeviceQueueCreateInfo{
-        .sType = vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+    const queue_create_info = volk.VkDeviceQueueCreateInfo{
+        .sType = volk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
         .queueFamilyIndex = physical_device.graphics_queue_family,
         .queueCount = 1,
         .pQueuePriorities = &queue_priority,
@@ -903,36 +964,36 @@ pub fn create_vk_device(
         } else enabled = "filtered";
         log.debug(@src(), "(PhysicalDevice)({s:^8}) Extension version: {d}.{d}.{d} Name: {s}", .{
             enabled,
-            vk.VK_API_VERSION_MAJOR(e.specVersion),
-            vk.VK_API_VERSION_MINOR(e.specVersion),
-            vk.VK_API_VERSION_PATCH(e.specVersion),
+            volk.VK_API_VERSION_MAJOR(e.specVersion),
+            volk.VK_API_VERSION_MINOR(e.specVersion),
+            volk.VK_API_VERSION_PATCH(e.specVersion),
             e.extensionName,
         });
     }
     if (physical_device.has_validation_cache) {
-        all_extension_names[all_extensions_len] = vk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
+        all_extension_names[all_extensions_len] = volk.VK_EXT_VALIDATION_CACHE_EXTENSION_NAME;
         all_extensions_len += 1;
     }
     all_extension_names = all_extension_names[0..all_extensions_len];
 
-    pdf.* = vk.VkPhysicalDeviceFeatures2{
-        .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+    pdf.* = volk.VkPhysicalDeviceFeatures2{
+        .sType = volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
     };
-    var stats: vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
+    var stats: volk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{
+        .sType = volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_EXECUTABLE_PROPERTIES_FEATURES_KHR,
     };
     pdf.pNext = &stats;
     if (instance.has_properties_2) {
         stats.pNext = additional_pdf.chain_supported(all_extension_names);
-        vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, pdf);
-    } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &pdf.features);
+        volk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, pdf);
+    } else volk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &pdf.features);
 
     // Workaround for older dxvk/vkd3d databases, where robustness2 or VRS was not captured,
     // but we expect them to be present. New databases will capture robustness2.
-    var wpdf2: ?*const vk.VkPhysicalDeviceFeatures2 = wanted_physical_device_features2;
-    var updf2: vk.VkPhysicalDeviceFeatures2 = undefined;
-    var spare_robustness2: vk.VkPhysicalDeviceRobustness2FeaturesEXT = undefined;
-    var replacement_fragment_shading_rate: vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
+    var wpdf2: ?*const volk.VkPhysicalDeviceFeatures2 = wanted_physical_device_features2;
+    var updf2: volk.VkPhysicalDeviceFeatures2 = undefined;
+    var spare_robustness2: volk.VkPhysicalDeviceRobustness2FeaturesEXT = undefined;
+    var replacement_fragment_shading_rate: volk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
         undefined;
     if (wanted_physical_device_features2) |df2| {
         const engine_name: []const u8 = std.mem.span(application_create_info.pEngineName);
@@ -942,32 +1003,32 @@ pub fn create_vk_device(
 
         if ((std.mem.eql(u8, engine_name, "DXVK") or std.mem.eql(u8, engine_name, "vkd3d")) and
             find_pnext(
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
                 @ptrCast(df2.pNext),
             ) == null)
         {
             spare_robustness2 = .{
-                .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+                .sType = volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
                 .pNext = updf2.pNext,
                 .robustBufferAccess2 = df2.features.robustBufferAccess,
                 .robustImageAccess2 = df2.features.robustBufferAccess,
-                .nullDescriptor = vk.VK_FALSE,
+                .nullDescriptor = volk.VK_FALSE,
             };
             updf2.pNext = &spare_robustness2;
         }
 
         if (std.mem.eql(u8, engine_name, "vkd3d") and
             find_pnext(
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 @ptrCast(df2.pNext),
             ) == null)
         {
             replacement_fragment_shading_rate = .{
-                .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                .sType = volk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 .pNext = updf2.pNext,
-                .pipelineFragmentShadingRate = vk.VK_TRUE,
-                .primitiveFragmentShadingRate = vk.VK_TRUE,
-                .attachmentFragmentShadingRate = vk.VK_TRUE,
+                .pipelineFragmentShadingRate = volk.VK_TRUE,
+                .primitiveFragmentShadingRate = volk.VK_TRUE,
+                .attachmentFragmentShadingRate = volk.VK_TRUE,
             };
             updf2.pNext = &replacement_fragment_shading_rate;
         }
@@ -981,8 +1042,8 @@ pub fn create_vk_device(
 
     const enabled_layers = if (enable_validation) &VK_VALIDATION_LAYERS_NAMES else &.{};
 
-    const create_info = vk.VkDeviceCreateInfo{
-        .sType = vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+    const create_info = volk.VkDeviceCreateInfo{
+        .sType = volk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pQueueCreateInfos = &queue_create_info,
         .queueCreateInfoCount = 1,
         .ppEnabledLayerNames = @ptrCast(enabled_layers.ptr),
@@ -996,8 +1057,8 @@ pub fn create_vk_device(
         .pNext = if (instance.has_properties_2) pdf else null,
     };
 
-    var vk_device: vk.VkDevice = undefined;
-    try vv.check_result(vk.vkCreateDevice.?(
+    var vk_device: volk.VkDevice = undefined;
+    try vv.check_result(volk.vkCreateDevice.?(
         physical_device.device,
         &create_info,
         null,
@@ -1010,14 +1071,14 @@ pub fn create_vk_device(
 }
 
 pub fn create_vk_sampler(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkSamplerCreateInfo,
-) !vk.VkSampler {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkSamplerCreateInfo,
+) !volk.VkSampler {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var sampler: vk.VkSampler = undefined;
-    try vv.check_result(vk.vkCreateSampler.?(
+    var sampler: volk.VkSampler = undefined;
+    try vv.check_result(volk.vkCreateSampler.?(
         vk_device,
         create_info,
         null,
@@ -1027,24 +1088,24 @@ pub fn create_vk_sampler(
 }
 
 pub fn destroy_vk_sampler(
-    vk_device: vk.VkDevice,
-    sampler: vk.VkSampler,
+    vk_device: volk.VkDevice,
+    sampler: volk.VkSampler,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroySampler.?(vk_device, sampler, null);
+    volk.vkDestroySampler.?(vk_device, sampler, null);
 }
 
 pub fn create_descriptor_set_layout(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkDescriptorSetLayoutCreateInfo,
-) !vk.VkDescriptorSetLayout {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkDescriptorSetLayoutCreateInfo,
+) !volk.VkDescriptorSetLayout {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var descriptor_set_layout: vk.VkDescriptorSetLayout = undefined;
-    try vv.check_result(vk.vkCreateDescriptorSetLayout.?(
+    var descriptor_set_layout: volk.VkDescriptorSetLayout = undefined;
+    try vv.check_result(volk.vkCreateDescriptorSetLayout.?(
         vk_device,
         create_info,
         null,
@@ -1054,24 +1115,24 @@ pub fn create_descriptor_set_layout(
 }
 
 pub fn destroy_descriptor_set_layout(
-    vk_device: vk.VkDevice,
-    layout: vk.VkDescriptorSetLayout,
+    vk_device: volk.VkDevice,
+    layout: volk.VkDescriptorSetLayout,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroyDescriptorSetLayout.?(vk_device, layout, null);
+    volk.vkDestroyDescriptorSetLayout.?(vk_device, layout, null);
 }
 
 pub fn create_pipeline_layout(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkPipelineLayoutCreateInfo,
-) !vk.VkPipelineLayout {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkPipelineLayoutCreateInfo,
+) !volk.VkPipelineLayout {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var pipeline_layout: vk.VkPipelineLayout = undefined;
-    try vv.check_result(vk.vkCreatePipelineLayout.?(
+    var pipeline_layout: volk.VkPipelineLayout = undefined;
+    try vv.check_result(volk.vkCreatePipelineLayout.?(
         vk_device,
         create_info,
         null,
@@ -1081,24 +1142,24 @@ pub fn create_pipeline_layout(
 }
 
 pub fn destroy_pipeline_layout(
-    vk_device: vk.VkDevice,
-    layout: vk.VkPipelineLayout,
+    vk_device: volk.VkDevice,
+    layout: volk.VkPipelineLayout,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroyPipelineLayout.?(vk_device, layout, null);
+    volk.vkDestroyPipelineLayout.?(vk_device, layout, null);
 }
 
 pub fn create_shader_module(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkShaderModuleCreateInfo,
-) !vk.VkShaderModule {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkShaderModuleCreateInfo,
+) !volk.VkShaderModule {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var shader_module: vk.VkShaderModule = undefined;
-    try vv.check_result(vk.vkCreateShaderModule.?(
+    var shader_module: volk.VkShaderModule = undefined;
+    try vv.check_result(volk.vkCreateShaderModule.?(
         vk_device,
         create_info,
         null,
@@ -1108,34 +1169,34 @@ pub fn create_shader_module(
 }
 
 pub fn destroy_shader_module(
-    vk_device: vk.VkDevice,
-    shader_module: vk.VkShaderModule,
+    vk_device: volk.VkDevice,
+    shader_module: volk.VkShaderModule,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroyShaderModule.?(vk_device, shader_module, null);
+    volk.vkDestroyShaderModule.?(vk_device, shader_module, null);
 }
 
 pub fn create_render_pass(
-    vk_device: vk.VkDevice,
+    vk_device: volk.VkDevice,
     create_info: *align(8) const anyopaque,
-) !vk.VkRenderPass {
+) !volk.VkRenderPass {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    const base_type: *const vk.VkBaseInStructure = @ptrCast(create_info);
-    var render_pass: vk.VkRenderPass = undefined;
+    const base_type: *const volk.VkBaseInStructure = @ptrCast(create_info);
+    var render_pass: volk.VkRenderPass = undefined;
     switch (base_type.sType) {
-        vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        => try vv.check_result(vk.vkCreateRenderPass.?(
+        volk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        => try vv.check_result(volk.vkCreateRenderPass.?(
             vk_device,
             @ptrCast(create_info),
             null,
             &render_pass,
         )),
-        vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
-        => try vv.check_result(vk.vkCreateRenderPass2.?(
+        volk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+        => try vv.check_result(volk.vkCreateRenderPass2.?(
             vk_device,
             @ptrCast(create_info),
             null,
@@ -1147,24 +1208,24 @@ pub fn create_render_pass(
 }
 
 pub fn destroy_render_pass(
-    vk_device: vk.VkDevice,
-    render_pass: vk.VkRenderPass,
+    vk_device: volk.VkDevice,
+    render_pass: volk.VkRenderPass,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroyRenderPass.?(vk_device, render_pass, null);
+    volk.vkDestroyRenderPass.?(vk_device, render_pass, null);
 }
 
 pub fn create_graphics_pipeline(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkGraphicsPipelineCreateInfo,
-) !vk.VkPipeline {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkGraphicsPipelineCreateInfo,
+) !volk.VkPipeline {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var pipeline: vk.VkPipeline = undefined;
-    try vv.check_result(vk.vkCreateGraphicsPipelines.?(
+    var pipeline: volk.VkPipeline = undefined;
+    try vv.check_result(volk.vkCreateGraphicsPipelines.?(
         vk_device,
         null,
         1,
@@ -1176,14 +1237,14 @@ pub fn create_graphics_pipeline(
 }
 
 pub fn create_compute_pipeline(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkComputePipelineCreateInfo,
-) !vk.VkPipeline {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkComputePipelineCreateInfo,
+) !volk.VkPipeline {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var pipeline: vk.VkPipeline = undefined;
-    try vv.check_result(vk.vkCreateComputePipelines.?(
+    var pipeline: volk.VkPipeline = undefined;
+    try vv.check_result(volk.vkCreateComputePipelines.?(
         vk_device,
         null,
         1,
@@ -1195,14 +1256,14 @@ pub fn create_compute_pipeline(
 }
 
 pub fn create_raytracing_pipeline(
-    vk_device: vk.VkDevice,
-    create_info: *const vk.VkRayTracingPipelineCreateInfoKHR,
-) !vk.VkPipeline {
+    vk_device: volk.VkDevice,
+    create_info: *const volk.VkRayTracingPipelineCreateInfoKHR,
+) !volk.VkPipeline {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var pipeline: vk.VkPipeline = undefined;
-    try vv.check_result(vk.vkCreateRayTracingPipelinesKHR.?(
+    var pipeline: volk.VkPipeline = undefined;
+    try vv.check_result(volk.vkCreateRayTracingPipelinesKHR.?(
         vk_device,
         null,
         null,
@@ -1215,11 +1276,11 @@ pub fn create_raytracing_pipeline(
 }
 
 pub fn destroy_pipeline(
-    vk_device: vk.VkDevice,
-    pipeline: vk.VkPipeline,
+    vk_device: volk.VkDevice,
+    pipeline: volk.VkPipeline,
 ) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    vk.vkDestroyPipeline.?(vk_device, pipeline, null);
+    volk.vkDestroyPipeline.?(vk_device, pipeline, null);
 }

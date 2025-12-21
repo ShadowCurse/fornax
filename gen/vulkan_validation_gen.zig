@@ -129,9 +129,9 @@ const VALIDATE_SHADER_CODE =
 const VALIDATION_STRUCT =
     \\pub const Validation = struct {
     \\    api_version: u32,
-    \\    extensions: *const Extensions,
-    \\    pdf: *const vk.VkPhysicalDeviceFeatures2,
-    \\    additional_pdf: *const AdditionalPDF,
+    \\    extensions: Extensions,
+    \\    pdf: vk.VkPhysicalDeviceFeatures2,
+    \\    additional_pdf: AdditionalPDF,
     \\};
     \\
 ;

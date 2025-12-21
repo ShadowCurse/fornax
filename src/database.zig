@@ -309,7 +309,7 @@ pub const Entry = struct {
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
                 if (!VALIDATE.validate_VkSamplerCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -324,7 +324,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!VALIDATE.validate_VkDescriptorSetLayoutCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -335,7 +335,7 @@ pub const Entry = struct {
                     try PARSE.parse_pipeline_layout(entry_alloc, tmp_alloc, db, payload);
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!VALIDATE.validate_VkPipelineLayoutCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -351,7 +351,7 @@ pub const Entry = struct {
                 try self.check_version_and_hash(result);
                 self.create_info = result.create_info;
                 if (!VALIDATE.validate_VkRenderPassCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -366,7 +366,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!VALIDATE.validate_VkGraphicsPipelineCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -381,7 +381,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!VALIDATE.validate_VkComputePipelineCreateInfo(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -396,7 +396,7 @@ pub const Entry = struct {
                 );
                 try self.process_result_with_dependencies(dependency_alloc, db, &result);
                 if (!VALIDATE.validate_VkRayTracingPipelineCreateInfoKHR(
-                    validation.extensions,
+                    &validation.extensions,
                     @ptrCast(result.create_info),
                     true,
                 ))
@@ -658,7 +658,7 @@ pub const FileEntry = extern struct {
     }
 };
 
-pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8) !Database {
+pub fn init(tmp_alloc: Allocator, path: []const u8) !Database {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
@@ -691,10 +691,7 @@ pub fn init(tmp_alloc: Allocator, progress: *std.Progress.Node, path: []const u8
 
     var entries: EntriesType = .initFill(.empty);
 
-    const progress_node = progress.start("reading database", 0);
-    defer progress_node.end();
     while (file_offset < file_stat.size) {
-        progress_node.completeOne();
         // If entry is incomplete, stop
         if (file_size - file_offset < @sizeOf(FileEntry)) break;
 
