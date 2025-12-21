@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
+const profiler = @import("profiler.zig");
 
 const DEFAULT_COLOR = "\x1b[0m";
 const WHITE = "\x1b[37m";
@@ -48,9 +49,9 @@ pub fn comptime_err(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        @compileError(std.fmt.comptimePrint(RED ++ "{s} " ++ format ++ DEFAULT_COLOR, t))
+        @compileError(std.fmt.comptimePrint(RED ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR, t))
     else
-        @compileError(std.fmt.comptimePrint("{s} " ++ format, t));
+        @compileError(std.fmt.comptimePrint("{s}[{d}] " ++ format, t));
 }
 
 pub fn comptime_assert(
@@ -72,9 +73,9 @@ pub fn panic(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        std.debug.panic(RED ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+        std.debug.panic(RED ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR, t)
     else
-        std.debug.panic("{s} " ++ format, t);
+        std.debug.panic("{s}[{d}] " ++ format, t);
 }
 
 pub fn assert(
@@ -91,9 +92,9 @@ pub fn assert(
         const T = make_struct(@TypeOf(args));
         const t = fill_struct(T, header, args);
         if (comptime options.colors)
-            std.debug.panic(RED ++ "{s} " ++ format ++ DEFAULT_COLOR, t)
+            std.debug.panic(RED ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR, t)
         else
-            std.debug.panic("{s} " ++ format, t);
+            std.debug.panic("{s}[{d}] " ++ format, t);
     }
 }
 
@@ -108,9 +109,9 @@ pub fn info(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
+        output(WHITE ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format ++ "\n", t);
+        output("{s}[{d}] " ++ format ++ "\n", t);
 }
 
 pub fn debug(
@@ -124,9 +125,9 @@ pub fn debug(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(HIGH_WHITE ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
+        output(HIGH_WHITE ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format ++ "\n", t);
+        output("{s}[{d}] " ++ format ++ "\n", t);
 }
 
 pub fn warn(
@@ -140,9 +141,9 @@ pub fn warn(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(YELLOW ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
+        output(YELLOW ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format ++ "\n", t);
+        output("{s}[{d}] " ++ format ++ "\n", t);
 }
 
 pub fn err(
@@ -156,9 +157,9 @@ pub fn err(
     const T = make_struct(@TypeOf(args));
     const t = fill_struct(T, header, args);
     if (comptime options.colors)
-        output(RED ++ "{s} " ++ format ++ DEFAULT_COLOR ++ "\n", t)
+        output(RED ++ "{s}[{d}] " ++ format ++ DEFAULT_COLOR ++ "\n", t)
     else
-        output("{s} " ++ format ++ "\n", t);
+        output("{s}[{d}] " ++ format ++ "\n", t);
 }
 
 pub fn output(comptime format: []const u8, args: anytype) void {
@@ -185,12 +186,13 @@ fn fill_struct(comptime T: type, comptime header: [:0]const u8, args: anytype) T
     var t: T = undefined;
 
     @field(t, "0") = header;
+    @field(t, "1") = profiler.thread_id orelse 0;
 
     // need to inline so the loop would be unrolled
     // because these fields are assigned at runtime
     // but we need to generate indexes at comptime
     inline for (args_fields, 0..) |_, i| {
-        const t_index = std.fmt.comptimePrint("{}", .{1 + i});
+        const t_index = std.fmt.comptimePrint("{}", .{2 + i});
         const args_index = std.fmt.comptimePrint("{}", .{i});
         @field(t, t_index) = @field(args, args_index);
     }
@@ -199,7 +201,7 @@ fn fill_struct(comptime T: type, comptime header: [:0]const u8, args: anytype) T
 
 fn make_struct(comptime T: type) type {
     const type_fields = comptime @typeInfo(T).@"struct".fields;
-    var fields: [type_fields.len + 1]std.builtin.Type.StructField = undefined;
+    var fields: [type_fields.len + 2]std.builtin.Type.StructField = undefined;
     // header
     fields[0] = .{
         .name = "0",
@@ -208,7 +210,14 @@ fn make_struct(comptime T: type) type {
         .is_comptime = false,
         .alignment = @alignOf([:0]const u8),
     };
-    for (type_fields, 1..) |f, i| {
+    fields[1] = .{
+        .name = "1",
+        .type = u32,
+        .default_value_ptr = null,
+        .is_comptime = false,
+        .alignment = @alignOf(u32),
+    };
+    for (type_fields, 2..) |f, i| {
         var ff = f;
         ff.name = std.fmt.comptimePrint("{}", .{i});
         ff.is_comptime = false;
@@ -219,8 +228,8 @@ fn make_struct(comptime T: type) type {
     return @Type(.{
         .@"struct" = .{
             .layout = .auto,
-            .fields = fields[0..],
-            .decls = &[_]std.builtin.Type.Declaration{},
+            .fields = &fields,
+            .decls = &.{},
             .is_tuple = true,
         },
     });
