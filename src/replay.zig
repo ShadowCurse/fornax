@@ -281,8 +281,7 @@ pub fn main() !void {
     // if (control_block) |cb|
     //     cb.progress_complete.store(1, .release);
 
-    var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
-        db.arena.queryCapacity();
+    var total_used_bytes = arena.queryCapacity() + db.arena.queryCapacity();
     for (contexts) |*c| total_used_bytes += c.arena.queryCapacity();
     log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
     const rusage = std.posix.getrusage(0);
