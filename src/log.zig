@@ -10,14 +10,14 @@ const YELLOW = "\x1b[33m";
 const RED = "\x1b[31m";
 
 pub const LogLevel = enum {
-    Err,
-    Warn,
-    Info,
-    Debug,
+    err,
+    warn,
+    info,
+    debug,
 };
 pub const Options = struct {
     colors: bool = true,
-    level: LogLevel = .Info,
+    level: LogLevel = .info,
     asserts: bool = true,
     buffer_size: u32 = 256,
 
@@ -102,7 +102,7 @@ pub fn info(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    if (comptime !options.log_enabled(.Info)) return;
+    if (comptime !options.log_enabled(.info)) return;
 
     const header = std.fmt.comptimePrint("[{s}:{}:INFO]", .{ src.file, src.line });
     const T = make_struct(@TypeOf(args));
@@ -118,7 +118,7 @@ pub fn debug(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    if (comptime !options.log_enabled(.Debug)) return;
+    if (comptime !options.log_enabled(.debug)) return;
 
     const header = std.fmt.comptimePrint("[{s}:{}:DEBUG]", .{ src.file, src.line });
     const T = make_struct(@TypeOf(args));
@@ -134,7 +134,7 @@ pub fn warn(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    if (comptime !options.log_enabled(.Warn)) return;
+    if (comptime !options.log_enabled(.warn)) return;
 
     const header = std.fmt.comptimePrint("[{s}:{}:WARN]", .{ src.file, src.line });
     const T = make_struct(@TypeOf(args));
@@ -150,7 +150,7 @@ pub fn err(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    if (comptime !options.log_enabled(.Err)) return;
+    if (comptime !options.log_enabled(.err)) return;
 
     const header = std.fmt.comptimePrint("[{s}:{}:ERROR]", .{ src.file, src.line });
     const T = make_struct(@TypeOf(args));

@@ -15,7 +15,7 @@ const Database = @import("database.zig");
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
-    .level = .Info,
+    .level = .info,
 };
 
 pub const profiler_options = profiler.Options{

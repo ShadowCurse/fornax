@@ -18,7 +18,7 @@ const Barrier = @import("barrier.zig");
 const Database = @import("database.zig");
 
 pub const log_options = log.Options{
-    .level = .Info,
+    .level = .info,
 };
 
 pub const profiler_options = profiler.Options{
