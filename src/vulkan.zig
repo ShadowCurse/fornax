@@ -984,6 +984,7 @@ pub fn create_vk_device(
     };
     pdf.pNext = &stats;
     if (instance.has_properties_2) {
+        additional_pdf.* = .{};
         stats.pNext = additional_pdf.chain_supported(all_extension_names);
         vk.vkGetPhysicalDeviceFeatures2KHR.?(physical_device.device, pdf);
     } else vk.vkGetPhysicalDeviceFeatures.?(physical_device.device, &pdf.features);
