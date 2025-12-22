@@ -108,7 +108,7 @@ const VALIDATE_SHADER_CODE =
     \\            }
     \\        } else if (op == spirv.SpvOpExtension) {
     \\            if (count < 2) return false;
-    \\            const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1..].ptr);
+    \\            const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1 ..].ptr);
     \\            const name = std.mem.span(byte_slice);
     \\            if (!validate_spirv_extension(validation, name)) {
     \\                log.debug(@src(), "Invalid SPIR-V extension: {s}", .{name});
@@ -128,10 +128,10 @@ const VALIDATE_SHADER_CODE =
 
 const VALIDATION_STRUCT =
     \\pub const Validation = struct {
-    \\    api_version: u32,
-    \\    extensions: Extensions,
-    \\    pdf: vk.VkPhysicalDeviceFeatures2,
-    \\    additional_pdf: AdditionalPDF,
+    \\    api_version: u32 = 0,
+    \\    extensions: Extensions = .{},
+    \\    pdf: vk.VkPhysicalDeviceFeatures2 = .{},
+    \\    additional_pdf: AdditionalPDF = .{},
     \\};
     \\
 ;
@@ -173,7 +173,7 @@ fn write_check_result(
     for (vk_result.items) |*item| {
         if (eql(item.name, "VK_SUCCESS")) continue;
         w.write(
-            \\        {[name]s},
+            \\    {[name]s},
             \\
         ,
             .{ .name = item.name },
@@ -181,7 +181,7 @@ fn write_check_result(
     }
     for (used_enums.keys()) |name| {
         w.write(
-            \\        {[name]s},
+            \\    {[name]s},
             \\
         ,
             .{ .name = name },
@@ -1058,7 +1058,7 @@ fn write_spirv_validation(
         \\        else => |other| {{
         \\            log.debug(@src(), "Uknown SPRIV capability: {{d}}", .{{other}});
         \\            return false;
-        \\        }}
+        \\        }},
         \\    }}
         \\    return false;
         \\}}
