@@ -6,13 +6,11 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const a = @import("spirv");
 const log = @import("log.zig");
 const parsing = @import("parsing.zig");
 const profiler = @import("profiler.zig");
 const vv = @import("vulkan_validation.zig");
 const vk = @import("volk");
-const vulkan = @import("vulkan.zig");
 
 const Allocator = std.mem.Allocator;
 const Database = @import("database.zig");
@@ -44,22 +42,22 @@ pub fn init(
         return error.ApllicationInfoVersionMissmatch;
 
     try vv.check_result(vk.volkInitialize());
-    const instance = try vulkan.create_vk_instance(
+    const instance = try create_vk_instance(
         tmp_alloc,
         parsed_application_info.application_info,
         enable_vulkan_validation_layers,
     );
     vk.volkLoadInstance(instance.instance);
     if (enable_vulkan_validation_layers)
-        _ = try vulkan.init_debug_callback(instance.instance);
+        _ = try init_debug_callback(instance.instance);
 
-    const physical_device = try vulkan.select_physical_device(
+    const physical_device = try select_physical_device(
         tmp_alloc,
         instance.instance,
         enable_vulkan_validation_layers,
     );
 
-    const device = try vulkan.create_vk_device(
+    const device = try create_vk_device(
         tmp_alloc,
         &instance,
         &physical_device,
@@ -250,20 +248,29 @@ pub fn create_vk_instance(
     else
         &vk.VkApplicationInfo{
             .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO,
-            .pApplicationName = "glacier",
+            .pApplicationName = "replayer",
             .applicationVersion = vk.VK_MAKE_VERSION(0, 0, 1),
-            .pEngineName = "glacier",
+            .pEngineName = "replayer",
             .engineVersion = vk.VK_MAKE_VERSION(0, 0, 1),
             .apiVersion = api_version,
             .pNext = null,
         };
-    log.info(@src(), "Creating instance with application name: {s} engine name: {s} api version: {d}.{d}.{d}", .{
-        app_info.pApplicationName,
-        app_info.pEngineName,
-        vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
-        vk.VK_API_VERSION_MINOR(app_info.apiVersion),
-        vk.VK_API_VERSION_PATCH(app_info.apiVersion),
-    });
+    log.info(
+        @src(),
+        "Creating instance with application name: {s} engine name: {s} api version: {d}.{d}.{d}",
+        .{
+            app_info.pApplicationName,
+            app_info.pEngineName,
+            vk.VK_API_VERSION_MAJOR(app_info.apiVersion),
+            vk.VK_API_VERSION_MINOR(app_info.apiVersion),
+            vk.VK_API_VERSION_PATCH(app_info.apiVersion),
+        },
+    );
+    for (all_extension_names) |name|
+        log.debug(@src(), "(Inastance) Enabled extension: {s}", .{name});
+    for (enabled_layers) |name|
+        log.debug(@src(), "(Inastance) Enabled layer: {s}", .{name});
+
     const instance_create_info = vk.VkInstanceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = app_info,
@@ -530,12 +537,6 @@ pub fn usable_device_extension(
             if (std.mem.eql(u8, other_e, vk.VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
                 return false;
         };
-    if (std.mem.eql(u8, e, vk.VK_AMD_SHADER_FRAGMENT_MASK_EXTENSION_NAME))
-        for (all_ext_props) |other_ext| {
-            const other_e = std.mem.span(@as([*c]const u8, @ptrCast(&other_ext.extensionName)));
-            if (std.mem.eql(u8, other_e, vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME))
-                return false;
-        };
 
     const VK_1_1_EXTS: []const []const u8 = &.{
         vk.VK_KHR_SHADER_SUBGROUP_EXTENDED_TYPES_EXTENSION_NAME,
@@ -707,7 +708,17 @@ pub fn filter_active_extensions(
     defer MEASUREMENTS.end(prof_point);
 
     const Inner = struct {
-        fn remove_from_slice(slice: [][*c]const u8, value: [:0]const u8) [][*c]const u8 {
+        fn all_disabled(item: anytype) bool {
+            const child = @typeInfo(@TypeOf(item)).pointer.child;
+            const type_info = @typeInfo(child).@"struct";
+            inline for (type_info.fields) |field| {
+                if (field.type == vk.VkBool32)
+                    if (@field(item, field.name) == vk.VK_TRUE)
+                        return false;
+            }
+            return true;
+        }
+        fn remove_from_slice(slice: [][*c]const u8, value: []const u8) [][*c]const u8 {
             for (slice, 0..) |name, i| {
                 const n: [:0]const u8 = std.mem.span(name);
                 if (std.mem.eql(u8, n, value)) {
@@ -727,190 +738,65 @@ pub fn filter_active_extensions(
         current_pnext = current.pNext;
         var accept: bool = true;
 
-        switch (current.sType) {
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV => {
-                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
-                    @ptrCast(@alignCast(current));
-                if (feature.fragmentShadingRateEnums == vk.VK_FALSE and
-                    feature.noInvocationFragmentShadingRates == vk.VK_FALSE and
-                    feature.supersampleFragmentShadingRates == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME,
-                    );
+        const PATCH_TYPES: []const struct { u32, type, []const u8 } = &.{
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV,
+                vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
+                vk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
+                vk.VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+                vk.VkPhysicalDeviceRobustness2FeaturesEXT,
+                vk.VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT,
+                vk.VkPhysicalDeviceImageRobustnessFeaturesEXT,
+                vk.VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV,
+                vk.VkPhysicalDeviceMeshShaderFeaturesNV,
+                vk.VK_EXT_MESH_SHADER_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
+                vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT,
+                vk.VkPhysicalDeviceShaderObjectFeaturesEXT,
+                vk.VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT,
+                vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
+                vk.VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
+            },
+            .{
+                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT,
+                vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
+                vk.VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
+            },
+        };
+
+        inline for (PATCH_TYPES) |pt| {
+            const stype, const T, const name = pt;
+
+            if (current.sType == stype) {
+                const feature: *const T = @ptrCast(@alignCast(current));
+                if (Inner.all_disabled(feature)) {
+                    log.debug(@src(), "Filtering out {s} from device extensions", .{name});
+                    result = Inner.remove_from_slice(result, name);
                     accept = false;
                 }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR => {
-                const feature: *const vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
-                    @ptrCast(@alignCast(current));
-                if (feature.attachmentFragmentShadingRate == vk.VK_FALSE and
-                    feature.pipelineFragmentShadingRate == vk.VK_FALSE and
-                    feature.primitiveFragmentShadingRate == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceRobustness2FeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.nullDescriptor == vk.VK_FALSE and
-                    feature.robustBufferAccess2 == vk.VK_FALSE and
-                    feature.robustImageAccess2 == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT  from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceImageRobustnessFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.robustImageAccess == vk.VK_FALSE) {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT  from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.meshShader == vk.VK_FALSE and
-                    feature.taskShader == vk.VK_FALSE and
-                    feature.multiviewMeshShader == vk.VK_FALSE and
-                    feature.primitiveFragmentShadingRateMeshShader == vk.VK_FALSE and
-                    feature.meshShaderQueries == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT  from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_MESH_SHADER_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV => {
-                const feature: *const vk.VkPhysicalDeviceMeshShaderFeaturesNV =
-                    @ptrCast(@alignCast(current));
-                if (feature.meshShader == vk.VK_FALSE and
-                    feature.taskShader == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(result, vk.VK_NV_MESH_SHADER_EXTENSION_NAME);
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.descriptorBuffer == vk.VK_FALSE and
-                    feature.descriptorBufferCaptureReplay == vk.VK_FALSE and
-                    feature.descriptorBufferImageLayoutIgnored == vk.VK_FALSE and
-                    feature.descriptorBufferPushDescriptors == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.shaderObject == vk.VK_FALSE) {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_SHADER_OBJECT_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.primitivesGeneratedQuery == vk.VK_FALSE and
-                    feature.primitivesGeneratedQueryWithNonZeroStreams == vk.VK_FALSE and
-                    feature.primitivesGeneratedQueryWithRasterizerDiscard == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT => {
-                const feature: *const vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
-                    @ptrCast(@alignCast(current));
-                if (feature.image2DViewOf3D == vk.VK_FALSE and
-                    feature.sampler2DViewOf3D == vk.VK_FALSE)
-                {
-                    log.debug(
-                        @src(),
-                        "Filtering out VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT from device extensions",
-                        .{},
-                    );
-                    result = Inner.remove_from_slice(
-                        result,
-                        vk.VK_EXT_IMAGE_2D_VIEW_OF_3D_EXTENSION_NAME,
-                    );
-                    accept = false;
-                }
-            },
-            else => {},
+            }
         }
 
         if (accept) {
@@ -1042,6 +928,11 @@ pub fn create_vk_device(
     );
 
     const enabled_layers = if (enable_validation) &VK_VALIDATION_LAYERS_NAMES else &.{};
+
+    for (all_extension_names) |name|
+        log.debug(@src(), "(Device) Enabled extension: {s}", .{name});
+    for (enabled_layers) |name|
+        log.debug(@src(), "(Device) Enabled layer: {s}", .{name});
 
     const create_info = vk.VkDeviceCreateInfo{
         .sType = vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
