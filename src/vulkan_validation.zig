@@ -37989,20 +37989,130 @@ pub const AdditionalPDF = struct {
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR },
     VkPhysicalDeviceImageRobustnessFeatures: vk.VkPhysicalDeviceImageRobustnessFeatures =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES },
+    VkPhysicalDeviceSamplerYcbcrConversionFeatures: vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES },
+    VkPhysicalDeviceUniformBufferStandardLayoutFeatures: vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES },
+    VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures: vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES },
+    VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures: vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES },
+    VkPhysicalDeviceShaderClockFeaturesKHR: vk.VkPhysicalDeviceShaderClockFeaturesKHR =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR },
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR: vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR },
+    VkPhysicalDeviceSynchronization2Features: vk.VkPhysicalDeviceSynchronization2Features =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES },
+    VkPhysicalDeviceDynamicRenderingFeatures: vk.VkPhysicalDeviceDynamicRenderingFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES },
+    VkPhysicalDeviceMaintenance4Features: vk.VkPhysicalDeviceMaintenance4Features =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES },
+    VkPhysicalDeviceMaintenance5Features: vk.VkPhysicalDeviceMaintenance5Features =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES },
+    VkPhysicalDeviceMaintenance7FeaturesKHR: vk.VkPhysicalDeviceMaintenance7FeaturesKHR =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_7_FEATURES_KHR },
+    VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures: vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES },
+    VkPhysicalDeviceDepthClipEnableFeaturesEXT: vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT },
+    VkPhysicalDeviceInlineUniformBlockFeatures: vk.VkPhysicalDeviceInlineUniformBlockFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES },
+    VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT: vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT },
+    VkPhysicalDeviceVertexAttributeDivisorFeatures: vk.VkPhysicalDeviceVertexAttributeDivisorFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES },
+    VkPhysicalDeviceLineRasterizationFeatures: vk.VkPhysicalDeviceLineRasterizationFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES },
+    VkPhysicalDeviceSubgroupSizeControlFeatures: vk.VkPhysicalDeviceSubgroupSizeControlFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES },
+    VkPhysicalDeviceExtendedDynamicStateFeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT },
+    VkPhysicalDeviceExtendedDynamicState2FeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT },
+    VkPhysicalDeviceExtendedDynamicState3FeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT },
+    VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT: vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT },
+    VkPhysicalDeviceColorWriteEnableFeaturesEXT: vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT },
+    VkPhysicalDeviceProvokingVertexFeaturesEXT: vk.VkPhysicalDeviceProvokingVertexFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT },
+    VkPhysicalDeviceCustomBorderColorFeaturesEXT: vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT },
+    VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT: vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MUTABLE_DESCRIPTOR_TYPE_FEATURES_EXT },
+    VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT: vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT },
     VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV: vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_FEATURES_NV },
-    VkPhysicalDeviceMeshShaderFeaturesEXT: vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
-        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT },
+    VkPhysicalDeviceDepthClipControlFeaturesEXT: vk.VkPhysicalDeviceDepthClipControlFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT },
     VkPhysicalDeviceMeshShaderFeaturesNV: vk.VkPhysicalDeviceMeshShaderFeaturesNV =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV },
+    VkPhysicalDeviceMeshShaderFeaturesEXT: vk.VkPhysicalDeviceMeshShaderFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT },
     VkPhysicalDeviceDescriptorBufferFeaturesEXT: vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT },
+    VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT: vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NON_SEAMLESS_CUBE_MAP_FEATURES_EXT },
+    VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT: vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT },
+    VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT: vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MODULE_IDENTIFIER_FEATURES_EXT },
+    VkPhysicalDevicePipelineRobustnessFeatures: vk.VkPhysicalDevicePipelineRobustnessFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_ROBUSTNESS_FEATURES },
+    VkPhysicalDeviceConditionalRenderingFeaturesEXT: vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT },
+    VkPhysicalDeviceDynamicRenderingLocalReadFeatures: vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES },
+    VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT: vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT },
+    VkPhysicalDeviceOpacityMicromapFeaturesEXT: vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPACITY_MICROMAP_FEATURES_EXT },
+    VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV: vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV },
+    VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV: vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_COMPUTE_FEATURES_NV },
+    VkPhysicalDeviceOpticalFlowFeaturesNV: vk.VkPhysicalDeviceOpticalFlowFeaturesNV =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_FEATURES_NV },
+    VkPhysicalDeviceLegacyDitheringFeaturesEXT: vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LEGACY_DITHERING_FEATURES_EXT },
+    VkPhysicalDevicePipelineProtectedAccessFeatures: vk.VkPhysicalDevicePipelineProtectedAccessFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES },
+    VkPhysicalDevicePerStageDescriptorSetFeaturesNV: vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PER_STAGE_DESCRIPTOR_SET_FEATURES_NV },
+    VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT: vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_DYNAMIC_STATE_FEATURES_EXT },
+    VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT: vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBPASS_MERGE_FEEDBACK_FEATURES_EXT },
+    VkPhysicalDeviceBorderColorSwizzleFeaturesEXT: vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT },
+    VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT: vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_FEATURES_EXT },
+    VkPhysicalDeviceDepthBiasControlFeaturesEXT: vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_BIAS_CONTROL_FEATURES_EXT },
+    VkPhysicalDeviceDepthClampControlFeaturesEXT: vk.VkPhysicalDeviceDepthClampControlFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_CONTROL_FEATURES_EXT },
+    VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT: vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_EXT },
     VkPhysicalDeviceShaderObjectFeaturesEXT: vk.VkPhysicalDeviceShaderObjectFeaturesEXT =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT },
     VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT: vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVES_GENERATED_QUERY_FEATURES_EXT },
     VkPhysicalDeviceImage2DViewOf3DFeaturesEXT: vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT =
         .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_2D_VIEW_OF_3D_FEATURES_EXT },
+    VkPhysicalDeviceScalarBlockLayoutFeatures: vk.VkPhysicalDeviceScalarBlockLayoutFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES },
+    VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT: vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_DEVICE_MEMORY_FEATURES_EXT },
+    VkPhysicalDevicePipelineOpacityMicromapFeaturesARM: vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_OPACITY_MICROMAP_FEATURES_ARM },
+    VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV: vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PARTITIONED_ACCELERATION_STRUCTURE_FEATURES_NV },
+    VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE: vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_LAYERED_FEATURES_VALVE },
+    VkPhysicalDevicePipelineCreationCacheControlFeatures: vk.VkPhysicalDevicePipelineCreationCacheControlFeatures =
+        .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES },
 
     pub fn chain_supported(pdf: *AdditionalPDF, extensions: [][*c]const u8) ?*anyopaque {
         var pnext: ?*anyopaque = null;
@@ -38344,16 +38454,178 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceImageRobustnessFeatures;
                 continue;
             }
+            if (std.mem.eql(u8, e, "VK_KHR_sampler_ycbcr_conversion")) {
+                log.debug(@src(), "Adding VK_KHR_sampler_ycbcr_conversion extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceSamplerYcbcrConversionFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSamplerYcbcrConversionFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_uniform_buffer_standard_layout")) {
+                log.debug(@src(), "Adding VK_KHR_uniform_buffer_standard_layout extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceUniformBufferStandardLayoutFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceUniformBufferStandardLayoutFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_shader_subgroup_extended_types")) {
+                log.debug(@src(), "Adding VK_KHR_shader_subgroup_extended_types extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_separate_depth_stencil_layouts")) {
+                log.debug(@src(), "Adding VK_KHR_separate_depth_stencil_layouts extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_shader_clock")) {
+                log.debug(@src(), "Adding VK_KHR_shader_clock extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceShaderClockFeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderClockFeaturesKHR;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_acceleration_structure")) {
+                log.debug(@src(), "Adding VK_KHR_acceleration_structure extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceAccelerationStructureFeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAccelerationStructureFeaturesKHR;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_synchronization2")) {
+                log.debug(@src(), "Adding VK_KHR_synchronization2 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceSynchronization2Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSynchronization2Features;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_dynamic_rendering")) {
+                log.debug(@src(), "Adding VK_KHR_dynamic_rendering extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDynamicRenderingFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDynamicRenderingFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_maintenance4")) {
+                log.debug(@src(), "Adding VK_KHR_maintenance4 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMaintenance4Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance4Features;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_maintenance5")) {
+                log.debug(@src(), "Adding VK_KHR_maintenance5 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMaintenance5Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance5Features;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_maintenance7")) {
+                log.debug(@src(), "Adding VK_KHR_maintenance7 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMaintenance7FeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance7FeaturesKHR;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_zero_initialize_workgroup_memory")) {
+                log.debug(@src(), "Adding VK_KHR_zero_initialize_workgroup_memory extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_depth_clip_enable")) {
+                log.debug(@src(), "Adding VK_EXT_depth_clip_enable extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDepthClipEnableFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClipEnableFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_inline_uniform_block")) {
+                log.debug(@src(), "Adding VK_EXT_inline_uniform_block extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceInlineUniformBlockFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceInlineUniformBlockFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_blend_operation_advanced")) {
+                log.debug(@src(), "Adding VK_EXT_blend_operation_advanced extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_vertex_attribute_divisor")) {
+                log.debug(@src(), "Adding VK_KHR_vertex_attribute_divisor extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceVertexAttributeDivisorFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceVertexAttributeDivisorFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_line_rasterization")) {
+                log.debug(@src(), "Adding VK_KHR_line_rasterization extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceLineRasterizationFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceLineRasterizationFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_subgroup_size_control")) {
+                log.debug(@src(), "Adding VK_EXT_subgroup_size_control extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceSubgroupSizeControlFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSubgroupSizeControlFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state")) {
+                log.debug(@src(), "Adding VK_EXT_extended_dynamic_state extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state2")) {
+                log.debug(@src(), "Adding VK_EXT_extended_dynamic_state2 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state3")) {
+                log.debug(@src(), "Adding VK_EXT_extended_dynamic_state3 extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_vertex_input_dynamic_state")) {
+                log.debug(@src(), "Adding VK_EXT_vertex_input_dynamic_state extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_color_write_enable")) {
+                log.debug(@src(), "Adding VK_EXT_color_write_enable extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceColorWriteEnableFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceColorWriteEnableFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_provoking_vertex")) {
+                log.debug(@src(), "Adding VK_EXT_provoking_vertex extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceProvokingVertexFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceProvokingVertexFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_custom_border_color")) {
+                log.debug(@src(), "Adding VK_EXT_custom_border_color extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceCustomBorderColorFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceCustomBorderColorFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_VALVE_mutable_descriptor_type")) {
+                log.debug(@src(), "Adding VK_VALVE_mutable_descriptor_type extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_graphics_pipeline_library")) {
+                log.debug(@src(), "Adding VK_EXT_graphics_pipeline_library extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT;
+                continue;
+            }
             if (std.mem.eql(u8, e, vk.VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME)) {
                 log.debug(@src(), "Adding VK_NV_FRAGMENT_SHADING_RATE_ENUMS_EXTENSION_NAME extension to the physical device features pnext chain", .{});
                 pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.pNext = pnext;
                 pnext = &pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV;
                 continue;
             }
-            if (std.mem.eql(u8, e, "VK_EXT_mesh_shader")) {
-                log.debug(@src(), "Adding VK_EXT_mesh_shader extension to the physical device features pnext chain", .{});
-                pdf.VkPhysicalDeviceMeshShaderFeaturesEXT.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceMeshShaderFeaturesEXT;
+            if (std.mem.eql(u8, e, "VK_EXT_depth_clip_control")) {
+                log.debug(@src(), "Adding VK_EXT_depth_clip_control extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDepthClipControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClipControlFeaturesEXT;
                 continue;
             }
             if (std.mem.eql(u8, e, vk.VK_NV_MESH_SHADER_EXTENSION_NAME)) {
@@ -38362,10 +38634,142 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceMeshShaderFeaturesNV;
                 continue;
             }
+            if (std.mem.eql(u8, e, "VK_EXT_mesh_shader")) {
+                log.debug(@src(), "Adding VK_EXT_mesh_shader extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMeshShaderFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMeshShaderFeaturesEXT;
+                continue;
+            }
             if (std.mem.eql(u8, e, "VK_EXT_descriptor_buffer")) {
                 log.debug(@src(), "Adding VK_EXT_descriptor_buffer extension to the physical device features pnext chain", .{});
                 pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT.pNext = pnext;
                 pnext = &pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_non_seamless_cube_map")) {
+                log.debug(@src(), "Adding VK_EXT_non_seamless_cube_map extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_attachment_feedback_loop_layout")) {
+                log.debug(@src(), "Adding VK_EXT_attachment_feedback_loop_layout extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_shader_module_identifier")) {
+                log.debug(@src(), "Adding VK_EXT_shader_module_identifier extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_pipeline_robustness")) {
+                log.debug(@src(), "Adding VK_EXT_pipeline_robustness extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePipelineRobustnessFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineRobustnessFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_conditional_rendering")) {
+                log.debug(@src(), "Adding VK_EXT_conditional_rendering extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceConditionalRenderingFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceConditionalRenderingFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_KHR_dynamic_rendering_local_read")) {
+                log.debug(@src(), "Adding VK_KHR_dynamic_rendering_local_read extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDynamicRenderingLocalReadFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDynamicRenderingLocalReadFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_opacity_micromap")) {
+                log.debug(@src(), "Adding VK_EXT_opacity_micromap extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceOpacityMicromapFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceOpacityMicromapFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_NV_DEVICE_GENERATED_COMMANDS_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_NV_DEVICE_GENERATED_COMMANDS_COMPUTE_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_NV_DEVICE_GENERATED_COMMANDS_COMPUTE_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_NV_OPTICAL_FLOW_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_NV_OPTICAL_FLOW_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceOpticalFlowFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceOpticalFlowFeaturesNV;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_legacy_dithering")) {
+                log.debug(@src(), "Adding VK_EXT_legacy_dithering extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceLegacyDitheringFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceLegacyDitheringFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_pipeline_protected_access")) {
+                log.debug(@src(), "Adding VK_EXT_pipeline_protected_access extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePipelineProtectedAccessFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineProtectedAccessFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_NV_PER_STAGE_DESCRIPTOR_SET_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePerStageDescriptorSetFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePerStageDescriptorSetFeaturesNV;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_attachment_feedback_loop_dynamic_state")) {
+                log.debug(@src(), "Adding VK_EXT_attachment_feedback_loop_dynamic_state extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_subpass_merge_feedback")) {
+                log.debug(@src(), "Adding VK_EXT_subpass_merge_feedback extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_border_color_swizzle")) {
+                log.debug(@src(), "Adding VK_EXT_border_color_swizzle extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_multisampled_render_to_single_sampled")) {
+                log.debug(@src(), "Adding VK_EXT_multisampled_render_to_single_sampled extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_depth_bias_control")) {
+                log.debug(@src(), "Adding VK_EXT_depth_bias_control extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDepthBiasControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthBiasControlFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_depth_clamp_control")) {
+                log.debug(@src(), "Adding VK_EXT_depth_clamp_control extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDepthClampControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClampControlFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_device_generated_commands")) {
+                log.debug(@src(), "Adding VK_EXT_device_generated_commands extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT;
                 continue;
             }
             if (std.mem.eql(u8, e, "VK_EXT_shader_object")) {
@@ -38384,6 +38788,42 @@ pub const AdditionalPDF = struct {
                 log.debug(@src(), "Adding VK_EXT_image_2d_view_of_3d extension to the physical device features pnext chain", .{});
                 pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.pNext = pnext;
                 pnext = &pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_scalar_block_layout")) {
+                log.debug(@src(), "Adding VK_EXT_scalar_block_layout extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceScalarBlockLayoutFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceScalarBlockLayoutFeatures;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_zero_initialize_device_memory")) {
+                log.debug(@src(), "Adding VK_EXT_zero_initialize_device_memory extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_ARM_PIPELINE_OPACITY_MICROMAP_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_ARM_PIPELINE_OPACITY_MICROMAP_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM;
+                continue;
+            }
+            if (std.mem.eql(u8, e, vk.VK_NV_PARTITIONED_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
+                log.debug(@src(), "Adding VK_NV_PARTITIONED_ACCELERATION_STRUCTURE_EXTENSION_NAME extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_VALVE_fragment_density_map_layered")) {
+                log.debug(@src(), "Adding VK_VALVE_fragment_density_map_layered extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE;
+                continue;
+            }
+            if (std.mem.eql(u8, e, "VK_EXT_pipeline_creation_cache_control")) {
+                log.debug(@src(), "Adding VK_EXT_pipeline_creation_cache_control extension to the physical device features pnext chain", .{});
+                pdf.VkPhysicalDevicePipelineCreationCacheControlFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineCreationCacheControlFeatures;
                 continue;
             }
         }

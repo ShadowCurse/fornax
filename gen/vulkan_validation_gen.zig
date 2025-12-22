@@ -876,15 +876,6 @@ fn get_spriv_types(
 const ADDITIONAL_PDFS: []const []const u8 = &.{
     "VkPhysicalDeviceRobustness2FeaturesKHR",
     "VkPhysicalDeviceImageRobustnessFeatures",
-    // "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
-    // "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
-    // "VkPhysicalDeviceMeshShaderFeaturesEXT",
-    // "VkPhysicalDeviceMeshShaderFeaturesNV",
-    // "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
-    // "VkPhysicalDeviceShaderObjectFeaturesEXT",
-    // "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
-    // "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
-
     "VkPhysicalDevice16BitStorageFeatures",
     "VkPhysicalDeviceMultiviewFeatures",
     "VkPhysicalDeviceVariablePointersFeatures",
@@ -1010,8 +1001,14 @@ fn write_physical_device_type(
 ) !void {
     var additional_pdfs: std.StringArrayHashMapUnmanaged(void) = .empty;
     const spirv_pdfs, _ = try get_spriv_types(alloc, db);
-    for (spirv_pdfs) |spdf| try additional_pdfs.put(alloc, spdf, {});
-    for (ADDITIONAL_PDFS) |apdf| try additional_pdfs.put(alloc, apdf, {});
+    for (spirv_pdfs) |spdf| {
+        if (db.struct_by_name(spdf)) |s|
+            try additional_pdfs.put(alloc, s.name, {});
+    }
+    for (ADDITIONAL_PDFS) |apdf| {
+        if (db.struct_by_name(apdf)) |s|
+            try additional_pdfs.put(alloc, s.name, {});
+    }
 
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
