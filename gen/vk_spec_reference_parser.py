@@ -64,9 +64,8 @@ def extension_to_toml(item):
     print()
 
 def version_to_toml(item):
-    print("[[item]]")
+    print("[[version]]")
     print("name =", item.name)
-    print("api =", item.nameApi)
     print("api =", item.nameApi)
     for fr in item.featureRequirement:
         print("[[feature_requirement]]")
@@ -76,7 +75,7 @@ def version_to_toml(item):
     print()
 
 def handle_to_toml(item):
-    print("[[item]]")
+    print("[[handle]]")
     print("name =", item.name)
     print("aliases = [", ",".join(item.aliases), "]", sep = "")
     print("type =", item.type)
@@ -88,7 +87,7 @@ def handle_to_toml(item):
     print()
 
 def command_to_toml(item):
-    print("[[item]]")
+    print("[[command]]")
     print("name =", item.name)
     print("alias =", item.alias if item.alias else "null")
     print("protect =", item.protect if item.protect else "null")
@@ -126,7 +125,7 @@ def command_to_toml(item):
     print()
 
 def struct_to_toml(item):
-    print("[[item]]")
+    print("[[struct]]")
     print(f"name = {item.name}")
     print(f"aliases = [", ",".join(item.aliases), "]", sep = "")
     print(f"extensions = [", ",".join(item.extensions), "]", sep = "")
