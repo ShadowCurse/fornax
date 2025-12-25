@@ -187,6 +187,16 @@ pub fn text(self: *Self) ?[]const u8 {
     }
 }
 
+pub fn skip_text(self: *Self) ?[]const u8 {
+    switch (self.peek_next() orelse return null) {
+        .text => switch (self.next().?) {
+            .text => |v| return v,
+            else => unreachable,
+        },
+        else => return null,
+    }
+}
+
 pub fn peek_element_start(self: *Self) ?[]const u8 {
     switch (self.peek_next() orelse return null) {
         .element_start => |v| return v,
