@@ -111,6 +111,9 @@ fn create_replay_exe(
     });
     const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
 
+    const build_step = b.step("replay_build", "Build the `replay` binary");
+    build_step.dependOn(&install_step.step);
+
     const run_cmd = b.addRunArtifact(exe);
     if (args.disable_shader_cache)
         run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DISABLE", "1");
@@ -156,6 +159,9 @@ fn create_exe(
         .filters = b.args orelse &.{},
     });
     const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
+
+    const build_step = b.step(name ++ "_build", "Build the `" ++ name ++ "` binary");
+    build_step.dependOn(&install_step.step);
 
     const run_cmd = b.addRunArtifact(exe);
     if (b.args) |a| run_cmd.addArgs(a);
