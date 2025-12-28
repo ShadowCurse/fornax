@@ -1,7 +1,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const XmlParser = @import("xml_parser.zig");
-const PATH = "gen/gen_out.zig";
+const PATH = "gen/vk.zig";
 
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
@@ -135,6 +135,7 @@ fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void 
         if (v.alias) |s| {
             w.write(
                 \\pub const {s} = {s};
+                \\
             , .{ v.name, s });
         } else {
             if (v.objtypeenum) |s| w.write(
@@ -148,6 +149,7 @@ fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void 
             , .{s});
             w.write(
                 \\pub const {s} = enum(u64) {{ null = 0, _ }};
+                \\
             , .{v.name});
         }
     }
@@ -675,22 +677,17 @@ fn write_structs(
                     \\
                 , .{comment});
 
-                const t = try format_type(
-                    alloc,
-                    type_map,
-                    member.type,
-                    member.pointer,
-                    member.multi_pointer,
-                    member.constant,
-                    member.multi_constant,
-                    member.len,
-                    member.dimensions,
-                    member.value,
-                    true,
-                    true,
-                    false,
-                    false,
-                );
+                const t = try format_type(alloc, type_map, member.type, .{
+                    .pointer = member.pointer,
+                    .multi_pointer = member.multi_pointer,
+                    .constant = member.constant,
+                    .multi_constant = member.multi_constant,
+                    .len = member.len,
+                    .dimensions = member.dimensions,
+                    .value = member.value,
+                    .make_optional_pointer = true,
+                    .print_default = true,
+                });
                 w.write(
                     \\    {s}: {s},
                     \\
@@ -748,22 +745,12 @@ fn write_unions(
                     \\
                 , .{selection});
 
-                const t = try format_type(
-                    alloc,
-                    type_map,
-                    member.type,
-                    member.pointer,
-                    false,
-                    member.constant,
-                    false,
-                    member.len,
-                    member.dimensions,
-                    null,
-                    false,
-                    false,
-                    false,
-                    false,
-                );
+                const t = try format_type(alloc, type_map, member.type, .{
+                    .pointer = member.pointer,
+                    .constant = member.constant,
+                    .len = member.len,
+                    .dimensions = member.dimensions,
+                });
                 w.write(
                     \\    {s}: {s},
                     \\
@@ -843,44 +830,23 @@ fn write_command(
                 \\
             , .{vs});
 
-            const t = try format_type(
-                alloc,
-                type_map,
-                parameter.type,
-                parameter.pointer,
-                false,
-                parameter.constant,
-                false,
-                parameter.len,
-                parameter.dimensions,
-                null,
-                false,
-                false,
-                true,
-                false,
-            );
+            const t = try format_type(alloc, type_map, parameter.type, .{
+                .pointer = parameter.pointer,
+                .constant = parameter.constant,
+                .len = parameter.len,
+                .dimensions = parameter.dimensions,
+                .convert_arrays_to_pointers = true,
+            });
             w.write(
                 \\    {s}: {s},
                 \\
             , .{ parameter.name, t });
         }
 
-        const return_type = try format_type(
-            alloc,
-            type_map,
-            command.return_type,
-            false,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null,
-            false,
-            false,
-            true,
-            true,
-        );
+        const return_type = try format_type(alloc, type_map, command.return_type, .{
+            .convert_arrays_to_pointers = true,
+            .return_type = true,
+        });
         w.write(
             \\) callconv(.c) {s};
             \\
@@ -1101,34 +1067,37 @@ pub fn enum_offset(extension_number: i32, offset: i32) i32 {
     return result;
 }
 
+pub const FormatOptions = struct {
+    pointer: bool = false,
+    multi_pointer: bool = false,
+    constant: bool = false,
+    multi_constant: bool = false,
+    make_optional_pointer: bool = false,
+    print_default: bool = false,
+    convert_arrays_to_pointers: bool = false,
+    return_type: bool = false,
+    len: ?[]const u8 = null,
+    dimensions: ?[]const u8 = null,
+    value: ?[]const u8 = null,
+};
 pub fn format_type(
     alloc: Allocator,
     type_map: *TypeMap,
     type_str: []const u8,
-    pointer: bool,
-    multi_pointer: bool,
-    constant: bool,
-    multi_constant: bool,
-    len: ?[]const u8,
-    dimensions: ?[]const u8,
-    value: ?[]const u8,
-    make_optional_pointer: bool,
-    print_default: bool,
-    convert_arrays_to_pointers: bool,
-    return_type: bool,
+    options: FormatOptions,
 ) ![]const u8 {
     var base_type, var default = try resolve_type(type_map, type_str);
 
     // return types cannot be plain `anyopaque`, but for simplicity
     // the type_map has `void` -> `anyopaque` since many fields will have `void` type
-    if (return_type and std.mem.eql(u8, base_type, "anyopaque")) {
-        std.debug.assert(!pointer);
-        std.debug.assert(!multi_pointer);
-        std.debug.assert(!constant);
-        std.debug.assert(!multi_constant);
-        std.debug.assert(len == null);
-        std.debug.assert(dimensions == null);
-        std.debug.assert(value == null);
+    if (options.return_type and std.mem.eql(u8, base_type, "anyopaque")) {
+        std.debug.assert(!options.pointer);
+        std.debug.assert(!options.multi_pointer);
+        std.debug.assert(!options.constant);
+        std.debug.assert(!options.multi_constant);
+        std.debug.assert(options.len == null);
+        std.debug.assert(options.dimensions == null);
+        std.debug.assert(options.value == null);
 
         base_type = "void";
     }
@@ -1142,21 +1111,21 @@ pub fn format_type(
 
     var first_len: []const u8 = "";
     var second_len: []const u8 = "";
-    if (len) |l| {
+    if (options.len) |l| {
         var iter = std.mem.splitScalar(u8, l, ',');
         first_len = iter.next() orelse "";
         second_len = iter.next() orelse "";
         std.debug.assert(iter.next() == null);
     }
-    const first_const = if (constant) "const " else "";
-    const second_const = if (multi_constant) "const " else "";
+    const first_const = if (options.constant) "const " else "";
+    const second_const = if (options.multi_constant) "const " else "";
 
     var optional_ptr: []const u8 = &.{};
     var first_ptr: []const u8 = &.{};
     var second_ptr: []const u8 = &.{};
-    if (pointer) {
-        if (make_optional_pointer) optional_ptr = "?";
-        if (len) |l| {
+    if (options.pointer) {
+        if (options.make_optional_pointer) optional_ptr = "?";
+        if (options.len) |l| {
             var n: u32 = 0;
             var iter = std.mem.splitScalar(u8, l, ',');
             while (iter.next()) |ll| : (n += 1) {
@@ -1164,40 +1133,40 @@ pub fn format_type(
                     if (n == 0) {
                         first_ptr = "[*:0]";
                     } else if (n == 1) {
-                        std.debug.assert(multi_pointer);
+                        std.debug.assert(options.multi_pointer);
                         second_ptr = "[*:0]";
                     }
                 } else if (std.mem.eql(u8, ll, "1")) {
                     if (n == 0) {
                         first_ptr = "*";
                     } else if (n == 1) {
-                        std.debug.assert(multi_pointer);
+                        std.debug.assert(options.multi_pointer);
                         second_ptr = "*";
                     }
                 } else {
                     if (n == 0) {
                         first_ptr = "[*]";
                     } else if (n == 1) {
-                        std.debug.assert(multi_pointer);
+                        std.debug.assert(options.multi_pointer);
                         second_ptr = "[*]";
                     }
                 }
             }
             // Sometimes `len` is not specified for second pointer,
             // so just hallucinate smth
-            if (n == 1 and multi_pointer) second_ptr = "[*]";
+            if (n == 1 and options.multi_pointer) second_ptr = "[*]";
         } else {
             first_ptr = "*";
-            if (multi_pointer)
+            if (options.multi_pointer)
                 second_ptr = "*";
         }
     }
 
     var dims: []const u8 = &.{};
-    if (dimensions) |d| {
-        std.debug.assert(!pointer);
-        std.debug.assert(!multi_pointer);
-        std.debug.assert(!multi_constant);
+    if (options.dimensions) |d| {
+        std.debug.assert(!options.pointer);
+        std.debug.assert(!options.multi_pointer);
+        std.debug.assert(!options.multi_constant);
         // constant can still be use with arrays
         // len can still be specified even for an array like `null-terminated`
         // usually dimensions look like `[4]`, but sometimes
@@ -1209,16 +1178,16 @@ pub fn format_type(
 
         // this C syntax `const float blendConstants[4]` if used as a function argument
         // becomes a pointer to the fixed size array
-        if (convert_arrays_to_pointers) {
+        if (options.convert_arrays_to_pointers) {
             first_ptr = "*";
         }
     }
 
     var value_str: []const u8 = &.{};
-    if (print_default) {
-        if (value) |v| {
+    if (options.print_default) {
+        if (options.value) |v| {
             value_str = try std.fmt.allocPrint(alloc, " = VkStructureType.{s}", .{v});
-        } else if (pointer and make_optional_pointer) {
+        } else if (options.pointer and options.make_optional_pointer) {
             value_str = " = null";
         } else if (default) |def| {
             value_str = try std.fmt.allocPrint(alloc, " = {s}", .{def});
@@ -1250,182 +1219,75 @@ test "format_type" {
     try std.testing.expectEqualSlices(
         u8,
         "u32 = 0",
-        try format_type(
-            alloc,
-            &type_map,
-            "uint32_t",
-            false,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null,
-            false,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "uint32_t", .{
+            .print_default = true,
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "A",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            false,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null,
-            false,
-            false,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{}),
     );
     try std.testing.expectEqualSlices(
         u8,
         "*A",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null,
-            false,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .pointer = true,
+            .print_default = true,
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "?**A = null",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            true,
-            false,
-            false,
-            null,
-            null,
-            null,
-            true,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .pointer = true,
+            .multi_pointer = true,
+            .make_optional_pointer = true,
+            .print_default = true,
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "?*const *A = null",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            true,
-            true,
-            false,
-            null,
-            null,
-            null,
-            true,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .pointer = true,
+            .multi_pointer = true,
+            .constant = true,
+            .make_optional_pointer = true,
+            .print_default = true,
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "?*const *const A = null",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            true,
-            true,
-            true,
-            null,
-            null,
-            null,
-            true,
-            true,
-            false,
-            false,
-        ),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "?*const *const A = null",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            true,
-            true,
-            true,
-            null,
-            null,
-            null,
-            true,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .pointer = true,
+            .multi_pointer = true,
+            .constant = true,
+            .multi_constant = true,
+            .make_optional_pointer = true,
+            .print_default = true,
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "?[*]const [*]const A = null",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            true,
-            true,
-            true,
-            true,
-            "L,L",
-            null,
-            null,
-            true,
-            true,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .pointer = true,
+            .multi_pointer = true,
+            .constant = true,
+            .multi_constant = true,
+            .make_optional_pointer = true,
+            .print_default = true,
+            .len = "L,L",
+        }),
     );
     try std.testing.expectEqualSlices(
         u8,
         "[D]A",
-        try format_type(
-            alloc,
-            &type_map,
-            "A",
-            false,
-            false,
-            false,
-            false,
-            null,
-            "D",
-            null,
-            false,
-            false,
-            false,
-            false,
-        ),
+        try format_type(alloc, &type_map, "A", .{
+            .dimensions = "D",
+        }),
     );
 }
 
