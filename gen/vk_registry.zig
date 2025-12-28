@@ -1,9 +1,6 @@
 const std = @import("std");
-
 const Allocator = std.mem.Allocator;
-
 const XmlParser = @import("xml_parser.zig");
-
 const PATH = "gen/gen_out.zig";
 
 pub fn main() !void {
@@ -23,11 +20,14 @@ pub fn main() !void {
     const file = try std.fs.cwd().createFile(PATH, .{});
     defer file.close();
 
+    var type_map: TypeMap = .{ .alloc = alloc };
+    try fill_type_map(&type_map, &db);
+
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
     write_constants(tmp_alloc, file, &db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_basetypes(tmp_alloc, file, &db);
+    try write_basetypes(tmp_alloc, file, &db, &type_map);
     _ = tmp_arena.reset(.retain_capacity);
     write_handles(tmp_alloc, file, &db);
     _ = tmp_arena.reset(.retain_capacity);
@@ -35,13 +35,17 @@ pub fn main() !void {
     _ = tmp_arena.reset(.retain_capacity);
     try write_enums(tmp_alloc, file, &db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_structs(tmp_alloc, file, &db);
+    try write_funtions(tmp_alloc, file, &type_map);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_unions(tmp_alloc, file, &db);
+    try write_structs(tmp_alloc, file, &db, &type_map);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_commands(tmp_alloc, file, &db);
+    try write_unions(tmp_alloc, file, &db, &type_map);
+    _ = tmp_arena.reset(.retain_capacity);
+    try write_commands(tmp_alloc, file, &db, &type_map);
     _ = tmp_arena.reset(.retain_capacity);
     write_extensions(tmp_alloc, file, &db);
+    _ = tmp_arena.reset(.retain_capacity);
+    write_unknown_types(tmp_alloc, file, &type_map);
 }
 
 const Writer = struct {
@@ -60,6 +64,27 @@ const Writer = struct {
             unreachable;
         };
     }
+
+    fn write_comment(self: *Self, comment: []const u8, line_start: []const u8) void {
+        var iter = std.mem.splitScalar(u8, comment, '\n');
+        while (iter.next()) |line| {
+            const trimmed_line = std.mem.trimStart(u8, line, " ");
+            if (trimmed_line.len == 0) break;
+
+            _ = self.file.write(line_start) catch |e| {
+                std.log.err("Err: {t}", .{e});
+                unreachable;
+            };
+            _ = self.file.write(trimmed_line) catch |e| {
+                std.log.err("Err: {t}", .{e});
+                unreachable;
+            };
+            _ = self.file.write("\n") catch |e| {
+                std.log.err("Err: {t}", .{e});
+                unreachable;
+            };
+        }
+    }
 };
 
 fn write_constants(alloc: Allocator, file: std.fs.File, db: *const Database) void {
@@ -68,17 +93,35 @@ fn write_constants(alloc: Allocator, file: std.fs.File, db: *const Database) voi
         \\// Constants
         \\
     , .{});
-    for (db.constants.items) |*v| w.write("{f}\n", .{v});
+    for (db.constants.items) |*c| {
+        switch (c.value) {
+            .invalid => {},
+            .u32 => |v| w.write("pub const {s}: u32 = {d};\n", .{ c.name, v }),
+            .u64 => |v| w.write("pub const {s}: u64 = {d};\n", .{ c.name, v }),
+            .f32 => |v| w.write("pub const {s}: f32 = {d};\n", .{ c.name, v }),
+        }
+    }
 }
 
-fn write_basetypes(alloc: Allocator, file: std.fs.File, db: *const Database) void {
+fn write_basetypes(
+    alloc: Allocator,
+    file: std.fs.File,
+    db: *const Database,
+    type_map: *TypeMap,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Base types
         \\
     , .{});
-    for (db.types.basetypes) |*v| w.write("{f}\n", .{v});
+    for (db.types.basetypes) |*v| {
+        const t, _ = try resolve_type(type_map, v.type);
+        if (v.pointer)
+            w.write("pub const {s} = *{s};\n", .{ v.name, t })
+        else
+            w.write("pub const {s} = {s};\n", .{ v.name, t });
+    }
 }
 
 fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void {
@@ -88,7 +131,26 @@ fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void 
         \\// Handles
         \\
     , .{});
-    for (db.types.handles) |*v| w.write("{f}\n", .{v});
+    for (db.types.handles) |*v| {
+        if (v.alias) |s| {
+            w.write(
+                \\pub const {s} = {s};
+            , .{ v.name, s });
+        } else {
+            if (v.objtypeenum) |s| w.write(
+                \\// Type enum: {s}
+                \\
+            , .{s});
+
+            if (v.parent) |s| w.write(
+                \\// Parent: {s}
+                \\
+            , .{s});
+            w.write(
+                \\pub const {s} = enum(u64) {{ null = 0, _ }};
+            , .{v.name});
+        }
+    }
 }
 
 fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
@@ -99,11 +161,20 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
         \\
     , .{});
     for (db.types.bitmasks) |v| switch (v.value) {
-        .type => |s| {
+        .type => |t| {
+            var bits: u32 = 0;
+            if (std.mem.eql(u8, t, "VkFlags"))
+                bits = 32;
+            if (std.mem.eql(u8, t, "VkFlags64"))
+                bits = 64;
+
             w.write(
-                \\pub const {s} = {s};
+                \\const {s} = packed struct(u{d}) {{
+                \\    _: {d},
+                \\    pub const zero = @import("std").mem.zeroes(@This());
+                \\}};
                 \\
-            , .{ v.name, s });
+            , .{ v.name, bits, bits });
         },
         else => {},
     };
@@ -259,6 +330,7 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                 }
                 // NOTE: Bitmasks do not have expandable constants
                 w.write(
+                    \\    pub const zero = @import("std").mem.zeroes(@This());
                     \\}};
                     \\
                 , .{});
@@ -383,6 +455,7 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
             }
 
             w.write(
+                \\    pub const zero = @import("std").mem.zeroes(@This());
                 \\}};
                 \\
             , .{});
@@ -391,7 +464,146 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
     };
 }
 
-fn write_structs(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
+const ADDITIONAL_FUNCTIONS = [_]Command{
+    .{
+        .name = "vkInternalAllocationNotification",
+        .return_type = "void",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "size", .type = "size_t" },
+            .{ .name = "allocationType", .type = "VkInternalAllocationType" },
+            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+        },
+    },
+    .{
+        .name = "vkInternalFreeNotification",
+        .return_type = "void",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "size", .type = "size_t" },
+            .{ .name = "allocationType", .type = "VkInternalAllocationType" },
+            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+        },
+    },
+    .{
+        .name = "vkReallocationFunction",
+        .return_type = "[*]u8",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "pOriginal", .type = "void", .pointer = true },
+            .{ .name = "size", .type = "size_t" },
+            .{ .name = "alignment", .type = "size_t" },
+            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+        },
+    },
+    .{
+        .name = "vkAllocationFunction",
+        .return_type = "[*]u8",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "size", .type = "size_t" },
+            .{ .name = "alignment", .type = "size_t" },
+            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+        },
+    },
+    .{
+        .name = "vkFreeFunction",
+        .return_type = "void",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "pMemory", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkVoidFunction",
+        .return_type = "void",
+        .parameters = &.{
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "pMemory", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkDebugReportCallbackEXT",
+        .return_type = "VkBool32",
+        .parameters = &.{
+            .{ .name = "flags", .type = "VkDebugReportFlagsEXT" },
+            .{ .name = "objectType", .type = "VkDebugReportObjectTypeEXT" },
+            .{ .name = "object", .type = "uint64_t" },
+            .{ .name = "location", .type = "size_t" },
+            .{ .name = "messageCode", .type = "int32_t" },
+            .{ .name = "pLayerPrefix", .type = "char", .pointer = true, .constant = true },
+            .{ .name = "pMessage", .type = "char", .pointer = true, .constant = true },
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkDebugUtilsMessengerCallbackEXT",
+        .return_type = "VkBool32",
+        .parameters = &.{
+            .{ .name = "messageSeverity", .type = "VkDebugUtilsMessageSeverityFlagBitsEXT" },
+            .{ .name = "messageTypes", .type = "VkDebugUtilsMessageTypeFlagsEXT" },
+            .{
+                .name = "pCallbackData",
+                .type = "VkDebugUtilsMessengerCallbackDataEXT",
+                .pointer = true,
+                .constant = true,
+            },
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkFaultCallbackFunction",
+        .return_type = "void",
+        .parameters = &.{
+            .{ .name = "unrecordedFaults", .type = "VkBool32" },
+            .{ .name = "faultCount", .type = "uint32_t" },
+            .{ .name = "pFaults", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkDeviceMemoryReportCallbackEXT",
+        .return_type = "void",
+        .parameters = &.{
+            .{
+                .name = "pCallbackData",
+                .type = "VkDeviceMemoryReportCallbackDataEXT",
+                .pointer = true,
+                .constant = true,
+            },
+            .{ .name = "pUserData", .type = "void", .pointer = true },
+        },
+    },
+    .{
+        .name = "vkGetInstanceProcAddrLUNARG",
+        .return_type = "PFN_vkVoidFunction",
+        .parameters = &.{
+            .{ .name = "instance", .type = "VkInstance" },
+            .{ .name = "pName", .type = "char", .pointer = true, .constant = true },
+        },
+    },
+};
+
+// TODO: funcpointers are encoded "horribly" in the xml, so save sanity by
+// hardcoding this
+fn write_funtions(alloc: Allocator, file: std.fs.File, type_map: *TypeMap) !void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\
+        \\// Functions
+        \\
+    , .{});
+
+    for (&ADDITIONAL_FUNCTIONS) |*f| {
+        try write_command(alloc, type_map, &w, f, false);
+    }
+}
+
+fn write_structs(
+    alloc: Allocator,
+    file: std.fs.File,
+    db: *const Database,
+    type_map: *TypeMap,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -463,159 +675,26 @@ fn write_structs(alloc: Allocator, file: std.fs.File, db: *const Database) !void
                     \\
                 , .{comment});
 
+                const t = try format_type(
+                    alloc,
+                    type_map,
+                    member.type,
+                    member.pointer,
+                    member.multi_pointer,
+                    member.constant,
+                    member.multi_constant,
+                    member.len,
+                    member.dimensions,
+                    member.value,
+                    true,
+                    true,
+                    false,
+                    false,
+                );
                 w.write(
-                    \\    {[name]s}: 
-                , .{
-                    .name = member.name,
-                });
-
-                var first_level_ptr: []const u8 = "";
-                var second_level_ptr: []const u8 = "";
-                if (member.pointer) {
-                    if (member.len) |len| {
-                        var n: u32 = 0;
-                        var iter = std.mem.splitScalar(u8, len, ',');
-                        while (iter.next()) |l| : (n += 1) {
-                            if (std.mem.eql(u8, l, "null-terminated")) {
-                                if (n == 0) {
-                                    if (member.constant)
-                                        first_level_ptr = "?[*:0]const "
-                                    else
-                                        first_level_ptr = "?[*:0] ";
-                                } else if (n == 1) {
-                                    std.debug.assert(member.multi_pointer);
-                                    if (member.multi_constant)
-                                        second_level_ptr = "[*]const "
-                                    else
-                                        second_level_ptr = "[*] ";
-                                }
-                            } else if (std.mem.eql(u8, l, "1")) {
-                                if (n == 0) {
-                                    if (member.constant)
-                                        first_level_ptr = "?*const "
-                                    else
-                                        first_level_ptr = "?* ";
-                                }
-                                if (n == 1) {
-                                    std.debug.assert(member.multi_pointer);
-                                    if (member.multi_constant)
-                                        second_level_ptr = "*const "
-                                    else
-                                        second_level_ptr = "* ";
-                                }
-                            } else {
-                                if (n == 0) {
-                                    if (member.constant)
-                                        first_level_ptr = "?[*]const "
-                                    else
-                                        first_level_ptr = "?[*] ";
-                                }
-                                if (n == 1) {
-                                    std.debug.assert(member.multi_pointer);
-                                    if (member.multi_constant)
-                                        second_level_ptr = "[*]const "
-                                    else
-                                        second_level_ptr = "[*] ";
-                                }
-                            }
-                        }
-                    } else {
-                        if (member.constant)
-                            first_level_ptr = "?*const "
-                        else
-                            first_level_ptr = "?* ";
-                    }
-                }
-
-                w.write(
-                    \\{s}{s}
-                , .{ first_level_ptr, second_level_ptr });
-
-                if (member.dimensions) |dims| {
-                    // usually dimensions look like `[4]`, but sometimes
-                    // it is specified as a constant like `[CONSTANT]`
-                    if (dims[0] == '[') {
-                        w.write(
-                            \\{s}
-                        , .{dims});
-                    } else {
-                        w.write(
-                            \\[{s}]
-                        , .{dims});
-                    }
-                }
-
-                const zig_type = ZigType.from_c_type(member.type);
-                if (zig_type) |zt| {
-                    // pNext is void type which cerrectly converts to `void` in zig,
-                    // but it should be `anyopaque` since `void` is a zero size type
-                    if (std.mem.eql(u8, member.name, "pNext")) {
-                        w.write(
-                            \\anyopaque
-                        , .{});
-                    } else {
-                        w.write(
-                            \\{f}
-                        , .{zt});
-                    }
-                } else {
-                    // since all `..Bits` enums are replaced with sane bitmask names
-                    // need to do a search and replace here
-                    var bitmask_replacement_name: []const u8 = &.{};
-                    for (db.types.bitmasks) |bitmask| {
-                        switch (bitmask.value) {
-                            .enum_name => |en| {
-                                if (std.mem.eql(u8, member.type, en)) {
-                                    bitmask_replacement_name = bitmask.name;
-                                    break;
-                                }
-                            },
-                            else => {},
-                        }
-                    }
-                    if (bitmask_replacement_name.len != 0) {
-                        w.write(
-                            \\{s}
-                        , .{bitmask_replacement_name});
-                    } else {
-                        w.write(
-                            \\{s}
-                        , .{member.type});
-                    }
-                }
-
-                if (member.value) |value| {
-                    w.write(
-                        \\ = VkStructureType.{s}
-                    , .{value});
-                } else {
-                    if (first_level_ptr.len != 0) {
-                        w.write(
-                            \\ = null
-                        , .{});
-                    } else if (zig_type != null) {
-                        w.write(
-                            \\ = 0
-                        , .{});
-                    } else {
-                        // FIX: maybe track type aliases instead of hard coding this
-                        if (std.mem.eql(u8, member.type, "VkSampleMask") or
-                            std.mem.eql(u8, member.type, "VkBool32") or
-                            std.mem.eql(u8, member.type, "VkDeviceSize"))
-                            w.write(
-                                \\ = 0
-                            , .{})
-                        else
-                            w.write(
-                                \\ = .{{}}
-                            , .{});
-                    }
-                }
-
-                w.write(
-                    \\,
+                    \\    {s}: {s},
                     \\
-                , .{});
+                , .{ member.name, t });
             }
 
             w.write(
@@ -626,7 +705,12 @@ fn write_structs(alloc: Allocator, file: std.fs.File, db: *const Database) !void
     }
 }
 
-fn write_unions(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
+fn write_unions(
+    alloc: Allocator,
+    file: std.fs.File,
+    db: *const Database,
+    type_map: *TypeMap,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -664,47 +748,30 @@ fn write_unions(alloc: Allocator, file: std.fs.File, db: *const Database) !void 
                     \\
                 , .{selection});
 
+                const t = try format_type(
+                    alloc,
+                    type_map,
+                    member.type,
+                    member.pointer,
+                    false,
+                    member.constant,
+                    false,
+                    member.len,
+                    member.dimensions,
+                    null,
+                    false,
+                    false,
+                    false,
+                    false,
+                );
                 w.write(
-                    \\    {s}: 
-                , .{member.name});
-                if (member.dimensions) |dims| w.write(
-                    \\{s}
-                , .{dims});
-                if (member.pointer) {
-                    if (member.len) |len| {
-                        if (std.mem.eql(u8, len, "null-terminated"))
-                            w.write(
-                                \\[*:0]
-                            , .{})
-                        else
-                            std.log.warn(
-                                "While writing union: {s} unknown member: {s} len: {s}",
-                                .{ un.name, member.name, len },
-                            );
-                    } else {
-                        w.write(
-                            \\*
-                        , .{});
-                    }
-                }
-                if (member.constant) w.write(
-                    \\const 
-                , .{});
-
-                if (ZigType.from_c_type(member.type)) |zig_type| {
-                    w.write(
-                        \\{f},
-                        \\
-                    , .{zig_type});
-                } else {
-                    w.write(
-                        \\{s},
-                        \\
-                    , .{member.type});
-                }
+                    \\    {s}: {s},
+                    \\
+                , .{ member.name, t });
             }
 
             w.write(
+                \\    pub const zero = @import("std").mem.zeroes(@This());
                 \\}};
                 \\
             , .{});
@@ -712,7 +779,127 @@ fn write_unions(alloc: Allocator, file: std.fs.File, db: *const Database) !void 
     }
 }
 
-fn write_commands(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
+fn write_command(
+    alloc: Allocator,
+    type_map: *TypeMap,
+    w: *Writer,
+    command: *const Command,
+    make_global_var: bool,
+) !void {
+    if (command.alias) |c| {
+        w.write(
+            \\pub const {s} = {s};
+            \\
+        , .{ command.name, c });
+    } else {
+        if (command.queues) |c| w.write(
+            \\// Queues: {s}
+            \\
+        , .{c});
+        if (command.successcodes) |c| w.write(
+            \\// Success codes: {s}
+            \\
+        , .{c});
+        if (command.errorcodes) |c| w.write(
+            \\// Error codes: {s}
+            \\
+        , .{c});
+        if (command.renderpass) |c| w.write(
+            \\// Render pass: {s}
+            \\
+        , .{c});
+        if (command.videocoding) |c| w.write(
+            \\// Video conding: {s}
+            \\
+        , .{c});
+        if (command.cmdbufferlevel) |c| w.write(
+            \\// Command buffer levels: {s}
+            \\
+        , .{c});
+        if (command.conditionalrendering) |c| w.write(
+            \\// Conditional rendering: {}
+            \\
+        , .{c});
+        w.write(
+            \\// Can be used without queues: {}
+            \\
+        , .{command.allownoqueues});
+        if (command.comment) |c| w.write(
+            \\// Comment: {s}
+            \\
+        , .{c});
+
+        w.write(
+            \\pub const PFN_{s} = fn (
+            \\
+        , .{command.name});
+        for (command.parameters) |parameter| {
+            if (parameter.len) |l| w.write(
+                \\    // len: {s}
+                \\
+            , .{l});
+            if (parameter.valid_structs) |vs| w.write(
+                \\    // valid structs: {s}
+                \\
+            , .{vs});
+
+            const t = try format_type(
+                alloc,
+                type_map,
+                parameter.type,
+                parameter.pointer,
+                false,
+                parameter.constant,
+                false,
+                parameter.len,
+                parameter.dimensions,
+                null,
+                false,
+                false,
+                true,
+                false,
+            );
+            w.write(
+                \\    {s}: {s},
+                \\
+            , .{ parameter.name, t });
+        }
+
+        const return_type = try format_type(
+            alloc,
+            type_map,
+            command.return_type,
+            false,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            false,
+            false,
+            true,
+            true,
+        );
+        w.write(
+            \\) callconv(.c) {s};
+            \\
+        , .{return_type});
+
+        if (make_global_var)
+            w.write(
+                \\pub var {[name]s} = ?*const PFN_{[name]s};
+                \\
+            , .{ .name = command.name });
+    }
+}
+
+fn write_commands(
+    alloc: Allocator,
+    file: std.fs.File,
+    db: *const Database,
+    type_map: *TypeMap,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -720,117 +907,18 @@ fn write_commands(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
         \\
     , .{});
 
-    for (db.commands.items) |command| {
+    var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
+    for (db.commands.items) |*command| {
+        if (visited.get(command.name) != null) continue;
+        try visited.put(alloc, command.name, {});
+
         for (db.extensions.items) |ext| {
             if (ext.unlocks_command(command.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
         }
-
-        if (command.alias) |c| {
-            w.write(
-                \\pub const {s} = {s};
-                \\
-            , .{ command.name, c });
-        } else {
-            if (command.queues) |c| w.write(
-                \\// Queues: {s}
-                \\
-            , .{c});
-            if (command.successcodes) |c| w.write(
-                \\// Success codes: {s}
-                \\
-            , .{c});
-            if (command.errorcodes) |c| w.write(
-                \\// Error codes: {s}
-                \\
-            , .{c});
-            if (command.renderpass) |c| w.write(
-                \\// Render pass: {s}
-                \\
-            , .{c});
-            if (command.videocoding) |c| w.write(
-                \\// Video conding: {s}
-                \\
-            , .{c});
-            if (command.cmdbufferlevel) |c| w.write(
-                \\// Command buffer levels: {s}
-                \\
-            , .{c});
-            if (command.conditionalrendering) |c| w.write(
-                \\// Conditional rendering: {}
-                \\
-            , .{c});
-            w.write(
-                \\// Can be used without queues: {}
-                \\
-            , .{command.allownoqueues});
-            if (command.comment) |c| w.write(
-                \\// Comment: {s}
-                \\
-            , .{c});
-
-            w.write(
-                \\pub const PFN_{s} = fn (
-                \\
-            , .{command.name});
-            for (command.parameters) |parameter| {
-                if (parameter.len) |l| w.write(
-                    \\    // len: {s}
-                    \\
-                , .{l});
-                if (parameter.valid_structs) |vs| w.write(
-                    \\    // valid structs: {s}
-                    \\
-                , .{vs});
-
-                w.write(
-                    \\    {s}: 
-                , .{parameter.name});
-                if (parameter.pointer) {
-                    if (parameter.len) |len| {
-                        if (std.mem.eql(u8, len, "null-terminated"))
-                            w.write(
-                                \\[*:0]
-                            , .{})
-                        else
-                            w.write(
-                                \\[*]
-                            , .{});
-                    } else {
-                        w.write(
-                            \\*
-                        , .{});
-                    }
-                }
-                if (parameter.constant) w.write(
-                    \\const 
-                , .{});
-
-                if (ZigType.from_c_type(parameter.type)) |zig_type| {
-                    w.write(
-                        \\{f},
-                        \\
-                    , .{zig_type});
-                } else {
-                    w.write(
-                        \\{s},
-                        \\
-                    , .{parameter.type});
-                }
-            }
-
-            w.write(
-                \\) callconv(.c) {s};
-                \\
-            , .{command.return_type});
-
-            w.write(
-                \\pub var {[name]s} = ?*const PFN_{[name]s};
-                \\
-            , .{ .name = command.name });
-        }
+        try write_command(alloc, type_map, &w, command, true);
     }
 }
 
@@ -841,7 +929,169 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const Database) vo
         \\// Extensions
         \\
     , .{});
-    for (db.extensions.items) |*e| w.write("{f}", .{e});
+    for (db.extensions.items) |ext| {
+        w.write(
+            \\// Extension: {s}
+            \\// Number: {d}
+            \\// Type: {t}
+            \\
+        , .{
+            ext.name,
+            ext.number,
+            ext.type,
+        });
+        if (ext.author) |v| w.write(
+            \\// Author: {s}
+            \\
+        , .{v});
+        if (ext.depends) |v| w.write(
+            \\// Depends: {s}
+            \\
+        , .{v});
+        if (ext.platform) |v| w.write(
+            \\// Platform: {s}
+            \\
+        , .{v});
+        if (ext.supported) |v| w.write(
+            \\// Supported: {s}
+            \\
+        , .{v});
+        if (ext.promotedto) |v| w.write(
+            \\// Promoted to: {s}
+            \\
+        , .{v});
+        if (ext.deprecatedby) |v| w.write(
+            \\// Deprecated by: {s}
+            \\
+        , .{v});
+        if (ext.obsoletedby) |v| w.write(
+            \\// Obsoleted by: {s}
+            \\
+        , .{v});
+        if (ext.comment) |v| {
+            w.write(
+                \\// Comment:
+                \\
+            , .{});
+            w.write_comment(v, "//     ");
+        }
+        w.write(
+            \\// Unlocks:
+            \\
+        , .{});
+
+        for (ext.require) |require| {
+            if (require.depends) |v| w.write(
+                \\//     Depends: {s}
+                \\
+            , .{v});
+            for (require.items) |i| {
+                switch (i) {
+                    .comment => |v| {
+                        w.write(
+                            \\//         Comment:
+                            \\
+                        , .{});
+                        w.write_comment(v, "//             ");
+                    },
+                    .command => |v| {
+                        w.write(
+                            \\//         Command:
+                            \\//             Name: {s}
+                            \\
+                        , .{v.name});
+                        if (v.comment) |vv| {
+                            w.write(
+                                \\//             Comment:
+                                \\
+                            , .{});
+                            w.write_comment(vv, "//                 ");
+                        }
+                    },
+                    .@"enum" => |v| {
+                        w.write(
+                            \\//         Enum:
+                            \\//             Name: {s}
+                            \\//             Negative: {}
+                            \\
+                        , .{
+                            v.name,
+                            v.negative[0],
+                        });
+                        if (v.value) |vv| w.write(
+                            \\//             Value: {s}
+                            \\
+                        , .{vv});
+                        if (v.bitpos) |vv| w.write(
+                            \\//             Bitpos: {d}
+                            \\
+                        , .{vv});
+                        if (v.extends) |vv| w.write(
+                            \\//             Extends: {s}
+                            \\
+                        , .{vv});
+                        if (v.extnumber) |vv| w.write(
+                            \\//             Extnumber: {d}
+                            \\
+                        , .{vv});
+                        if (v.offset) |vv| w.write(
+                            \\//             Offset: {d}
+                            \\
+                        , .{vv});
+                        if (v.alias) |vv| w.write(
+                            \\//             Alias: {s}
+                            \\
+                        , .{vv});
+                        if (v.comment) |vv| {
+                            w.write(
+                                \\//             Comment:
+                                \\
+                            , .{});
+                            w.write_comment(vv, "//                 ");
+                        }
+                    },
+                    .type => |v| w.write(
+                        \\//         Type:
+                        \\//             Name: {s}
+                        \\
+                    , .{v.name}),
+                    .feature => |v| {
+                        w.write(
+                            \\//         Feature:
+                            \\//             Name: {s}
+                            \\
+                        , .{v.name});
+                        if (v.@"struct") |vv| w.write(
+                            \\//             Struct: {s}
+                            \\
+                        , .{vv});
+                        if (v.comment) |vv| {
+                            w.write(
+                                \\//             Comment:
+                                \\
+                            , .{});
+                            w.write_comment(vv, "//                 ");
+                        }
+                    },
+                }
+            }
+        }
+    }
+}
+
+fn write_unknown_types(alloc: Allocator, file: std.fs.File, type_map: *const TypeMap) void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\
+        \\// Unknown types
+        \\
+    , .{});
+    for (type_map.not_found.keys()) |key| {
+        w.write(
+            \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else @compileError("Unknown type: {{{[name]s}}}");
+            \\
+        , .{ .name = key });
+    }
 }
 
 pub fn enum_offset(extension_number: i32, offset: i32) i32 {
@@ -851,54 +1101,407 @@ pub fn enum_offset(extension_number: i32, offset: i32) i32 {
     return result;
 }
 
-pub const ZigType = enum {
-    anyopaque,
-    anyopaque_ptr,
-    void,
-    f32,
-    f64,
-    i8,
-    u8,
-    i16,
-    u16,
-    u32,
-    u64,
-    i32,
-    i64,
-    usize,
+pub fn format_type(
+    alloc: Allocator,
+    type_map: *TypeMap,
+    type_str: []const u8,
+    pointer: bool,
+    multi_pointer: bool,
+    constant: bool,
+    multi_constant: bool,
+    len: ?[]const u8,
+    dimensions: ?[]const u8,
+    value: ?[]const u8,
+    make_optional_pointer: bool,
+    print_default: bool,
+    convert_arrays_to_pointers: bool,
+    return_type: bool,
+) ![]const u8 {
+    var base_type, var default = try resolve_type(type_map, type_str);
 
-    // BUG: current zig std version breaks here when running tests
-    // so this needs to be comment out for them. Runtime is fine though.
-    pub fn format(self: ZigType, writer: anytype) !void {
-        switch (self) {
-            .anyopaque_ptr => try writer.print("*anyopaque", .{}),
-            else => try writer.print("{t}", .{self}),
+    // return types cannot be plain `anyopaque`, but for simplicity
+    // the type_map has `void` -> `anyopaque` since many fields will have `void` type
+    if (return_type and std.mem.eql(u8, base_type, "anyopaque")) {
+        std.debug.assert(!pointer);
+        std.debug.assert(!multi_pointer);
+        std.debug.assert(!constant);
+        std.debug.assert(!multi_constant);
+        std.debug.assert(len == null);
+        std.debug.assert(dimensions == null);
+        std.debug.assert(value == null);
+
+        base_type = "void";
+    }
+
+    // if the type is a function, we need a pointer to it
+    var function_start: []const u8 = &.{};
+    if (std.mem.startsWith(u8, base_type, "PFN_")) {
+        function_start = "?*const ";
+        default = "null";
+    }
+
+    var first_len: []const u8 = "";
+    var second_len: []const u8 = "";
+    if (len) |l| {
+        var iter = std.mem.splitScalar(u8, l, ',');
+        first_len = iter.next() orelse "";
+        second_len = iter.next() orelse "";
+        std.debug.assert(iter.next() == null);
+    }
+    const first_const = if (constant) "const " else "";
+    const second_const = if (multi_constant) "const " else "";
+
+    var optional_ptr: []const u8 = &.{};
+    var first_ptr: []const u8 = &.{};
+    var second_ptr: []const u8 = &.{};
+    if (pointer) {
+        if (make_optional_pointer) optional_ptr = "?";
+        if (len) |l| {
+            var n: u32 = 0;
+            var iter = std.mem.splitScalar(u8, l, ',');
+            while (iter.next()) |ll| : (n += 1) {
+                if (std.mem.eql(u8, ll, "null-terminated")) {
+                    if (n == 0) {
+                        first_ptr = "[*:0]";
+                    } else if (n == 1) {
+                        std.debug.assert(multi_pointer);
+                        second_ptr = "[*:0]";
+                    }
+                } else if (std.mem.eql(u8, ll, "1")) {
+                    if (n == 0) {
+                        first_ptr = "*";
+                    } else if (n == 1) {
+                        std.debug.assert(multi_pointer);
+                        second_ptr = "*";
+                    }
+                } else {
+                    if (n == 0) {
+                        first_ptr = "[*]";
+                    } else if (n == 1) {
+                        std.debug.assert(multi_pointer);
+                        second_ptr = "[*]";
+                    }
+                }
+            }
+            // Sometimes `len` is not specified for second pointer,
+            // so just hallucinate smth
+            if (n == 1 and multi_pointer) second_ptr = "[*]";
+        } else {
+            first_ptr = "*";
+            if (multi_pointer)
+                second_ptr = "*";
         }
     }
 
-    pub fn from_c_type(name: []const u8) ?ZigType {
-        for (&[_]struct { []const u8, ZigType }{
-            .{ "void", .void },
-            .{ "char", .u8 },
-            .{ "float", .f32 },
-            .{ "double", .f64 },
-            .{ "int8_t", .i8 },
-            .{ "uint8_t", .u8 },
-            .{ "int16_t", .i16 },
-            .{ "uint16_t", .u16 },
-            .{ "uint32_t", .u32 },
-            .{ "uint64_t", .u64 },
-            .{ "int32_t", .i32 },
-            .{ "int64_t", .i64 },
-            .{ "size_t", .usize },
-            .{ "int", .i32 },
-        }) |tuple| {
-            const c_name, const zig_type = tuple;
-            if (std.mem.eql(u8, c_name, name)) return zig_type;
+    var dims: []const u8 = &.{};
+    if (dimensions) |d| {
+        std.debug.assert(!pointer);
+        std.debug.assert(!multi_pointer);
+        std.debug.assert(!multi_constant);
+        // constant can still be use with arrays
+        // len can still be specified even for an array like `null-terminated`
+        // usually dimensions look like `[4]`, but sometimes
+        // it is specified as a constant like `[CONSTANT]`
+        if (d[0] == '[')
+            dims = d
+        else
+            dims = try std.fmt.allocPrint(alloc, "[{s}]", .{d});
+
+        // this C syntax `const float blendConstants[4]` if used as a function argument
+        // becomes a pointer to the fixed size array
+        if (convert_arrays_to_pointers) {
+            first_ptr = "*";
         }
-        return null;
     }
+
+    var value_str: []const u8 = &.{};
+    if (print_default) {
+        if (value) |v| {
+            value_str = try std.fmt.allocPrint(alloc, " = VkStructureType.{s}", .{v});
+        } else if (pointer and make_optional_pointer) {
+            value_str = " = null";
+        } else if (default) |def| {
+            value_str = try std.fmt.allocPrint(alloc, " = {s}", .{def});
+        }
+    }
+
+    const result = try std.fmt.allocPrint(alloc,
+        \\{[function_start]s}{[optional_ptr]s}{[first_ptr]s}{[first_const]s}{[second_ptr]s}{[second_const]s}{[dimensions]s}{[base_type]s}{[value]s}
+    , .{
+        .function_start = function_start,
+        .optional_ptr = optional_ptr,
+        .first_ptr = first_ptr,
+        .first_const = first_const,
+        .second_ptr = second_ptr,
+        .second_const = second_const,
+        .dimensions = dims,
+        .base_type = base_type,
+        .value = value_str,
+    });
+    return result;
+}
+
+test "format_type" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var type_map: TypeMap = .{ .alloc = alloc };
+    try fill_type_map(&type_map, &.{});
+    try std.testing.expectEqualSlices(
+        u8,
+        "u32 = 0",
+        try format_type(
+            alloc,
+            &type_map,
+            "uint32_t",
+            false,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            false,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "A",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            false,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "*A",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            false,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "?**A = null",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            true,
+            false,
+            false,
+            null,
+            null,
+            null,
+            true,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "?*const *A = null",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            true,
+            true,
+            false,
+            null,
+            null,
+            null,
+            true,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "?*const *const A = null",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            true,
+            true,
+            true,
+            null,
+            null,
+            null,
+            true,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "?*const *const A = null",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            true,
+            true,
+            true,
+            null,
+            null,
+            null,
+            true,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "?[*]const [*]const A = null",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            true,
+            true,
+            true,
+            true,
+            "L,L",
+            null,
+            null,
+            true,
+            true,
+            false,
+            false,
+        ),
+    );
+    try std.testing.expectEqualSlices(
+        u8,
+        "[D]A",
+        try format_type(
+            alloc,
+            &type_map,
+            "A",
+            false,
+            false,
+            false,
+            false,
+            null,
+            "D",
+            null,
+            false,
+            false,
+            false,
+            false,
+        ),
+    );
+}
+
+pub const TypeInfo = struct { []const u8, ?[]const u8 };
+pub const TypeMap = struct {
+    alloc: Allocator,
+    map: std.StringArrayHashMapUnmanaged(TypeInfo) = .empty,
+    not_found: std.StringArrayHashMapUnmanaged(void) = .empty,
 };
+pub fn fill_type_map(type_map: *TypeMap, db: *const Database) !void {
+    for (&[_]struct { []const u8, TypeInfo }{
+        .{ "void", .{ "anyopaque", "{}" } },
+        .{ "char", .{ "u8", "0" } },
+        .{ "float", .{ "f32", "0.0" } },
+        .{ "double", .{ "f64", "0.0" } },
+        .{ "int8_t", .{ "i8", "0" } },
+        .{ "uint8_t", .{ "u8", "0" } },
+        .{ "int16_t", .{ "i16", "0" } },
+        .{ "uint16_t", .{ "u16", "0" } },
+        .{ "uint32_t", .{ "u32", "0" } },
+        .{ "uint64_t", .{ "u64", "0" } },
+        .{ "int32_t", .{ "i32", "0" } },
+        .{ "int64_t", .{ "i64", "0" } },
+        .{ "size_t", .{ "usize", "0" } },
+        .{ "int", .{ "i32", "0" } },
+        .{ "[*]u8", .{ "[*]u8", null } },
+    }) |tuple| {
+        const c_name, const zig_type = tuple;
+        try type_map.map.put(type_map.alloc, c_name, zig_type);
+    }
+
+    for (db.types.basetypes) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.type, null });
+    for (db.types.handles) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".none" });
+    for (db.types.bitmasks) |bitmask| {
+        try type_map.map.put(type_map.alloc, bitmask.name, .{ bitmask.name, ".zero" });
+        switch (bitmask.value) {
+            .enum_name => |en| {
+                try type_map.map.put(type_map.alloc, en, .{ bitmask.name, ".zero" });
+            },
+            .alias => |alias| {
+                try type_map.map.put(type_map.alloc, bitmask.name, .{ alias, ".zero" });
+            },
+            else => {},
+        }
+    }
+    for (db.types.enum_aliases) |s|
+        try type_map.map.put(type_map.alloc, s.name, .{ s.alias, ".zero" });
+
+    for (db.types.structs) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".{}" });
+    for (db.types.unions) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".zero" });
+    for (db.enums.items) |s| {
+        if (s.type != .bitmask)
+            try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".zero" });
+    }
+
+    inline for (ADDITIONAL_FUNCTIONS) |s|
+        try type_map.map.put(type_map.alloc, "PFN_" ++ s.name, .{ "PFN_" ++ s.name, "" });
+}
+pub fn resolve_type(type_map: *TypeMap, name: []const u8) !TypeInfo {
+    var result: TypeInfo = undefined;
+    if (type_map.map.get(name)) |mapping| {
+        // basetypes need to go one indirection deeper to find correct default value
+        if (mapping[1] == null) {
+            if (type_map.map.get(mapping[0])) |r2|
+                result = .{ name, r2[1] }
+            else
+                unreachable;
+        } else {
+            result = mapping;
+        }
+    } else {
+        try type_map.not_found.put(type_map.alloc, name, {});
+        result = .{ name, null };
+    }
+    return result;
+}
 
 fn parse_attributes(
     comptime PREFIX: []const u8,
@@ -963,13 +1566,13 @@ fn parse_attributes(
 // Descriptions of XML tags/attributes:
 // https://registry.khronos.org/vulkan/specs/latest/registry.html
 pub const Database = struct {
-    types: Types,
-    extensions: std.ArrayListUnmanaged(Extension),
-    enums: std.ArrayListUnmanaged(Enum),
-    constants: Constants,
-    commands: std.ArrayListUnmanaged(Command),
+    types: Types = .{},
+    extensions: std.ArrayListUnmanaged(Extension) = .empty,
+    enums: std.ArrayListUnmanaged(Enum) = .empty,
+    constants: Constants = .{},
+    commands: std.ArrayListUnmanaged(Command) = .empty,
     // formats
-    spirv: Spirv,
+    spirv: Spirv = .{},
 
     const Self = @This();
 
@@ -1666,17 +2269,15 @@ pub const Types = struct {
     basetypes: []const Basetype = &.{},
     handles: []const Handle = &.{},
     bitmasks: []const Bitmask = &.{},
+    enum_aliases: []const EnumAlias = &.{},
     structs: []const Struct = &.{},
     unions: []const Union = &.{},
 };
 
 pub const Basetype = struct {
-    type: ZigType = .void,
     name: []const u8 = &.{},
-
-    pub fn format(self: *const Basetype, writer: anytype) !void {
-        try writer.print("pub const {s} = {f};", .{ self.name, self.type });
-    }
+    type: []const u8 = &.{},
+    pointer: bool = false,
 };
 
 pub fn parse_basetype(original_parser: *XmlParser) ?Basetype {
@@ -1692,35 +2293,24 @@ pub fn parse_basetype(original_parser: *XmlParser) ?Basetype {
     _ = parser.skip_attributes();
 
     var result: Basetype = .{};
-    const text = parser.skip_text() orelse return null;
+    _ = parser.skip_text();
     const start = parser.element_start() orelse return null;
-    if (std.mem.eql(u8, start, "name")) {
-        if (std.mem.indexOfScalar(u8, text, '*') != null) {
-            result.type = .anyopaque_ptr;
-        } else if (std.mem.indexOf(u8, text, "void") != null) {
-            result.type = .void;
-        } else {
-            result.type = .anyopaque;
-        }
-
-        result.name = parser.text() orelse return null;
-        parser.skip_to_specific_element_end("type");
-    } else if (std.mem.eql(u8, start, "type")) {
-        const type_c = parser.text() orelse return null;
-        result.type = ZigType.from_c_type(type_c) orelse return null;
+    if (std.mem.eql(u8, start, "type")) {
+        result.type = parser.text() orelse return null;
         parser.skip_to_specific_element_end("type");
 
         // Special case just for VkRemoteAddressNV, since it defineds itself
         // over multiple `text` segments where the second one does not normally
         // exist, but just for NVIDIA there is an exception apparently.
         if (parser.peek_text()) |text2| {
-            if (std.mem.indexOf(u8, text2, "*") != null)
-                result.type = .anyopaque_ptr;
+            result.pointer = std.mem.indexOf(u8, text2, "*") != null;
         }
 
         parser.skip_to_specific_element_start("name");
         result.name = parser.text() orelse return null;
         parser.skip_to_specific_element_end("type");
+    } else {
+        return null;
     }
 
     original_parser.* = parser;
@@ -1730,19 +2320,6 @@ pub fn parse_basetype(original_parser: *XmlParser) ?Basetype {
 test "parse_basetype" {
     {
         const text =
-            \\<type category="basetype">struct <name>A</name>;</type>----
-        ;
-        var parser: XmlParser = .init(text);
-        const b = parse_basetype(&parser).?;
-        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        const expected: Basetype = .{
-            .type = .anyopaque,
-            .name = "A",
-        };
-        try std.testing.expectEqualDeep(expected, b);
-    }
-    {
-        const text =
             \\<type category="basetype">#ifdef __OBJC__
             \\@class CAMetalLayer;
             \\#else
@@ -1750,31 +2327,8 @@ test "parse_basetype" {
             \\#endif</type>----
         ;
         var parser: XmlParser = .init(text);
-        const b = parse_basetype(&parser).?;
-        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        const expected: Basetype = .{
-            .type = .void,
-            .name = "A",
-        };
-        try std.testing.expectEqualDeep(expected, b);
-    }
-    {
-        const text =
-            \\<type category="basetype">#ifdef __OBJC__
-            \\@protocol MTLDevice;
-            \\typedef __unsafe_unretained id&lt;MTLDevice&gt; MTLDevice_id;
-            \\#else
-            \\typedef void* <name>A</name>;
-            \\#endif</type>----
-        ;
-        var parser: XmlParser = .init(text);
-        const b = parse_basetype(&parser).?;
-        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
-        const expected: Basetype = .{
-            .type = .anyopaque_ptr,
-            .name = "A",
-        };
-        try std.testing.expectEqualDeep(expected, b);
+        const b = parse_basetype(&parser);
+        try std.testing.expectEqual(null, b);
     }
     {
         const text =
@@ -1784,8 +2338,8 @@ test "parse_basetype" {
         const b = parse_basetype(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Basetype = .{
-            .type = .u32,
             .name = "A",
+            .type = "uint32_t",
         };
         try std.testing.expectEqualDeep(expected, b);
     }
@@ -1797,8 +2351,9 @@ test "parse_basetype" {
         const b = parse_basetype(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Basetype = .{
-            .type = .anyopaque_ptr,
             .name = "A",
+            .type = "void",
+            .pointer = true,
         };
         try std.testing.expectEqualDeep(expected, b);
     }
@@ -1809,30 +2364,6 @@ pub const Handle = struct {
     alias: ?[]const u8 = null,
     parent: ?[]const u8 = null,
     objtypeenum: ?[]const u8 = null,
-
-    pub fn format(self: *const Handle, writer: anytype) !void {
-        if (self.alias) |s| {
-            try writer.print(
-                \\pub const {s} = {s};
-            , .{ self.name, s });
-        } else {
-            if (self.objtypeenum) |s| try writer.print(
-                \\// Type enum: {s}
-                \\
-            , .{s});
-
-            if (self.parent) |s| try writer.print(
-                \\pub const {s} = enum(u64) {{
-                \\    null = 0,
-                \\    _,
-                \\    pub const Parent = {s};
-                \\}};
-                \\
-            , .{ self.name, s }) else try writer.print(
-                \\pub const {s} = enum(u64) {{ null = 0, _ }};
-            , .{self.name});
-        }
-    }
 };
 
 pub fn parse_handle(original_parser: *XmlParser) ?Handle {
@@ -1900,15 +2431,8 @@ pub const Bitmask = struct {
         invalid: void,
         enum_name: []const u8,
         type: []const u8,
+        alias: []const u8,
     } = .invalid,
-
-    pub fn format(self: *const Bitmask, writer: anytype) !void {
-        switch (self.value) {
-            .invalid => try writer.print("name: {s}: invalid", .{self.name}),
-            .enum_name => |v| try writer.print("name: {s}: enum name: {s}", .{ self.name, v }),
-            .type => |v| try writer.print("name: {s}: type: {s}", .{ self.name, v }),
-        }
-    }
 };
 
 pub fn parse_bitmask(original_parser: *XmlParser) ?Bitmask {
@@ -1925,6 +2449,10 @@ pub fn parse_bitmask(original_parser: *XmlParser) ?Bitmask {
                 result.value = .{ .enum_name = attr.value };
             } else if (std.mem.eql(u8, attr.name, "bitvalues")) {
                 result.value = .{ .enum_name = attr.value };
+            } else if (std.mem.eql(u8, attr.name, "name")) {
+                result.name = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "alias")) {
+                result.value = .{ .alias = attr.value };
             } else if (std.mem.eql(u8, attr.name, "api")) {
                 if (std.mem.eql(u8, attr.value, "vulkansc"))
                     return null;
@@ -1938,17 +2466,19 @@ pub fn parse_bitmask(original_parser: *XmlParser) ?Bitmask {
     }
     if (!found_category) return null;
 
-    // Bitmasks not attached to enums need to parse <type>...</type> just in
-    // case
-    if (result.value == .invalid) {
-        parser.skip_to_specific_element_start("type");
-        const text = parser.text() orelse return null;
-        result.value = .{ .type = text };
-    }
+    if (result.value != .alias) {
+        // Bitmasks not attached to enums need to parse <type>...</type> just in
+        // case
+        if (result.value == .invalid) {
+            parser.skip_to_specific_element_start("type");
+            const text = parser.text() orelse return null;
+            result.value = .{ .type = text };
+        }
 
-    parser.skip_to_specific_element_start("name");
-    result.name = parser.text() orelse return null;
-    parser.skip_to_specific_element_end("type");
+        parser.skip_to_specific_element_start("name");
+        result.name = parser.text() orelse return null;
+        parser.skip_to_specific_element_end("type");
+    }
 
     original_parser.* = parser;
     return result;
@@ -1983,14 +2513,71 @@ test "parse_bitmask" {
     }
     {
         const text =
-            \\<type category="bitmask">typedef <type>VkFlags64</type> <name>A</name>;</type>----
+            \\<type category="bitmask" name="N" alias="A"/>----
         ;
         var parser: XmlParser = .init(text);
         const b = parse_bitmask(&parser).?;
         try std.testing.expectEqualSlices(u8, "----", parser.buffer);
         const expected: Bitmask = .{
-            .name = "A",
-            .value = .{ .type = "VkFlags64" },
+            .name = "N",
+            .value = .{ .alias = "A" },
+        };
+        try std.testing.expectEqualDeep(expected, b);
+    }
+}
+
+pub const EnumAlias = struct {
+    name: []const u8 = &.{},
+    alias: []const u8 = &.{},
+};
+
+pub fn parse_enum_alias(original_parser: *XmlParser) ?EnumAlias {
+    if (!original_parser.check_peek_element_start("type")) return null;
+
+    var parser = original_parser.*;
+    _ = parser.element_start();
+
+    var found_category: bool = false;
+    var result: EnumAlias = .{};
+    if (parser.state == .attribute) {
+        while (parser.attribute()) |attr| {
+            if (std.mem.eql(u8, attr.name, "name")) {
+                result.name = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "alias")) {
+                result.alias = attr.value;
+            } else if (std.mem.eql(u8, attr.name, "category")) {
+                if (!std.mem.eql(u8, attr.value, "enum"))
+                    return null
+                else
+                    found_category = true;
+            }
+        }
+    }
+    if (!found_category or result.alias.len == 0) return null;
+
+    original_parser.* = parser;
+    return result;
+}
+
+test "parse_enum_alias" {
+    {
+        const text =
+            \\<type name="N" category="enum"/>----
+        ;
+        var parser: XmlParser = .init(text);
+        const b = parse_enum_alias(&parser);
+        try std.testing.expectEqual(null, b);
+    }
+    {
+        const text =
+            \\<type name="N" category="enum" alias="A"/>----
+        ;
+        var parser: XmlParser = .init(text);
+        const b = parse_enum_alias(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: EnumAlias = .{
+            .name = "N",
+            .alias = "A",
         };
         try std.testing.expectEqualDeep(expected, b);
     }
@@ -2031,25 +2618,6 @@ pub const Struct = struct {
         constant: bool = false,
         multi_constant: bool = false,
         comment: ?[]const u8 = null,
-
-        pub fn format(self: *const Member, writer: anytype) !void {
-            try writer.print(
-                "{s}: [{s}]{s} = {?s} len: {?s} optional: {} pointer: {}, constant: {}, comment: {?s}, deprecated: {?s} selector: {?s}",
-                .{
-                    self.name,
-                    if (self.dimensions) |d| d else "",
-                    self.type,
-                    self.value,
-                    self.len,
-                    self.optional,
-                    self.pointer,
-                    self.constant,
-                    self.comment,
-                    self.deprecated,
-                    self.selector,
-                },
-            );
-        }
     };
 
     pub fn format(self: *const Struct, writer: anytype) !void {
@@ -2614,6 +3182,7 @@ pub fn parse_types(alloc: Allocator, parser: *XmlParser) !Types {
     var basetypes: std.ArrayListUnmanaged(Basetype) = .empty;
     var handles: std.ArrayListUnmanaged(Handle) = .empty;
     var bitmasks: std.ArrayListUnmanaged(Bitmask) = .empty;
+    var enum_aliases: std.ArrayListUnmanaged(EnumAlias) = .empty;
     var structs: std.ArrayListUnmanaged(Struct) = .empty;
     var unions: std.ArrayListUnmanaged(Union) = .empty;
     while (true) {
@@ -2623,6 +3192,8 @@ pub fn parse_types(alloc: Allocator, parser: *XmlParser) !Types {
             try handles.append(alloc, v);
         } else if (parse_bitmask(parser)) |v| {
             try bitmasks.append(alloc, v);
+        } else if (parse_enum_alias(parser)) |v| {
+            try enum_aliases.append(alloc, v);
         } else if (try parse_struct(alloc, parser)) |v| {
             try structs.append(alloc, v);
         } else if (try parse_union(alloc, parser)) |v| {
@@ -2641,6 +3212,7 @@ pub fn parse_types(alloc: Allocator, parser: *XmlParser) !Types {
         .basetypes = basetypes.items,
         .handles = handles.items,
         .bitmasks = bitmasks.items,
+        .enum_aliases = enum_aliases.items,
         .structs = structs.items,
         .unions = unions.items,
     };
@@ -2696,7 +3268,7 @@ test "parse_types" {
 }
 
 pub const Constants = struct {
-    items: []const Item,
+    items: []const Item = &.{},
 
     pub const Item = struct {
         value: union(enum) {
@@ -2706,15 +3278,6 @@ pub const Constants = struct {
             f32: f32,
         } = .invalid,
         name: []const u8 = &.{},
-
-        pub fn format(self: *const Item, writer: anytype) !void {
-            switch (self.value) {
-                .invalid => {},
-                .u32 => |v| try writer.print("pub const {s}: u32 = {d};", .{ self.name, v }),
-                .u64 => |v| try writer.print("pub const {s}: u64 = {d};", .{ self.name, v }),
-                .f32 => |v| try writer.print("pub const {s}: f32 = {d};", .{ self.name, v }),
-            }
-        }
     };
 };
 
@@ -2725,51 +3288,48 @@ pub fn parse_constants_item(original_parser: *XmlParser) !?Constants.Item {
     _ = parser.element_start();
 
     var result: Constants.Item = .{};
-    var current_type: ZigType = .void;
+    var type_str: []const u8 = &.{};
     while (parser.attribute()) |attr| {
         if (std.mem.eql(u8, attr.name, "type")) {
-            current_type = ZigType.from_c_type(attr.value) orelse return null;
+            type_str = attr.value;
         } else if (std.mem.eql(u8, attr.name, "value")) {
-            switch (current_type) {
-                .u32 => {
-                    var s = attr.value;
-                    var inversed: bool = false;
-                    if (std.mem.startsWith(u8, attr.value, "(~")) {
-                        inversed = true;
-                        s = s["(~".len .. s.len - "U)".len];
-                    }
-                    var value = std.fmt.parseInt(u32, s, 10) catch |e| {
-                        std.log.err("Error parsing u32 constant: {s}: {t}", .{ s, e });
-                        return e;
-                    };
-                    if (inversed) value = ~value;
-                    result.value = .{ .u32 = value };
-                },
-                .u64 => {
-                    var s = attr.value;
-                    var inversed: bool = false;
-                    if (std.mem.startsWith(u8, attr.value, "(~")) {
-                        inversed = true;
-                        s = s["(~".len .. s.len - "ULL)".len];
-                    }
-                    var value = std.fmt.parseInt(u64, s, 10) catch |e| {
-                        std.log.err("Error parsing u64 constant: {s}: {t}", .{ s, e });
-                        return e;
-                    };
-                    if (inversed) value = ~value;
-                    result.value = .{ .u64 = value };
-                },
-                .f32 => {
-                    const value = std.fmt.parseFloat(
-                        f32,
-                        attr.value[0 .. attr.value.len - 1],
-                    ) catch |e| {
-                        std.log.err("Error parsing f32 constant: {s}: {t}", .{ attr.value, e });
-                        return e;
-                    };
-                    result.value = .{ .f32 = value };
-                },
-                else => return null,
+            if (std.mem.eql(u8, type_str, "uint32_t")) {
+                var s = attr.value;
+                var inversed: bool = false;
+                if (std.mem.startsWith(u8, attr.value, "(~")) {
+                    inversed = true;
+                    s = s["(~".len .. s.len - "U)".len];
+                }
+                var value = std.fmt.parseInt(u32, s, 10) catch |e| {
+                    std.log.err("Error parsing u32 constant: {s}: {t}", .{ s, e });
+                    return e;
+                };
+                if (inversed) value = ~value;
+                result.value = .{ .u32 = value };
+            } else if (std.mem.eql(u8, type_str, "uint64_t")) {
+                var s = attr.value;
+                var inversed: bool = false;
+                if (std.mem.startsWith(u8, attr.value, "(~")) {
+                    inversed = true;
+                    s = s["(~".len .. s.len - "ULL)".len];
+                }
+                var value = std.fmt.parseInt(u64, s, 10) catch |e| {
+                    std.log.err("Error parsing u64 constant: {s}: {t}", .{ s, e });
+                    return e;
+                };
+                if (inversed) value = ~value;
+                result.value = .{ .u64 = value };
+            } else if (std.mem.eql(u8, type_str, "float")) {
+                const value = std.fmt.parseFloat(
+                    f32,
+                    attr.value[0 .. attr.value.len - 1],
+                ) catch |e| {
+                    std.log.err("Error parsing f32 constant: {s}: {t}", .{ attr.value, e });
+                    return e;
+                };
+                result.value = .{ .f32 = value };
+            } else {
+                return null;
             }
         } else if (std.mem.eql(u8, attr.name, "name")) {
             result.name = attr.value;
@@ -2843,6 +3403,7 @@ pub fn parse_constants(alloc: Allocator, original_parser: *XmlParser) !?Constant
 
     var parser = original_parser.*;
     _ = parser.element_start();
+    if (!parser.skip_to_attribute(.{ .name = "type", .value = "constants" })) return null;
 
     var result: Constants = undefined;
     _ = parser.skip_attributes();
@@ -3160,93 +3721,15 @@ pub const Command = struct {
         name: []const u8 = &.{},
         type: []const u8 = &.{},
         len: ?[]const u8 = null,
+        // In case the type is [4]f32 or [3][4]f32
+        dimensions: ?[]const u8 = null,
         // If parameter is a pointer to the base type (VkBaseOutStruct), what types can this
         // pointer point to
         valid_structs: ?[]const u8 = null,
         optional: bool = false,
         pointer: bool = false,
         constant: bool = false,
-
-        pub fn format(self: *const Parameter, writer: anytype) !void {
-            if (self.len) |l| try writer.print(
-                \\    // len: {s}
-                \\
-            , .{l});
-            if (self.valid_structs) |vs| try writer.print(
-                \\    // valid structs: {s}
-                \\
-            , .{vs});
-
-            try writer.print(
-                \\    {s}: 
-            , .{
-                self.name,
-            });
-            if (self.len == null) {
-                if (self.pointer and self.constant)
-                    try writer.print(
-                        \\*const {s},
-                        \\
-                    , .{self.type})
-                else if (self.pointer)
-                    try writer.print(
-                        \\*{s},
-                        \\
-                    , .{self.type})
-                else
-                    try writer.print(
-                        \\{s},
-                        \\
-                    , .{self.type});
-            } else {
-                if (self.constant)
-                    try writer.print(
-                        \\[*]const {s},
-                        \\
-                    , .{self.type})
-                else
-                    try writer.print(
-                        \\[*]{s},
-                        \\
-                    , .{self.type});
-            }
-        }
     };
-
-    pub fn format(self: *const Command, writer: anytype) !void {
-        try writer.print(
-            \\// Comment: {?s}
-            \\// queues: {?s}
-            \\// successcodes: {?s}
-            \\// errorcodes: {?s}
-            \\// renderpass: {?s}
-            \\// videocoding: {?s}
-            \\// cmdbufferlevel: {?s}
-            \\// conditionalrendering: {?}
-            \\// allownoqueues: {}
-            \\// alias: {?s}
-            \\pub var {s} = ?*const fn (
-            \\
-        ,
-            .{
-                self.comment,
-                self.queues,
-                self.successcodes,
-                self.errorcodes,
-                self.renderpass,
-                self.videocoding,
-                self.cmdbufferlevel,
-                self.conditionalrendering,
-                self.allownoqueues,
-                self.alias,
-                self.name,
-            },
-        );
-        for (self.parameters) |v| try writer.print("{f}", .{v});
-        try writer.print(
-            \\) callconv(.c) {s};
-        , .{self.return_type});
-    }
 };
 
 pub fn parse_command_parameter(original_parser: *XmlParser) ?Command.Parameter {
@@ -3277,6 +3760,13 @@ pub fn parse_command_parameter(original_parser: *XmlParser) ?Command.Parameter {
 
     parser.skip_to_specific_element_start("name");
     result.name = parser.text() orelse return null;
+    parser.skip_to_specific_element_end("name");
+
+    if (parser.peek_text()) |text| {
+        _ = parser.text();
+        result.dimensions = text;
+    }
+
     parser.skip_to_specific_element_end("param");
 
     original_parser.* = parser;
@@ -3326,6 +3816,21 @@ test "parse_command_parameter" {
             .type = "T",
             .valid_structs = "S",
             .pointer = true,
+        };
+        try std.testing.expectEqualDeep(expected, m);
+    }
+
+    {
+        const text =
+            \\<param><type>T</type> <name>N</name>[4]</param>----
+        ;
+        var parser: XmlParser = .init(text);
+        const m = parse_command_parameter(&parser).?;
+        try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+        const expected: Command.Parameter = .{
+            .name = "N",
+            .type = "T",
+            .dimensions = "[4]",
         };
         try std.testing.expectEqualDeep(expected, m);
     }

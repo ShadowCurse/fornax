@@ -238,6 +238,15 @@ pub fn peek_attribute(self: *Self) ?Attribute {
     }
 }
 
+pub fn skip_to_attribute(self: *Self, searh_attr: Attribute) bool {
+    while (self.attribute()) |attr| {
+        if (std.mem.eql(u8, attr.name, searh_attr.name) and
+            std.mem.eql(u8, attr.value, searh_attr.value))
+            return true;
+    }
+    return false;
+}
+
 pub fn attribute(self: *Self) ?Attribute {
     switch (self.next() orelse return null) {
         .attribute => |attr| return attr,
