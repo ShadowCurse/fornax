@@ -2,8 +2,10 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const vkp = @import("vulkan_parsing.zig");
-const vulkan_utils = @import("vulkan_utils_gen.zig");
-const vulkan_validation = @import("vulkan_validation_gen.zig");
+const Database = @import("vk_database.zig");
+
+const vulkan_utils = @import("gen_vulkan_utils.zig");
+const vulkan_validation = @import("gen_vulkan_validation.zig");
 
 pub const NOTE =
     \\// Copyright (c) 2025 Egor Lazarchuk
@@ -219,13 +221,24 @@ pub fn get_type(alloc: Allocator, stype: []const u8) ![]const u8 {
 }
 
 pub fn main() !void {
-    const db: vkp.Database = try .init(
+    var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+    const xml_file = try std.fs.cwd().openFile(
+        "thirdparty/vulkan-object/src/vulkan_object/vk.xml",
+        .{},
+    );
+    const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
+    _ = try xml_file.readAll(buffer);
+
+    const db: Database = try .init(alloc, buffer);
+
+    const old_db: vkp.Database = try .init(
         std.heap.page_allocator,
         "thirdparty/Vulkan-Headers/registry/vk.xml",
     );
 
     try vulkan_utils.gen(&db);
-    try vulkan_validation.gen(&db);
+    try vulkan_validation.gen(&old_db);
 }
 
 comptime {

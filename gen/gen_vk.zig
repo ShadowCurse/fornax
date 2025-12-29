@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const XmlParser = @import("xml_parser.zig");
 const Database = @import("vk_database.zig");
-const PATH = "gen/vk.zig";
+const PATH = "src/vk.zig";
 
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
@@ -199,8 +199,17 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                     ext_name: []const u8,
                     items: Database.Extension.EnumExtensions,
                 }) = .empty;
+                // check if features extend this bitmask with new values
+                for (db.features.items) |ext| {
+                    const ex = try ext.enum_extensions(alloc, s);
+                    if (ex.items.len != 0) try extensions.append(
+                        alloc,
+                        .{ .ext_name = ext.name, .items = ex },
+                    );
+                }
                 // check if extensions extend this bitmask with new values
                 for (db.extensions.items) |ext| {
+                    if (ext.supported == .disabled) continue;
                     const ex = try ext.enum_extensions(alloc, s);
                     if (ex.items.len != 0) try extensions.append(
                         alloc,
@@ -366,8 +375,19 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
                 ext_name: []const u8,
                 items: Database.Extension.EnumExtensions,
             }) = .empty;
+            // check if features extend this enum with new values
+            for (db.features.items) |ext| {
+                const ex = try ext.enum_extensions(alloc, e.name);
+                if (ex.items.len != 0) try extensions.append(
+                    alloc,
+                    .{ .ext_name = ext.name, .items = ex },
+                );
+                for (ex.items) |a|
+                    std.log.info("Enum: {s} feature: {s} extended with: {s}", .{ e.name, ext.name, a.name });
+            }
             // check if extensions extend this enum with new values
             for (db.extensions.items) |ext| {
+                if (ext.supported == .disabled) continue;
                 const ex = try ext.enum_extensions(alloc, e.name);
                 if (ex.items.len != 0) try extensions.append(
                     alloc,
@@ -402,6 +422,12 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
             for (extensions.items) |ext| {
                 for (ext.items.items) |item| {
                     switch (item.value) {
+                        .value => |value| {
+                            try all_values.append(
+                                alloc,
+                                .{ .value = value, .name = item.name, .ext_name = ext.ext_name },
+                            );
+                        },
                         .offset => |offset| {
                             var value = enum_offset(
                                 @intCast(offset.extnumber),
@@ -614,12 +640,23 @@ fn write_structs(
         \\
     , .{});
 
-    for (db.types.structs) |str| {
-        for (db.extensions.items) |ext| {
+    outer: for (db.types.structs) |str| {
+        for (db.features.items) |ext| {
             if (ext.unlocks_type(str.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
+        }
+        for (db.extensions.items) |ext| {
+            if (ext.unlocks_type(str.name)) {
+                // Filter out structs enabled by disabled extensions
+                if (ext.supported == .disabled)
+                    continue :outer;
+                w.write(
+                    \\// Extension: {s}
+                    \\
+                , .{ext.name});
+            }
         }
         if (str.alias) |c| {
             w.write(
@@ -717,6 +754,12 @@ fn write_unions(
     , .{});
 
     for (db.types.unions) |un| {
+        for (db.features.items) |ext| {
+            if (ext.unlocks_type(un.name)) w.write(
+                \\// Extension: {s}
+                \\
+            , .{ext.name});
+        }
         for (db.extensions.items) |ext| {
             if (ext.unlocks_type(un.name)) w.write(
                 \\// Extension: {s}
@@ -879,6 +922,12 @@ fn write_commands(
         if (visited.get(command.name) != null) continue;
         try visited.put(alloc, command.name, {});
 
+        for (db.features.items) |ext| {
+            if (ext.unlocks_type(ext.name)) w.write(
+                \\// Extension: {s}
+                \\
+            , .{ext.name});
+        }
         for (db.extensions.items) |ext| {
             if (ext.unlocks_command(command.name)) w.write(
                 \\// Extension: {s}
@@ -899,7 +948,7 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const Database) vo
     for (db.extensions.items) |ext| {
         w.write(
             \\// Extension: {s}
-            \\// Number: {d}
+            \\// Number: {s}
             \\// Type: {t}
             \\
         , .{
@@ -919,10 +968,10 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const Database) vo
             \\// Platform: {s}
             \\
         , .{v});
-        if (ext.supported) |v| w.write(
-            \\// Supported: {s}
+        w.write(
+            \\// Supported: {t}
             \\
-        , .{v});
+        , .{ext.supported});
         if (ext.promotedto) |v| w.write(
             \\// Promoted to: {s}
             \\

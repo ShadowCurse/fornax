@@ -39,8 +39,8 @@ pub fn build(b: *std.Build) !void {
         target,
         optimize,
         &args,
-        "vk_gen",
-        "gen/vk_gen.zig",
+        "gen_vk",
+        "gen/gen_vk.zig",
         &.{.{ .name = "volk", .module = volk_mod }},
     );
 }

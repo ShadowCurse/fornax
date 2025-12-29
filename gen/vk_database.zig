@@ -5,6 +5,7 @@ const XmlParser = @import("xml_parser.zig");
 // Descriptions of XML tags/attributes:
 // https://registry.khronos.org/vulkan/specs/latest/registry.html
 types: Types = .{},
+features: std.ArrayListUnmanaged(Extension) = .empty,
 extensions: std.ArrayListUnmanaged(Extension) = .empty,
 enums: std.ArrayListUnmanaged(Enum) = .empty,
 constants: Constants = .{},
@@ -16,6 +17,7 @@ const Self = @This();
 
 pub fn init(alloc: Allocator, buffer: []const u8) !Self {
     var types: Types = undefined;
+    var features: std.ArrayListUnmanaged(Extension) = .empty;
     var extensions: std.ArrayListUnmanaged(Extension) = .empty;
     var enums: std.ArrayListUnmanaged(Enum) = .empty;
     var constants: Constants = undefined;
@@ -46,6 +48,9 @@ pub fn init(alloc: Allocator, buffer: []const u8) !Self {
                             parser.skip_current_element();
                         }
                     }
+                } else if (std.mem.eql(u8, es, "feature")) {
+                    if (try parse_extension(alloc, &parser)) |e|
+                        try features.append(alloc, e);
                 } else {
                     parser.skip_current_element();
                 }
@@ -57,6 +62,7 @@ pub fn init(alloc: Allocator, buffer: []const u8) !Self {
     }
     return .{
         .types = types,
+        .features = features,
         .extensions = extensions,
         .enums = enums,
         .constants = constants,
@@ -202,6 +208,11 @@ fn parse_attributes(
                             .device
                         else
                             .instance,
+                        Extension.Supported,
+                        => {
+                            if (std.mem.eql(u8, attr.value, "disabled"))
+                                @field(v, field_name) = .disabled;
+                        },
                         Extension.Require.Enum.Negative,
                         => @field(v, field_name) = .{true},
                         else => |e| @compileError(std.fmt.comptimePrint(
@@ -230,14 +241,15 @@ fn parse_attributes(
     }
 }
 
+// Also <feature> tags
 pub const Extension = struct {
     name: []const u8 = &.{},
-    number: u32 = 0,
+    number: []const u8 = &.{},
     author: ?[]const u8 = null,
     type: Type = .disabled,
     depends: ?[]const u8 = null,
     platform: ?[]const u8 = null,
-    supported: ?[]const u8 = null,
+    supported: Supported = .supported,
     promotedto: ?[]const u8 = null,
     deprecatedby: ?[]const u8 = null,
     obsoletedby: ?[]const u8 = null,
@@ -249,6 +261,11 @@ pub const Extension = struct {
         disabled,
         instance,
         device,
+    };
+
+    pub const Supported = enum {
+        supported,
+        disabled,
     };
 
     pub const Require = struct {
@@ -326,7 +343,7 @@ pub const Extension = struct {
     pub const EnumExtensions =
         std.ArrayListUnmanaged(struct {
             name: []const u8,
-            value: union(enum) { offset: struct {
+            value: union(enum) { value: i32, offset: struct {
                 offset: u32,
                 extnumber: u32,
                 negative: bool,
@@ -344,17 +361,24 @@ pub const Extension = struct {
                     .@"enum" => |e| {
                         if (e.extends) |ext| {
                             if (std.mem.eql(u8, ext, enum_name)) {
-                                if (e.offset) |v| try result.append(
+                                if (e.value) |v| try result.append(
                                     alloc,
-                                    .{ .name = e.name, .value = .{ .offset = .{
-                                        .offset = v,
-                                        .extnumber = e.extnumber orelse self.number,
-                                        .negative = e.negative[0],
-                                    } } },
+                                    .{ .name = e.name, .value = .{
+                                        .value = try std.fmt.parseInt(i32, v, 10),
+                                    } },
                                 );
                                 if (e.bitpos) |v| try result.append(
                                     alloc,
                                     .{ .name = e.name, .value = .{ .bitpos = v } },
+                                );
+                                if (e.offset) |v| try result.append(
+                                    alloc,
+                                    .{ .name = e.name, .value = .{ .offset = .{
+                                        .offset = v,
+                                        .extnumber = e.extnumber orelse
+                                            try std.fmt.parseInt(u32, self.number, 10),
+                                        .negative = e.negative[0],
+                                    } } },
                                 );
                                 if (e.alias) |v| try result.append(
                                     alloc,
@@ -517,7 +541,8 @@ test "parse_extension_require" {
 }
 
 pub fn parse_extension(alloc: Allocator, original_parser: *XmlParser) !?Extension {
-    if (!original_parser.check_peek_element_start("extension")) return null;
+    if (!original_parser.check_peek_element_start("extension") and
+        !original_parser.check_peek_element_start("feature")) return null;
 
     var parser = original_parser.*;
     _ = parser.element_start();
@@ -536,9 +561,6 @@ pub fn parse_extension(alloc: Allocator, original_parser: *XmlParser) !?Extensio
         .{ "obsoletedby", null },
         .{ "comment", null },
     });
-    if (result.type == .disabled) return null;
-    if (result.supported) |s|
-        if (std.mem.eql(u8, s, "disabled")) return null;
 
     var fields: std.ArrayListUnmanaged(Extension.Require) = .empty;
     while (parser.peek_element_start()) |next_es| {
@@ -560,7 +582,7 @@ pub fn parse_extension(alloc: Allocator, original_parser: *XmlParser) !?Extensio
 
 test "parse_single_extension" {
     const text =
-        \\<extension name="A" number="1" type="device" author="B" depends="C" platform="P" contact="D" supported="S" promotedto="E" ratified="F" deprecatedby="G">
+        \\<extension name="A" number="1" type="device" author="B" depends="C" platform="P" contact="D" supported="disabled" promotedto="E" ratified="F" deprecatedby="G">
         \\    <require>
         \\        <comment>C</comment>
         \\        <enum value="1" name="A"/>
@@ -583,12 +605,12 @@ test "parse_single_extension" {
     try std.testing.expectEqualSlices(u8, "----", parser.buffer);
     const expected: Extension = .{
         .name = "A",
-        .number = 1,
+        .number = "1",
         .author = "B",
         .type = .device,
         .depends = "C",
         .platform = "P",
-        .supported = "S",
+        .supported = .disabled,
         .promotedto = "E",
         .deprecatedby = "G",
         .require = &.{
@@ -603,6 +625,45 @@ test "parse_single_extension" {
                 .items = &.{
                     .{ .comment = "C" },
                     .{ .@"enum" = .{ .name = "B", .value = "2" } },
+                },
+            },
+        },
+    };
+    try std.testing.expectEqualDeep(expected, e);
+}
+
+test "parse_single_feature" {
+    const text =
+        \\<feature api="vulkan,vulkansc,vulkanbase" apitype="internal" name="N" number="1.1" depends="D">
+        \\    <require>
+        \\        <type name="N"/>
+        \\    </require>
+        \\    <require comment="C">
+        \\        <command name="Q"/>
+        \\    </require>
+        \\</feature>----
+    ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    var parser: XmlParser = .init(text);
+    const e = (try parse_extension(alloc, &parser)).?;
+    try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+    const expected: Extension = .{
+        .name = "N",
+        .number = "1.1",
+        .depends = "D",
+        .require = &.{
+            .{
+                .items = &.{
+                    .{ .type = .{ .name = "N" } },
+                },
+            },
+            .{
+                .comment = "C",
+                .items = &.{
+                    .{ .command = .{ .name = "Q" } },
                 },
             },
         },
@@ -655,21 +716,21 @@ test "parse_extensions" {
     const expected: []const Extension = &.{
         .{
             .name = "A",
-            .number = 1,
+            .number = "1",
             .author = "G",
             .type = .device,
             .depends = "B",
-            .supported = "S",
+            .supported = .supported,
             .promotedto = "C",
             .require = &.{.{}},
         },
         .{
             .name = "D",
-            .number = 2,
+            .number = "2",
             .author = "G",
             .type = .instance,
             .depends = "E",
-            .supported = "S",
+            .supported = .supported,
             .promotedto = "F",
             .require = &.{.{}},
         },
