@@ -1756,7 +1756,7 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                     log.err(
                         @src(),
                         "Unknown pnext chain type: {s}({d})",
-                        .{ vu.stype_to_name(stype), stype },
+                        .{ vu.stype_to_name(@enumFromInt(stype)), stype },
                     );
                     return error.UnknownPnextChain;
                 },
@@ -1794,7 +1794,7 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                             "Expected VkPipelineLibraryCreateInfoKHR({d}) found {s}({d})",
                             .{
                                 vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
-                                vu.stype_to_name(stype),
+                                vu.stype_to_name(@enumFromInt(stype)),
                                 stype,
                             },
                         );
