@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const vkp = @import("vulkan_parsing.zig");
-const Database = @import("vk_database.zig");
+const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 
 const vulkan_utils = @import("gen_vulkan_utils.zig");
 const vulkan_validation = @import("gen_vulkan_validation.zig");
@@ -230,7 +230,7 @@ pub fn main() !void {
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    const db: Database = try .init(alloc, buffer);
+    const db: XmlDatabase = try .init(alloc, buffer);
 
     const old_db: vkp.Database = try .init(
         std.heap.page_allocator,

@@ -1,7 +1,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const XmlParser = @import("xml_parser.zig");
-const Database = @import("vk_database.zig");
+const XmlDatabase = @import("vk_database.zig").XmlDatabase;
+const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 const PATH = "src/vk.zig";
 
 pub fn main() !void {
@@ -15,38 +16,36 @@ pub fn main() !void {
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    const db: Database = try .init(alloc, buffer);
+    const xml_db: XmlDatabase = try .init(alloc, buffer);
+    var type_db: TypeDatabase = try .from_xml_database(alloc, &xml_db);
 
     std.fs.cwd().deleteFile(PATH) catch {};
     const file = try std.fs.cwd().createFile(PATH, .{});
     defer file.close();
 
-    var type_map: TypeMap = .{ .alloc = alloc };
-    try fill_type_map(&type_map, &db);
-
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
-    write_constants(tmp_alloc, file, &db);
+    write_constants(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_basetypes(tmp_alloc, file, &db, &type_map);
+    try write_basetypes(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_handles(tmp_alloc, file, &db);
+    write_handles(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_bitmasks(tmp_alloc, file, &db);
+    try write_bitmasks(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_enums(tmp_alloc, file, &db);
+    try write_enums(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_funtions(tmp_alloc, file, &type_map);
+    try write_structs(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_structs(tmp_alloc, file, &db, &type_map);
+    try write_unions(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_unions(tmp_alloc, file, &db, &type_map);
+    try write_funtions(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_commands(tmp_alloc, file, &db, &type_map);
+    try write_commands(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_extensions(tmp_alloc, file, &db);
+    write_extensions(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_unknown_types(tmp_alloc, file, &type_map);
+    write_unknown_types(tmp_alloc, file, &type_db);
 }
 
 const Writer = struct {
@@ -88,13 +87,13 @@ const Writer = struct {
     }
 };
 
-fn write_constants(alloc: Allocator, file: std.fs.File, db: *const Database) void {
+fn write_constants(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\// Constants
         \\
     , .{});
-    for (db.constants.items) |*c| {
+    for (xml_db.constants.items) |*c| {
         switch (c.value) {
             .invalid => {},
             .u32 => |v| w.write("pub const {s}: u32 = {d};\n", .{ c.name, v }),
@@ -107,8 +106,8 @@ fn write_constants(alloc: Allocator, file: std.fs.File, db: *const Database) voi
 fn write_basetypes(
     alloc: Allocator,
     file: std.fs.File,
-    db: *const Database,
-    type_map: *TypeMap,
+    xml_db: *const XmlDatabase,
+    type_db: *TypeDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -116,23 +115,21 @@ fn write_basetypes(
         \\// Base types
         \\
     , .{});
-    for (db.types.basetypes) |*v| {
-        const t, _ = try resolve_type(type_map, v.type);
-        if (v.pointer)
-            w.write("pub const {s} = *{s};\n", .{ v.name, t })
-        else
-            w.write("pub const {s} = {s};\n", .{ v.name, t });
+    for (xml_db.types.basetypes) |*v| {
+        const type_idx = try type_db.resolve_base(v.name);
+        const type_str = try type_db.type_string(alloc, type_idx);
+        w.write("pub const {s} = {s};\n", .{ v.name, type_str });
     }
 }
 
-fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void {
+fn write_handles(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Handles
         \\
     , .{});
-    for (db.types.handles) |*v| {
+    for (xml_db.types.handles) |*v| {
         if (v.alias) |s| {
             w.write(
                 \\pub const {s} = {s};
@@ -149,21 +146,26 @@ fn write_handles(alloc: Allocator, file: std.fs.File, db: *const Database) void 
                 \\
             , .{s});
             w.write(
-                \\pub const {s} = enum(u64) {{ null = 0, _ }};
+                \\pub const {s} = enum(u64) {{ none = 0, _ }};
                 \\
             , .{v.name});
         }
     }
 }
 
-fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
+fn write_bitmasks(
+    alloc: Allocator,
+    file: std.fs.File,
+    xml_db: *const XmlDatabase,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Empty bitmasks
         \\
     , .{});
-    for (db.types.bitmasks) |v| switch (v.value) {
+
+    for (xml_db.types.bitmasks) |v| switch (v.value) {
         .type => |t| {
             var bits: u32 = 0;
             if (std.mem.eql(u8, t, "VkFlags"))
@@ -173,8 +175,7 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
 
             w.write(
                 \\const {s} = packed struct(u{d}) {{
-                \\    _: {d},
-                \\    pub const zero = @import("std").mem.zeroes(@This());
+                \\    _: {d} = 0,
                 \\}};
                 \\
             , .{ v.name, bits, bits });
@@ -187,9 +188,9 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
         \\// Bitmasks
         \\
     , .{});
-    for (db.types.bitmasks) |v| switch (v.value) {
+    for (xml_db.types.bitmasks) |v| switch (v.value) {
         .enum_name => |s| {
-            if (db.enum_by_name(s)) |e| {
+            if (xml_db.enum_by_name(s)) |e| {
                 w.write(
                     \\pub const {s} = packed struct(u{d}) {{
                     \\
@@ -197,10 +198,10 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
 
                 var extensions: std.ArrayListUnmanaged(struct {
                     ext_name: []const u8,
-                    items: Database.Extension.EnumExtensions,
+                    items: XmlDatabase.Extension.EnumExtensions,
                 }) = .empty;
                 // check if features extend this bitmask with new values
-                for (db.features.items) |ext| {
+                for (xml_db.features.items) |ext| {
                     const ex = try ext.enum_extensions(alloc, s);
                     if (ex.items.len != 0) try extensions.append(
                         alloc,
@@ -208,7 +209,7 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                     );
                 }
                 // check if extensions extend this bitmask with new values
-                for (db.extensions.items) |ext| {
+                for (xml_db.extensions.items) |ext| {
                     if (ext.supported == .disabled) continue;
                     const ex = try ext.enum_extensions(alloc, s);
                     if (ex.items.len != 0) try extensions.append(
@@ -261,12 +262,12 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                     if (last_bitpos) |lb| {
                         const diff = bitpos.bit - lb;
                         if (1 < diff and lb != 0) w.write(
-                            \\    _{d}: u{d},
+                            \\    _{d}: u{d} = 0,
                             \\
                         , .{ lb, diff - 1 });
                     } else {
                         if (bitpos.bit != 0) w.write(
-                            \\    _0: u{d},
+                            \\    _0: u{d} = 0,
                             \\
                         , .{bitpos.bit});
                     }
@@ -306,19 +307,19 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                     // TODO: lowercase names without prefix
                     w.write(
                         \\    // bit: {d}
-                        \\    {s}: bool,
+                        \\    {s}: bool = false,
                         \\
                     , .{ bitpos.bit, bitpos.name });
                 }
                 if (last_bitpos) |lb| {
                     const last_element_width = e.bitwidth - lb - 1;
                     if (last_element_width != 0) w.write(
-                        \\    _: u{d},
+                        \\    _: u{d} = 0,
                         \\
                     , .{last_element_width});
                 } else {
                     w.write(
-                        \\    _: u{d},
+                        \\    _: u{d} = 0,
                         \\
                     , .{e.bitwidth});
                 }
@@ -342,7 +343,6 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
                 }
                 // NOTE: Bitmasks do not have expandable constants
                 w.write(
-                    \\    pub const zero = @import("std").mem.zeroes(@This());
                     \\}};
                     \\
                 , .{});
@@ -357,7 +357,7 @@ fn write_bitmasks(alloc: Allocator, file: std.fs.File, db: *const Database) !voi
     };
 }
 
-fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
+fn write_enums(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -373,7 +373,7 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
 
             var extensions: std.ArrayListUnmanaged(struct {
                 ext_name: []const u8,
-                items: Database.Extension.EnumExtensions,
+                items: XmlDatabase.Extension.EnumExtensions,
             }) = .empty;
             // check if features extend this enum with new values
             for (db.features.items) |ext| {
@@ -382,8 +382,6 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
                     alloc,
                     .{ .ext_name = ext.name, .items = ex },
                 );
-                for (ex.items) |a|
-                    std.log.info("Enum: {s} feature: {s} extended with: {s}", .{ e.name, ext.name, a.name });
             }
             // check if extensions extend this enum with new values
             for (db.extensions.items) |ext| {
@@ -493,100 +491,119 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const Database) !void {
     };
 }
 
-const ADDITIONAL_FUNCTIONS = [_]Database.Command{
+const ADDITIONAL_FUNCTIONS = [_]XmlDatabase.Command{
     .{
         .name = "vkInternalAllocationNotification",
         .return_type = "void",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "size", .type = "size_t" },
-            .{ .name = "allocationType", .type = "VkInternalAllocationType" },
-            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "size", .type_middle = "size_t" },
+            .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
+            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
         },
     },
     .{
         .name = "vkInternalFreeNotification",
         .return_type = "void",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "size", .type = "size_t" },
-            .{ .name = "allocationType", .type = "VkInternalAllocationType" },
-            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "size", .type_middle = "size_t" },
+            .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
+            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
         },
     },
     .{
         .name = "vkReallocationFunction",
         .return_type = "[*]u8",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "pOriginal", .type = "void", .pointer = true },
-            .{ .name = "size", .type = "size_t" },
-            .{ .name = "alignment", .type = "size_t" },
-            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "pOriginal", .type_middle = "void", .type_back = "*" },
+            .{ .name = "size", .type_middle = "size_t" },
+            .{ .name = "alignment", .type_middle = "size_t" },
+            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
         },
     },
     .{
         .name = "vkAllocationFunction",
         .return_type = "[*]u8",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "size", .type = "size_t" },
-            .{ .name = "alignment", .type = "size_t" },
-            .{ .name = "allocationScope", .type = "VkSystemAllocationScope" },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "size", .type_middle = "size_t" },
+            .{ .name = "alignment", .type_middle = "size_t" },
+            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
         },
     },
     .{
         .name = "vkFreeFunction",
         .return_type = "void",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "pMemory", .type = "void", .pointer = true },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
         },
     },
     .{
         .name = "vkVoidFunction",
         .return_type = "void",
         .parameters = &.{
-            .{ .name = "pUserData", .type = "void", .pointer = true },
-            .{ .name = "pMemory", .type = "void", .pointer = true },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
+            .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
         },
     },
     .{
         .name = "vkDebugReportCallbackEXT",
         .return_type = "VkBool32",
         .parameters = &.{
-            .{ .name = "flags", .type = "VkDebugReportFlagsEXT" },
-            .{ .name = "objectType", .type = "VkDebugReportObjectTypeEXT" },
-            .{ .name = "object", .type = "uint64_t" },
-            .{ .name = "location", .type = "size_t" },
-            .{ .name = "messageCode", .type = "int32_t" },
-            .{ .name = "pLayerPrefix", .type = "char", .pointer = true, .constant = true },
-            .{ .name = "pMessage", .type = "char", .pointer = true, .constant = true },
-            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "flags", .type_middle = "VkDebugReportFlagsEXT" },
+            .{ .name = "objectType", .type_middle = "VkDebugReportObjectTypeEXT" },
+            .{ .name = "object", .type_middle = "uint64_t" },
+            .{ .name = "location", .type_middle = "size_t" },
+            .{ .name = "messageCode", .type_middle = "int32_t" },
+            .{
+                .name = "pLayerPrefix",
+                .type_front = "const",
+                .type_middle = "char",
+                .type_back = "*",
+            },
+            .{
+                .name = "pMessage",
+                .type_front = "const",
+                .type_middle = "char",
+                .type_back = "*",
+            },
+            .{
+                .name = "pUserData",
+                .type_middle = "void",
+                .type_back = "*",
+            },
         },
     },
     .{
         .name = "vkDebugUtilsMessengerCallbackEXT",
         .return_type = "VkBool32",
         .parameters = &.{
-            .{ .name = "messageSeverity", .type = "VkDebugUtilsMessageSeverityFlagBitsEXT" },
-            .{ .name = "messageTypes", .type = "VkDebugUtilsMessageTypeFlagsEXT" },
+            .{ .name = "messageSeverity", .type_middle = "VkDebugUtilsMessageSeverityFlagBitsEXT" },
+            .{ .name = "messageTypes", .type_middle = "VkDebugUtilsMessageTypeFlagsEXT" },
             .{
                 .name = "pCallbackData",
-                .type = "VkDebugUtilsMessengerCallbackDataEXT",
-                .pointer = true,
-                .constant = true,
+                .type_front = "const",
+                .type_middle = "VkDebugUtilsMessengerCallbackDataEXT",
+                .type_back = "*",
             },
-            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
         },
     },
     .{
         .name = "vkFaultCallbackFunction",
         .return_type = "void",
         .parameters = &.{
-            .{ .name = "unrecordedFaults", .type = "VkBool32" },
-            .{ .name = "faultCount", .type = "uint32_t" },
-            .{ .name = "pFaults", .type = "void", .pointer = true },
+            .{ .name = "unrecordedFaults", .type_middle = "VkBool32" },
+            .{ .name = "faultCount", .type_middle = "uint32_t" },
+            .{
+                .name = "pFaults",
+                .type_front = "const",
+                .type_middle = "void",
+                .type_back = "*",
+            },
         },
     },
     .{
@@ -595,26 +612,36 @@ const ADDITIONAL_FUNCTIONS = [_]Database.Command{
         .parameters = &.{
             .{
                 .name = "pCallbackData",
-                .type = "VkDeviceMemoryReportCallbackDataEXT",
-                .pointer = true,
-                .constant = true,
+                .type_front = "const",
+                .type_middle = "VkDeviceMemoryReportCallbackDataEXT",
+                .type_back = "*",
             },
-            .{ .name = "pUserData", .type = "void", .pointer = true },
+            .{
+                .name = "pUserData",
+                .type_front = "const",
+                .type_middle = "void",
+                .type_back = "*",
+            },
         },
     },
     .{
         .name = "vkGetInstanceProcAddrLUNARG",
         .return_type = "PFN_vkVoidFunction",
         .parameters = &.{
-            .{ .name = "instance", .type = "VkInstance" },
-            .{ .name = "pName", .type = "char", .pointer = true, .constant = true },
+            .{ .name = "instance", .type_middle = "VkInstance" },
+            .{
+                .name = "pName",
+                .type_front = "const",
+                .type_middle = "char",
+                .type_back = "*",
+            },
         },
     },
 };
 
 // TODO: funcpointers are encoded "horribly" in the xml, so save sanity by
 // hardcoding this
-fn write_funtions(alloc: Allocator, file: std.fs.File, type_map: *TypeMap) !void {
+fn write_funtions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -622,16 +649,15 @@ fn write_funtions(alloc: Allocator, file: std.fs.File, type_map: *TypeMap) !void
         \\
     , .{});
 
-    for (&ADDITIONAL_FUNCTIONS) |*f| {
-        try write_command(alloc, type_map, &w, f, false);
-    }
+    for (&ADDITIONAL_FUNCTIONS) |*f|
+        try write_command(alloc, type_db, &w, f);
 }
 
 fn write_structs(
     alloc: Allocator,
     file: std.fs.File,
-    db: *const Database,
-    type_map: *TypeMap,
+    xml_db: *const XmlDatabase,
+    type_db: *TypeDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -640,14 +666,14 @@ fn write_structs(
         \\
     , .{});
 
-    outer: for (db.types.structs) |str| {
-        for (db.features.items) |ext| {
+    outer: for (xml_db.types.structs) |str| {
+        for (xml_db.features.items) |ext| {
             if (ext.unlocks_type(str.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
         }
-        for (db.extensions.items) |ext| {
+        for (xml_db.extensions.items) |ext| {
             if (ext.unlocks_type(str.name)) {
                 // Filter out structs enabled by disabled extensions
                 if (ext.supported == .disabled)
@@ -680,7 +706,38 @@ fn write_structs(
                 \\
             , .{ str.returnedonly, str.allowduplicate, str.name });
 
+            var in_bitfield_mode: bool = false;
+            var bitfield_idx: u8 = 0;
             for (str.members) |member| {
+                if (member.dimensions) |dim| {
+                    if (dim[0] == ':') {
+                        if (!in_bitfield_mode) {
+                            in_bitfield_mode = true;
+                            w.write(
+                                \\    // Bitfield start
+                                \\    bitfield{d}: packed struct(u32) {{
+                                \\
+                            , .{bitfield_idx});
+                            bitfield_idx += 1;
+                        }
+                    } else {
+                        if (in_bitfield_mode)
+                            w.write(
+                                \\    // Bitfield end
+                                \\    }},
+                                \\
+                            , .{});
+                        in_bitfield_mode = false;
+                    }
+                } else {
+                    if (in_bitfield_mode)
+                        w.write(
+                            \\    // Bitfield end
+                            \\    }},
+                            \\
+                        , .{});
+                    in_bitfield_mode = false;
+                }
                 if (member.len) |len| w.write(
                     \\    // Length member: {s}
                     \\
@@ -715,21 +772,24 @@ fn write_structs(
                     \\
                 , .{comment});
 
-                const t = try format_type(alloc, type_map, member.type, .{
-                    .pointer = member.pointer,
-                    .multi_pointer = member.multi_pointer,
-                    .constant = member.constant,
-                    .multi_constant = member.multi_constant,
-                    .len = member.len,
-                    .dimensions = member.dimensions,
-                    .value = member.value,
-                    .make_optional_pointer = true,
-                    .print_default = true,
-                });
-                w.write(
-                    \\    {s}: {s},
-                    \\
-                , .{ member.name, t });
+                if (in_bitfield_mode) {
+                    const bits_str = member.dimensions.?[1..];
+                    w.write(
+                        \\        {s}: u{s} = 0,
+                        \\
+                    , .{ member.name, bits_str });
+                } else {
+                    const type_idx = try type_db.c_type_parts_to_type(
+                        member.type_front,
+                        member.type_middle,
+                        member.type_back,
+                        member.dimensions,
+                        member.len,
+                        false,
+                    );
+                    const type_str = try type_db.type_string(alloc, type_idx);
+                    write_struct_member(type_db, &w, &str, &member, type_idx, type_str);
+                }
             }
 
             w.write(
@@ -740,11 +800,100 @@ fn write_structs(
     }
 }
 
+fn write_struct_member(
+    type_db: *const TypeDatabase,
+    w: *Writer,
+    str: *const XmlDatabase.Struct,
+    member: *const XmlDatabase.Struct.Member,
+    type_idx: TypeDatabase.Type.Idx,
+    type_str: []const u8,
+) void {
+    const t = type_db.get_type(type_idx);
+    switch (t.*) {
+        .base => |base| {
+            switch (base) {
+                .builtin => |_| {
+                    w.write(
+                        \\    {s}: {s} = 0,
+                        \\
+                    , .{ member.name, type_str });
+                },
+                .handle_idx => |_| {
+                    w.write(
+                        \\    {s}: {s} = .none,
+                        \\
+                    , .{ member.name, type_str });
+                },
+                .struct_idx => |_| {
+                    w.write(
+                        \\    {s}: {s} = .{{}},
+                        \\
+                    , .{ member.name, type_str });
+                },
+                .bitfield_idx => |_| {
+                    w.write(
+                        \\    {s}: {s} = .{{}},
+                        \\
+                    , .{ member.name, type_str });
+                },
+                .enum_idx => |_| {
+                    // Should only be valid for sType: VkStructureType
+                    if (member.value) |v| {
+                        w.write(
+                            \\    {s}: {s} = VkStructureType.{s},
+                            \\
+                        , .{ member.name, type_str, v });
+                    } else {
+                        w.write(
+                            \\    {s}: {s},
+                            \\
+                        , .{ member.name, type_str });
+                    }
+                },
+                .union_idx => |_| {
+                    w.write(
+                        \\    {s}: {s},
+                        \\
+                    , .{ member.name, type_str });
+                },
+                else => {
+                    std.log.err(
+                        "Cannot determine default value for {s}.{s} with type: {any}",
+                        .{ str.name, member.name, t },
+                    );
+                },
+            }
+        },
+        .pointer => |_| {
+            w.write(
+                \\    {s}: ?{s} = null,
+                \\
+            , .{ member.name, type_str });
+        },
+        .array => |_| {
+            w.write(
+                \\    {[name]s}: {[type]s} = @import("std").mem.zeroes({[type]s}),
+                \\
+            , .{ .name = member.name, .type = type_str });
+        },
+        .alias => |alias| {
+            write_struct_member(type_db, w, str, member, alias.type_idx, type_str);
+        },
+        .placeholder => |placeholder| {
+            std.log.err(
+                "Cannot determine default value for {s}.{s} with type: {any} found placeholder for {s}",
+                .{ str.name, member.name, t, placeholder },
+            );
+        },
+        else => unreachable,
+    }
+}
+
 fn write_unions(
     alloc: Allocator,
     file: std.fs.File,
-    db: *const Database,
-    type_map: *TypeMap,
+    xml_db: *const XmlDatabase,
+    type_db: *TypeDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -753,14 +902,14 @@ fn write_unions(
         \\
     , .{});
 
-    for (db.types.unions) |un| {
-        for (db.features.items) |ext| {
+    for (xml_db.types.unions) |un| {
+        for (xml_db.features.items) |ext| {
             if (ext.unlocks_type(un.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
         }
-        for (db.extensions.items) |ext| {
+        for (xml_db.extensions.items) |ext| {
             if (ext.unlocks_type(un.name)) w.write(
                 \\// Extension: {s}
                 \\
@@ -789,20 +938,22 @@ fn write_unions(
                     \\
                 , .{selection});
 
-                const t = try format_type(alloc, type_map, member.type, .{
-                    .pointer = member.pointer,
-                    .constant = member.constant,
-                    .len = member.len,
-                    .dimensions = member.dimensions,
-                });
+                const type_idx = try type_db.c_type_parts_to_type(
+                    member.type_front,
+                    member.type_middle,
+                    member.type_back,
+                    member.dimensions,
+                    member.len,
+                    false,
+                );
+                const type_str = try type_db.type_string(alloc, type_idx);
                 w.write(
                     \\    {s}: {s},
                     \\
-                , .{ member.name, t });
+                , .{ member.name, type_str });
             }
 
             w.write(
-                \\    pub const zero = @import("std").mem.zeroes(@This());
                 \\}};
                 \\
             , .{});
@@ -812,10 +963,9 @@ fn write_unions(
 
 fn write_command(
     alloc: Allocator,
-    type_map: *TypeMap,
+    type_db: *TypeDatabase,
     w: *Writer,
-    command: *const Database.Command,
-    make_global_var: bool,
+    command: *const XmlDatabase.Command,
 ) !void {
     if (command.alias) |c| {
         w.write(
@@ -861,7 +1011,7 @@ fn write_command(
         , .{c});
 
         w.write(
-            \\pub const PFN_{s} = fn (
+            \\pub const {s} = fn (
             \\
         , .{command.name});
         for (command.parameters) |parameter| {
@@ -874,41 +1024,38 @@ fn write_command(
                 \\
             , .{vs});
 
-            const t = try format_type(alloc, type_map, parameter.type, .{
-                .pointer = parameter.pointer,
-                .constant = parameter.constant,
-                .len = parameter.len,
-                .dimensions = parameter.dimensions,
-                .convert_arrays_to_pointers = true,
-            });
+            const type_idx = try type_db.c_type_parts_to_type(
+                parameter.type_front,
+                parameter.type_middle,
+                parameter.type_back,
+                parameter.dimensions,
+                parameter.len,
+                true,
+            );
+            const type_str = try type_db.type_string(alloc, type_idx);
+            var optional_str: []const u8 = &.{};
+            if (parameter.optional)
+                optional_str = "?";
             w.write(
-                \\    {s}: {s},
+                \\    {s}: {s}{s},
                 \\
-            , .{ parameter.name, t });
+            , .{ parameter.name, optional_str, type_str });
         }
 
-        const return_type = try format_type(alloc, type_map, command.return_type, .{
-            .convert_arrays_to_pointers = true,
-            .return_type = true,
-        });
+        const return_type_idx = try type_db.resolve_base(command.return_type);
+        const type_str = try type_db.type_string(alloc, return_type_idx);
         w.write(
             \\) callconv(.c) {s};
             \\
-        , .{return_type});
-
-        if (make_global_var)
-            w.write(
-                \\pub var {[name]s} = ?*const PFN_{[name]s};
-                \\
-            , .{ .name = command.name });
+        , .{type_str});
     }
 }
 
 fn write_commands(
     alloc: Allocator,
     file: std.fs.File,
-    db: *const Database,
-    type_map: *TypeMap,
+    xml_db: *const XmlDatabase,
+    type_db: *TypeDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -918,27 +1065,27 @@ fn write_commands(
     , .{});
 
     var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
-    for (db.commands.items) |*command| {
+    for (xml_db.commands.items) |*command| {
         if (visited.get(command.name) != null) continue;
         try visited.put(alloc, command.name, {});
 
-        for (db.features.items) |ext| {
+        for (xml_db.features.items) |ext| {
             if (ext.unlocks_type(ext.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
         }
-        for (db.extensions.items) |ext| {
+        for (xml_db.extensions.items) |ext| {
             if (ext.unlocks_command(command.name)) w.write(
                 \\// Extension: {s}
                 \\
             , .{ext.name});
         }
-        try write_command(alloc, type_map, &w, command, true);
+        try write_command(alloc, type_db, &w, command);
     }
 }
 
-fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const Database) void {
+fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -1095,18 +1242,23 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const Database) vo
     }
 }
 
-fn write_unknown_types(alloc: Allocator, file: std.fs.File, type_map: *const TypeMap) void {
+fn write_unknown_types(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Unknown types
         \\
     , .{});
-    for (type_map.not_found.keys()) |key| {
-        w.write(
-            \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else @compileError("Unknown type: {{{[name]s}}}");
-            \\
-        , .{ .name = key });
+    for (type_db.types.items) |t| {
+        switch (t) {
+            .placeholder => |name| {
+                w.write(
+                    \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else @compileError("Unknown type: {{{[name]s}}}");
+                    \\
+                , .{ .name = name });
+            },
+            else => {},
+        }
     }
 }
 
@@ -1117,300 +1269,7 @@ pub fn enum_offset(extension_number: i32, offset: i32) i32 {
     return result;
 }
 
-pub const FormatOptions = struct {
-    pointer: bool = false,
-    multi_pointer: bool = false,
-    constant: bool = false,
-    multi_constant: bool = false,
-    make_optional_pointer: bool = false,
-    print_default: bool = false,
-    convert_arrays_to_pointers: bool = false,
-    return_type: bool = false,
-    len: ?[]const u8 = null,
-    dimensions: ?[]const u8 = null,
-    value: ?[]const u8 = null,
-};
-pub fn format_type(
-    alloc: Allocator,
-    type_map: *TypeMap,
-    type_str: []const u8,
-    options: FormatOptions,
-) ![]const u8 {
-    var base_type, var default = try resolve_type(type_map, type_str);
-
-    // return types cannot be plain `anyopaque`, but for simplicity
-    // the type_map has `void` -> `anyopaque` since many fields will have `void` type
-    if (options.return_type and std.mem.eql(u8, base_type, "anyopaque")) {
-        std.debug.assert(!options.pointer);
-        std.debug.assert(!options.multi_pointer);
-        std.debug.assert(!options.constant);
-        std.debug.assert(!options.multi_constant);
-        std.debug.assert(options.len == null);
-        std.debug.assert(options.dimensions == null);
-        std.debug.assert(options.value == null);
-
-        base_type = "void";
-    }
-
-    // if the type is a function, we need a pointer to it
-    var function_start: []const u8 = &.{};
-    if (std.mem.startsWith(u8, base_type, "PFN_")) {
-        function_start = "?*const ";
-        default = "null";
-    }
-
-    var first_len: []const u8 = "";
-    var second_len: []const u8 = "";
-    if (options.len) |l| {
-        var iter = std.mem.splitScalar(u8, l, ',');
-        first_len = iter.next() orelse "";
-        second_len = iter.next() orelse "";
-        std.debug.assert(iter.next() == null);
-    }
-    const first_const = if (options.constant) "const " else "";
-    const second_const = if (options.multi_constant) "const " else "";
-
-    var optional_ptr: []const u8 = &.{};
-    var first_ptr: []const u8 = &.{};
-    var second_ptr: []const u8 = &.{};
-    if (options.pointer) {
-        if (options.make_optional_pointer) optional_ptr = "?";
-        if (options.len) |l| {
-            var n: u32 = 0;
-            var iter = std.mem.splitScalar(u8, l, ',');
-            while (iter.next()) |ll| : (n += 1) {
-                if (std.mem.eql(u8, ll, "null-terminated")) {
-                    if (n == 0) {
-                        first_ptr = "[*:0]";
-                    } else if (n == 1) {
-                        std.debug.assert(options.multi_pointer);
-                        second_ptr = "[*:0]";
-                    }
-                } else if (std.mem.eql(u8, ll, "1")) {
-                    if (n == 0) {
-                        first_ptr = "*";
-                    } else if (n == 1) {
-                        std.debug.assert(options.multi_pointer);
-                        second_ptr = "*";
-                    }
-                } else {
-                    if (n == 0) {
-                        first_ptr = "[*]";
-                    } else if (n == 1) {
-                        std.debug.assert(options.multi_pointer);
-                        second_ptr = "[*]";
-                    }
-                }
-            }
-            // Sometimes `len` is not specified for second pointer,
-            // so just hallucinate smth
-            if (n == 1 and options.multi_pointer) second_ptr = "[*]";
-        } else {
-            first_ptr = "*";
-            if (options.multi_pointer)
-                second_ptr = "*";
-        }
-    }
-
-    var dims: []const u8 = &.{};
-    if (options.dimensions) |d| {
-        std.debug.assert(!options.pointer);
-        std.debug.assert(!options.multi_pointer);
-        std.debug.assert(!options.multi_constant);
-        // constant can still be use with arrays
-        // len can still be specified even for an array like `null-terminated`
-        // usually dimensions look like `[4]`, but sometimes
-        // it is specified as a constant like `[CONSTANT]`
-        if (d[0] == '[')
-            dims = d
-        else
-            dims = try std.fmt.allocPrint(alloc, "[{s}]", .{d});
-
-        // this C syntax `const float blendConstants[4]` if used as a function argument
-        // becomes a pointer to the fixed size array
-        if (options.convert_arrays_to_pointers) {
-            first_ptr = "*";
-        }
-    }
-
-    var value_str: []const u8 = &.{};
-    if (options.print_default) {
-        if (options.value) |v| {
-            value_str = try std.fmt.allocPrint(alloc, " = VkStructureType.{s}", .{v});
-        } else if (options.pointer and options.make_optional_pointer) {
-            value_str = " = null";
-        } else if (default) |def| {
-            value_str = try std.fmt.allocPrint(alloc, " = {s}", .{def});
-        }
-    }
-
-    const result = try std.fmt.allocPrint(alloc,
-        \\{[function_start]s}{[optional_ptr]s}{[first_ptr]s}{[first_const]s}{[second_ptr]s}{[second_const]s}{[dimensions]s}{[base_type]s}{[value]s}
-    , .{
-        .function_start = function_start,
-        .optional_ptr = optional_ptr,
-        .first_ptr = first_ptr,
-        .first_const = first_const,
-        .second_ptr = second_ptr,
-        .second_const = second_const,
-        .dimensions = dims,
-        .base_type = base_type,
-        .value = value_str,
-    });
-    return result;
-}
-
-test "format_type" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const alloc = arena.allocator();
-
-    var type_map: TypeMap = .{ .alloc = alloc };
-    try fill_type_map(&type_map, &.{});
-    try std.testing.expectEqualSlices(
-        u8,
-        "u32 = 0",
-        try format_type(alloc, &type_map, "uint32_t", .{
-            .print_default = true,
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "A",
-        try format_type(alloc, &type_map, "A", .{}),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "*A",
-        try format_type(alloc, &type_map, "A", .{
-            .pointer = true,
-            .print_default = true,
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "?**A = null",
-        try format_type(alloc, &type_map, "A", .{
-            .pointer = true,
-            .multi_pointer = true,
-            .make_optional_pointer = true,
-            .print_default = true,
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "?*const *A = null",
-        try format_type(alloc, &type_map, "A", .{
-            .pointer = true,
-            .multi_pointer = true,
-            .constant = true,
-            .make_optional_pointer = true,
-            .print_default = true,
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "?*const *const A = null",
-        try format_type(alloc, &type_map, "A", .{
-            .pointer = true,
-            .multi_pointer = true,
-            .constant = true,
-            .multi_constant = true,
-            .make_optional_pointer = true,
-            .print_default = true,
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "?[*]const [*]const A = null",
-        try format_type(alloc, &type_map, "A", .{
-            .pointer = true,
-            .multi_pointer = true,
-            .constant = true,
-            .multi_constant = true,
-            .make_optional_pointer = true,
-            .print_default = true,
-            .len = "L,L",
-        }),
-    );
-    try std.testing.expectEqualSlices(
-        u8,
-        "[D]A",
-        try format_type(alloc, &type_map, "A", .{
-            .dimensions = "D",
-        }),
-    );
-}
-
-pub const TypeInfo = struct { []const u8, ?[]const u8 };
-pub const TypeMap = struct {
-    alloc: Allocator,
-    map: std.StringArrayHashMapUnmanaged(TypeInfo) = .empty,
-    not_found: std.StringArrayHashMapUnmanaged(void) = .empty,
-};
-pub fn fill_type_map(type_map: *TypeMap, db: *const Database) !void {
-    for (&[_]struct { []const u8, TypeInfo }{
-        .{ "void", .{ "anyopaque", "{}" } },
-        .{ "char", .{ "u8", "0" } },
-        .{ "float", .{ "f32", "0.0" } },
-        .{ "double", .{ "f64", "0.0" } },
-        .{ "int8_t", .{ "i8", "0" } },
-        .{ "uint8_t", .{ "u8", "0" } },
-        .{ "int16_t", .{ "i16", "0" } },
-        .{ "uint16_t", .{ "u16", "0" } },
-        .{ "uint32_t", .{ "u32", "0" } },
-        .{ "uint64_t", .{ "u64", "0" } },
-        .{ "int32_t", .{ "i32", "0" } },
-        .{ "int64_t", .{ "i64", "0" } },
-        .{ "size_t", .{ "usize", "0" } },
-        .{ "int", .{ "i32", "0" } },
-        .{ "[*]u8", .{ "[*]u8", null } },
-    }) |tuple| {
-        const c_name, const zig_type = tuple;
-        try type_map.map.put(type_map.alloc, c_name, zig_type);
-    }
-
-    for (db.types.basetypes) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.type, null });
-    for (db.types.handles) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".none" });
-    for (db.types.bitmasks) |bitmask| {
-        try type_map.map.put(type_map.alloc, bitmask.name, .{ bitmask.name, ".zero" });
-        switch (bitmask.value) {
-            .enum_name => |en| {
-                try type_map.map.put(type_map.alloc, en, .{ bitmask.name, ".zero" });
-            },
-            .alias => |alias| {
-                try type_map.map.put(type_map.alloc, bitmask.name, .{ alias, ".zero" });
-            },
-            else => {},
-        }
-    }
-    for (db.types.enum_aliases) |s|
-        try type_map.map.put(type_map.alloc, s.name, .{ s.alias, ".zero" });
-
-    for (db.types.structs) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".{}" });
-    for (db.types.unions) |s| try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".zero" });
-    for (db.enums.items) |s| {
-        if (s.type != .bitmask)
-            try type_map.map.put(type_map.alloc, s.name, .{ s.name, ".zero" });
-    }
-
-    inline for (ADDITIONAL_FUNCTIONS) |s|
-        try type_map.map.put(type_map.alloc, "PFN_" ++ s.name, .{ "PFN_" ++ s.name, "" });
-}
-pub fn resolve_type(type_map: *TypeMap, name: []const u8) !TypeInfo {
-    var result: TypeInfo = undefined;
-    if (type_map.map.get(name)) |mapping| {
-        // basetypes need to go one indirection deeper to find correct default value
-        if (mapping[1] == null) {
-            if (type_map.map.get(mapping[0])) |r2|
-                result = .{ name, r2[1] }
-            else
-                unreachable;
-        } else {
-            result = mapping;
-        }
-    } else {
-        try type_map.not_found.put(type_map.alloc, name, {});
-        result = .{ name, null };
-    }
-    return result;
+comptime {
+    _ = @import("vk_database.zig");
+    _ = @import("vk_database.zig").XmlDatabase;
 }

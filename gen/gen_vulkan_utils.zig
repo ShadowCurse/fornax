@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const root = @import("root");
-const Database = @import("vk_database.zig");
+const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 
 const PATH = "src/vulkan_utils.zig";
 const HEADER =
@@ -16,7 +16,7 @@ const HEADER =
     \\
 ;
 
-pub fn gen(db: *const Database) !void {
+pub fn gen(db: *const XmlDatabase) !void {
     std.fs.cwd().deleteFile(PATH) catch {};
     const file = try std.fs.cwd().createFile(PATH, .{});
     defer file.close();
@@ -345,7 +345,7 @@ fn eql(s1: []const u8, s2: []const u8) bool {
     return std.mem.eql(u8, s1, s2);
 }
 
-fn write_print_chain(alloc: Allocator, file: *const std.fs.File, db: *const Database) !void {
+fn write_print_chain(alloc: Allocator, file: *const std.fs.File, db: *const XmlDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\pub fn print_chain(chain: anytype) void {{
@@ -387,7 +387,7 @@ fn write_print_chain(alloc: Allocator, file: *const std.fs.File, db: *const Data
     , .{});
 }
 
-fn write_stype_to_name(alloc: Allocator, file: *const std.fs.File, db: *const Database) !void {
+fn write_stype_to_name(alloc: Allocator, file: *const std.fs.File, db: *const XmlDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\pub fn stype_to_name(stype: vk.VkStructureType) []const u8 {{
