@@ -29,6 +29,8 @@ pub fn main() !void {
     _ = tmp_arena.reset(.retain_capacity);
     try write_basetypes(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
+    write_versions(tmp_alloc, file);
+    _ = tmp_arena.reset(.retain_capacity);
     write_handles(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
     try write_bitmasks(tmp_alloc, file, &xml_db);
@@ -120,6 +122,55 @@ fn write_basetypes(
         const type_str = try type_db.type_string(alloc, type_idx);
         w.write("pub const {s} = {s};\n", .{ v.name, type_str });
     }
+}
+
+fn write_versions(alloc: Allocator, file: std.fs.File) void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\// Versions
+        \\pub const ApiVersion = packed struct(u32) {{
+        \\    patch: u12,
+        \\    minor: u10,
+        \\    major: u7,
+        \\    variant: u3,
+        \\}};
+        \\pub const Version = packed struct(u32) {{
+        \\    patch: u12,
+        \\    minor: u10,
+        \\    major: u10,
+        \\}};
+        \\pub const VK_API_VERSION_1_0: ApiVersion = .{{
+        \\    .variant = 0,
+        \\    .major = 1,
+        \\    .minor = 0,
+        \\    .patch = 0,
+        \\}};
+        \\pub const VK_API_VERSION_1_1: ApiVersion = .{{
+        \\    .variant = 0,
+        \\    .major = 1,
+        \\    .minor = 1,
+        \\    .patch = 0,
+        \\}};
+        \\pub const VK_API_VERSION_1_2: ApiVersion = .{{
+        \\    .variant = 0,
+        \\    .major = 1,
+        \\    .minor = 2,
+        \\    .patch = 0,
+        \\}};
+        \\pub const VK_API_VERSION_1_3: ApiVersion = .{{
+        \\    .variant = 0,
+        \\    .major = 1,
+        \\    .minor = 3,
+        \\    .patch = 0,
+        \\}};
+        \\pub const VK_API_VERSION_1_4: ApiVersion = .{{
+        \\    .variant = 0,
+        \\    .major = 1,
+        \\    .minor = 4,
+        \\    .patch = 0,
+        \\}};
+        \\
+    , .{});
 }
 
 fn write_handles(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase) void {

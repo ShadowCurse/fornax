@@ -45,6 +45,48 @@ pub const VkFlags64 = u64;
 pub const VkDeviceSize = u64;
 pub const VkDeviceAddress = u64;
 pub const VkRemoteAddressNV = *anyopaque;
+// Versions
+pub const ApiVersion = packed struct(u32) {
+    patch: u12,
+    minor: u10,
+    major: u7,
+    variant: u3,
+};
+pub const Version = packed struct(u32) {
+    patch: u12,
+    minor: u10,
+    major: u10,
+};
+pub const VK_API_VERSION_1_0: ApiVersion = .{
+    .variant = 0,
+    .major = 1,
+    .minor = 0,
+    .patch = 0,
+};
+pub const VK_API_VERSION_1_1: ApiVersion = .{
+    .variant = 0,
+    .major = 1,
+    .minor = 1,
+    .patch = 0,
+};
+pub const VK_API_VERSION_1_2: ApiVersion = .{
+    .variant = 0,
+    .major = 1,
+    .minor = 2,
+    .patch = 0,
+};
+pub const VK_API_VERSION_1_3: ApiVersion = .{
+    .variant = 0,
+    .major = 1,
+    .minor = 3,
+    .patch = 0,
+};
+pub const VK_API_VERSION_1_4: ApiVersion = .{
+    .variant = 0,
+    .major = 1,
+    .minor = 4,
+    .patch = 0,
+};
 
 // Handles
 // Type enum: VK_OBJECT_TYPE_INSTANCE
