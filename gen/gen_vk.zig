@@ -3,24 +3,23 @@ const Allocator = std.mem.Allocator;
 const XmlParser = @import("xml_parser.zig");
 const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
-const PATH = "src/vk.zig";
+
+const IN_PATH = "thirdparty/vulkan-object/src/vulkan_object/vk.xml";
+const OUT_PATH = "src/vk.zig";
 
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    const xml_file = try std.fs.cwd().openFile(
-        "thirdparty/vulkan-object/src/vulkan_object/vk.xml",
-        .{},
-    );
+    const xml_file = try std.fs.cwd().openFile(IN_PATH, .{});
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
     const xml_db: XmlDatabase = try .init(alloc, buffer);
     var type_db: TypeDatabase = try .from_xml_database(alloc, &xml_db);
 
-    std.fs.cwd().deleteFile(PATH) catch {};
-    const file = try std.fs.cwd().createFile(PATH, .{});
+    std.fs.cwd().deleteFile(OUT_PATH) catch {};
+    const file = try std.fs.cwd().createFile(OUT_PATH, .{});
     defer file.close();
 
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
@@ -129,15 +128,15 @@ fn write_versions(alloc: Allocator, file: std.fs.File) void {
     w.write(
         \\// Versions
         \\pub const ApiVersion = packed struct(u32) {{
-        \\    patch: u12,
-        \\    minor: u10,
-        \\    major: u7,
-        \\    variant: u3,
+        \\    patch: u12 = 0,
+        \\    minor: u10 = 0,
+        \\    major: u7 = 0,
+        \\    variant: u3 = 0,
         \\}};
         \\pub const Version = packed struct(u32) {{
-        \\    patch: u12,
-        \\    minor: u10,
-        \\    major: u10,
+        \\    patch: u12 = 0,
+        \\    minor: u10 = 0,
+        \\    major: u10 = 0,
         \\}};
         \\pub const VK_API_VERSION_1_0: ApiVersion = .{{
         \\    .variant = 0,
@@ -226,7 +225,7 @@ fn write_bitmasks(
 
             w.write(
                 \\const {s} = packed struct(u{d}) {{
-                \\    _: {d} = 0,
+                \\    _: u{d} = 0,
                 \\}};
                 \\
             , .{ v.name, bits, bits });
@@ -312,7 +311,7 @@ fn write_bitmasks(
                 for (all_bitpos.items, 0..) |bitpos, i| {
                     if (last_bitpos) |lb| {
                         const diff = bitpos.bit - lb;
-                        if (1 < diff and lb != 0) w.write(
+                        if (1 < diff) w.write(
                             \\    _{d}: u{d} = 0,
                             \\
                         , .{ lb, diff - 1 });
@@ -418,7 +417,7 @@ fn write_enums(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase) !voi
     for (db.enums.items) |e| switch (e.type) {
         .@"enum" => {
             w.write(
-                \\pub const {s} = enum(u{d}) {{
+                \\pub const {s} = enum(i{d}) {{
                 \\
             , .{ e.name, e.bitwidth });
 
@@ -727,8 +726,10 @@ fn write_structs(
         for (xml_db.extensions.items) |ext| {
             if (ext.unlocks_type(str.name)) {
                 // Filter out structs enabled by disabled extensions
-                if (ext.supported == .disabled)
+                if (ext.supported == .disabled) {
+                    std.log.info("Filtered out struct: {s}", .{str.name});
                     continue :outer;
+                }
                 w.write(
                     \\// Extension: {s}
                     \\
@@ -842,6 +843,14 @@ fn write_structs(
                     write_struct_member(type_db, &w, &str, &member, type_idx, type_str);
                 }
             }
+
+            // close bitfield type if it was specified in the last struct members
+            if (in_bitfield_mode)
+                w.write(
+                    \\    // Bitfield end
+                    \\    }},
+                    \\
+                , .{});
 
             w.write(
                 \\}};
@@ -1083,9 +1092,20 @@ fn write_command(
                 parameter.len,
                 true,
             );
+
+            var is_handle: bool = false;
+            const t = type_db.get_type(type_idx);
+            switch (t.*) {
+                .base => |base| switch (base) {
+                    .handle_idx => |_| is_handle = true,
+                    else => {},
+                },
+                else => {},
+            }
+
             const type_str = try type_db.type_string(alloc, type_idx);
             var optional_str: []const u8 = &.{};
-            if (parameter.optional)
+            if (parameter.optional and !is_handle)
                 optional_str = "?";
             w.write(
                 \\    {s}: {s}{s},
@@ -1094,11 +1114,20 @@ fn write_command(
         }
 
         const return_type_idx = try type_db.resolve_base(command.return_type);
+        var is_pointer: bool = false;
+        const t = type_db.get_type(return_type_idx);
+        switch (t.*) {
+            .pointer => |_| is_pointer = true,
+            else => {},
+        }
         const type_str = try type_db.type_string(alloc, return_type_idx);
+        var optional_str: []const u8 = &.{};
+        if (is_pointer)
+            optional_str = "?";
         w.write(
-            \\) callconv(.c) {s};
+            \\) callconv(.c) {s}{s};
             \\
-        , .{type_str});
+        , .{ optional_str, type_str });
     }
 }
 

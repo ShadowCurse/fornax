@@ -3183,10 +3183,19 @@ pub const XmlDatabase = struct {
         const attributes_end = parser.skip_attributes() orelse return null;
         if (attributes_end != .attribute_list_end_contained) {
             var members: std.ArrayListUnmanaged(Struct.Member) = .empty;
-            while (parse_struct_member(&parser)) |member| {
-                try members.append(alloc, member);
+            while (true) {
+                if (parse_struct_member(&parser)) |member| {
+                    try members.append(alloc, member);
+                } else {
+                    if (parser.peek_element_start()) |_|
+                        parser.skip_current_element()
+                    else {
+                        parser.skip_to_specific_element_end("type");
+                        break;
+                    }
+                }
             }
-            parser.skip_to_specific_element_end("type");
+
             result.members = members.items;
         }
         original_parser.* = parser;
@@ -3203,6 +3212,35 @@ pub const XmlDatabase = struct {
                 \\    <member values="V"><type>T1</type> <name>N1</name></member>
                 \\    <member optional="true"><type>T2</type>* <name>N2</name></member>
                 \\    <member><type>T3</type> <name>N3</name></member>
+                \\    <member><type>T4</type> <name>N4</name></member>
+                \\</type>----
+            ;
+            var parser: XmlParser = .init(text);
+            const s = (try parse_struct(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            const expected: Struct = .{
+                .name = "N",
+                .extends = "E",
+                .alias = null,
+                .members = &.{
+                    .{ .name = "N1", .type_middle = "T1", .value = "V" },
+                    .{ .name = "N2", .type_middle = "T2", .type_back = "* ", .optional = true },
+                    .{ .name = "N3", .type_middle = "T3" },
+                    .{ .name = "N4", .type_middle = "T4" },
+                },
+            };
+            try std.testing.expectEqualDeep(expected, s);
+        }
+
+        {
+            const text =
+                \\<type category="struct" name="N" structextends="E">
+                \\      <comment>C</comment>
+                \\    <member values="V"><type>T1</type> <name>N1</name></member>
+                \\    <member optional="true"><type>T2</type>* <name>N2</name></member>
+                \\      <comment>C2</comment>
+                \\    <member><type>T3</type> <name>N3</name></member>
+                \\      <comment>C3</comment>
                 \\    <member><type>T4</type> <name>N4</name></member>
                 \\</type>----
             ;
