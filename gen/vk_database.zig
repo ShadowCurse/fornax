@@ -20,6 +20,7 @@ pub const TypeDatabase = struct {
         anyopaque,
         bool,
         u8,
+        u16,
         i32,
         u32,
         i64,
@@ -33,6 +34,7 @@ pub const TypeDatabase = struct {
         anyopaque: void,
         bool: bool,
         u8: u8,
+        u16: u16,
         i32: i32,
         u32: u32,
         i64: i64,
@@ -239,6 +241,7 @@ pub const TypeDatabase = struct {
         _ = try db.add_builtin(.anyopaque);
         _ = try db.add_builtin(.bool);
         const type_idx_u8 = try db.add_builtin(.u8);
+        const type_idx_u16 = try db.add_builtin(.u16);
         const type_idx_i32 = try db.add_builtin(.i32);
         const type_idx_u32 = try db.add_builtin(.u32);
         const type_idx_i64 = try db.add_builtin(.i64);
@@ -248,6 +251,7 @@ pub const TypeDatabase = struct {
 
         _ = try db.add_alias(.{ .name = "char", .type_idx = type_idx_u8 });
         _ = try db.add_alias(.{ .name = "uint8_t", .type_idx = type_idx_u8 });
+        _ = try db.add_alias(.{ .name = "uint16_t", .type_idx = type_idx_u16 });
         _ = try db.add_alias(.{ .name = "int32_t", .type_idx = type_idx_i32 });
         _ = try db.add_alias(.{ .name = "uint32_t", .type_idx = type_idx_u32 });
         _ = try db.add_alias(.{ .name = "int64_t", .type_idx = type_idx_i64 });
@@ -1147,6 +1151,10 @@ pub const TypeDatabase = struct {
                                 result = .init(i);
                                 break;
                             }
+                            if (std.mem.eql(u8, name, "u16") and builtin == .u16) {
+                                result = .init(i);
+                                break;
+                            }
                             if (std.mem.eql(u8, name, "i32") and builtin == .i32) {
                                 result = .init(i);
                                 break;
@@ -1411,6 +1419,7 @@ pub const TypeDatabase = struct {
                             .anyopaque => result = "anyopaque",
                             .bool => result = "bool",
                             .u8 => result = "u8",
+                            .u16 => result = "u16",
                             .i32 => result = "i32",
                             .u32 => result = "u32",
                             .i64 => result = "i64",
@@ -1624,6 +1633,7 @@ test "filtered_database" {
     std.debug.print("anyopaque idx: {any}\n", .{try db.add_builtin(.anyopaque)});
     std.debug.print("bool idx: {any}\n", .{try db.add_builtin(.bool)});
     std.debug.print("u8 idx: {any}\n", .{try db.add_builtin(.u8)});
+    std.debug.print("u16 idx: {any}\n", .{try db.add_builtin(.u16)});
     std.debug.print("i32 idx: {any}\n", .{try db.add_builtin(.i32)});
     std.debug.print("u32 idx: {any}\n", .{try db.add_builtin(.u32)});
     std.debug.print("i64 idx: {any}\n", .{try db.add_builtin(.i64)});
@@ -4009,12 +4019,20 @@ pub const XmlDatabase = struct {
 
         var result: Command.Parameter = .{};
         if (parser.state == .attribute) {
-            parse_attributes("parse_command_parameter", false, &parser, &result, &.{
-                .{ "len", "len" },
-                .{ "altlen", "len" },
-                .{ "optional", null },
-                .{ "validstructs", "valid_structs" },
-            });
+            while (parser.attribute()) |attr| {
+                if (std.mem.eql(u8, attr.name, "len")) {
+                    result.len = attr.value;
+                } else if (std.mem.eql(u8, attr.name, "altlen")) {
+                    result.len = attr.value;
+                } else if (std.mem.eql(u8, attr.name, "optional")) {
+                    result.optional = std.mem.eql(u8, attr.value, "true");
+                } else if (std.mem.eql(u8, attr.name, "validstructs")) {
+                    result.valid_structs = attr.value;
+                } else if (std.mem.eql(u8, attr.name, "api")) {
+                    if (std.mem.eql(u8, attr.value, "vulkansc"))
+                        return null;
+                }
+            }
         }
 
         if (parser.peek_text()) |text|
@@ -4103,6 +4121,15 @@ pub const XmlDatabase = struct {
             };
             try std.testing.expectEqualDeep(expected, m);
         }
+
+        {
+            const text =
+                \\<param api="vulkansc">const <type>T</type>* <name>N</name></param>----
+            ;
+            var parser: XmlParser = .init(text);
+            const m = parse_command_parameter(&parser);
+            try std.testing.expectEqual(null, m);
+        }
     }
 
     pub fn parse_command(alloc: Allocator, original_parser: *XmlParser) !?Command {
@@ -4155,7 +4182,12 @@ pub const XmlDatabase = struct {
                 if (parse_command_parameter(&parser)) |t| {
                     try values.append(alloc, t);
                 } else {
-                    parser.skip_current_element();
+                    if (parser.peek_element_start()) |_|
+                        parser.skip_current_element()
+                    else {
+                        parser.skip_to_specific_element_end("command");
+                        break;
+                    }
                 }
             }
             _ = parser.next();

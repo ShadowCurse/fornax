@@ -13830,12 +13830,16 @@ pub const VkClusterAccelerationStructureBuildTriangleClusterInfoNV = extern stru
     baseGeometryIndexAndGeometryFlags: VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV = .{},
     // Extern sync: false
     // Optional: false
+    indexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    vertexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    geometryIndexAndFlagsBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    opacityMicromapIndexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
     indexBuffer: u64 = 0,
@@ -13886,12 +13890,16 @@ pub const VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV = ext
     baseGeometryIndexAndGeometryFlags: VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV = .{},
     // Extern sync: false
     // Optional: false
+    indexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    vertexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    geometryIndexAndFlagsBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
+    opacityMicromapIndexBufferStride: u16 = 0,
     // Extern sync: false
     // Optional: false
     indexBuffer: u64 = 0,
@@ -23636,6 +23644,7 @@ pub const VkPipelineRasterizationLineStateCreateInfo = extern struct {
     lineStippleFactor: u32 = 0,
     // Extern sync: false
     // Optional: false
+    lineStipplePattern: u16 = 0,
 };
 // Extension: VK_KHR_line_rasterization
 pub const VkPipelineRasterizationLineStateCreateInfoKHR = VkPipelineRasterizationLineStateCreateInfo;
@@ -33182,8 +33191,10 @@ pub const VkMicromapTriangleEXT = extern struct {
     dataOffset: u32 = 0,
     // Extern sync: false
     // Optional: false
+    subdivisionLevel: u16 = 0,
     // Extern sync: false
     // Optional: false
+    format: u16 = 0,
 };
 // Extension: VK_EXT_opacity_micromap
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -40582,8 +40593,6 @@ pub const vkCreateSharedSwapchainsKHR = fn (
     swapchainCount: u32,
     // len: swapchainCount
     pCreateInfos: [*]const VkSwapchainCreateInfoKHR,
-    // len: swapchainCount
-    pCreateInfos: [*]const VkSwapchainCreateInfoKHR,
     pAllocator: ?*const VkAllocationCallbacks,
     // len: swapchainCount
     pSwapchains: [*]VkSwapchainKHR,
@@ -40642,7 +40651,6 @@ pub const vkGetPhysicalDeviceSurfacePresentModesKHR = fn (
 // Can be used without queues: false
 pub const vkCreateSwapchainKHR = fn (
     device: VkDevice,
-    pCreateInfo: *const VkSwapchainCreateInfoKHR,
     pCreateInfo: *const VkSwapchainCreateInfoKHR,
     pAllocator: ?*const VkAllocationCallbacks,
     pSwapchain: *VkSwapchainKHR,
@@ -43202,7 +43210,7 @@ pub const vkGetPipelineExecutableInternalRepresentationsKHR = fn (
 pub const vkCmdSetLineStipple = fn (
     commandBuffer: VkCommandBuffer,
     lineStippleFactor: u32,
-    lineStipplePattern: uint16_t,
+    lineStipplePattern: u16,
 ) callconv(.c) void;
 // Extension: VK_KHR_line_rasterization
 pub const vkCmdSetLineStippleKHR = vkCmdSetLineStipple;
@@ -74055,7 +74063,6 @@ pub const SECURITY_ATTRIBUTES = if (@hasDecl(@import("root"), "SECURITY_ATTRIBUT
 pub const DWORD = if (@hasDecl(@import("root"), "DWORD")) @import("root").DWORD else @compileError("Unknown type: {DWORD}");
 pub const NvSciBufAttrList = if (@hasDecl(@import("root"), "NvSciBufAttrList")) @import("root").NvSciBufAttrList else @compileError("Unknown type: {NvSciBufAttrList}");
 pub const NvSciBufObj = if (@hasDecl(@import("root"), "NvSciBufObj")) @import("root").NvSciBufObj else @compileError("Unknown type: {NvSciBufObj}");
-pub const uint16_t = if (@hasDecl(@import("root"), "uint16_t")) @import("root").uint16_t else @compileError("Unknown type: {uint16_t}");
 pub const LPCWSTR = if (@hasDecl(@import("root"), "LPCWSTR")) @import("root").LPCWSTR else @compileError("Unknown type: {LPCWSTR}");
 pub const int = if (@hasDecl(@import("root"), "int")) @import("root").int else @compileError("Unknown type: {int}");
 pub const NvSciSyncAttrList = if (@hasDecl(@import("root"), "NvSciSyncAttrList")) @import("root").NvSciSyncAttrList else @compileError("Unknown type: {NvSciSyncAttrList}");
