@@ -9868,7 +9868,7 @@ pub const VkImageViewCreateInfo = extern struct {
     format: VkFormat,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping = .{},
+    components: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     subresourceRange: VkImageSubresourceRange = .{},
@@ -10441,7 +10441,7 @@ pub const VkComputePipelineCreateInfo = extern struct {
     flags: VkPipelineCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    stage: VkPipelineShaderStageCreateInfo = .{},
+    stage: VkPipelineShaderStageCreateInfo,
     // Extern sync: false
     // Optional: false
     // Comment: Interface layout of the pipeline
@@ -10846,10 +10846,10 @@ pub const VkPipelineDepthStencilStateCreateInfo = extern struct {
     stencilTestEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    front: VkStencilOpState = .{},
+    front: VkStencilOpState,
     // Extern sync: false
     // Optional: false
-    back: VkStencilOpState = .{},
+    back: VkStencilOpState,
     // Extern sync: false
     // Optional: false
     minDepthBounds: f32 = 0,
@@ -11011,7 +11011,7 @@ pub const VkPipelineCacheSafetyCriticalIndexEntry = extern struct {
 pub const VkPipelineCacheHeaderVersionSafetyCriticalOne = extern struct {
     // Extern sync: false
     // Optional: false
-    headerVersionOne: VkPipelineCacheHeaderVersionOne = .{},
+    headerVersionOne: VkPipelineCacheHeaderVersionOne,
     // Extern sync: false
     // Optional: false
     validationVersion: VkPipelineCacheValidationVersion,
@@ -14054,7 +14054,7 @@ pub const VkClusterAccelerationStructureCommandsInfoNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    input: VkClusterAccelerationStructureInputInfoNV = .{},
+    input: VkClusterAccelerationStructureInputInfoNV,
     // Extern sync: false
     // Optional: true
     dstImplicitData: u64 = 0,
@@ -14408,7 +14408,7 @@ pub const VkPhysicalDeviceProperties2 = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    properties: VkPhysicalDeviceProperties = .{},
+    properties: VkPhysicalDeviceProperties,
 };
 // Extension: VK_KHR_get_physical_device_properties2
 pub const VkPhysicalDeviceProperties2KHR = VkPhysicalDeviceProperties2;
@@ -17152,7 +17152,7 @@ pub const VkSurfaceFormat2KHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    surfaceFormat: VkSurfaceFormatKHR = .{},
+    surfaceFormat: VkSurfaceFormatKHR,
 };
 // Extension: VK_KHR_get_display_properties2
 // Returned only: true
@@ -17600,7 +17600,7 @@ pub const VkSamplerYcbcrConversionCreateInfo = extern struct {
     ycbcrRange: VkSamplerYcbcrRange,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping = .{},
+    components: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     xChromaOffset: VkChromaLocation,
@@ -17872,7 +17872,7 @@ pub const VkAttachmentSampleLocationsEXT = extern struct {
     attachmentIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
+    sampleLocationsInfo: VkSampleLocationsInfoEXT,
 };
 // Extension: VK_EXT_sample_locations
 // Returned only: false
@@ -17883,7 +17883,7 @@ pub const VkSubpassSampleLocationsEXT = extern struct {
     subpassIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
+    sampleLocationsInfo: VkSampleLocationsInfoEXT,
 };
 // Extension: VK_EXT_sample_locations
 // Extends: VkRenderPassBeginInfo
@@ -17927,7 +17927,7 @@ pub const VkPipelineSampleLocationsStateCreateInfoEXT = extern struct {
     sampleLocationsEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
+    sampleLocationsInfo: VkSampleLocationsInfoEXT,
 };
 // Extension: VK_EXT_sample_locations
 // Extends: VkPhysicalDeviceProperties2
@@ -18490,7 +18490,7 @@ pub const VkPhysicalDeviceLayeredApiVulkanPropertiesKHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    properties: VkPhysicalDeviceProperties2 = .{},
+    properties: VkPhysicalDeviceProperties2,
 };
 // Extension: VK_KHR_maintenance8
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -20068,7 +20068,7 @@ pub const VkAndroidHardwareBufferFormatPropertiesANDROID = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping = .{},
+    samplerYcbcrConversionComponents: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
@@ -21339,10 +21339,10 @@ pub const VkGeometryAABBNV = extern struct {
 pub const VkGeometryDataNV = extern struct {
     // Extern sync: false
     // Optional: false
-    triangles: VkGeometryTrianglesNV = .{},
+    triangles: VkGeometryTrianglesNV,
     // Extern sync: false
     // Optional: false
-    aabbs: VkGeometryAABBNV = .{},
+    aabbs: VkGeometryAABBNV,
 };
 // Extension: VK_NV_ray_tracing
 // Returned only: false
@@ -21405,7 +21405,7 @@ pub const VkAccelerationStructureCreateInfoNV = extern struct {
     compactedSize: u64 = 0,
     // Extern sync: false
     // Optional: false
-    info: VkAccelerationStructureInfoNV = .{},
+    info: VkAccelerationStructureInfoNV,
 };
 // Extension: VK_NV_ray_tracing
 // Returned only: false
@@ -22032,7 +22032,7 @@ pub const VkRenderPassFragmentDensityMapCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    fragmentDensityMapAttachment: VkAttachmentReference = .{},
+    fragmentDensityMapAttachment: VkAttachmentReference,
 };
 // Extension: VK_EXT_fragment_density_map_offset
 // Extends: VkSubpassEndInfo,VkRenderingEndInfoKHR
@@ -24671,7 +24671,7 @@ pub const VkSamplerBorderColorComponentMappingCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping = .{},
+    components: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     srgb: u32 = 0,
@@ -25598,7 +25598,7 @@ pub const VkBuildPartitionedAccelerationStructureInfoNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    input: VkPartitionedAccelerationStructureInstancesInputNV = .{},
+    input: VkPartitionedAccelerationStructureInstancesInputNV,
     // Extern sync: false
     // Optional: true
     srcAccelerationStructureData: u64 = 0,
@@ -28370,7 +28370,7 @@ pub const VkVideoFormatPropertiesKHR = extern struct {
     format: VkFormat,
     // Extern sync: false
     // Optional: false
-    componentMapping: VkComponentMapping = .{},
+    componentMapping: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     imageCreateFlags: VkImageCreateFlags = .{},
@@ -28700,7 +28700,7 @@ pub const VkVideoDecodeInfoKHR = extern struct {
     srcBufferRange: u64 = 0,
     // Extern sync: false
     // Optional: false
-    dstPictureResource: VkVideoPictureResourceInfoKHR = .{},
+    dstPictureResource: VkVideoPictureResourceInfoKHR,
     // Extern sync: false
     // Optional: true
     pSetupReferenceSlot: ?*const VkVideoReferenceSlotInfoKHR = null,
@@ -29422,7 +29422,7 @@ pub const VkVideoEncodeInfoKHR = extern struct {
     dstBufferRange: u64 = 0,
     // Extern sync: false
     // Optional: false
-    srcPictureResource: VkVideoPictureResourceInfoKHR = .{},
+    srcPictureResource: VkVideoPictureResourceInfoKHR,
     // Extern sync: false
     // Optional: true
     pSetupReferenceSlot: ?*const VkVideoReferenceSlotInfoKHR = null,
@@ -31903,10 +31903,10 @@ pub const VkBufferCollectionPropertiesFUCHSIA = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    sysmemColorSpaceIndex: VkSysmemColorSpaceFUCHSIA = .{},
+    sysmemColorSpaceIndex: VkSysmemColorSpaceFUCHSIA,
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping = .{},
+    samplerYcbcrConversionComponents: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
@@ -31932,13 +31932,13 @@ pub const VkBufferConstraintsInfoFUCHSIA = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    createInfo: VkBufferCreateInfo = .{},
+    createInfo: VkBufferCreateInfo,
     // Extern sync: false
     // Optional: true
     requiredFormatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA = .{},
+    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA,
 };
 // Extension: VK_FUCHSIA_buffer_collection
 // Returned only: false
@@ -31966,7 +31966,7 @@ pub const VkImageFormatConstraintsInfoFUCHSIA = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    imageCreateInfo: VkImageCreateInfo = .{},
+    imageCreateInfo: VkImageCreateInfo,
     // Extern sync: false
     // Optional: false
     requiredFormatFeatures: VkFormatFeatureFlags = .{},
@@ -32003,7 +32003,7 @@ pub const VkImageConstraintsInfoFUCHSIA = extern struct {
     pFormatConstraints: ?[*]const VkImageFormatConstraintsInfoFUCHSIA = null,
     // Extern sync: false
     // Optional: false
-    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA = .{},
+    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA,
     // Extern sync: false
     // Optional: true
     flags: VkImageConstraintsInfoFlagsFUCHSIA = .{},
@@ -32212,7 +32212,7 @@ pub const VkAndroidHardwareBufferFormatProperties2ANDROID = extern struct {
     formatFeatures: VkFormatFeatureFlags2 = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping = .{},
+    samplerYcbcrConversionComponents: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
@@ -35196,7 +35196,7 @@ pub const VkScreenBufferFormatPropertiesQNX = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping = .{},
+    samplerYcbcrConversionComponents: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
@@ -38252,10 +38252,10 @@ pub const VkQueueFamilyDataGraphPropertiesARM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    engine: VkPhysicalDeviceDataGraphProcessingEngineARM = .{},
+    engine: VkPhysicalDeviceDataGraphProcessingEngineARM,
     // Extern sync: false
     // Optional: false
-    operation: VkPhysicalDeviceDataGraphOperationSupportARM = .{},
+    operation: VkPhysicalDeviceDataGraphOperationSupportARM,
 };
 // Extension: VK_ARM_data_graph
 // Returned only: false
@@ -38563,7 +38563,7 @@ pub const VkNativeBufferFormatPropertiesOHOS = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping = .{},
+    samplerYcbcrConversionComponents: VkComponentMapping,
     // Extern sync: false
     // Optional: false
     suggestedYcbcrModel: VkSamplerYcbcrModelConversion,

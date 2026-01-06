@@ -884,11 +884,29 @@ fn write_struct_member(
                         \\
                     , .{ member.name, type_str });
                 },
-                .struct_idx => |_| {
+                .struct_idx => |struct_idx| {
+                    var should_have_default: bool = true;
+                    const s = type_db.get_struct(struct_idx);
+                    for (s.fields) |field| {
+                        const tt = type_db.get_type(field.type_idx);
+                        switch (tt.*) {
+                            .base => |b| {
+                                switch (b) {
+                                    .enum_idx, .union_idx => should_have_default = false,
+                                    else => {},
+                                }
+                            },
+                            else => {},
+                        }
+                    }
+                    var default_str: []const u8 = &.{};
+                    if (should_have_default)
+                        default_str = " = .{}";
+
                     w.write(
-                        \\    {s}: {s} = .{{}},
+                        \\    {s}: {s}{s},
                         \\
-                    , .{ member.name, type_str });
+                    , .{ member.name, type_str, default_str });
                 },
                 .bitfield_idx => |_| {
                     w.write(
