@@ -10393,7 +10393,7 @@ pub const VkSpecializationInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Pointer to SpecConstant data
-    pData: ?[*]const anyopaque = null,
+    pData: ?*const anyopaque = null,
 };
 // Extension: VK_COMPUTE_VERSION_1_0
 // Returned only: false
@@ -10946,7 +10946,7 @@ pub const VkPipelineCacheCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Initial data to populate cache
-    pInitialData: ?[*]const anyopaque = null,
+    pInitialData: ?*const anyopaque = null,
 };
 // Extension: VK_COMPUTE_VERSION_1_0
 // Returned only: false
@@ -11113,7 +11113,7 @@ pub const VkPipelineBinaryDataKHR = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: false
-    pData: ?[*]anyopaque = null,
+    pData: ?*anyopaque = null,
 };
 // Extension: VK_KHR_pipeline_binary
 // Returned only: false
@@ -13171,7 +13171,7 @@ pub const VkLayerSettingEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Values to pass for a setting
-    pValues: ?[*]const anyopaque = null,
+    pValues: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_application_parameters
 // Extends: VkApplicationInfo,VkDeviceCreateInfo
@@ -13269,7 +13269,7 @@ pub const VkDebugMarkerObjectTagInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Tag data to attach to the object
-    pTag: ?[*]const anyopaque = null,
+    pTag: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_debug_marker
 // Returned only: false
@@ -16796,7 +16796,7 @@ pub const VkHdrVividDynamicMetadataHUAWEI = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Binary code of size dynamicMetadataSize
-    pDynamicMetadata: ?[*]const anyopaque = null,
+    pDynamicMetadata: ?*const anyopaque = null,
 };
 // Extension: VK_AMD_display_native_hdr
 // Extends: VkSurfaceCapabilities2KHR
@@ -18134,7 +18134,7 @@ pub const VkWriteDescriptorSetInlineUniformBlock = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: false
-    pData: ?[*]const anyopaque = null,
+    pData: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_inline_uniform_block
 pub const VkWriteDescriptorSetInlineUniformBlockEXT = VkWriteDescriptorSetInlineUniformBlock;
@@ -18223,7 +18223,7 @@ pub const VkValidationCacheCreateInfoEXT = extern struct {
     // Length member: initialDataSize
     // Extern sync: false
     // Optional: false
-    pInitialData: ?[*]const anyopaque = null,
+    pInitialData: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_validation_cache
 // Extends: VkShaderModuleCreateInfo,VkPipelineShaderStageCreateInfo
@@ -18930,7 +18930,7 @@ pub const VkDebugUtilsObjectTagInfoEXT = extern struct {
     // Length member: tagSize
     // Extern sync: false
     // Optional: false
-    pTag: ?[*]const anyopaque = null,
+    pTag: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_debug_utils
 // Returned only: false
@@ -23350,7 +23350,7 @@ pub const VkPipelineExecutableInternalRepresentationKHR = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: true
-    pData: ?[*]anyopaque = null,
+    pData: ?*anyopaque = null,
 };
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -30986,7 +30986,7 @@ pub const VkCuModuleCreateInfoNVX = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: false
-    pData: ?[*]const anyopaque = null,
+    pData: ?*const anyopaque = null,
 };
 // Extension: VK_NVX_binary_import
 // Extends: VkCuModuleCreateInfoNVX
@@ -32050,7 +32050,7 @@ pub const VkCudaModuleCreateInfoNV = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: false
-    pData: ?[*]const anyopaque = null,
+    pData: ?*const anyopaque = null,
 };
 // Extension: VK_NV_cuda_kernel_launch
 // Returned only: false
@@ -34449,7 +34449,7 @@ pub const VkFrameBoundaryEXT = extern struct {
     // Length member: tagSize
     // Extern sync: false
     // Optional: true
-    pTag: ?[*]const anyopaque = null,
+    pTag: ?*const anyopaque = null,
 };
 // Extension: VK_EXT_frame_boundary
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -35074,7 +35074,7 @@ pub const VkShaderCreateInfoEXT = extern struct {
     // Length member: codeSize
     // Extern sync: false
     // Optional: false
-    pCode: ?[*]const anyopaque = null,
+    pCode: ?*const anyopaque = null,
     // Length member: null-terminated
     // Extern sync: false
     // Optional: true
@@ -35661,7 +35661,7 @@ pub const VkPushConstantsInfo = extern struct {
     // Length member: size
     // Extern sync: false
     // Optional: false
-    pValues: ?[*]const anyopaque = null,
+    pValues: ?*const anyopaque = null,
 };
 // Extension: VK_KHR_maintenance6
 pub const VkPushConstantsInfoKHR = VkPushConstantsInfo;
@@ -38179,7 +38179,7 @@ pub const VkDataGraphPipelinePropertyQueryResultARM = extern struct {
     // Length member: dataSize
     // Extern sync: false
     // Optional: true
-    pData: ?[*]anyopaque = null,
+    pData: ?*anyopaque = null,
 };
 // Extension: VK_ARM_data_graph
 // Extends: VkDataGraphPipelineCreateInfoARM
@@ -39361,7 +39361,7 @@ pub const vkGetQueryPoolResults = fn (
     queryCount: u32,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
     stride: u64,
     flags: ?VkQueryResultFlags,
 ) callconv(.c) VkResult;
@@ -39479,7 +39479,7 @@ pub const vkGetPipelineCacheData = fn (
     pipelineCache: VkPipelineCache,
     pDataSize: *u64,
     // len: pDataSize
-    pData: ?[*]anyopaque,
+    pData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -39527,7 +39527,7 @@ pub const vkGetPipelineBinaryDataKHR = fn (
     pPipelineBinaryKey: *VkPipelineBinaryKeyKHR,
     pPipelineBinaryDataSize: *u64,
     // len: pPipelineBinaryDataSize
-    pPipelineBinaryData: ?[*]anyopaque,
+    pPipelineBinaryData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_KHR_pipeline_binary
 // Success codes: VK_SUCCESS
@@ -40211,7 +40211,7 @@ pub const vkCmdUpdateBuffer = fn (
     dstOffset: u64,
     dataSize: u64,
     // len: dataSize
-    pData: [*]const anyopaque,
+    pData: *const anyopaque,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
@@ -40451,7 +40451,7 @@ pub const vkCmdPushConstants = fn (
     offset: u32,
     size: u32,
     // len: size
-    pValues: [*]const anyopaque,
+    pValues: *const anyopaque,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: outside
@@ -41975,7 +41975,7 @@ pub const vkGetValidationCacheDataEXT = fn (
     validationCache: VkValidationCacheEXT,
     pDataSize: *u64,
     // len: pDataSize
-    pData: ?[*]anyopaque,
+    pData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_EXT_validation_cache
 // Success codes: VK_SUCCESS
@@ -42044,7 +42044,7 @@ pub const vkGetShaderInfoAMD = fn (
     infoType: VkShaderInfoTypeAMD,
     pInfoSize: *u64,
     // len: pInfoSize
-    pInfo: ?[*]anyopaque,
+    pInfo: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_AMD_display_native_hdr
 // Can be used without queues: false
@@ -42758,7 +42758,7 @@ pub const vkWriteAccelerationStructuresPropertiesKHR = fn (
     queryType: VkQueryType,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
     stride: u64,
 ) callconv(.c) VkResult;
 // Extension: VK_KHR_ray_tracing_pipeline
@@ -42811,7 +42811,7 @@ pub const vkGetRayTracingShaderGroupHandlesKHR = fn (
     groupCount: u32,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_NV_ray_tracing
 pub const vkGetRayTracingShaderGroupHandlesNV = vkGetRayTracingShaderGroupHandlesKHR;
@@ -42826,7 +42826,7 @@ pub const vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = fn (
     groupCount: u32,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS
@@ -42837,7 +42837,7 @@ pub const vkGetAccelerationStructureHandleNV = fn (
     accelerationStructure: VkAccelerationStructureNV,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS,VK_PIPELINE_COMPILE_REQUIRED_EXT
@@ -44367,7 +44367,7 @@ pub const vkGetEncodedVideoSessionParametersKHR = fn (
     pFeedbackInfo: ?*VkVideoEncodeSessionParametersFeedbackInfoKHR,
     pDataSize: *u64,
     // len: pDataSize
-    pData: ?[*]anyopaque,
+    pData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_KHR_video_queue
 // Can be used without queues: false
@@ -44584,7 +44584,7 @@ pub const vkGetDescriptorEXT = fn (
     pDescriptorInfo: *const VkDescriptorGetInfoEXT,
     dataSize: u64,
     // len: dataSize
-    pDescriptor: [*]anyopaque,
+    pDescriptor: *anyopaque,
 ) callconv(.c) void;
 // Extension: VK_EXT_descriptor_buffer
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_DATA_GRAPH_BIT_ARM
@@ -44780,7 +44780,7 @@ pub const vkGetCudaModuleCacheNV = fn (
     module: VkCudaModuleNV,
     pCacheSize: *u64,
     // len: pCacheSize
-    pCacheData: ?[*]anyopaque,
+    pCacheData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_NV_cuda_kernel_launch
 // Success codes: VK_SUCCESS
@@ -44987,7 +44987,7 @@ pub const vkWriteMicromapsPropertiesEXT = fn (
     queryType: VkQueryType,
     dataSize: u64,
     // len: dataSize
-    pData: [*]anyopaque,
+    pData: *anyopaque,
     stride: u64,
 ) callconv(.c) VkResult;
 // Extension: VK_EXT_opacity_micromap
@@ -45212,7 +45212,7 @@ pub const vkGetShaderBinaryDataEXT = fn (
     shader: VkShaderEXT,
     pDataSize: *u64,
     // len: pDataSize
-    pData: ?[*]anyopaque,
+    pData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT

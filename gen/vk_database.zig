@@ -1270,8 +1270,9 @@ pub const TypeDatabase = struct {
 
     pub fn resolve_pointer(
         self: *TypeDatabase,
-        pointer: Type.Pointer,
+        _pointer: Type.Pointer,
     ) !Type.Idx {
+        var pointer = _pointer;
         // if this is a `void*` style pointer, change it to `anyopaque` pointer
         var actual_base_type_idx = pointer.base_type_idx;
         const base_type = self.get_type(pointer.base_type_idx);
@@ -1281,6 +1282,7 @@ pub const TypeDatabase = struct {
                     switch (base.builtin) {
                         .void => {
                             actual_base_type_idx = try self.resolve_base("anyopaque");
+                            pointer.is_slice = false;
                         },
                         else => {},
                     }
@@ -1414,19 +1416,7 @@ pub const TypeDatabase = struct {
             .base => |base| {
                 switch (base) {
                     .builtin => |builtin| {
-                        switch (builtin) {
-                            .void => result = "void",
-                            .anyopaque => result = "anyopaque",
-                            .bool => result = "bool",
-                            .u8 => result = "u8",
-                            .u16 => result = "u16",
-                            .i32 => result = "i32",
-                            .u32 => result = "u32",
-                            .i64 => result = "i64",
-                            .u64 => result = "u64",
-                            .f32 => result = "f32",
-                            .f64 => result = "f64",
-                        }
+                        result = @tagName(builtin);
                     },
                     .constant_idx => |idx| {
                         result = self.get_constant(idx).name;
@@ -1720,6 +1710,7 @@ test "c_type_parts_to_type" {
 
     var db: TypeDatabase = .{ .alloc = alloc };
     _ = try db.add_builtin(.u32);
+    _ = try db.add_builtin(.void);
     _ = try db.add_constant(.{ .name = "c0", .value = .{ .u32 = 69 } });
 
     {
@@ -1800,6 +1791,21 @@ test "c_type_parts_to_type" {
         );
         const t_str = try db.type_string(alloc, t);
         try std.testing.expectEqualSlices(u8, "[*]const [*:0]const u32", t_str);
+    }
+
+    {
+        // `const void*` pointing to the array of values should be converted
+        // to normal pointer `*const anyopaque` since `[*]const anyopaque` is invalid syntax
+        const t = try db.c_type_parts_to_type(
+            "const",
+            "void",
+            "*",
+            null,
+            "A",
+            true,
+        );
+        const t_str = try db.type_string(alloc, t);
+        try std.testing.expectEqualSlices(u8, "*const anyopaque", t_str);
     }
 }
 
