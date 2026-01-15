@@ -94,6 +94,16 @@ pub const TypeDatabase = struct {
                 return result;
             }
         };
+
+        pub fn struct_idx(self: Type) Struct.Idx {
+            var result: Struct.Idx = .none;
+            if (self == .base) {
+                if (self.base == .struct_idx) {
+                    result = self.base.struct_idx;
+                }
+            }
+            return result;
+        }
     };
 
     pub const Constant = struct {
@@ -129,14 +139,46 @@ pub const TypeDatabase = struct {
     pub const Struct = struct {
         name: []const u8 = &.{},
         fields: []const Field = &.{},
-        extends: ?[]const Type.Idx = null,
+        extends: []const Type.Idx = &.{},
         enabled_by_extension: ?[]const u8 = null,
+        // metedata
+        alias: ?[]const u8 = null,
+        comment: ?[]const u8 = null,
+        returnedonly: bool = false,
+        allowduplicate: bool = false,
 
-        pub const Field = struct {
+        pub const Field = union(enum) {
+            single_field: SingleField,
+            packed_field: PackedField,
+        };
+
+        pub const SingleField = struct {
             name: []const u8 = &.{},
             type_idx: Type.Idx = .none,
             stype_value: ?[]const u8 = null,
             len_expression: ?[]const u8 = null,
+            // metadata
+            api: ?[]const u8 = null,
+            stride: ?[]const u8 = null,
+            deprecated: ?[]const u8 = null,
+            externsync: bool = false,
+            optional: bool = false,
+            // If member is a union, what field selects the union value
+            selector: ?[]const u8 = null,
+            // If member is a raw u64 handle, which other member specifies what handle it is
+            objecttype: ?[]const u8 = null,
+            featurelink: ?[]const u8 = null,
+            comment: ?[]const u8 = null,
+        };
+
+        pub const PackedField = struct {
+            parts: []const @This().Part = &.{},
+            backing_integer_width: u32 = 32,
+
+            pub const Part = struct {
+                name: []const u8 = &.{},
+                bits: u32,
+            };
         };
 
         pub const Idx = enum(u32) {
@@ -186,14 +228,12 @@ pub const TypeDatabase = struct {
         // backed by signed integer
         backing_integer_width: u32 = 32,
         values: []const Value = &.{},
-
         // metadata
         comment: ?[]const u8 = null,
 
         pub const Value = struct {
             name: []const u8 = &.{},
             value: i64 = 0,
-
             // metadata
             enabled_by_extension: ?[]const u8 = null,
             comment: ?[]const u8 = null,
@@ -516,12 +556,22 @@ pub const TypeDatabase = struct {
 
         outer: for (xml_database.types.structs) |@"struct"| {
             var enabled_by_extension: ?[]const u8 = null;
-            for (xml_database.extensions.items) |ext| {
+            for (xml_database.features.items) |ext| {
                 if (ext.unlocks_type(@"struct".name)) {
-                    if (ext.supported == .disabled)
-                        continue :outer
-                    else
-                        enabled_by_extension = ext.name;
+                    enabled_by_extension = ext.name;
+                    break;
+                }
+            }
+            if (enabled_by_extension == null) {
+                for (xml_database.extensions.items) |ext| {
+                    if (ext.unlocks_type(@"struct".name)) {
+                        if (ext.supported == .disabled) {
+                            continue :outer;
+                        } else {
+                            enabled_by_extension = ext.name;
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -535,28 +585,66 @@ pub const TypeDatabase = struct {
             }
 
             var fields: std.ArrayListUnmanaged(Struct.Field) = .empty;
-            for (@"struct".members) |member| {
-                const type_idx = try db.c_type_parts_to_type(
-                    member.type_front,
-                    member.type_middle,
-                    member.type_back,
-                    member.dimensions,
-                    member.len,
-                    false,
-                );
-                const field: Struct.Field = .{
-                    .name = member.name,
-                    .type_idx = type_idx,
-                    .stype_value = member.value,
-                    .len_expression = member.len,
-                };
-                try fields.append(alloc, field);
+            var field_idx: u32 = 0;
+            while (field_idx < @"struct".members.len) {
+                var member = @"struct".members[field_idx];
+                if (member.dimensions != null and member.dimensions.?[0] == ':') {
+                    var parts: std.ArrayListUnmanaged(Struct.PackedField.Part) = .empty;
+                    while (field_idx < @"struct".members.len) : (field_idx += 1) {
+                        member = @"struct".members[field_idx];
+                        if (member.dimensions == null or member.dimensions.?[0] != ':') {
+                            break;
+                        } else {
+                            const bits = try std.fmt.parseInt(u32, member.dimensions.?[1..], 10);
+                            const part: Struct.PackedField.Part = .{
+                                .name = member.name,
+                                .bits = bits,
+                            };
+                            try parts.append(alloc, part);
+                        }
+                    }
+                    const packed_field: Struct.PackedField = .{
+                        .parts = parts.items,
+                    };
+                    try fields.append(alloc, .{ .packed_field = packed_field });
+                } else {
+                    const type_idx = try db.c_type_parts_to_type(
+                        member.type_front,
+                        member.type_middle,
+                        member.type_back,
+                        member.dimensions,
+                        member.len,
+                        false,
+                    );
+                    const single_field: Struct.SingleField = .{
+                        .name = member.name,
+                        .type_idx = type_idx,
+                        .stype_value = member.value,
+                        .len_expression = member.len,
+                        .api = member.api,
+                        .stride = member.stride,
+                        .deprecated = member.deprecated,
+                        .externsync = member.externsync,
+                        .optional = member.optional,
+                        .selector = member.selector,
+                        .objecttype = member.objecttype,
+                        .featurelink = member.featurelink,
+                        .comment = member.comment,
+                    };
+                    try fields.append(alloc, .{ .single_field = single_field });
+                    field_idx += 1;
+                }
             }
 
             const s: Struct = .{
                 .name = @"struct".name,
-                .extends = extends.items,
                 .fields = fields.items,
+                .extends = extends.items,
+                .enabled_by_extension = enabled_by_extension,
+                .alias = @"struct".alias,
+                .comment = @"struct".comment,
+                .returnedonly = @"struct".returnedonly,
+                .allowduplicate = @"struct".allowduplicate,
             };
             _ = try db.add_struct(s);
         }

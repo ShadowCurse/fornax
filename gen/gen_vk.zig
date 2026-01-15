@@ -36,7 +36,7 @@ pub fn main() !void {
     _ = tmp_arena.reset(.retain_capacity);
     try write_enums(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_structs(tmp_alloc, file, &xml_db, &type_db);
+    try write_structs(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
     try write_unions(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
@@ -498,12 +498,7 @@ fn write_funtions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !
         try write_command(alloc, type_db, &w, f);
 }
 
-fn write_structs(
-    alloc: Allocator,
-    file: std.fs.File,
-    xml_db: *const XmlDatabase,
-    type_db: *TypeDatabase,
-) !void {
+fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -511,142 +506,117 @@ fn write_structs(
         \\
     , .{});
 
-    outer: for (xml_db.types.structs) |str| {
-        for (xml_db.features.items) |ext| {
-            if (ext.unlocks_type(str.name)) w.write(
-                \\// Extension: {s}
-                \\
-            , .{ext.name});
-        }
-        for (xml_db.extensions.items) |ext| {
-            if (ext.unlocks_type(str.name)) {
-                // Filter out structs enabled by disabled extensions
-                if (ext.supported == .disabled) {
-                    std.log.info("Filtered out struct: {s}", .{str.name});
-                    continue :outer;
-                }
-                w.write(
-                    \\// Extension: {s}
-                    \\
-                , .{ext.name});
-            }
-        }
-        if (str.alias) |c| {
+    for (type_db.structs.items) |@"struct"| {
+        if (@"struct".enabled_by_extension) |ext| w.write(
+            \\// Extension: {s}
+            \\
+        , .{ext});
+
+        if (@"struct".alias) |c| {
             w.write(
                 \\pub const {s} = {s};
                 \\
-            , .{ str.name, c });
+            , .{ @"struct".name, c });
         } else {
-            if (str.comment) |c| w.write(
+            if (@"struct".comment) |c| w.write(
                 \\// Comment: {s}
                 \\
             , .{c});
 
-            if (str.extends) |extends| w.write(
-                \\// Extends: {s}
-                \\
-            , .{extends});
+            if (@"struct".extends.len != 0) {
+                w.write(
+                    \\// Extends: 
+                , .{});
+                for (@"struct".extends, 0..) |e, i| {
+                    const t = type_db.get_type(e);
+                    const s = type_db.get_struct(t.struct_idx());
+                    w.write(
+                        \\{s}
+                    , .{s.name});
+                    if (i != @"struct".extends.len - 1) {
+                        w.write(
+                            \\,
+                        , .{});
+                    }
+                }
+                w.write(
+                    \\
+                    \\
+                , .{});
+            }
             w.write(
                 \\// Returned only: {}
                 \\// Allow duplicate in pNext chain: {}
                 \\pub const {s} = extern struct {{
                 \\
-            , .{ str.returnedonly, str.allowduplicate, str.name });
+            , .{ @"struct".returnedonly, @"struct".allowduplicate, @"struct".name });
 
-            var in_bitfield_mode: bool = false;
-            var bitfield_idx: u8 = 0;
-            for (str.members) |member| {
-                if (member.dimensions) |dim| {
-                    if (dim[0] == ':') {
-                        if (!in_bitfield_mode) {
-                            in_bitfield_mode = true;
-                            w.write(
-                                \\    // Bitfield start
-                                \\    bitfield{d}: packed struct(u32) {{
-                                \\
-                            , .{bitfield_idx});
-                            bitfield_idx += 1;
-                        }
-                    } else {
-                        if (in_bitfield_mode)
-                            w.write(
-                                \\    // Bitfield end
-                                \\    }},
-                                \\
-                            , .{});
-                        in_bitfield_mode = false;
-                    }
-                } else {
-                    if (in_bitfield_mode)
+            var packed_field_idx: u8 = 0;
+            for (@"struct".fields) |f| {
+                switch (f) {
+                    .single_field => |field| {
+                        if (field.len_expression) |len| w.write(
+                            \\    // Length field: {s}
+                            \\
+                        , .{len});
+                        if (field.stride) |stride| w.write(
+                            \\    // Stride field: {s}
+                            \\
+                        , .{stride});
+                        if (field.deprecated) |deprecated| w.write(
+                            \\    // Deprecated: {s}
+                            \\
+                        , .{deprecated});
                         w.write(
-                            \\    // Bitfield end
-                            \\    }},
+                            \\    // Extern sync: {}
+                            \\    // Optional: {}
+                            \\
+                        , .{ field.externsync, field.optional });
+                        if (field.selector) |selector| w.write(
+                            \\    // Selector field: {s} (What union field is valid)
+                            \\
+                        , .{selector});
+                        if (field.objecttype) |objecttype| w.write(
+                            \\    // Object type: {s} (Which object handle is this)
+                            \\
+                        , .{objecttype});
+                        if (field.featurelink) |featurelink| w.write(
+                            \\    // Feature link: {s}
+                            \\
+                        , .{featurelink});
+                        if (field.comment) |comment| w.write(
+                            \\    // Comment: {s}
+                            \\
+                        , .{comment});
+
+                        try write_single_struct_field(
+                            alloc,
+                            type_db,
+                            &w,
+                            @"struct".name,
+                            &field,
+                            field.type_idx,
+                        );
+                    },
+                    .packed_field => |field| {
+                        w.write(
+                            \\    packed_field{d}: packed struct(u{d}) {{
+                            \\
+                        , .{ packed_field_idx, field.backing_integer_width });
+                        for (field.parts) |part| {
+                            w.write(
+                                \\        {s}: u{d} = 0,
+                                \\
+                            , .{ part.name, part.bits });
+                        }
+                        w.write(
+                            \\    }} = .{{}},
                             \\
                         , .{});
-                    in_bitfield_mode = false;
-                }
-                if (member.len) |len| w.write(
-                    \\    // Length member: {s}
-                    \\
-                , .{len});
-                if (member.stride) |stride| w.write(
-                    \\    // Stride member: {s}
-                    \\
-                , .{stride});
-                if (member.deprecated) |deprecated| w.write(
-                    \\    // Deprecated: {s}
-                    \\
-                , .{deprecated});
-                w.write(
-                    \\    // Extern sync: {}
-                    \\    // Optional: {}
-                    \\
-                , .{ member.externsync, member.optional });
-                if (member.selector) |selector| w.write(
-                    \\    // Selector member: {s} (What union field is valid)
-                    \\
-                , .{selector});
-                if (member.objecttype) |objecttype| w.write(
-                    \\    // Object type: {s} (Which object handle is this)
-                    \\
-                , .{objecttype});
-                if (member.featurelink) |featurelink| w.write(
-                    \\    // Feature link: {s}
-                    \\
-                , .{featurelink});
-                if (member.comment) |comment| w.write(
-                    \\    // Comment: {s}
-                    \\
-                , .{comment});
-
-                if (in_bitfield_mode) {
-                    const bits_str = member.dimensions.?[1..];
-                    w.write(
-                        \\        {s}: u{s} = 0,
-                        \\
-                    , .{ member.name, bits_str });
-                } else {
-                    const type_idx = try type_db.c_type_parts_to_type(
-                        member.type_front,
-                        member.type_middle,
-                        member.type_back,
-                        member.dimensions,
-                        member.len,
-                        false,
-                    );
-                    const type_str = try type_db.type_string(alloc, type_idx);
-                    write_struct_member(type_db, &w, &str, &member, type_idx, type_str);
+                        packed_field_idx += 1;
+                    },
                 }
             }
-
-            // close bitfield type if it was specified in the last struct members
-            if (in_bitfield_mode)
-                w.write(
-                    \\    // Bitfield end
-                    \\    }},
-                    \\
-                , .{});
-
             w.write(
                 \\}};
                 \\
@@ -655,15 +625,16 @@ fn write_structs(
     }
 }
 
-fn write_struct_member(
+fn write_single_struct_field(
+    alloc: Allocator,
     type_db: *const TypeDatabase,
     w: *Writer,
-    str: *const XmlDatabase.Struct,
-    member: *const XmlDatabase.Struct.Member,
+    struct_name: []const u8,
+    field: *const TypeDatabase.Struct.SingleField,
     type_idx: TypeDatabase.Type.Idx,
-    type_str: []const u8,
-) void {
+) !void {
     const t = type_db.get_type(type_idx);
+    const type_str = try type_db.type_string(alloc, type_idx);
     switch (t.*) {
         .base => |base| {
             switch (base) {
@@ -671,27 +642,29 @@ fn write_struct_member(
                     w.write(
                         \\    {s}: {s} = 0,
                         \\
-                    , .{ member.name, type_str });
+                    , .{ field.name, type_str });
                 },
                 .handle_idx => |_| {
                     w.write(
                         \\    {s}: {s} = .none,
                         \\
-                    , .{ member.name, type_str });
+                    , .{ field.name, type_str });
                 },
                 .struct_idx => |struct_idx| {
                     var should_have_default: bool = true;
                     const s = type_db.get_struct(struct_idx);
-                    for (s.fields) |field| {
-                        const tt = type_db.get_type(field.type_idx);
-                        switch (tt.*) {
-                            .base => |b| {
-                                switch (b) {
-                                    .enum_idx, .union_idx => should_have_default = false,
-                                    else => {},
-                                }
-                            },
-                            else => {},
+                    for (s.fields) |f| {
+                        if (f == .single_field) {
+                            const tt = type_db.get_type(f.single_field.type_idx);
+                            switch (tt.*) {
+                                .base => |b| {
+                                    switch (b) {
+                                        .enum_idx, .union_idx => should_have_default = false,
+                                        else => {},
+                                    }
+                                },
+                                else => {},
+                            }
                         }
                     }
                     var default_str: []const u8 = &.{};
@@ -701,38 +674,38 @@ fn write_struct_member(
                     w.write(
                         \\    {s}: {s}{s},
                         \\
-                    , .{ member.name, type_str, default_str });
+                    , .{ field.name, type_str, default_str });
                 },
                 .bitfield_idx => |_| {
                     w.write(
                         \\    {s}: {s} = .{{}},
                         \\
-                    , .{ member.name, type_str });
+                    , .{ field.name, type_str });
                 },
                 .enum_idx => |_| {
                     // Should only be valid for sType: VkStructureType
-                    if (member.value) |v| {
+                    if (field.stype_value) |v| {
                         w.write(
                             \\    {s}: {s} = VkStructureType.{s},
                             \\
-                        , .{ member.name, type_str, v });
+                        , .{ field.name, type_str, v });
                     } else {
                         w.write(
                             \\    {s}: {s},
                             \\
-                        , .{ member.name, type_str });
+                        , .{ field.name, type_str });
                     }
                 },
                 .union_idx => |_| {
                     w.write(
                         \\    {s}: {s},
                         \\
-                    , .{ member.name, type_str });
+                    , .{ field.name, type_str });
                 },
                 else => {
                     std.log.err(
                         "Cannot determine default value for {s}.{s} with type: {any}",
-                        .{ str.name, member.name, t },
+                        .{ struct_name, field.name, t },
                     );
                 },
             }
@@ -741,21 +714,21 @@ fn write_struct_member(
             w.write(
                 \\    {s}: ?{s} = null,
                 \\
-            , .{ member.name, type_str });
+            , .{ field.name, type_str });
         },
         .array => |_| {
             w.write(
                 \\    {[name]s}: {[type]s} = @import("std").mem.zeroes({[type]s}),
                 \\
-            , .{ .name = member.name, .type = type_str });
+            , .{ .name = field.name, .type = type_str });
         },
         .alias => |alias| {
-            write_struct_member(type_db, w, str, member, alias.type_idx, type_str);
+            try write_single_struct_field(alloc, type_db, w, struct_name, field, alias.type_idx);
         },
         .placeholder => |placeholder| {
             std.log.err(
                 "Cannot determine default value for {s}.{s} with type: {any} found placeholder for {s}",
-                .{ str.name, member.name, t, placeholder },
+                .{ struct_name, field.name, t, placeholder },
             );
         },
         else => unreachable,

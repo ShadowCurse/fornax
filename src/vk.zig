@@ -8286,7 +8286,7 @@ pub const VkPhysicalDeviceProperties = extern struct {
     // Extern sync: false
     // Optional: false
     deviceType: VkPhysicalDeviceType,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     deviceName: [VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8),
@@ -8304,7 +8304,7 @@ pub const VkPhysicalDeviceProperties = extern struct {
 // Returned only: true
 // Allow duplicate in pNext chain: false
 pub const VkExtensionProperties = extern struct {
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     extensionName: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
@@ -8317,7 +8317,7 @@ pub const VkExtensionProperties = extern struct {
 // Returned only: true
 // Allow duplicate in pNext chain: false
 pub const VkLayerProperties = extern struct {
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     layerName: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
@@ -8329,7 +8329,7 @@ pub const VkLayerProperties = extern struct {
     // Optional: false
     // Comment: build or release version of the layer's library
     implementationVersion: u32 = 0,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -8344,14 +8344,14 @@ pub const VkApplicationInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pApplicationName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: false
     applicationVersion: u32 = 0,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pEngineName: ?[*:0]const u8 = null,
@@ -8404,7 +8404,7 @@ pub const VkDeviceQueueCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     queueCount: u32 = 0,
-    // Length member: queueCount
+    // Length field: queueCount
     // Extern sync: false
     // Optional: false
     pQueuePriorities: ?[*]const f32 = null,
@@ -8425,7 +8425,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     queueCreateInfoCount: u32 = 0,
-    // Length member: queueCreateInfoCount
+    // Length field: queueCreateInfoCount
     // Extern sync: false
     // Optional: false
     pQueueCreateInfos: ?[*]const VkDeviceQueueCreateInfo = null,
@@ -8433,7 +8433,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledLayerCount: u32 = 0,
-    // Length member: enabledLayerCount,null-terminated
+    // Length field: enabledLayerCount,null-terminated
     // Deprecated: ignored
     // Extern sync: false
     // Optional: false
@@ -8442,7 +8442,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledExtensionCount: u32 = 0,
-    // Length member: enabledExtensionCount,null-terminated
+    // Length field: enabledExtensionCount,null-terminated
     // Extern sync: false
     // Optional: false
     ppEnabledExtensionNames: ?[*]const [*:0]const u8 = null,
@@ -8469,7 +8469,7 @@ pub const VkInstanceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledLayerCount: u32 = 0,
-    // Length member: enabledLayerCount,null-terminated
+    // Length field: enabledLayerCount,null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Ordered list of layer names to be enabled
@@ -8477,7 +8477,7 @@ pub const VkInstanceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledExtensionCount: u32 = 0,
-    // Length member: enabledExtensionCount,null-terminated
+    // Length field: enabledExtensionCount,null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Extension names to be enabled
@@ -8509,14 +8509,14 @@ pub const VkPhysicalDeviceMemoryProperties = extern struct {
     // Extern sync: false
     // Optional: false
     memoryTypeCount: u32 = 0,
-    // Length member: memoryTypeCount
+    // Length field: memoryTypeCount
     // Extern sync: false
     // Optional: false
     memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = @import("std").mem.zeroes([VK_MAX_MEMORY_TYPES]VkMemoryType),
     // Extern sync: false
     // Optional: false
     memoryHeapCount: u32 = 0,
-    // Length member: memoryHeapCount
+    // Length field: memoryHeapCount
     // Extern sync: false
     // Optional: false
     memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = @import("std").mem.zeroes([VK_MAX_MEMORY_HEAPS]VkMemoryHeap),
@@ -8749,17 +8749,17 @@ pub const VkWriteDescriptorSet = extern struct {
     // Optional: false
     // Comment: Descriptor type to write (determines which members of the array pointed by pDescriptors are going to be used)
     descriptorType: VkDescriptorType,
-    // Length member: descriptorCount
+    // Length field: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Sampler, image view, and layout for SAMPLER, COMBINED_IMAGE_SAMPLER, {SAMPLED,STORAGE}_IMAGE, and INPUT_ATTACHMENT descriptor types.
     pImageInfo: ?[*]const VkDescriptorImageInfo = null,
-    // Length member: descriptorCount
+    // Length field: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Raw buffer, size, and offset for {UNIFORM,STORAGE}_BUFFER[_DYNAMIC] descriptor types.
     pBufferInfo: ?[*]const VkDescriptorBufferInfo = null,
-    // Length member: descriptorCount
+    // Length field: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Buffer view to write to the descriptor for {UNIFORM,STORAGE}_TEXEL_BUFFER descriptor types.
@@ -8849,7 +8849,7 @@ pub const VkBufferCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length member: queueFamilyIndexCount
+    // Length field: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -9082,7 +9082,7 @@ pub const VkImageCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of queue families to share across
     queueFamilyIndexCount: u32 = 0,
-    // Length member: queueFamilyIndexCount
+    // Length field: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of queue family indices to share across
@@ -9220,7 +9220,7 @@ pub const VkSparseBufferMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length member: bindCount
+    // Length field: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseMemoryBind = null,
@@ -9235,7 +9235,7 @@ pub const VkSparseImageOpaqueMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length member: bindCount
+    // Length field: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseMemoryBind = null,
@@ -9250,7 +9250,7 @@ pub const VkSparseImageMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length member: bindCount
+    // Length field: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseImageMemoryBind = null,
@@ -9268,35 +9268,35 @@ pub const VkBindSparseInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length member: waitSemaphoreCount
+    // Length field: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphores: ?[*]const VkSemaphore = null,
     // Extern sync: false
     // Optional: true
     bufferBindCount: u32 = 0,
-    // Length member: bufferBindCount
+    // Length field: bufferBindCount
     // Extern sync: false
     // Optional: false
     pBufferBinds: ?[*]const VkSparseBufferMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     imageOpaqueBindCount: u32 = 0,
-    // Length member: imageOpaqueBindCount
+    // Length field: imageOpaqueBindCount
     // Extern sync: false
     // Optional: false
     pImageOpaqueBinds: ?[*]const VkSparseImageOpaqueMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     imageBindCount: u32 = 0,
-    // Length member: imageBindCount
+    // Length field: imageBindCount
     // Extern sync: false
     // Optional: false
     pImageBinds: ?[*]const VkSparseImageMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length member: signalSemaphoreCount
+    // Length field: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphores: ?[*]const VkSemaphore = null,
@@ -9473,7 +9473,7 @@ pub const VkCopyMemoryToImageIndirectInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dstImageLayout: VkImageLayout,
-    // Length member: copyCount
+    // Length field: copyCount
     // Extern sync: false
     // Optional: false
     pImageSubresources: ?[*]const VkImageSubresourceLayers = null,
@@ -9517,7 +9517,7 @@ pub const VkShaderModuleCreateInfo = extern struct {
     // Optional: false
     // Comment: Specified in bytes
     codeSize: u64 = 0,
-    // Length member: codeSize / 4
+    // Length field: codeSize / 4
     // Extern sync: false
     // Optional: false
     // Comment: Binary code of size codeSize
@@ -9543,7 +9543,7 @@ pub const VkDescriptorSetLayoutBinding = extern struct {
     // Optional: false
     // Comment: Shader stages this binding is visible to
     stageFlags: VkShaderStageFlags = .{},
-    // Length member: descriptorCount
+    // Length field: descriptorCount
     // Extern sync: false
     // Optional: true
     // Comment: Immutable samplers (used if descriptor type is SAMPLER or COMBINED_IMAGE_SAMPLER, is either NULL or contains count number of elements)
@@ -9566,7 +9566,7 @@ pub const VkDescriptorSetLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of bindings in the descriptor set layout
     bindingCount: u32 = 0,
-    // Length member: bindingCount
+    // Length field: bindingCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of descriptor set layout bindings
@@ -9602,7 +9602,7 @@ pub const VkDescriptorPoolCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     poolSizeCount: u32 = 0,
-    // Length member: poolSizeCount
+    // Length field: poolSizeCount
     // Extern sync: false
     // Optional: false
     pPoolSizes: ?[*]const VkDescriptorPoolSize = null,
@@ -9623,7 +9623,7 @@ pub const VkDescriptorSetAllocateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorSetCount: u32 = 0,
-    // Length member: descriptorSetCount
+    // Length field: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
@@ -9653,7 +9653,7 @@ pub const VkSpecializationInfo = extern struct {
     // Optional: true
     // Comment: Number of entries in the map
     mapEntryCount: u32 = 0,
-    // Length member: mapEntryCount
+    // Length field: mapEntryCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of map entries
@@ -9662,7 +9662,7 @@ pub const VkSpecializationInfo = extern struct {
     // Optional: true
     // Comment: Size in bytes of pData
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: false
     // Comment: Pointer to SpecConstant data
@@ -9689,7 +9689,7 @@ pub const VkPipelineShaderStageCreateInfo = extern struct {
     // Optional: true
     // Comment: Module containing entry point
     module: VkShaderModule = .none,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Null-terminated entry point name
@@ -9821,7 +9821,7 @@ pub const VkPipelineVertexInputStateCreateInfo = extern struct {
     // Optional: true
     // Comment: number of bindings
     vertexBindingDescriptionCount: u32 = 0,
-    // Length member: vertexBindingDescriptionCount
+    // Length field: vertexBindingDescriptionCount
     // Extern sync: false
     // Optional: false
     pVertexBindingDescriptions: ?[*]const VkVertexInputBindingDescription = null,
@@ -9829,7 +9829,7 @@ pub const VkPipelineVertexInputStateCreateInfo = extern struct {
     // Optional: true
     // Comment: number of attributes
     vertexAttributeDescriptionCount: u32 = 0,
-    // Length member: vertexAttributeDescriptionCount
+    // Length field: vertexAttributeDescriptionCount
     // Extern sync: false
     // Optional: false
     pVertexAttributeDescriptions: ?[*]const VkVertexInputAttributeDescription = null,
@@ -9887,14 +9887,14 @@ pub const VkPipelineViewportStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewportCount: u32 = 0,
-    // Length member: viewportCount
+    // Length field: viewportCount
     // Extern sync: false
     // Optional: true
     pViewports: ?[*]const VkViewport = null,
     // Extern sync: false
     // Optional: true
     scissorCount: u32 = 0,
-    // Length member: scissorCount
+    // Length field: scissorCount
     // Extern sync: false
     // Optional: true
     pScissors: ?[*]const VkRect2D = null,
@@ -9969,7 +9969,7 @@ pub const VkPipelineMultisampleStateCreateInfo = extern struct {
     // Optional: false
     // Comment: optional (GL45)
     minSampleShading: f32 = 0,
-    // Length member: (rasterizationSamples + 31) / 32
+    // Length field: (rasterizationSamples + 31) / 32
     // Extern sync: false
     // Optional: true
     // Comment: Array of sampleMask words
@@ -10033,7 +10033,7 @@ pub const VkPipelineColorBlendStateCreateInfo = extern struct {
     // Optional: true
     // Comment: # of pAttachments
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: true
     pAttachments: ?[*]const VkPipelineColorBlendAttachmentState = null,
@@ -10057,7 +10057,7 @@ pub const VkPipelineDynamicStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     dynamicStateCount: u32 = 0,
-    // Length member: dynamicStateCount
+    // Length field: dynamicStateCount
     // Extern sync: false
     // Optional: false
     pDynamicStates: ?[*]const VkDynamicState = null,
@@ -10147,7 +10147,7 @@ pub const VkGraphicsPipelineCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length member: stageCount
+    // Length field: stageCount
     // Extern sync: false
     // Optional: true
     // Comment: One entry for each active shader stage
@@ -10215,7 +10215,7 @@ pub const VkPipelineCacheCreateInfo = extern struct {
     // Optional: true
     // Comment: Size of initial data to populate cache, in bytes
     initialDataSize: u64 = 0,
-    // Length member: initialDataSize
+    // Length field: initialDataSize
     // Extern sync: false
     // Optional: false
     // Comment: Initial data to populate cache
@@ -10371,7 +10371,7 @@ pub const VkPipelineBinaryHandlesInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     pipelineBinaryCount: u32 = 0,
-    // Length member: pipelineBinaryCount
+    // Length field: pipelineBinaryCount
     // Extern sync: false
     // Optional: true
     pPipelineBinaries: ?[*]VkPipelineBinaryKHR = null,
@@ -10383,7 +10383,7 @@ pub const VkPipelineBinaryDataKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*anyopaque = null,
@@ -10395,11 +10395,11 @@ pub const VkPipelineBinaryKeysAndDataKHR = extern struct {
     // Extern sync: false
     // Optional: false
     binaryCount: u32 = 0,
-    // Length member: binaryCount
+    // Length field: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaryKeys: ?[*]const VkPipelineBinaryKeyKHR = null,
-    // Length member: binaryCount
+    // Length field: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaryData: ?[*]const VkPipelineBinaryDataKHR = null,
@@ -10435,7 +10435,7 @@ pub const VkPipelineBinaryInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     binaryCount: u32 = 0,
-    // Length member: binaryCount
+    // Length field: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaries: ?[*]const VkPipelineBinaryKHR = null,
@@ -10497,7 +10497,7 @@ pub const VkPipelineLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of descriptor sets interfaced by the pipeline
     setLayoutCount: u32 = 0,
-    // Length member: setLayoutCount
+    // Length field: setLayoutCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of setCount number of descriptor set layout objects defining the layout of the
@@ -10506,7 +10506,7 @@ pub const VkPipelineLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of push-constant ranges used by the pipeline
     pushConstantRangeCount: u32 = 0,
-    // Length member: pushConstantRangeCount
+    // Length field: pushConstantRangeCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of pushConstantRangeCount number of ranges used by various shader stages
@@ -10687,7 +10687,7 @@ pub const VkRenderPassBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     clearValueCount: u32 = 0,
-    // Length member: clearValueCount
+    // Length field: clearValueCount
     // Extern sync: false
     // Optional: false
     pClearValues: ?[*]const VkClearValue = null,
@@ -10778,18 +10778,18 @@ pub const VkSubpassDescription = extern struct {
     // Extern sync: false
     // Optional: true
     inputAttachmentCount: u32 = 0,
-    // Length member: inputAttachmentCount
+    // Length field: inputAttachmentCount
     // Extern sync: false
     // Optional: false
     pInputAttachments: ?[*]const VkAttachmentReference = null,
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkAttachmentReference = null,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pResolveAttachments: ?[*]const VkAttachmentReference = null,
@@ -10799,7 +10799,7 @@ pub const VkSubpassDescription = extern struct {
     // Extern sync: false
     // Optional: true
     preserveAttachmentCount: u32 = 0,
-    // Length member: preserveAttachmentCount
+    // Length field: preserveAttachmentCount
     // Extern sync: false
     // Optional: false
     pPreserveAttachments: ?[*]const u32 = null,
@@ -10848,21 +10848,21 @@ pub const VkRenderPassCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkAttachmentDescription = null,
     // Extern sync: false
     // Optional: false
     subpassCount: u32 = 0,
-    // Length member: subpassCount
+    // Length field: subpassCount
     // Extern sync: false
     // Optional: false
     pSubpasses: ?[*]const VkSubpassDescription = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length member: dependencyCount
+    // Length field: dependencyCount
     // Extern sync: false
     // Optional: false
     pDependencies: ?[*]const VkSubpassDependency = null,
@@ -11634,7 +11634,7 @@ pub const VkFramebufferCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkImageView = null,
@@ -11737,25 +11737,25 @@ pub const VkSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length member: waitSemaphoreCount
+    // Length field: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphores: ?[*]const VkSemaphore = null,
-    // Length member: waitSemaphoreCount
+    // Length field: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitDstStageMask: ?[*]const VkPipelineStageFlags = null,
     // Extern sync: false
     // Optional: true
     commandBufferCount: u32 = 0,
-    // Length member: commandBufferCount
+    // Length field: commandBufferCount
     // Extern sync: false
     // Optional: false
     pCommandBuffers: ?[*]const VkCommandBuffer = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length member: signalSemaphoreCount
+    // Length field: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphores: ?[*]const VkSemaphore = null,
@@ -11768,7 +11768,7 @@ pub const VkDisplayPropertiesKHR = extern struct {
     // Optional: false
     // Comment: Handle of the display object
     display: VkDisplayKHR = .none,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name of the display
@@ -12256,7 +12256,7 @@ pub const VkSwapchainCreateInfoKHR = extern struct {
     // Optional: true
     // Comment: Number of queue families having access to the images in case of concurrent sharing mode
     queueFamilyIndexCount: u32 = 0,
-    // Length member: queueFamilyIndexCount
+    // Length field: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of queue family indices having access to the images in case of concurrent sharing mode
@@ -12296,7 +12296,7 @@ pub const VkPresentInfoKHR = extern struct {
     // Optional: true
     // Comment: Number of semaphores to wait for before presenting
     waitSemaphoreCount: u32 = 0,
-    // Length member: waitSemaphoreCount
+    // Length field: waitSemaphoreCount
     // Extern sync: true
     // Optional: false
     // Comment: Semaphores to wait for before presenting
@@ -12305,17 +12305,17 @@ pub const VkPresentInfoKHR = extern struct {
     // Optional: false
     // Comment: Number of swapchains to present in this call
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: true
     // Optional: false
     // Comment: Swapchains to present an image from
     pSwapchains: ?[*]const VkSwapchainKHR = null,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Indices of which presentable images to present
     pImageIndices: ?[*]const u32 = null,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Optional (i.e. if non-NULL) VkResult for each swapchain
@@ -12361,7 +12361,7 @@ pub const VkValidationFlagsEXT = extern struct {
     // Optional: false
     // Comment: Number of validation checks to disable
     disabledValidationCheckCount: u32 = 0,
-    // Length member: disabledValidationCheckCount
+    // Length field: disabledValidationCheckCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation checks to disable
@@ -12383,7 +12383,7 @@ pub const VkValidationFeaturesEXT = extern struct {
     // Optional: true
     // Comment: Number of validation features to enable
     enabledValidationFeatureCount: u32 = 0,
-    // Length member: enabledValidationFeatureCount
+    // Length field: enabledValidationFeatureCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to enable
@@ -12392,7 +12392,7 @@ pub const VkValidationFeaturesEXT = extern struct {
     // Optional: true
     // Comment: Number of validation features to disable
     disabledValidationFeatureCount: u32 = 0,
-    // Length member: disabledValidationFeatureCount
+    // Length field: disabledValidationFeatureCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to disable
@@ -12414,7 +12414,7 @@ pub const VkLayerSettingsCreateInfoEXT = extern struct {
     // Optional: true
     // Comment: Number of settings to configure
     settingCount: u32 = 0,
-    // Length member: settingCount
+    // Length field: settingCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to enable
@@ -12424,11 +12424,11 @@ pub const VkLayerSettingsCreateInfoEXT = extern struct {
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkLayerSettingEXT = extern struct {
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pLayerName: ?[*:0]const u8 = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pSettingName: ?[*:0]const u8 = null,
@@ -12440,7 +12440,7 @@ pub const VkLayerSettingEXT = extern struct {
     // Optional: true
     // Comment: Number of values of the setting
     valueCount: u32 = 0,
-    // Length member: valueCount
+    // Length field: valueCount
     // Extern sync: false
     // Optional: false
     // Comment: Values to pass for a setting
@@ -12505,7 +12505,7 @@ pub const VkDebugMarkerObjectNameInfoEXT = extern struct {
     // Object type: objectType (Which object handle is this)
     // Comment: The handle of the object, cast to uint64_t
     object: u64 = 0,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name to apply to the object
@@ -12538,7 +12538,7 @@ pub const VkDebugMarkerObjectTagInfoEXT = extern struct {
     // Optional: false
     // Comment: The length in bytes of the tag data
     tagSize: u64 = 0,
-    // Length member: tagSize
+    // Length field: tagSize
     // Extern sync: false
     // Optional: false
     // Comment: Tag data to attach to the object
@@ -12554,7 +12554,7 @@ pub const VkDebugMarkerMarkerInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name of the debug marker
@@ -12793,26 +12793,26 @@ pub const VkWin32KeyedMutexAcquireReleaseInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     acquireCount: u32 = 0,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireSyncs: ?[*]const VkDeviceMemory = null,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireKeys: ?[*]const u64 = null,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireTimeoutMilliseconds: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     releaseCount: u32 = 0,
-    // Length member: releaseCount
+    // Length field: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseSyncs: ?[*]const VkDeviceMemory = null,
-    // Length member: releaseCount
+    // Length field: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseKeys: ?[*]const u64 = null,
@@ -13025,19 +13025,11 @@ pub const VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV = extern 
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV = extern struct {
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         geometryIndex: u24 = 0,
-    // Extern sync: false
-    // Optional: false
         reserved: u5 = 0,
-    // Extern sync: false
-    // Optional: false
         geometryFlags: u3 = 0,
-    // Bitfield end
-    },
+    } = .{},
 };
 // Extension: VK_NV_cluster_acceleration_structure
 // Returned only: false
@@ -13079,25 +13071,13 @@ pub const VkClusterAccelerationStructureBuildTriangleClusterInfoNV = extern stru
     // Extern sync: false
     // Optional: true
     clusterFlags: VkClusterAccelerationStructureClusterFlagsNV = .{},
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         triangleCount: u9 = 0,
-    // Extern sync: false
-    // Optional: false
         vertexCount: u9 = 0,
-    // Extern sync: false
-    // Optional: false
         positionTruncateBitCount: u6 = 0,
-    // Extern sync: false
-    // Optional: false
         indexType: u4 = 0,
-    // Extern sync: false
-    // Optional: false
         opacityMicromapIndexType: u4 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     baseGeometryIndexAndGeometryFlags: VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV = .{},
@@ -13139,25 +13119,13 @@ pub const VkClusterAccelerationStructureBuildTriangleClusterTemplateInfoNV = ext
     // Extern sync: false
     // Optional: true
     clusterFlags: VkClusterAccelerationStructureClusterFlagsNV = .{},
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         triangleCount: u9 = 0,
-    // Extern sync: false
-    // Optional: false
         vertexCount: u9 = 0,
-    // Extern sync: false
-    // Optional: false
         positionTruncateBitCount: u6 = 0,
-    // Extern sync: false
-    // Optional: false
         indexType: u4 = 0,
-    // Extern sync: false
-    // Optional: false
         opacityMicromapIndexType: u4 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     baseGeometryIndexAndGeometryFlags: VkClusterAccelerationStructureGeometryIndexAndGeometryFlagsNV = .{},
@@ -13199,16 +13167,10 @@ pub const VkClusterAccelerationStructureInstantiateClusterInfoNV = extern struct
     // Extern sync: false
     // Optional: false
     clusterIdOffset: u32 = 0,
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         geometryIndexOffset: u24 = 0,
-    // Extern sync: false
-    // Optional: false
         reserved: u8 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     clusterTemplateAddress: u64 = 0,
@@ -13312,7 +13274,7 @@ pub const VkClusterAccelerationStructureInputInfoNV = extern struct {
     opMode: VkClusterAccelerationStructureOpModeNV,
     // Extern sync: false
     // Optional: false
-    // Selector member: opType (What union field is valid)
+    // Selector field: opType (What union field is valid)
     opInput: VkClusterAccelerationStructureOpInputNV,
 };
 // Extension: VK_NV_cluster_acceleration_structure
@@ -13378,7 +13340,7 @@ pub const VkGraphicsShaderGroupCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     stageCount: u32 = 0,
-    // Length member: stageCount
+    // Length field: stageCount
     // Extern sync: false
     // Optional: false
     pStages: ?[*]const VkPipelineShaderStageCreateInfo = null,
@@ -13403,14 +13365,14 @@ pub const VkGraphicsPipelineShaderGroupsCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     groupCount: u32 = 0,
-    // Length member: groupCount
+    // Length field: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkGraphicsShaderGroupCreateInfoNV = null,
     // Extern sync: false
     // Optional: true
     pipelineCount: u32 = 0,
-    // Length member: pipelineCount
+    // Length field: pipelineCount
     // Extern sync: false
     // Optional: false
     pPipelines: ?[*]const VkPipeline = null,
@@ -13513,11 +13475,11 @@ pub const VkIndirectCommandsLayoutTokenNV = extern struct {
     // Extern sync: false
     // Optional: true
     indexTypeCount: u32 = 0,
-    // Length member: indexTypeCount
+    // Length field: indexTypeCount
     // Extern sync: false
     // Optional: false
     pIndexTypes: ?[*]const VkIndexType = null,
-    // Length member: indexTypeCount
+    // Length field: indexTypeCount
     // Extern sync: false
     // Optional: false
     pIndexTypeValues: ?[*]const u32 = null,
@@ -13541,14 +13503,14 @@ pub const VkIndirectCommandsLayoutCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     tokenCount: u32 = 0,
-    // Length member: tokenCount
+    // Length field: tokenCount
     // Extern sync: false
     // Optional: false
     pTokens: ?[*]const VkIndirectCommandsLayoutTokenNV = null,
     // Extern sync: false
     // Optional: false
     streamCount: u32 = 0,
-    // Length member: streamCount
+    // Length field: streamCount
     // Extern sync: false
     // Optional: false
     pStreamStrides: ?[*]const u32 = null,
@@ -13575,7 +13537,7 @@ pub const VkGeneratedCommandsInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     streamCount: u32 = 0,
-    // Length member: streamCount
+    // Length field: streamCount
     // Extern sync: false
     // Optional: false
     pStreams: ?[*]const VkIndirectCommandsStreamNV = null,
@@ -13871,11 +13833,11 @@ pub const VkPhysicalDeviceDriverProperties = extern struct {
     // Extern sync: false
     // Optional: false
     driverID: VkDriverId,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     driverName: [VK_MAX_DRIVER_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_NAME_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     driverInfo: [VK_MAX_DRIVER_INFO_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_INFO_SIZE]u8),
@@ -13900,7 +13862,7 @@ pub const VkPresentRegionsKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: The regions that have changed
@@ -13914,7 +13876,7 @@ pub const VkPresentRegionKHR = extern struct {
     // Optional: true
     // Comment: Number of rectangles in pRectangles
     rectangleCount: u32 = 0,
-    // Length member: rectangleCount
+    // Length field: rectangleCount
     // Extern sync: false
     // Optional: true
     // Comment: Array of rectangles that have changed in a swapchain's image(s)
@@ -14077,8 +14039,6 @@ pub const VkPhysicalDeviceIDProperties = extern struct {
     deviceLUIDValid: u32 = 0,
 };
 // Extension: VK_KHR_external_memory_capabilities
-// Extension: VK_KHR_external_semaphore_capabilities
-// Extension: VK_KHR_external_fence_capabilities
 pub const VkPhysicalDeviceIDPropertiesKHR = VkPhysicalDeviceIDProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkImageCreateInfo
@@ -14310,26 +14270,26 @@ pub const VkWin32KeyedMutexAcquireReleaseInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     acquireCount: u32 = 0,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireSyncs: ?[*]const VkDeviceMemory = null,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireKeys: ?[*]const u64 = null,
-    // Length member: acquireCount
+    // Length field: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireTimeouts: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     releaseCount: u32 = 0,
-    // Length member: releaseCount
+    // Length field: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseSyncs: ?[*]const VkDeviceMemory = null,
-    // Length member: releaseCount
+    // Length field: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseKeys: ?[*]const u64 = null,
@@ -14495,14 +14455,14 @@ pub const VkD3D12FenceSubmitInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreValuesCount: u32 = 0,
-    // Length member: waitSemaphoreValuesCount
+    // Length field: waitSemaphoreValuesCount
     // Extern sync: false
     // Optional: true
     pWaitSemaphoreValues: ?[*]const u64 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreValuesCount: u32 = 0,
-    // Length member: signalSemaphoreValuesCount
+    // Length field: signalSemaphoreValuesCount
     // Extern sync: false
     // Optional: true
     pSignalSemaphoreValues: ?[*]const u64 = null,
@@ -14757,7 +14717,6 @@ pub const VkFenceGetFdInfoKHR = extern struct {
     handleType: VkExternalFenceHandleTypeFlags = .{},
 };
 // Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Extends: VkFenceCreateInfo
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -14772,7 +14731,6 @@ pub const VkExportFenceSciSyncInfoNV = extern struct {
     // Optional: false
 };
 // Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkImportFenceSciSyncInfoNV = extern struct {
@@ -14793,7 +14751,6 @@ pub const VkImportFenceSciSyncInfoNV = extern struct {
     handle: ?*anyopaque = null,
 };
 // Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkFenceGetSciSyncInfoNV = extern struct {
@@ -14862,7 +14819,6 @@ pub const VkSemaphoreGetSciSyncInfoNV = extern struct {
     handleType: VkExternalSemaphoreHandleTypeFlags = .{},
 };
 // Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkSciSyncAttributesInfoNV = extern struct {
@@ -15038,21 +14994,21 @@ pub const VkRenderPassMultiviewCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     subpassCount: u32 = 0,
-    // Length member: subpassCount
+    // Length field: subpassCount
     // Extern sync: false
     // Optional: false
     pViewMasks: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length member: dependencyCount
+    // Length field: dependencyCount
     // Extern sync: false
     // Optional: false
     pViewOffsets: ?[*]const i32 = null,
     // Extern sync: false
     // Optional: true
     correlationMaskCount: u32 = 0,
-    // Length member: correlationMaskCount
+    // Length field: correlationMaskCount
     // Extern sync: false
     // Optional: false
     pCorrelationMasks: ?[*]const u32 = null,
@@ -15183,7 +15139,7 @@ pub const VkPhysicalDeviceGroupProperties = extern struct {
     // Extern sync: false
     // Optional: false
     physicalDeviceCount: u32 = 0,
-    // Length member: physicalDeviceCount
+    // Length field: physicalDeviceCount
     // Extern sync: false
     // Optional: false
     physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = @import("std").mem.zeroes([VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice),
@@ -15249,7 +15205,7 @@ pub const VkBindBufferMemoryDeviceGroupInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length member: deviceIndexCount
+    // Length field: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
@@ -15292,14 +15248,14 @@ pub const VkBindImageMemoryDeviceGroupInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length member: deviceIndexCount
+    // Length field: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     splitInstanceBindRegionCount: u32 = 0,
-    // Length member: splitInstanceBindRegionCount
+    // Length field: splitInstanceBindRegionCount
     // Extern sync: false
     // Optional: false
     pSplitInstanceBindRegions: ?[*]const VkRect2D = null,
@@ -15323,7 +15279,7 @@ pub const VkDeviceGroupRenderPassBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceRenderAreaCount: u32 = 0,
-    // Length member: deviceRenderAreaCount
+    // Length field: deviceRenderAreaCount
     // Extern sync: false
     // Optional: false
     pDeviceRenderAreas: ?[*]const VkRect2D = null,
@@ -15361,21 +15317,21 @@ pub const VkDeviceGroupSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length member: waitSemaphoreCount
+    // Length field: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphoreDeviceIndices: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     commandBufferCount: u32 = 0,
-    // Length member: commandBufferCount
+    // Length field: commandBufferCount
     // Extern sync: false
     // Optional: false
     pCommandBufferDeviceMasks: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length member: signalSemaphoreCount
+    // Length field: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphoreDeviceIndices: ?[*]const u32 = null,
@@ -15403,7 +15359,6 @@ pub const VkDeviceGroupBindSparseInfo = extern struct {
 // Extension: VK_KHR_device_group
 pub const VkDeviceGroupBindSparseInfoKHR = VkDeviceGroupBindSparseInfo;
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Returned only: true
 // Allow duplicate in pNext chain: false
 pub const VkDeviceGroupPresentCapabilitiesKHR = extern struct {
@@ -15421,7 +15376,6 @@ pub const VkDeviceGroupPresentCapabilitiesKHR = extern struct {
     modes: VkDeviceGroupPresentModeFlagsKHR = .{},
 };
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Extends: VkImageCreateInfo
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15437,7 +15391,6 @@ pub const VkImageSwapchainCreateInfoKHR = extern struct {
     swapchain: VkSwapchainKHR = .none,
 };
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Extends: VkBindImageMemoryInfo
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15456,7 +15409,6 @@ pub const VkBindImageMemorySwapchainInfoKHR = extern struct {
     imageIndex: u32 = 0,
 };
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkAcquireNextImageInfoKHR = extern struct {
@@ -15483,7 +15435,6 @@ pub const VkAcquireNextImageInfoKHR = extern struct {
     deviceMask: u32 = 0,
 };
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Extends: VkPresentInfoKHR
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15497,7 +15448,7 @@ pub const VkDeviceGroupPresentInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: false
     pDeviceMasks: ?[*]const u32 = null,
@@ -15519,7 +15470,7 @@ pub const VkDeviceGroupDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     physicalDeviceCount: u32 = 0,
-    // Length member: physicalDeviceCount
+    // Length field: physicalDeviceCount
     // Extern sync: false
     // Optional: false
     pPhysicalDevices: ?[*]const VkPhysicalDevice = null,
@@ -15527,7 +15478,6 @@ pub const VkDeviceGroupDeviceCreateInfo = extern struct {
 // Extension: VK_KHR_device_group_creation
 pub const VkDeviceGroupDeviceCreateInfoKHR = VkDeviceGroupDeviceCreateInfo;
 // Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Extends: VkSwapchainCreateInfoKHR
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15590,7 +15540,7 @@ pub const VkDescriptorUpdateTemplateCreateInfo = extern struct {
     // Optional: false
     // Comment: Number of descriptor update entries to use for the update template
     descriptorUpdateEntryCount: u32 = 0,
-    // Length member: descriptorUpdateEntryCount
+    // Length field: descriptorUpdateEntryCount
     // Extern sync: false
     // Optional: false
     // Comment: Descriptor update entries for the template
@@ -15657,7 +15607,7 @@ pub const VkPresentIdKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present ID values for each swapchain
@@ -15694,7 +15644,7 @@ pub const VkPresentId2KHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present ID values for each swapchain
@@ -15833,12 +15783,12 @@ pub const VkSwapchainTimeDomainPropertiesEXT = extern struct {
     // Extern sync: false
     // Optional: false
     timeDomainCount: u32 = 0,
-    // Length member: timeDomainCount
+    // Length field: timeDomainCount
     // Extern sync: false
     // Optional: true
     // Comment: Available time domains to use with the swapchain
     pTimeDomains: ?[*]VkTimeDomainKHR = null,
-    // Length member: timeDomainCount
+    // Length field: timeDomainCount
     // Extern sync: false
     // Optional: true
     // Comment: Unique identifier for a time domain
@@ -15892,7 +15842,7 @@ pub const VkPastPresentationTimingPropertiesEXT = extern struct {
     // Extern sync: false
     // Optional: false
     presentationTimingCount: u32 = 0,
-    // Length member: presentationTimingCount
+    // Length field: presentationTimingCount
     // Extern sync: false
     // Optional: false
     pPresentationTimings: ?[*]VkPastPresentationTimingEXT = null,
@@ -15919,7 +15869,7 @@ pub const VkPastPresentationTimingEXT = extern struct {
     // Optional: false
     // Comment: Number of present stages results available in pPresentStages
     presentStageCount: u32 = 0,
-    // Length member: presentStageCount
+    // Length field: presentStageCount
     // Extern sync: false
     // Optional: false
     // Comment: Reported timings for each present stage
@@ -15952,7 +15902,7 @@ pub const VkPresentTimingsInfoEXT = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present timing details for each swapchain
@@ -16065,7 +16015,7 @@ pub const VkHdrVividDynamicMetadataHUAWEI = extern struct {
     // Optional: false
     // Comment: Specified in bytes
     dynamicMetadataSize: u64 = 0,
-    // Length member: dynamicMetadataSize
+    // Length field: dynamicMetadataSize
     // Extern sync: false
     // Optional: false
     // Comment: Binary code of size dynamicMetadataSize
@@ -16150,7 +16100,7 @@ pub const VkPresentTimesInfoGOOGLE = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: The earliest times to present images
@@ -16248,7 +16198,7 @@ pub const VkPipelineViewportWScalingStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     viewportCount: u32 = 0,
-    // Length member: viewportCount
+    // Length field: viewportCount
     // Extern sync: false
     // Optional: true
     pViewportWScalings: ?[*]const VkViewportWScalingNV = null,
@@ -16287,7 +16237,7 @@ pub const VkPipelineViewportSwizzleStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     viewportCount: u32 = 0,
-    // Length member: viewportCount
+    // Length field: viewportCount
     // Extern sync: false
     // Optional: false
     pViewportSwizzles: ?[*]const VkViewportSwizzleNV = null,
@@ -16328,7 +16278,7 @@ pub const VkPipelineDiscardRectangleStateCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     discardRectangleCount: u32 = 0,
-    // Length member: discardRectangleCount
+    // Length field: discardRectangleCount
     // Extern sync: false
     // Optional: false
     pDiscardRectangles: ?[*]const VkRect2D = null,
@@ -16378,7 +16328,7 @@ pub const VkRenderPassInputAttachmentAspectCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     aspectReferenceCount: u32 = 0,
-    // Length member: aspectReferenceCount
+    // Length field: aspectReferenceCount
     // Extern sync: false
     // Optional: false
     pAspectReferences: ?[*]const VkInputAttachmentAspectReference = null,
@@ -16706,7 +16656,6 @@ pub const VkMemoryRequirements2 = extern struct {
     memoryRequirements: VkMemoryRequirements = .{},
 };
 // Extension: VK_KHR_get_memory_requirements2
-// Extension: VK_NV_ray_tracing
 pub const VkMemoryRequirements2KHR = VkMemoryRequirements2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
@@ -17131,7 +17080,7 @@ pub const VkSampleLocationsInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     sampleLocationsCount: u32 = 0,
-    // Length member: sampleLocationsCount
+    // Length field: sampleLocationsCount
     // Extern sync: false
     // Optional: false
     pSampleLocations: ?[*]const VkSampleLocationEXT = null,
@@ -17172,14 +17121,14 @@ pub const VkRenderPassSampleLocationsBeginInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentInitialSampleLocationsCount: u32 = 0,
-    // Length member: attachmentInitialSampleLocationsCount
+    // Length field: attachmentInitialSampleLocationsCount
     // Extern sync: false
     // Optional: false
     pAttachmentInitialSampleLocations: ?[*]const VkAttachmentSampleLocationsEXT = null,
     // Extern sync: false
     // Optional: true
     postSubpassSampleLocationsCount: u32 = 0,
-    // Length member: postSubpassSampleLocationsCount
+    // Length field: postSubpassSampleLocationsCount
     // Extern sync: false
     // Optional: false
     pPostSubpassSampleLocations: ?[*]const VkSubpassSampleLocationsEXT = null,
@@ -17404,7 +17353,7 @@ pub const VkWriteDescriptorSetInlineUniformBlock = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u32 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
@@ -17451,7 +17400,7 @@ pub const VkPipelineCoverageModulationStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     coverageModulationTableCount: u32 = 0,
-    // Length member: coverageModulationTableCount
+    // Length field: coverageModulationTableCount
     // Extern sync: false
     // Optional: true
     pCoverageModulationTable: ?[*]const f32 = null,
@@ -17470,7 +17419,7 @@ pub const VkImageFormatListCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewFormatCount: u32 = 0,
-    // Length member: viewFormatCount
+    // Length field: viewFormatCount
     // Extern sync: false
     // Optional: false
     pViewFormats: ?[*]const VkFormat = null,
@@ -17493,7 +17442,7 @@ pub const VkValidationCacheCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     initialDataSize: u64 = 0,
-    // Length member: initialDataSize
+    // Length field: initialDataSize
     // Extern sync: false
     // Optional: false
     pInitialData: ?*const anyopaque = null,
@@ -17721,7 +17670,7 @@ pub const VkPhysicalDeviceLayeredApiPropertiesListKHR = extern struct {
     // Extern sync: false
     // Optional: true
     layeredApiCount: u32 = 0,
-    // Length member: layeredApiCount
+    // Length field: layeredApiCount
     // Extern sync: false
     // Optional: true
     // Comment: Output list of layered implementations underneath the physical device
@@ -17880,7 +17829,7 @@ pub const VkRenderingAreaInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -18145,7 +18094,7 @@ pub const VkQueueFamilyGlobalPriorityProperties = extern struct {
     // Extern sync: false
     // Optional: false
     priorityCount: u32 = 0,
-    // Length member: priorityCount
+    // Length field: priorityCount
     // Extern sync: false
     // Optional: false
     priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = @import("std").mem.zeroes([VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority),
@@ -18172,7 +18121,7 @@ pub const VkDebugUtilsObjectNameInfoEXT = extern struct {
     // Optional: false
     // Object type: objectType (Which object handle is this)
     objectHandle: u64 = 0,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pObjectName: ?[*:0]const u8 = null,
@@ -18200,7 +18149,7 @@ pub const VkDebugUtilsObjectTagInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     tagSize: u64 = 0,
-    // Length member: tagSize
+    // Length field: tagSize
     // Extern sync: false
     // Optional: false
     pTag: ?*const anyopaque = null,
@@ -18215,7 +18164,7 @@ pub const VkDebugUtilsLabelEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pLabelName: ?[*:0]const u8 = null,
@@ -18263,35 +18212,35 @@ pub const VkDebugUtilsMessengerCallbackDataEXT = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkDebugUtilsMessengerCallbackDataFlagsEXT = .{},
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pMessageIdName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: false
     messageIdNumber: i32 = 0,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pMessage: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: true
     queueLabelCount: u32 = 0,
-    // Length member: queueLabelCount
+    // Length field: queueLabelCount
     // Extern sync: false
     // Optional: false
     pQueueLabels: ?[*]const VkDebugUtilsLabelEXT = null,
     // Extern sync: false
     // Optional: true
     cmdBufLabelCount: u32 = 0,
-    // Length member: cmdBufLabelCount
+    // Length field: cmdBufLabelCount
     // Extern sync: false
     // Optional: false
     pCmdBufLabels: ?[*]const VkDebugUtilsLabelEXT = null,
     // Extern sync: false
     // Optional: true
     objectCount: u32 = 0,
-    // Length member: objectCount
+    // Length field: objectCount
     // Extern sync: false
     // Optional: false
     pObjects: ?[*]const VkDebugUtilsObjectNameInfoEXT = null,
@@ -18760,7 +18709,7 @@ pub const VkDescriptorSetLayoutBindingFlagsCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     bindingCount: u32 = 0,
-    // Length member: bindingCount
+    // Length field: bindingCount
     // Extern sync: false
     // Optional: false
     pBindingFlags: ?[*]const VkDescriptorBindingFlags = null,
@@ -18781,7 +18730,7 @@ pub const VkDescriptorSetVariableDescriptorCountAllocateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     descriptorSetCount: u32 = 0,
-    // Length member: descriptorSetCount
+    // Length field: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pDescriptorCounts: ?[*]const u32 = null,
@@ -18893,18 +18842,18 @@ pub const VkSubpassDescription2 = extern struct {
     // Extern sync: false
     // Optional: true
     inputAttachmentCount: u32 = 0,
-    // Length member: inputAttachmentCount
+    // Length field: inputAttachmentCount
     // Extern sync: false
     // Optional: false
     pInputAttachments: ?[*]const VkAttachmentReference2 = null,
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkAttachmentReference2 = null,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pResolveAttachments: ?[*]const VkAttachmentReference2 = null,
@@ -18914,7 +18863,7 @@ pub const VkSubpassDescription2 = extern struct {
     // Extern sync: false
     // Optional: true
     preserveAttachmentCount: u32 = 0,
-    // Length member: preserveAttachmentCount
+    // Length field: preserveAttachmentCount
     // Extern sync: false
     // Optional: false
     pPreserveAttachments: ?[*]const u32 = null,
@@ -18974,28 +18923,28 @@ pub const VkRenderPassCreateInfo2 = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkAttachmentDescription2 = null,
     // Extern sync: false
     // Optional: false
     subpassCount: u32 = 0,
-    // Length member: subpassCount
+    // Length field: subpassCount
     // Extern sync: false
     // Optional: false
     pSubpasses: ?[*]const VkSubpassDescription2 = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length member: dependencyCount
+    // Length field: dependencyCount
     // Extern sync: false
     // Optional: false
     pDependencies: ?[*]const VkSubpassDependency2 = null,
     // Extern sync: false
     // Optional: true
     correlatedViewMaskCount: u32 = 0,
-    // Length member: correlatedViewMaskCount
+    // Length field: correlatedViewMaskCount
     // Extern sync: false
     // Optional: false
     pCorrelatedViewMasks: ?[*]const u32 = null,
@@ -19099,14 +19048,14 @@ pub const VkTimelineSemaphoreSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreValueCount: u32 = 0,
-    // Length member: waitSemaphoreValueCount
+    // Length field: waitSemaphoreValueCount
     // Extern sync: false
     // Optional: true
     pWaitSemaphoreValues: ?[*]const u64 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreValueCount: u32 = 0,
-    // Length member: signalSemaphoreValueCount
+    // Length field: signalSemaphoreValueCount
     // Extern sync: false
     // Optional: true
     pSignalSemaphoreValues: ?[*]const u64 = null,
@@ -19129,11 +19078,11 @@ pub const VkSemaphoreWaitInfo = extern struct {
     // Extern sync: false
     // Optional: false
     semaphoreCount: u32 = 0,
-    // Length member: semaphoreCount
+    // Length field: semaphoreCount
     // Extern sync: false
     // Optional: false
     pSemaphores: ?[*]const VkSemaphore = null,
-    // Length member: semaphoreCount
+    // Length field: semaphoreCount
     // Extern sync: false
     // Optional: false
     pValues: ?[*]const u64 = null,
@@ -19188,7 +19137,7 @@ pub const VkPipelineVertexInputDivisorStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     vertexBindingDivisorCount: u32 = 0,
-    // Length member: vertexBindingDivisorCount
+    // Length field: vertexBindingDivisorCount
     // Extern sync: false
     // Optional: false
     pVertexBindingDivisors: ?[*]const VkVertexInputBindingDivisorDescription = null,
@@ -19846,7 +19795,7 @@ pub const VkPipelineViewportExclusiveScissorStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     exclusiveScissorCount: u32 = 0,
-    // Length member: exclusiveScissorCount
+    // Length field: exclusiveScissorCount
     // Extern sync: false
     // Optional: false
     pExclusiveScissors: ?[*]const VkRect2D = null,
@@ -20028,7 +19977,7 @@ pub const VkShadingRatePaletteNV = extern struct {
     // Extern sync: false
     // Optional: false
     shadingRatePaletteEntryCount: u32 = 0,
-    // Length member: shadingRatePaletteEntryCount
+    // Length field: shadingRatePaletteEntryCount
     // Extern sync: false
     // Optional: false
     pShadingRatePaletteEntries: ?[*]const VkShadingRatePaletteEntryNV = null,
@@ -20050,7 +19999,7 @@ pub const VkPipelineViewportShadingRateImageStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     viewportCount: u32 = 0,
-    // Length member: viewportCount
+    // Length field: viewportCount
     // Extern sync: false
     // Optional: false
     pShadingRatePalettes: ?[*]const VkShadingRatePaletteNV = null,
@@ -20136,7 +20085,7 @@ pub const VkCoarseSampleOrderCustomNV = extern struct {
     // Extern sync: false
     // Optional: false
     sampleLocationCount: u32 = 0,
-    // Length member: sampleLocationCount
+    // Length field: sampleLocationCount
     // Extern sync: false
     // Optional: false
     pSampleLocations: ?[*]const VkCoarseSampleLocationNV = null,
@@ -20158,7 +20107,7 @@ pub const VkPipelineViewportCoarseSampleOrderStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     customSampleOrderCount: u32 = 0,
-    // Length member: customSampleOrderCount
+    // Length field: customSampleOrderCount
     // Extern sync: false
     // Optional: false
     pCustomSampleOrders: ?[*]const VkCoarseSampleOrderCustomNV = null,
@@ -20454,7 +20403,7 @@ pub const VkRayTracingPipelineCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     stageCount: u32 = 0,
-    // Length member: stageCount
+    // Length field: stageCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each active shader stage
@@ -20462,7 +20411,7 @@ pub const VkRayTracingPipelineCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     groupCount: u32 = 0,
-    // Length member: groupCount
+    // Length field: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkRayTracingShaderGroupCreateInfoNV = null,
@@ -20499,7 +20448,7 @@ pub const VkRayTracingPipelineCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length member: stageCount
+    // Length field: stageCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each active shader stage
@@ -20507,7 +20456,7 @@ pub const VkRayTracingPipelineCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     groupCount: u32 = 0,
-    // Length member: groupCount
+    // Length field: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkRayTracingShaderGroupCreateInfoKHR = null,
@@ -20658,7 +20607,7 @@ pub const VkAccelerationStructureInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     geometryCount: u32 = 0,
-    // Length member: geometryCount
+    // Length field: geometryCount
     // Extern sync: false
     // Optional: false
     pGeometries: ?[*]const VkGeometryNV = null,
@@ -20702,7 +20651,7 @@ pub const VkBindAccelerationStructureMemoryInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length member: deviceIndexCount
+    // Length field: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
@@ -20721,7 +20670,7 @@ pub const VkWriteDescriptorSetAccelerationStructureKHR = extern struct {
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length member: accelerationStructureCount
+    // Length field: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const VkAccelerationStructureKHR = null,
@@ -20740,7 +20689,7 @@ pub const VkWriteDescriptorSetAccelerationStructureNV = extern struct {
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length member: accelerationStructureCount
+    // Length field: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const VkAccelerationStructureNV = null,
@@ -21046,7 +20995,7 @@ pub const VkDrmFormatModifierPropertiesListEXT = extern struct {
     // Extern sync: false
     // Optional: true
     drmFormatModifierCount: u32 = 0,
-    // Length member: drmFormatModifierCount
+    // Length field: drmFormatModifierCount
     // Extern sync: false
     // Optional: true
     pDrmFormatModifierProperties: ?[*]VkDrmFormatModifierPropertiesEXT = null,
@@ -21085,7 +21034,7 @@ pub const VkPhysicalDeviceImageDrmFormatModifierInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length member: queueFamilyIndexCount
+    // Length field: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -21104,7 +21053,7 @@ pub const VkImageDrmFormatModifierListCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     drmFormatModifierCount: u32 = 0,
-    // Length member: drmFormatModifierCount
+    // Length field: drmFormatModifierCount
     // Extern sync: false
     // Optional: false
     pDrmFormatModifiers: ?[*]const u64 = null,
@@ -21126,7 +21075,7 @@ pub const VkImageDrmFormatModifierExplicitCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     drmFormatModifierPlaneCount: u32 = 0,
-    // Length member: drmFormatModifierPlaneCount
+    // Length field: drmFormatModifierPlaneCount
     // Extern sync: false
     // Optional: false
     pPlaneLayouts: ?[*]const VkSubresourceLayout = null,
@@ -21321,7 +21270,7 @@ pub const VkRenderPassFragmentDensityMapOffsetEndInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     fragmentDensityOffsetCount: u32 = 0,
-    // Length member: fragmentDensityOffsetCount
+    // Length field: fragmentDensityOffsetCount
     // Extern sync: false
     // Optional: false
     pFragmentDensityOffsets: ?[*]const VkOffset2D = null,
@@ -21640,7 +21589,7 @@ pub const VkFramebufferAttachmentsCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentImageInfoCount: u32 = 0,
-    // Length member: attachmentImageInfoCount
+    // Length field: attachmentImageInfoCount
     // Extern sync: false
     // Optional: false
     pAttachmentImageInfos: ?[*]const VkFramebufferAttachmentImageInfo = null,
@@ -21677,7 +21626,7 @@ pub const VkFramebufferAttachmentImageInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewFormatCount: u32 = 0,
-    // Length member: viewFormatCount
+    // Length field: viewFormatCount
     // Extern sync: false
     // Optional: false
     pViewFormats: ?[*]const VkFormat = null,
@@ -21698,7 +21647,7 @@ pub const VkRenderPassAttachmentBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkImageView = null,
@@ -21889,7 +21838,7 @@ pub const VkPipelineCreationFeedbackCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pipelineStageCreationFeedbackCount: u32 = 0,
-    // Length member: pipelineStageCreationFeedbackCount
+    // Length field: pipelineStageCreationFeedbackCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each shader stage specified in the parent Vk*PipelineCreateInfo struct
@@ -22058,15 +22007,15 @@ pub const VkPerformanceCounterDescriptionKHR = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkPerformanceCounterDescriptionFlagsKHR = .{},
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     category: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22088,7 +22037,7 @@ pub const VkQueryPoolPerformanceCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     counterIndexCount: u32 = 0,
-    // Length member: counterIndexCount
+    // Length field: counterIndexCount
     // Extern sync: false
     // Optional: false
     pCounterIndices: ?[*]const u32 = null,
@@ -22237,7 +22186,7 @@ pub const VkPerformanceValueINTEL = extern struct {
     type: VkPerformanceValueTypeINTEL,
     // Extern sync: false
     // Optional: false
-    // Selector member: type (What union field is valid)
+    // Selector field: type (What union field is valid)
     data: VkPerformanceValueDataINTEL,
 };
 // Extension: VK_INTEL_performance_query
@@ -22541,11 +22490,11 @@ pub const VkPipelineExecutablePropertiesKHR = extern struct {
     // Extern sync: false
     // Optional: false
     stages: VkShaderStageFlags = .{},
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22580,11 +22529,11 @@ pub const VkPipelineExecutableStatisticKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22593,7 +22542,7 @@ pub const VkPipelineExecutableStatisticKHR = extern struct {
     format: VkPipelineExecutableStatisticFormatKHR,
     // Extern sync: false
     // Optional: false
-    // Selector member: format (What union field is valid)
+    // Selector field: format (What union field is valid)
     value: VkPipelineExecutableStatisticValueKHR,
 };
 // Extension: VK_KHR_pipeline_executable_properties
@@ -22606,11 +22555,11 @@ pub const VkPipelineExecutableInternalRepresentationKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22620,7 +22569,7 @@ pub const VkPipelineExecutableInternalRepresentationKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: true
     pData: ?*anyopaque = null,
@@ -23231,11 +23180,11 @@ pub const VkPhysicalDeviceVulkan12Properties = extern struct {
     // Extern sync: false
     // Optional: false
     driverID: VkDriverId,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     driverName: [VK_MAX_DRIVER_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_NAME_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     driverInfo: [VK_MAX_DRIVER_INFO_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_INFO_SIZE]u8),
@@ -23761,14 +23710,14 @@ pub const VkPhysicalDeviceVulkan14Properties = extern struct {
     // Extern sync: false
     // Optional: true
     copySrcLayoutCount: u32 = 0,
-    // Length member: copySrcLayoutCount
+    // Length field: copySrcLayoutCount
     // Extern sync: false
     // Optional: true
     pCopySrcLayouts: ?[*]VkImageLayout = null,
     // Extern sync: false
     // Optional: true
     copyDstLayoutCount: u32 = 0,
-    // Length member: copyDstLayoutCount
+    // Length field: copyDstLayoutCount
     // Extern sync: false
     // Optional: true
     pCopyDstLayouts: ?[*]VkImageLayout = null,
@@ -23840,7 +23789,7 @@ pub const VkFaultCallbackInfo = extern struct {
     // Extern sync: false
     // Optional: true
     faultCount: u32 = 0,
-    // Length member: faultCount
+    // Length field: faultCount
     // Extern sync: false
     // Optional: true
     pFaults: ?[*]VkFaultData = null,
@@ -23858,22 +23807,22 @@ pub const VkPhysicalDeviceToolProperties = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     version: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
     // Extern sync: false
     // Optional: false
     purposes: VkToolPurposeFlags = .{},
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     layer: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
@@ -24132,7 +24081,7 @@ pub const VkAccelerationStructureGeometryKHR = extern struct {
     geometryType: VkGeometryTypeKHR,
     // Extern sync: false
     // Optional: false
-    // Selector member: geometryType (What union field is valid)
+    // Selector field: geometryType (What union field is valid)
     geometry: VkAccelerationStructureGeometryDataKHR,
     // Extern sync: false
     // Optional: true
@@ -24166,11 +24115,11 @@ pub const VkAccelerationStructureBuildGeometryInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     geometryCount: u32 = 0,
-    // Length member: geometryCount
+    // Length field: geometryCount
     // Extern sync: false
     // Optional: true
     pGeometries: ?[*]const VkAccelerationStructureGeometryKHR = null,
-    // Length member: geometryCount,1
+    // Length field: geometryCount,1
     // Extern sync: false
     // Optional: false
     ppGeometries: ?[*]const *const VkAccelerationStructureGeometryKHR = null,
@@ -24267,22 +24216,12 @@ pub const VkAccelerationStructureInstanceKHR = extern struct {
     // Extern sync: false
     // Optional: false
     transform: VkTransformMatrixKHR = .{},
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         instanceCustomIndex: u24 = 0,
-    // Extern sync: false
-    // Optional: false
         mask: u8 = 0,
-    // Extern sync: false
-    // Optional: false
         instanceShaderBindingTableRecordOffset: u24 = 0,
-    // Extern sync: false
-    // Optional: true
         flags: u8 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     accelerationStructureReference: u64 = 0,
@@ -24313,7 +24252,7 @@ pub const VkAccelerationStructureVersionInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: 2*VK_UUID_SIZE
+    // Length field: 2*VK_UUID_SIZE
     // Extern sync: false
     // Optional: false
     pVersionData: ?[*]const u8 = null,
@@ -24409,7 +24348,7 @@ pub const VkPipelineLibraryCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     libraryCount: u32 = 0,
-    // Length member: libraryCount
+    // Length field: libraryCount
     // Extern sync: false
     // Optional: false
     pLibraries: ?[*]const VkPipeline = null,
@@ -24442,7 +24381,7 @@ pub const VkRefreshObjectListKHR = extern struct {
     // Extern sync: false
     // Optional: false
     objectCount: u32 = 0,
-    // Length member: objectCount
+    // Length field: objectCount
     // Extern sync: false
     // Optional: false
     pObjects: ?[*]const VkRefreshObjectKHR = null,
@@ -24604,7 +24543,6 @@ pub const VkPhysicalDeviceExtendedDynamicState3PropertiesEXT = extern struct {
     dynamicPrimitiveTopologyUnrestricted: u32 = 0,
 };
 // Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkColorBlendEquationEXT = extern struct {
@@ -24628,7 +24566,6 @@ pub const VkColorBlendEquationEXT = extern struct {
     alphaBlendOp: VkBlendOp,
 };
 // Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkColorBlendAdvancedEXT = extern struct {
@@ -24828,7 +24765,7 @@ pub const VkWriteDescriptorSetPartitionedAccelerationStructureNV = extern struct
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length member: accelerationStructureCount
+    // Length field: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const u64 = null,
@@ -25358,7 +25295,7 @@ pub const VkCopyBufferInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferCopy2 = null,
@@ -25390,7 +25327,7 @@ pub const VkCopyImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageCopy2 = null,
@@ -25422,7 +25359,7 @@ pub const VkBlitImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageBlit2 = null,
@@ -25454,7 +25391,7 @@ pub const VkCopyBufferToImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferImageCopy2 = null,
@@ -25483,7 +25420,7 @@ pub const VkCopyImageToBufferInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferImageCopy2 = null,
@@ -25515,7 +25452,7 @@ pub const VkResolveImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageResolve2 = null,
@@ -25873,7 +25810,7 @@ pub const VkMutableDescriptorTypeListEXT = extern struct {
     // Extern sync: false
     // Optional: true
     descriptorTypeCount: u32 = 0,
-    // Length member: descriptorTypeCount
+    // Length field: descriptorTypeCount
     // Extern sync: false
     // Optional: false
     pDescriptorTypes: ?[*]const VkDescriptorType = null,
@@ -25894,7 +25831,7 @@ pub const VkMutableDescriptorTypeCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     mutableDescriptorTypeListCount: u32 = 0,
-    // Length member: mutableDescriptorTypeListCount
+    // Length field: mutableDescriptorTypeListCount
     // Extern sync: false
     // Optional: false
     pMutableDescriptorTypeLists: ?[*]const VkMutableDescriptorTypeListEXT = null,
@@ -25974,7 +25911,7 @@ pub const VkCustomResolveCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -26080,7 +26017,7 @@ pub const VkGeneratedCommandsShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     shaderCount: u32 = 0,
-    // Length member: shaderCount
+    // Length field: shaderCount
     // Extern sync: false
     // Optional: false
     pShaders: ?[*]const VkShaderEXT = null,
@@ -26138,7 +26075,7 @@ pub const VkIndirectExecutionSetShaderLayoutInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     setLayoutCount: u32 = 0,
-    // Length member: setLayoutCount
+    // Length field: setLayoutCount
     // Extern sync: false
     // Optional: false
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
@@ -26156,11 +26093,11 @@ pub const VkIndirectExecutionSetShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     shaderCount: u32 = 0,
-    // Length member: shaderCount
+    // Length field: shaderCount
     // Extern sync: false
     // Optional: false
     pInitialShaders: ?[*]const VkShaderEXT = null,
-    // Length member: shaderCount
+    // Length field: shaderCount
     // Extern sync: false
     // Optional: true
     pSetLayoutInfos: ?[*]const VkIndirectExecutionSetShaderLayoutInfoEXT = null,
@@ -26170,7 +26107,7 @@ pub const VkIndirectExecutionSetShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pushConstantRangeCount: u32 = 0,
-    // Length member: pushConstantRangeCount
+    // Length field: pushConstantRangeCount
     // Extern sync: false
     // Optional: false
     pPushConstantRanges: ?[*]const VkPushConstantRange = null,
@@ -26190,7 +26127,7 @@ pub const VkIndirectExecutionSetCreateInfoEXT = extern struct {
     type: VkIndirectExecutionSetInfoTypeEXT,
     // Extern sync: false
     // Optional: false
-    // Selector member: type (What union field is valid)
+    // Selector field: type (What union field is valid)
     info: VkIndirectExecutionSetInfoEXT,
 };
 // Extension: VK_EXT_device_generated_commands
@@ -26293,7 +26230,7 @@ pub const VkIndirectCommandsLayoutCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     tokenCount: u32 = 0,
-    // Length member: tokenCount
+    // Length field: tokenCount
     // Extern sync: false
     // Optional: false
     pTokens: ?[*]const VkIndirectCommandsLayoutTokenEXT = null,
@@ -26313,7 +26250,7 @@ pub const VkIndirectCommandsLayoutTokenEXT = extern struct {
     type: VkIndirectCommandsTokenTypeEXT,
     // Extern sync: false
     // Optional: false
-    // Selector member: type (What union field is valid)
+    // Selector field: type (What union field is valid)
     data: VkIndirectCommandsTokenDataEXT,
     // Extern sync: false
     // Optional: false
@@ -26490,7 +26427,6 @@ pub const VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR = extern s
     shaderRelaxedExtendedInstruction: u32 = 0,
 };
 // Extension: VK_EXT_vertex_input_dynamic_state
-// Extension: VK_EXT_shader_object
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkVertexInputBindingDescription2EXT = extern struct {
@@ -26514,7 +26450,6 @@ pub const VkVertexInputBindingDescription2EXT = extern struct {
     divisor: u32 = 0,
 };
 // Extension: VK_EXT_vertex_input_dynamic_state
-// Extension: VK_EXT_shader_object
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkVertexInputAttributeDescription2EXT = extern struct {
@@ -26571,7 +26506,7 @@ pub const VkPipelineColorWriteCreateInfoEXT = extern struct {
     // Optional: true
     // Comment: # of pAttachments
     attachmentCount: u32 = 0,
-    // Length member: attachmentCount
+    // Length field: attachmentCount
     // Extern sync: false
     // Optional: false
     pColorWriteEnables: ?[*]const u32 = null,
@@ -26719,21 +26654,21 @@ pub const VkDependencyInfo = extern struct {
     // Extern sync: false
     // Optional: true
     memoryBarrierCount: u32 = 0,
-    // Length member: memoryBarrierCount
+    // Length field: memoryBarrierCount
     // Extern sync: false
     // Optional: false
     pMemoryBarriers: ?[*]const VkMemoryBarrier2 = null,
     // Extern sync: false
     // Optional: true
     bufferMemoryBarrierCount: u32 = 0,
-    // Length member: bufferMemoryBarrierCount
+    // Length field: bufferMemoryBarrierCount
     // Extern sync: false
     // Optional: false
     pBufferMemoryBarriers: ?[*]const VkBufferMemoryBarrier2 = null,
     // Extern sync: false
     // Optional: true
     imageMemoryBarrierCount: u32 = 0,
-    // Length member: imageMemoryBarrierCount
+    // Length field: imageMemoryBarrierCount
     // Extern sync: false
     // Optional: false
     pImageMemoryBarriers: ?[*]const VkImageMemoryBarrier2 = null,
@@ -26800,21 +26735,21 @@ pub const VkSubmitInfo2 = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreInfoCount: u32 = 0,
-    // Length member: waitSemaphoreInfoCount
+    // Length field: waitSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
     // Extern sync: false
     // Optional: true
     commandBufferInfoCount: u32 = 0,
-    // Length member: commandBufferInfoCount
+    // Length field: commandBufferInfoCount
     // Extern sync: false
     // Optional: false
     pCommandBufferInfos: ?[*]const VkCommandBufferSubmitInfo = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreInfoCount: u32 = 0,
-    // Length member: signalSemaphoreInfoCount
+    // Length field: signalSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
@@ -26919,14 +26854,14 @@ pub const VkPhysicalDeviceHostImageCopyProperties = extern struct {
     // Extern sync: false
     // Optional: true
     copySrcLayoutCount: u32 = 0,
-    // Length member: copySrcLayoutCount
+    // Length field: copySrcLayoutCount
     // Extern sync: false
     // Optional: true
     pCopySrcLayouts: ?[*]VkImageLayout = null,
     // Extern sync: false
     // Optional: true
     copyDstLayoutCount: u32 = 0,
-    // Length member: copyDstLayoutCount
+    // Length field: copyDstLayoutCount
     // Extern sync: false
     // Optional: true
     pCopyDstLayouts: ?[*]VkImageLayout = null,
@@ -27025,7 +26960,7 @@ pub const VkCopyMemoryToImageInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkMemoryToImageCopy = null,
@@ -27054,7 +26989,7 @@ pub const VkCopyImageToMemoryInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageToMemoryCopy = null,
@@ -27089,7 +27024,7 @@ pub const VkCopyImageToImageInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageCopy2 = null,
@@ -27258,14 +27193,14 @@ pub const VkDeviceObjectReservationCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pipelineCacheCreateInfoCount: u32 = 0,
-    // Length member: pipelineCacheCreateInfoCount
+    // Length field: pipelineCacheCreateInfoCount
     // Extern sync: false
     // Optional: false
     pPipelineCacheCreateInfos: ?[*]const VkPipelineCacheCreateInfo = null,
     // Extern sync: false
     // Optional: true
     pipelinePoolSizeCount: u32 = 0,
-    // Length member: pipelinePoolSizeCount
+    // Length field: pipelinePoolSizeCount
     // Extern sync: false
     // Optional: false
     pPipelinePoolSizes: ?[*]const VkPipelinePoolSize = null,
@@ -27609,7 +27544,7 @@ pub const VkVideoProfileListInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     profileCount: u32 = 0,
-    // Length member: profileCount
+    // Length field: profileCount
     // Extern sync: false
     // Optional: false
     pProfiles: ?[*]const VkVideoProfileInfoKHR = null,
@@ -27980,7 +27915,7 @@ pub const VkVideoDecodeInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length member: referenceSlotCount
+    // Length field: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28084,14 +28019,14 @@ pub const VkVideoDecodeH264SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length member: stdSPSCount
+    // Length field: stdSPSCount
     // Extern sync: false
     // Optional: false
     pStdSPSs: ?[*]const StdVideoH264SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length member: stdPPSCount
+    // Length field: stdPPSCount
     // Extern sync: false
     // Optional: false
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -28153,7 +28088,7 @@ pub const VkVideoDecodeH264PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     sliceCount: u32 = 0,
-    // Length member: sliceCount
+    // Length field: sliceCount
     // Extern sync: false
     // Optional: false
     pSliceOffsets: ?[*]const u32 = null,
@@ -28215,21 +28150,21 @@ pub const VkVideoDecodeH265SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdVPSCount: u32 = 0,
-    // Length member: stdVPSCount
+    // Length field: stdVPSCount
     // Extern sync: false
     // Optional: false
     pStdVPSs: ?[*]const StdVideoH265VideoParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length member: stdSPSCount
+    // Length field: stdSPSCount
     // Extern sync: false
     // Optional: false
     pStdSPSs: ?[*]const StdVideoH265SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length member: stdPPSCount
+    // Length field: stdPPSCount
     // Extern sync: false
     // Optional: false
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -28297,7 +28232,7 @@ pub const VkVideoDecodeH265PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     sliceSegmentCount: u32 = 0,
-    // Length member: sliceSegmentCount
+    // Length field: sliceSegmentCount
     // Extern sync: false
     // Optional: false
     pSliceSegmentOffsets: ?[*]const u32 = null,
@@ -28471,11 +28406,11 @@ pub const VkVideoDecodeAV1PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     tileCount: u32 = 0,
-    // Length member: tileCount
+    // Length field: tileCount
     // Extern sync: false
     // Optional: false
     pTileOffsets: ?[*]const u32 = null,
-    // Length member: tileCount
+    // Length field: tileCount
     // Extern sync: false
     // Optional: false
     pTileSizes: ?[*]const u32 = null,
@@ -28617,7 +28552,7 @@ pub const VkVideoBeginCodingInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length member: referenceSlotCount
+    // Length field: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28702,7 +28637,7 @@ pub const VkVideoEncodeInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length member: referenceSlotCount
+    // Length field: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28842,7 +28777,7 @@ pub const VkVideoEncodeRateControlInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     layerCount: u32 = 0,
-    // Length member: layerCount
+    // Length field: layerCount
     // Extern sync: false
     // Optional: false
     pLayers: ?[*]const VkVideoEncodeRateControlLayerInfoKHR = null,
@@ -29029,14 +28964,14 @@ pub const VkVideoEncodeH264SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length member: stdSPSCount
+    // Length field: stdSPSCount
     // Extern sync: false
     // Optional: true
     pStdSPSs: ?[*]const StdVideoH264SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length member: stdPPSCount
+    // Length field: stdPPSCount
     // Extern sync: false
     // Optional: true
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -29134,7 +29069,7 @@ pub const VkVideoEncodeH264PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     naluSliceEntryCount: u32 = 0,
-    // Length member: naluSliceEntryCount
+    // Length field: naluSliceEntryCount
     // Extern sync: false
     // Optional: false
     pNaluSliceEntries: ?[*]const VkVideoEncodeH264NaluSliceInfoKHR = null,
@@ -29411,21 +29346,21 @@ pub const VkVideoEncodeH265SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdVPSCount: u32 = 0,
-    // Length member: stdVPSCount
+    // Length field: stdVPSCount
     // Extern sync: false
     // Optional: true
     pStdVPSs: ?[*]const StdVideoH265VideoParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length member: stdSPSCount
+    // Length field: stdSPSCount
     // Extern sync: false
     // Optional: true
     pStdSPSs: ?[*]const StdVideoH265SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length member: stdPPSCount
+    // Length field: stdPPSCount
     // Extern sync: false
     // Optional: true
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -29520,7 +29455,7 @@ pub const VkVideoEncodeH265PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     naluSliceSegmentEntryCount: u32 = 0,
-    // Length member: naluSliceSegmentEntryCount
+    // Length field: naluSliceSegmentEntryCount
     // Extern sync: false
     // Optional: false
     pNaluSliceSegmentEntries: ?[*]const VkVideoEncodeH265NaluSliceSegmentInfoKHR = null,
@@ -29875,7 +29810,7 @@ pub const VkVideoEncodeAV1SessionParametersCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdOperatingPointCount: u32 = 0,
-    // Length member: stdOperatingPointCount
+    // Length field: stdOperatingPointCount
     // Extern sync: false
     // Optional: true
     pStdOperatingPoints: ?[*]const StdVideoEncodeAV1OperatingPointInfo = null,
@@ -30256,7 +30191,7 @@ pub const VkCuModuleCreateInfoNVX = extern struct {
     // Extern sync: false
     // Optional: true
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
@@ -30289,7 +30224,7 @@ pub const VkCuFunctionCreateInfoNVX = extern struct {
     // Extern sync: false
     // Optional: false
     module: VkCuModuleNVX = .none,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -30331,14 +30266,14 @@ pub const VkCuLaunchInfoNVX = extern struct {
     // Extern sync: false
     // Optional: true
     paramCount: u64 = 0,
-    // Length member: paramCount
+    // Length field: paramCount
     // Extern sync: false
     // Optional: false
     pParams: ?[*]const *const anyopaque = null,
     // Extern sync: false
     // Optional: true
     extraCount: u64 = 0,
-    // Length member: extraCount
+    // Length field: extraCount
     // Extern sync: false
     // Optional: false
     pExtras: ?[*]const *const anyopaque = null,
@@ -30560,7 +30495,7 @@ pub const VkDescriptorGetInfoEXT = extern struct {
     type: VkDescriptorType,
     // Extern sync: false
     // Optional: false
-    // Selector member: type (What union field is valid)
+    // Selector field: type (What union field is valid)
     data: VkDescriptorDataEXT,
 };
 // Extension: VK_EXT_descriptor_buffer
@@ -31000,22 +30935,12 @@ pub const VkAccelerationStructureSRTMotionInstanceNV = extern struct {
     // Extern sync: false
     // Optional: false
     transformT1: VkSRTDataNV = .{},
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         instanceCustomIndex: u24 = 0,
-    // Extern sync: false
-    // Optional: false
         mask: u8 = 0,
-    // Extern sync: false
-    // Optional: false
         instanceShaderBindingTableRecordOffset: u24 = 0,
-    // Extern sync: false
-    // Optional: true
         flags: u8 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     accelerationStructureReference: u64 = 0,
@@ -31030,22 +30955,12 @@ pub const VkAccelerationStructureMatrixMotionInstanceNV = extern struct {
     // Extern sync: false
     // Optional: false
     transformT1: VkTransformMatrixKHR = .{},
-    // Bitfield start
-    bitfield0: packed struct(u32) {
-    // Extern sync: false
-    // Optional: false
+    packed_field0: packed struct(u32) {
         instanceCustomIndex: u24 = 0,
-    // Extern sync: false
-    // Optional: false
         mask: u8 = 0,
-    // Extern sync: false
-    // Optional: false
         instanceShaderBindingTableRecordOffset: u24 = 0,
-    // Extern sync: false
-    // Optional: true
         flags: u8 = 0,
-    // Bitfield end
-    },
+    } = .{},
     // Extern sync: false
     // Optional: false
     accelerationStructureReference: u64 = 0,
@@ -31062,7 +30977,7 @@ pub const VkAccelerationStructureMotionInstanceNV = extern struct {
     flags: VkAccelerationStructureMotionInstanceFlagsNV = .{},
     // Extern sync: false
     // Optional: false
-    // Selector member: type (What union field is valid)
+    // Selector field: type (What union field is valid)
     data: VkAccelerationStructureMotionInstanceDataNV,
 };
 // Extension: VK_NV_external_memory_rdma
@@ -31252,7 +31167,7 @@ pub const VkImageFormatConstraintsInfoFUCHSIA = extern struct {
     // Extern sync: false
     // Optional: false
     colorSpaceCount: u32 = 0,
-    // Length member: colorSpaceCount
+    // Length field: colorSpaceCount
     // Extern sync: false
     // Optional: false
     pColorSpaces: ?[*]const VkSysmemColorSpaceFUCHSIA = null,
@@ -31270,7 +31185,7 @@ pub const VkImageConstraintsInfoFUCHSIA = extern struct {
     // Extern sync: false
     // Optional: false
     formatConstraintsCount: u32 = 0,
-    // Length member: formatConstraintsCount
+    // Length field: formatConstraintsCount
     // Extern sync: false
     // Optional: false
     pFormatConstraints: ?[*]const VkImageFormatConstraintsInfoFUCHSIA = null,
@@ -31320,7 +31235,7 @@ pub const VkCudaModuleCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
@@ -31338,7 +31253,7 @@ pub const VkCudaFunctionCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     module: VkCudaModuleNV = .none,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -31380,14 +31295,14 @@ pub const VkCudaLaunchInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     paramCount: u64 = 0,
-    // Length member: paramCount
+    // Length field: paramCount
     // Extern sync: false
     // Optional: false
     pParams: ?[*]const *const anyopaque = null,
     // Extern sync: false
     // Optional: true
     extraCount: u64 = 0,
-    // Length member: extraCount
+    // Length field: extraCount
     // Extern sync: false
     // Optional: false
     pExtras: ?[*]const *const anyopaque = null,
@@ -31444,7 +31359,7 @@ pub const VkDrmFormatModifierPropertiesList2EXT = extern struct {
     // Extern sync: false
     // Optional: true
     drmFormatModifierCount: u32 = 0,
-    // Length member: drmFormatModifierCount
+    // Length field: drmFormatModifierCount
     // Extern sync: false
     // Optional: true
     pDrmFormatModifierProperties: ?[*]VkDrmFormatModifierProperties2EXT = null,
@@ -31516,7 +31431,7 @@ pub const VkPipelineRenderingCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -31554,7 +31469,7 @@ pub const VkRenderingInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkRenderingAttachmentInfo = null,
@@ -31566,7 +31481,6 @@ pub const VkRenderingInfo = extern struct {
     pStencilAttachment: ?*const VkRenderingAttachmentInfo = null,
 };
 // Extension: VK_KHR_dynamic_rendering
-// Extension: VK_QCOM_tile_properties
 pub const VkRenderingInfoKHR = VkRenderingInfo;
 // Extension: VK_KHR_maintenance10
 // Returned only: false
@@ -31694,7 +31608,7 @@ pub const VkCommandBufferInheritanceRenderingInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -31724,7 +31638,7 @@ pub const VkAttachmentSampleCountInfoAMD = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentSamples: ?[*]const VkSampleCountFlags = null,
@@ -32054,7 +31968,7 @@ pub const VkPipelineShaderStageModuleIdentifierCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     identifierSize: u32 = 0,
-    // Length member: identifierSize
+    // Length field: identifierSize
     // Extern sync: false
     // Optional: false
     pIdentifier: ?[*]const u8 = null,
@@ -32072,7 +31986,7 @@ pub const VkShaderModuleIdentifierEXT = extern struct {
     // Extern sync: false
     // Optional: false
     identifierSize: u32 = 0,
-    // Length member: identifierSize
+    // Length field: identifierSize
     // Extern sync: false
     // Optional: false
     identifier: [VK_MAX_SHADER_MODULE_IDENTIFIER_SIZE_EXT]u8 = @import("std").mem.zeroes([VK_MAX_SHADER_MODULE_IDENTIFIER_SIZE_EXT]u8),
@@ -32094,7 +32008,7 @@ pub const VkImageCompressionControlEXT = extern struct {
     // Extern sync: false
     // Optional: true
     compressionControlPlaneCount: u32 = 0,
-    // Length member: compressionControlPlaneCount
+    // Length field: compressionControlPlaneCount
     // Extern sync: false
     // Optional: false
     pFixedRateFlags: ?[*]VkImageCompressionFixedRateFlagsEXT = null,
@@ -32164,7 +32078,6 @@ pub const VkImageSubresource2 = extern struct {
 // Extension: VK_KHR_maintenance5
 pub const VkImageSubresource2KHR = VkImageSubresource2;
 // Extension: VK_EXT_host_image_copy
-// Extension: VK_EXT_image_compression_control
 pub const VkImageSubresource2EXT = VkImageSubresource2;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: true
@@ -32183,7 +32096,6 @@ pub const VkSubresourceLayout2 = extern struct {
 // Extension: VK_KHR_maintenance5
 pub const VkSubresourceLayout2KHR = VkSubresourceLayout2;
 // Extension: VK_EXT_host_image_copy
-// Extension: VK_EXT_image_compression_control
 pub const VkSubresourceLayout2EXT = VkSubresourceLayout2;
 // Extension: VK_EXT_subpass_merge_feedback
 // Extends: VkRenderPassCreateInfo2,VkSubpassDescription2
@@ -32230,7 +32142,7 @@ pub const VkRenderPassSubpassFeedbackInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     subpassMergeStatus: VkSubpassMergeStatusEXT,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -32293,11 +32205,11 @@ pub const VkMicromapBuildInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length member: usageCountsCount
+    // Length field: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length member: usageCountsCount,1
+    // Length field: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -32354,7 +32266,7 @@ pub const VkMicromapVersionInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: 2*VK_UUID_SIZE
+    // Length field: 2*VK_UUID_SIZE
     // Extern sync: false
     // Optional: false
     pVersionData: ?[*]const u8 = null,
@@ -32534,11 +32446,11 @@ pub const VkAccelerationStructureTrianglesOpacityMicromapEXT = extern struct {
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length member: usageCountsCount
+    // Length field: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length member: usageCountsCount,1
+    // Length field: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -32626,11 +32538,11 @@ pub const VkAccelerationStructureTrianglesDisplacementMicromapNV = extern struct
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length member: usageCountsCount
+    // Length field: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length member: usageCountsCount,1
+    // Length field: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -33397,7 +33309,7 @@ pub const VkOpticalFlowExecuteInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkRect2D = null,
@@ -33438,7 +33350,7 @@ pub const VkDeviceFaultAddressInfoEXT = extern struct {
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkDeviceFaultVendorInfoEXT = extern struct {
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -33480,7 +33392,7 @@ pub const VkDeviceFaultInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -33641,7 +33553,7 @@ pub const VkDecompressMemoryInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkDecompressMemoryRegionEXT = null,
@@ -33702,14 +33614,14 @@ pub const VkFrameBoundaryEXT = extern struct {
     // Extern sync: false
     // Optional: true
     imageCount: u32 = 0,
-    // Length member: imageCount
+    // Length field: imageCount
     // Extern sync: false
     // Optional: true
     pImages: ?[*]const VkImage = null,
     // Extern sync: false
     // Optional: true
     bufferCount: u32 = 0,
-    // Length member: bufferCount
+    // Length field: bufferCount
     // Extern sync: false
     // Optional: true
     pBuffers: ?[*]const VkBuffer = null,
@@ -33719,7 +33631,7 @@ pub const VkFrameBoundaryEXT = extern struct {
     // Extern sync: false
     // Optional: true
     tagSize: u64 = 0,
-    // Length member: tagSize
+    // Length field: tagSize
     // Extern sync: false
     // Optional: true
     pTag: ?*const anyopaque = null,
@@ -33816,7 +33728,7 @@ pub const VkSurfacePresentModeCompatibilityKHR = extern struct {
     // Extern sync: false
     // Optional: true
     presentModeCount: u32 = 0,
-    // Length member: presentModeCount
+    // Length field: presentModeCount
     // Extern sync: false
     // Optional: true
     // Comment: Output list of present modes compatible with the one specified in VkSurfacePresentModeKHR
@@ -33856,7 +33768,7 @@ pub const VkSwapchainPresentFenceInfoKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Fence to signal for each swapchain
@@ -33878,7 +33790,7 @@ pub const VkSwapchainPresentModesCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     presentModeCount: u32 = 0,
-    // Length member: presentModeCount
+    // Length field: presentModeCount
     // Extern sync: false
     // Optional: false
     pPresentModes: ?[*]const VkPresentModeKHR = null,
@@ -33900,7 +33812,7 @@ pub const VkSwapchainPresentModeInfoKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length member: swapchainCount
+    // Length field: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Presentation mode for each swapchain
@@ -33949,7 +33861,7 @@ pub const VkReleaseSwapchainImagesInfoKHR = extern struct {
     // Optional: false
     // Comment: Number of indices to release
     imageIndexCount: u32 = 0,
-    // Length member: imageIndexCount
+    // Length field: imageIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Indices of which presentable images to release
@@ -34118,7 +34030,7 @@ pub const VkDirectDriverLoadingListLUNARG = extern struct {
     // Extern sync: false
     // Optional: false
     driverCount: u32 = 0,
-    // Length member: driverCount
+    // Length field: driverCount
     // Extern sync: false
     // Optional: false
     pDrivers: ?[*]const VkDirectDriverLoadingInfoLUNARG = null,
@@ -34222,7 +34134,7 @@ pub const VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM = extern struct {
     // Extern sync: false
     // Optional: true
     perViewRenderAreaCount: u32 = 0,
-    // Length member: perViewRenderAreaCount
+    // Length field: perViewRenderAreaCount
     // Extern sync: false
     // Optional: false
     pPerViewRenderAreas: ?[*]const VkRect2D = null,
@@ -34344,25 +34256,25 @@ pub const VkShaderCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     codeSize: u64 = 0,
-    // Length member: codeSize
+    // Length field: codeSize
     // Extern sync: false
     // Optional: false
     pCode: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: true
     setLayoutCount: u32 = 0,
-    // Length member: setLayoutCount
+    // Length field: setLayoutCount
     // Extern sync: false
     // Optional: true
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
     // Extern sync: false
     // Optional: true
     pushConstantRangeCount: u32 = 0,
-    // Length member: pushConstantRangeCount
+    // Length field: pushConstantRangeCount
     // Extern sync: false
     // Optional: true
     pPushConstantRanges: ?[*]const VkPushConstantRange = null,
@@ -34651,7 +34563,7 @@ pub const VkExecutionGraphPipelineCreateInfoAMDX = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length member: stageCount
+    // Length field: stageCount
     // Extern sync: false
     // Optional: true
     pStages: ?[*]const VkPipelineShaderStageCreateInfo = null,
@@ -34679,7 +34591,7 @@ pub const VkPipelineShaderStageNodeCreateInfoAMDX = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: true
     pName: ?[*:0]const u8 = null,
@@ -34895,14 +34807,14 @@ pub const VkBindDescriptorSetsInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorSetCount: u32 = 0,
-    // Length member: descriptorSetCount
+    // Length field: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pDescriptorSets: ?[*]const VkDescriptorSet = null,
     // Extern sync: false
     // Optional: true
     dynamicOffsetCount: u32 = 0,
-    // Length member: dynamicOffsetCount
+    // Length field: dynamicOffsetCount
     // Extern sync: false
     // Optional: false
     pDynamicOffsets: ?[*]const u32 = null,
@@ -34931,7 +34843,7 @@ pub const VkPushConstantsInfo = extern struct {
     // Extern sync: false
     // Optional: false
     size: u32 = 0,
-    // Length member: size
+    // Length field: size
     // Extern sync: false
     // Optional: false
     pValues: ?*const anyopaque = null,
@@ -34960,7 +34872,7 @@ pub const VkPushDescriptorSetInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorWriteCount: u32 = 0,
-    // Length member: descriptorWriteCount
+    // Length field: descriptorWriteCount
     // Extern sync: false
     // Optional: false
     pDescriptorWrites: ?[*]const VkWriteDescriptorSet = null,
@@ -35014,11 +34926,11 @@ pub const VkSetDescriptorBufferOffsetsInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     setCount: u32 = 0,
-    // Length member: setCount
+    // Length field: setCount
     // Extern sync: false
     // Optional: false
     pBufferIndices: ?[*]const u32 = null,
-    // Length member: setCount
+    // Length field: setCount
     // Extern sync: false
     // Optional: false
     pOffsets: ?[*]const u64 = null,
@@ -35350,7 +35262,7 @@ pub const VkGetLatencyMarkerInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     timingCount: u32 = 0,
-    // Length member: timingCount
+    // Length field: timingCount
     // Extern sync: false
     // Optional: true
     pTimings: ?[*]VkLatencyTimingsFrameReportNV = null,
@@ -35466,7 +35378,7 @@ pub const VkLatencySurfaceCapabilitiesNV = extern struct {
     // Extern sync: false
     // Optional: true
     presentModeCount: u32 = 0,
-    // Length member: presentModeCount
+    // Length field: presentModeCount
     // Extern sync: false
     // Optional: true
     pPresentModes: ?[*]VkPresentModeKHR = null,
@@ -35625,7 +35537,7 @@ pub const VkRenderPassStripeBeginInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     stripeInfoCount: u32 = 0,
-    // Length member: stripeInfoCount
+    // Length field: stripeInfoCount
     // Extern sync: false
     // Optional: false
     pStripeInfos: ?[*]const VkRenderPassStripeInfoARM = null,
@@ -35644,7 +35556,7 @@ pub const VkRenderPassStripeSubmitInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     stripeSemaphoreInfoCount: u32 = 0,
-    // Length member: stripeSemaphoreInfoCount
+    // Length field: stripeSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pStripeSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
@@ -35764,7 +35676,7 @@ pub const VkRenderingAttachmentLocationInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentLocations: ?[*]const u32 = null,
@@ -35785,7 +35697,7 @@ pub const VkRenderingInputAttachmentIndexInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length member: colorAttachmentCount
+    // Length field: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pColorAttachmentInputIndices: ?[*]const u32 = null,
@@ -36642,11 +36554,11 @@ pub const VkTensorDescriptionARM = extern struct {
     // Extern sync: false
     // Optional: false
     dimensionCount: u32 = 0,
-    // Length member: dimensionCount
+    // Length field: dimensionCount
     // Extern sync: false
     // Optional: false
     pDimensions: ?[*]const i64 = null,
-    // Length member: dimensionCount
+    // Length field: dimensionCount
     // Extern sync: false
     // Optional: true
     pStrides: ?[*]const i64 = null,
@@ -36676,7 +36588,7 @@ pub const VkTensorCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length member: queueFamilyIndexCount
+    // Length field: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -36749,7 +36661,7 @@ pub const VkWriteDescriptorSetTensorARM = extern struct {
     // Extern sync: false
     // Optional: false
     tensorViewCount: u32 = 0,
-    // Length member: tensorViewCount
+    // Length field: tensorViewCount
     // Extern sync: false
     // Optional: false
     pTensorViews: ?[*]const VkTensorViewARM = null,
@@ -36937,7 +36849,7 @@ pub const VkCopyTensorInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length member: regionCount
+    // Length field: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkTensorCopyARM = null,
@@ -36955,15 +36867,15 @@ pub const VkTensorCopyARM = extern struct {
     // Extern sync: false
     // Optional: true
     dimensionCount: u32 = 0,
-    // Length member: dimensionCount
+    // Length field: dimensionCount
     // Extern sync: false
     // Optional: true
     pSrcOffset: ?[*]const u64 = null,
-    // Length member: dimensionCount
+    // Length field: dimensionCount
     // Extern sync: false
     // Optional: true
     pDstOffset: ?[*]const u64 = null,
-    // Length member: dimensionCount
+    // Length field: dimensionCount
     // Extern sync: false
     // Optional: true
     pExtent: ?[*]const u64 = null,
@@ -37077,7 +36989,7 @@ pub const VkFrameBoundaryTensorsARM = extern struct {
     // Extern sync: false
     // Optional: false
     tensorCount: u32 = 0,
-    // Length member: tensorCount
+    // Length field: tensorCount
     // Extern sync: false
     // Optional: false
     pTensors: ?[*]const VkTensorARM = null,
@@ -37262,7 +37174,7 @@ pub const VkDataGraphPipelineCompilerControlCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pVendorOptions: ?[*:0]const u8 = null,
@@ -37285,7 +37197,7 @@ pub const VkDataGraphPipelineCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     resourceInfoCount: u32 = 0,
-    // Length member: resourceInfoCount
+    // Length field: resourceInfoCount
     // Extern sync: false
     // Optional: false
     pResourceInfos: ?[*]const VkDataGraphPipelineResourceInfoARM = null,
@@ -37304,7 +37216,7 @@ pub const VkDataGraphPipelineShaderModuleCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     module: VkShaderModule = .none,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -37314,7 +37226,7 @@ pub const VkDataGraphPipelineShaderModuleCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     constantCount: u32 = 0,
-    // Length member: constantCount
+    // Length field: constantCount
     // Extern sync: false
     // Optional: true
     pConstants: ?[*]const VkDataGraphPipelineConstantARM = null,
@@ -37449,7 +37361,7 @@ pub const VkDataGraphPipelinePropertyQueryResultARM = extern struct {
     // Extern sync: false
     // Optional: true
     dataSize: u64 = 0,
-    // Length member: dataSize
+    // Length field: dataSize
     // Extern sync: false
     // Optional: true
     pData: ?*anyopaque = null,
@@ -37468,7 +37380,7 @@ pub const VkDataGraphPipelineIdentifierCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     identifierSize: u32 = 0,
-    // Length member: identifierSize
+    // Length field: identifierSize
     // Extern sync: false
     // Optional: false
     pIdentifier: ?[*]const u8 = null,
@@ -37505,7 +37417,7 @@ pub const VkPhysicalDeviceDataGraphOperationSupportARM = extern struct {
     // Extern sync: false
     // Optional: false
     operationType: VkPhysicalDeviceDataGraphOperationTypeARM,
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM]u8 = @import("std").mem.zeroes([VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM]u8),
@@ -37578,7 +37490,7 @@ pub const VkDataGraphProcessingEngineCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     processingEngineCount: u32 = 0,
-    // Length member: processingEngineCount
+    // Length field: processingEngineCount
     // Extern sync: false
     // Optional: false
     pProcessingEngines: ?[*]VkPhysicalDeviceDataGraphProcessingEngineARM = null,
@@ -37963,7 +37875,7 @@ pub const VkPerformanceCounterDescriptionARM = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkPerformanceCounterDescriptionFlagsARM = .{},
-    // Length member: null-terminated
+    // Length field: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
