@@ -32,9 +32,9 @@ pub fn main() !void {
     _ = tmp_arena.reset(.retain_capacity);
     write_handles(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_bitmasks(tmp_alloc, file, &xml_db);
+    try write_bitfields(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_enums(tmp_alloc, file, &xml_db);
+    try write_enums(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
     try write_structs(tmp_alloc, file, &xml_db, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
@@ -203,11 +203,7 @@ fn write_handles(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase
     }
 }
 
-fn write_bitmasks(
-    alloc: Allocator,
-    file: std.fs.File,
-    xml_db: *const XmlDatabase,
-) !void {
+fn write_bitfields(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -215,330 +211,129 @@ fn write_bitmasks(
         \\
     , .{});
 
-    for (xml_db.types.bitmasks) |v| switch (v.value) {
-        .type => |t| {
-            var bits: u32 = 0;
-            if (std.mem.eql(u8, t, "VkFlags"))
-                bits = 32;
-            if (std.mem.eql(u8, t, "VkFlags64"))
-                bits = 64;
+    for (type_db.bitfields.items) |bitfield| {
+        w.write(
+            \\pub const {s} = packed struct(u{d}) {{
+            \\
+        , .{ bitfield.name, bitfield.backing_integer_width });
 
-            w.write(
-                \\const {s} = packed struct(u{d}) {{
-                \\    _: u{d} = 0,
-                \\}};
-                \\
-            , .{ v.name, bits, bits });
-        },
-        else => {},
-    };
-
-    w.write(
-        \\
-        \\// Bitmasks
-        \\
-    , .{});
-    for (xml_db.types.bitmasks) |v| switch (v.value) {
-        .enum_name => |s| {
-            if (xml_db.enum_by_name(s)) |e| {
-                w.write(
-                    \\pub const {s} = packed struct(u{d}) {{
+        var last_bitpos: ?u32 = null;
+        for (bitfield.bits, 0..) |bit, i| {
+            if (last_bitpos) |lb| {
+                const diff = bit.bit - lb;
+                if (1 < diff) w.write(
+                    \\    _{d}: u{d} = 0,
                     \\
-                , .{ v.name, e.bitwidth });
-
-                var extensions: std.ArrayListUnmanaged(struct {
-                    ext_name: []const u8,
-                    items: XmlDatabase.Extension.EnumExtensions,
-                }) = .empty;
-                // check if features extend this bitmask with new values
-                for (xml_db.features.items) |ext| {
-                    const ex = try ext.enum_extensions(alloc, s);
-                    if (ex.items.len != 0) try extensions.append(
-                        alloc,
-                        .{ .ext_name = ext.name, .items = ex },
-                    );
-                }
-                // check if extensions extend this bitmask with new values
-                for (xml_db.extensions.items) |ext| {
-                    if (ext.supported == .disabled) continue;
-                    const ex = try ext.enum_extensions(alloc, s);
-                    if (ex.items.len != 0) try extensions.append(
-                        alloc,
-                        .{ .ext_name = ext.name, .items = ex },
-                    );
-                }
-
-                const Bitpos = struct {
-                    bit: u32,
-                    name: []const u8,
-                    comment: ?[]const u8 = null,
-                    ext_name: ?[]const u8 = null,
-
-                    fn less_than(_: void, a: @This(), b: @This()) bool {
-                        return a.bit < b.bit;
-                    }
-                };
-                var all_bitpos: std.ArrayListUnmanaged(Bitpos) = .empty;
-
-                for (e.items) |item| {
-                    switch (item.value) {
-                        .bitpos => |bitpos| {
-                            try all_bitpos.append(
-                                alloc,
-                                .{ .bit = bitpos, .name = item.name, .comment = item.comment },
-                            );
-                        },
-                        else => {},
-                    }
-                }
-                for (extensions.items) |ext| {
-                    for (ext.items.items) |item| {
-                        switch (item.value) {
-                            .bitpos => |bitpos| {
-                                try all_bitpos.append(
-                                    alloc,
-                                    .{ .bit = bitpos, .name = item.name, .ext_name = ext.ext_name },
-                                );
-                            },
-                            else => {},
-                        }
-                    }
-                }
-                std.mem.sortUnstable(Bitpos, all_bitpos.items, {}, Bitpos.less_than);
-
-                // all bits
-                var last_bitpos: ?u32 = null;
-                for (all_bitpos.items, 0..) |bitpos, i| {
-                    if (last_bitpos) |lb| {
-                        const diff = bitpos.bit - lb;
-                        if (1 < diff) w.write(
-                            \\    _{d}: u{d} = 0,
-                            \\
-                        , .{ lb, diff - 1 });
-                    } else {
-                        if (bitpos.bit != 0) w.write(
-                            \\    _0: u{d} = 0,
-                            \\
-                        , .{bitpos.bit});
-                    }
-                    last_bitpos = bitpos.bit;
-
-                    if (bitpos.ext_name) |c| w.write(
-                        \\    // Extension: {s}
-                        \\
-                    , .{c});
-
-                    // Some extensions add same bits, so check consecutive bits
-                    if (i < all_bitpos.items.len - 1) {
-                        if (bitpos.bit == all_bitpos.items[i + 1].bit) {
-                            continue;
-                        }
-                    }
-
-                    for (extensions.items) |ext| {
-                        for (ext.items.items) |item| {
-                            switch (item.value) {
-                                .alias => |alias| {
-                                    if (std.mem.eql(u8, alias, bitpos.name)) w.write(
-                                        \\    // Alias: {s}
-                                        \\
-                                    , .{item.name});
-                                },
-                                else => {},
-                            }
-                        }
-                    }
-
-                    if (bitpos.comment) |c| w.write(
-                        \\    // Comment: {s}
-                        \\
-                    , .{c});
-
-                    // TODO: lowercase names without prefix
-                    w.write(
-                        \\    // bit: {d}
-                        \\    {s}: bool = false,
-                        \\
-                    , .{ bitpos.bit, bitpos.name });
-                }
-                if (last_bitpos) |lb| {
-                    const last_element_width = e.bitwidth - lb - 1;
-                    if (last_element_width != 0) w.write(
-                        \\    _: u{d} = 0,
-                        \\
-                    , .{last_element_width});
-                } else {
-                    w.write(
-                        \\    _: u{d} = 0,
-                        \\
-                    , .{e.bitwidth});
-                }
-
-                // all constants
-                for (e.items) |item| {
-                    switch (item.value) {
-                        .value => |value| {
-                            if (item.comment) |c| w.write(
-                                \\    // {s}
-                                \\
-                            , .{c});
-                            // TODO: lowercase names without prefix
-                            w.write(
-                                \\    pub const {s}: @This() = @bitCast(@as(u{d}, 0x{x}));
-                                \\
-                            , .{ item.name, e.bitwidth, value });
-                        },
-                        else => {},
-                    }
-                }
-                // NOTE: Bitmasks do not have expandable constants
-                w.write(
-                    \\}};
-                    \\
-                , .{});
+                , .{ lb, diff - 1 });
             } else {
-                std.log.warn(
-                    "While writing bitmasks, unable to find corresponding enum with name: {s}",
-                    .{s},
-                );
+                if (bit.bit != 0) w.write(
+                    \\    _0: u{d} = 0,
+                    \\
+                , .{bit.bit});
             }
-        },
-        else => {},
-    };
+            last_bitpos = bit.bit;
+
+            if (bit.enabled_by_extension) |e| w.write(
+                \\    // Extension: {s}
+                \\
+            , .{e});
+
+            // Some extensions add same bits, so check consecutive bits
+            if (i < bitfield.bits.len - 1) {
+                if (bit.bit == bitfield.bits[i + 1].bit) {
+                    continue;
+                }
+            }
+
+            if (bit.comment) |c| w.write(
+                \\    // Comment: {s}
+                \\
+            , .{c});
+
+            // TODO: lowercase names without prefix
+            w.write(
+                \\    // bit: {d}
+                \\    {s}: bool = false,
+                \\
+            , .{ bit.bit, bit.name });
+        }
+        if (last_bitpos) |lb| {
+            const last_element_width = bitfield.backing_integer_width - lb - 1;
+            if (last_element_width != 0) w.write(
+                \\    _: u{d} = 0,
+                \\
+            , .{last_element_width});
+        } else {
+            w.write(
+                \\    _: u{d} = 0,
+                \\
+            , .{bitfield.backing_integer_width});
+        }
+
+        // all constants
+        for (bitfield.constants) |constant| {
+            if (constant.comment) |c| w.write(
+                \\    // {s}
+                \\
+            , .{c});
+            // TODO: lowercase names without prefix
+            w.write(
+                \\    pub const {s}: @This() = @bitCast(@as(u{d}, 0x{x}));
+                \\
+            , .{ constant.name, bitfield.backing_integer_width, constant.value });
+        }
+        // NOTE: Bitmasks do not have expandable constants
+        w.write(
+            \\}};
+            \\
+        , .{});
+    }
 }
 
-fn write_enums(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase) !void {
+fn write_enums(
+    alloc: Allocator,
+    file: std.fs.File,
+    type_db: *const TypeDatabase,
+) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Enums
         \\
     , .{});
-    for (db.enums.items) |e| switch (e.type) {
-        .@"enum" => {
-            w.write(
-                \\pub const {s} = enum(i{d}) {{
+    for (type_db.enums.items) |@"enum"| {
+        w.write(
+            \\pub const {s} = enum(i{d}) {{
+            \\
+        , .{ @"enum".name, @"enum".backing_integer_width });
+        for (@"enum".values, 0..) |value, i| {
+            if (value.enabled_by_extension) |e| w.write(
+                \\    // Extension: {s}
                 \\
-            , .{ e.name, e.bitwidth });
+            , .{e});
 
-            var extensions: std.ArrayListUnmanaged(struct {
-                ext_name: []const u8,
-                items: XmlDatabase.Extension.EnumExtensions,
-            }) = .empty;
-            // check if features extend this enum with new values
-            for (db.features.items) |ext| {
-                const ex = try ext.enum_extensions(alloc, e.name);
-                if (ex.items.len != 0) try extensions.append(
-                    alloc,
-                    .{ .ext_name = ext.name, .items = ex },
-                );
-            }
-            // check if extensions extend this enum with new values
-            for (db.extensions.items) |ext| {
-                if (ext.supported == .disabled) continue;
-                const ex = try ext.enum_extensions(alloc, e.name);
-                if (ex.items.len != 0) try extensions.append(
-                    alloc,
-                    .{ .ext_name = ext.name, .items = ex },
-                );
+            // Some extensions add same enum values, so check consecutive bits
+            if (i < @"enum".values.len - 1) {
+                if (value.value == @"enum".values[i + 1].value) continue;
             }
 
-            const Value = struct {
-                value: i32,
-                name: []const u8,
-                comment: ?[]const u8 = null,
-                ext_name: ?[]const u8 = null,
-
-                fn less_than(_: void, a: @This(), b: @This()) bool {
-                    return a.value < b.value;
-                }
-            };
-            var all_values: std.ArrayListUnmanaged(Value) = .empty;
-
-            for (e.items) |item| {
-                switch (item.value) {
-                    .value => |value| {
-                        try all_values.append(
-                            alloc,
-                            .{ .value = value, .name = item.name, .comment = item.comment },
-                        );
-                    },
-                    else => {},
-                }
-            }
-
-            for (extensions.items) |ext| {
-                for (ext.items.items) |item| {
-                    switch (item.value) {
-                        .value => |value| {
-                            try all_values.append(
-                                alloc,
-                                .{ .value = value, .name = item.name, .ext_name = ext.ext_name },
-                            );
-                        },
-                        .offset => |offset| {
-                            var value = enum_offset(
-                                @intCast(offset.extnumber),
-                                @intCast(offset.offset),
-                            );
-                            if (offset.negative) value *= -1;
-                            try all_values.append(
-                                alloc,
-                                .{ .value = value, .name = item.name, .ext_name = ext.ext_name },
-                            );
-                        },
-                        else => {},
-                    }
-                }
-            }
-            std.mem.sortUnstable(Value, all_values.items, {}, Value.less_than);
-
-            // enum values
-            for (all_values.items, 0..) |item, i| {
-                if (item.ext_name) |c| w.write(
-                    \\    // Extension: {s}
-                    \\
-                , .{c});
-
-                // Some extensions add same enum values, so check consecutive bits
-                if (i < all_values.items.len - 1) {
-                    if (item.value == all_values.items[i + 1].value) continue;
-                }
-
-                for (extensions.items) |ext2| {
-                    for (ext2.items.items) |item2| {
-                        switch (item2.value) {
-                            .alias => |alias| {
-                                if (std.mem.eql(u8, alias, item.name)) w.write(
-                                    \\    // Alias: {s}
-                                    \\
-                                , .{item2.name});
-                            },
-                            else => {},
-                        }
-                    }
-                }
-
-                if (item.comment) |c| w.write(
-                    \\    // Comment: {s}
-                    \\
-                , .{c});
-
-                // TODO: lowercase names without prefix
-                w.write(
-                    \\    {s} = {d},
-                    \\
-                , .{ item.name, item.value });
-            }
+            if (value.comment) |c| w.write(
+                \\    // Comment: {s}
+                \\
+            , .{c});
 
             w.write(
-                \\    pub const zero = @import("std").mem.zeroes(@This());
-                \\}};
+                \\    {s} = {d},
                 \\
-            , .{});
-        },
-        else => {},
-    };
+            , .{ value.name, value.value });
+        }
+
+        w.write(
+            \\    pub const zero = @import("std").mem.zeroes(@This());
+            \\}};
+            \\
+        , .{});
+    }
 }
 
 const ADDITIONAL_FUNCTIONS = [_]XmlDatabase.Command{
