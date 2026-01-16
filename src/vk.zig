@@ -36,15 +36,6 @@ pub const VK_DATA_GRAPH_MODEL_TOOLCHAIN_VERSION_LENGTH_QCOM: u32 = 3;
 pub const VK_COMPUTE_OCCUPANCY_PRIORITY_LOW_NV: f32 = 0.25;
 pub const VK_COMPUTE_OCCUPANCY_PRIORITY_NORMAL_NV: f32 = 0.5;
 pub const VK_COMPUTE_OCCUPANCY_PRIORITY_HIGH_NV: f32 = 0.75;
-
-// Base types
-pub const VkSampleMask = u32;
-pub const VkBool32 = u32;
-pub const VkFlags = u32;
-pub const VkFlags64 = u64;
-pub const VkDeviceSize = u64;
-pub const VkDeviceAddress = u64;
-pub const VkRemoteAddressNV = *anyopaque;
 // Versions
 pub const ApiVersion = packed struct(u32) {
     patch: u12 = 0,
@@ -178,11 +169,9 @@ pub const VkIndirectExecutionSetEXT = enum(u64) { none = 0, _ };
 // Type enum: VK_OBJECT_TYPE_DESCRIPTOR_UPDATE_TEMPLATE
 // Parent: VkDevice
 pub const VkDescriptorUpdateTemplate = enum(u64) { none = 0, _ };
-pub const VkDescriptorUpdateTemplateKHR = VkDescriptorUpdateTemplate;
 // Type enum: VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION
 // Parent: VkDevice
 pub const VkSamplerYcbcrConversion = enum(u64) { none = 0, _ };
-pub const VkSamplerYcbcrConversionKHR = VkSamplerYcbcrConversion;
 // Type enum: VK_OBJECT_TYPE_VALIDATION_CACHE_EXT
 // Parent: VkDevice
 pub const VkValidationCacheEXT = enum(u64) { none = 0, _ };
@@ -204,7 +193,6 @@ pub const VkDeferredOperationKHR = enum(u64) { none = 0, _ };
 // Type enum: VK_OBJECT_TYPE_PRIVATE_DATA_SLOT
 // Parent: VkDevice
 pub const VkPrivateDataSlot = enum(u64) { none = 0, _ };
-pub const VkPrivateDataSlotEXT = VkPrivateDataSlot;
 // Type enum: VK_OBJECT_TYPE_CU_MODULE_NVX
 // Parent: VkDevice
 pub const VkCuModuleNVX = enum(u64) { none = 0, _ };
@@ -8286,7 +8274,7 @@ pub const VkPhysicalDeviceProperties = extern struct {
     // Extern sync: false
     // Optional: false
     deviceType: VkPhysicalDeviceType,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     deviceName: [VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8),
@@ -8304,7 +8292,7 @@ pub const VkPhysicalDeviceProperties = extern struct {
 // Returned only: true
 // Allow duplicate in pNext chain: false
 pub const VkExtensionProperties = extern struct {
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     extensionName: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
@@ -8317,7 +8305,7 @@ pub const VkExtensionProperties = extern struct {
 // Returned only: true
 // Allow duplicate in pNext chain: false
 pub const VkLayerProperties = extern struct {
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     layerName: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
@@ -8329,7 +8317,7 @@ pub const VkLayerProperties = extern struct {
     // Optional: false
     // Comment: build or release version of the layer's library
     implementationVersion: u32 = 0,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -8344,14 +8332,14 @@ pub const VkApplicationInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pApplicationName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: false
     applicationVersion: u32 = 0,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pEngineName: ?[*:0]const u8 = null,
@@ -8404,7 +8392,7 @@ pub const VkDeviceQueueCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     queueCount: u32 = 0,
-    // Length field: queueCount
+    // Length expression: queueCount
     // Extern sync: false
     // Optional: false
     pQueuePriorities: ?[*]const f32 = null,
@@ -8425,7 +8413,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     queueCreateInfoCount: u32 = 0,
-    // Length field: queueCreateInfoCount
+    // Length expression: queueCreateInfoCount
     // Extern sync: false
     // Optional: false
     pQueueCreateInfos: ?[*]const VkDeviceQueueCreateInfo = null,
@@ -8433,7 +8421,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledLayerCount: u32 = 0,
-    // Length field: enabledLayerCount,null-terminated
+    // Length expression: enabledLayerCount,null-terminated
     // Deprecated: ignored
     // Extern sync: false
     // Optional: false
@@ -8442,7 +8430,7 @@ pub const VkDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledExtensionCount: u32 = 0,
-    // Length field: enabledExtensionCount,null-terminated
+    // Length expression: enabledExtensionCount,null-terminated
     // Extern sync: false
     // Optional: false
     ppEnabledExtensionNames: ?[*]const [*:0]const u8 = null,
@@ -8469,7 +8457,7 @@ pub const VkInstanceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledLayerCount: u32 = 0,
-    // Length field: enabledLayerCount,null-terminated
+    // Length expression: enabledLayerCount,null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Ordered list of layer names to be enabled
@@ -8477,7 +8465,7 @@ pub const VkInstanceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     enabledExtensionCount: u32 = 0,
-    // Length field: enabledExtensionCount,null-terminated
+    // Length expression: enabledExtensionCount,null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Extension names to be enabled
@@ -8509,14 +8497,14 @@ pub const VkPhysicalDeviceMemoryProperties = extern struct {
     // Extern sync: false
     // Optional: false
     memoryTypeCount: u32 = 0,
-    // Length field: memoryTypeCount
+    // Length expression: memoryTypeCount
     // Extern sync: false
     // Optional: false
     memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = @import("std").mem.zeroes([VK_MAX_MEMORY_TYPES]VkMemoryType),
     // Extern sync: false
     // Optional: false
     memoryHeapCount: u32 = 0,
-    // Length field: memoryHeapCount
+    // Length expression: memoryHeapCount
     // Extern sync: false
     // Optional: false
     memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = @import("std").mem.zeroes([VK_MAX_MEMORY_HEAPS]VkMemoryHeap),
@@ -8749,17 +8737,17 @@ pub const VkWriteDescriptorSet = extern struct {
     // Optional: false
     // Comment: Descriptor type to write (determines which members of the array pointed by pDescriptors are going to be used)
     descriptorType: VkDescriptorType,
-    // Length field: descriptorCount
+    // Length expression: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Sampler, image view, and layout for SAMPLER, COMBINED_IMAGE_SAMPLER, {SAMPLED,STORAGE}_IMAGE, and INPUT_ATTACHMENT descriptor types.
     pImageInfo: ?[*]const VkDescriptorImageInfo = null,
-    // Length field: descriptorCount
+    // Length expression: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Raw buffer, size, and offset for {UNIFORM,STORAGE}_BUFFER[_DYNAMIC] descriptor types.
     pBufferInfo: ?[*]const VkDescriptorBufferInfo = null,
-    // Length field: descriptorCount
+    // Length expression: descriptorCount
     // Extern sync: false
     // Optional: false
     // Comment: Buffer view to write to the descriptor for {UNIFORM,STORAGE}_TEXEL_BUFFER descriptor types.
@@ -8819,8 +8807,6 @@ pub const VkBufferUsageFlags2CreateInfo = extern struct {
     // Optional: false
     usage: VkBufferUsageFlags2 = .{},
 };
-// Extension: VK_KHR_maintenance5
-pub const VkBufferUsageFlags2CreateInfoKHR = VkBufferUsageFlags2CreateInfo;
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -8849,7 +8835,7 @@ pub const VkBufferCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length field: queueFamilyIndexCount
+    // Length expression: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -9082,7 +9068,7 @@ pub const VkImageCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of queue families to share across
     queueFamilyIndexCount: u32 = 0,
-    // Length field: queueFamilyIndexCount
+    // Length expression: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of queue family indices to share across
@@ -9220,7 +9206,7 @@ pub const VkSparseBufferMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length field: bindCount
+    // Length expression: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseMemoryBind = null,
@@ -9235,7 +9221,7 @@ pub const VkSparseImageOpaqueMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length field: bindCount
+    // Length expression: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseMemoryBind = null,
@@ -9250,7 +9236,7 @@ pub const VkSparseImageMemoryBindInfo = extern struct {
     // Extern sync: false
     // Optional: false
     bindCount: u32 = 0,
-    // Length field: bindCount
+    // Length expression: bindCount
     // Extern sync: false
     // Optional: false
     pBinds: ?[*]const VkSparseImageMemoryBind = null,
@@ -9268,35 +9254,35 @@ pub const VkBindSparseInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length field: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphores: ?[*]const VkSemaphore = null,
     // Extern sync: false
     // Optional: true
     bufferBindCount: u32 = 0,
-    // Length field: bufferBindCount
+    // Length expression: bufferBindCount
     // Extern sync: false
     // Optional: false
     pBufferBinds: ?[*]const VkSparseBufferMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     imageOpaqueBindCount: u32 = 0,
-    // Length field: imageOpaqueBindCount
+    // Length expression: imageOpaqueBindCount
     // Extern sync: false
     // Optional: false
     pImageOpaqueBinds: ?[*]const VkSparseImageOpaqueMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     imageBindCount: u32 = 0,
-    // Length field: imageBindCount
+    // Length expression: imageBindCount
     // Extern sync: false
     // Optional: false
     pImageBinds: ?[*]const VkSparseImageMemoryBindInfo = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length field: signalSemaphoreCount
+    // Length expression: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphores: ?[*]const VkSemaphore = null,
@@ -9398,8 +9384,6 @@ pub const VkCopyMemoryIndirectCommandKHR = extern struct {
     // Optional: false
     size: u64 = 0,
 };
-// Extension: VK_NV_copy_memory_indirect
-pub const VkCopyMemoryIndirectCommandNV = VkCopyMemoryIndirectCommandKHR;
 // Extension: VK_KHR_copy_memory_indirect
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -9446,8 +9430,6 @@ pub const VkCopyMemoryToImageIndirectCommandKHR = extern struct {
     // Optional: false
     imageExtent: VkExtent3D = .{},
 };
-// Extension: VK_NV_copy_memory_indirect
-pub const VkCopyMemoryToImageIndirectCommandNV = VkCopyMemoryToImageIndirectCommandKHR;
 // Extension: VK_KHR_copy_memory_indirect
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -9473,7 +9455,7 @@ pub const VkCopyMemoryToImageIndirectInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dstImageLayout: VkImageLayout,
-    // Length field: copyCount
+    // Length expression: copyCount
     // Extern sync: false
     // Optional: false
     pImageSubresources: ?[*]const VkImageSubresourceLayers = null,
@@ -9517,7 +9499,7 @@ pub const VkShaderModuleCreateInfo = extern struct {
     // Optional: false
     // Comment: Specified in bytes
     codeSize: u64 = 0,
-    // Length field: codeSize / 4
+    // Length expression: codeSize / 4
     // Extern sync: false
     // Optional: false
     // Comment: Binary code of size codeSize
@@ -9543,7 +9525,7 @@ pub const VkDescriptorSetLayoutBinding = extern struct {
     // Optional: false
     // Comment: Shader stages this binding is visible to
     stageFlags: VkShaderStageFlags = .{},
-    // Length field: descriptorCount
+    // Length expression: descriptorCount
     // Extern sync: false
     // Optional: true
     // Comment: Immutable samplers (used if descriptor type is SAMPLER or COMBINED_IMAGE_SAMPLER, is either NULL or contains count number of elements)
@@ -9566,7 +9548,7 @@ pub const VkDescriptorSetLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of bindings in the descriptor set layout
     bindingCount: u32 = 0,
-    // Length field: bindingCount
+    // Length expression: bindingCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of descriptor set layout bindings
@@ -9602,7 +9584,7 @@ pub const VkDescriptorPoolCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     poolSizeCount: u32 = 0,
-    // Length field: poolSizeCount
+    // Length expression: poolSizeCount
     // Extern sync: false
     // Optional: false
     pPoolSizes: ?[*]const VkDescriptorPoolSize = null,
@@ -9623,7 +9605,7 @@ pub const VkDescriptorSetAllocateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorSetCount: u32 = 0,
-    // Length field: descriptorSetCount
+    // Length expression: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
@@ -9653,7 +9635,7 @@ pub const VkSpecializationInfo = extern struct {
     // Optional: true
     // Comment: Number of entries in the map
     mapEntryCount: u32 = 0,
-    // Length field: mapEntryCount
+    // Length expression: mapEntryCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of map entries
@@ -9662,7 +9644,7 @@ pub const VkSpecializationInfo = extern struct {
     // Optional: true
     // Comment: Size in bytes of pData
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: false
     // Comment: Pointer to SpecConstant data
@@ -9689,7 +9671,7 @@ pub const VkPipelineShaderStageCreateInfo = extern struct {
     // Optional: true
     // Comment: Module containing entry point
     module: VkShaderModule = .none,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Null-terminated entry point name
@@ -9764,8 +9746,6 @@ pub const VkPipelineCreateFlags2CreateInfo = extern struct {
     // Optional: true
     flags: VkPipelineCreateFlags2 = .{},
 };
-// Extension: VK_KHR_maintenance5
-pub const VkPipelineCreateFlags2CreateInfoKHR = VkPipelineCreateFlags2CreateInfo;
 // Extension: VK_GRAPHICS_VERSION_1_0
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -9821,7 +9801,7 @@ pub const VkPipelineVertexInputStateCreateInfo = extern struct {
     // Optional: true
     // Comment: number of bindings
     vertexBindingDescriptionCount: u32 = 0,
-    // Length field: vertexBindingDescriptionCount
+    // Length expression: vertexBindingDescriptionCount
     // Extern sync: false
     // Optional: false
     pVertexBindingDescriptions: ?[*]const VkVertexInputBindingDescription = null,
@@ -9829,7 +9809,7 @@ pub const VkPipelineVertexInputStateCreateInfo = extern struct {
     // Optional: true
     // Comment: number of attributes
     vertexAttributeDescriptionCount: u32 = 0,
-    // Length field: vertexAttributeDescriptionCount
+    // Length expression: vertexAttributeDescriptionCount
     // Extern sync: false
     // Optional: false
     pVertexAttributeDescriptions: ?[*]const VkVertexInputAttributeDescription = null,
@@ -9887,14 +9867,14 @@ pub const VkPipelineViewportStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewportCount: u32 = 0,
-    // Length field: viewportCount
+    // Length expression: viewportCount
     // Extern sync: false
     // Optional: true
     pViewports: ?[*]const VkViewport = null,
     // Extern sync: false
     // Optional: true
     scissorCount: u32 = 0,
-    // Length field: scissorCount
+    // Length expression: scissorCount
     // Extern sync: false
     // Optional: true
     pScissors: ?[*]const VkRect2D = null,
@@ -9969,7 +9949,7 @@ pub const VkPipelineMultisampleStateCreateInfo = extern struct {
     // Optional: false
     // Comment: optional (GL45)
     minSampleShading: f32 = 0,
-    // Length field: (rasterizationSamples + 31) / 32
+    // Length expression: (rasterizationSamples + 31) / 32
     // Extern sync: false
     // Optional: true
     // Comment: Array of sampleMask words
@@ -10033,7 +10013,7 @@ pub const VkPipelineColorBlendStateCreateInfo = extern struct {
     // Optional: true
     // Comment: # of pAttachments
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: true
     pAttachments: ?[*]const VkPipelineColorBlendAttachmentState = null,
@@ -10057,7 +10037,7 @@ pub const VkPipelineDynamicStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     dynamicStateCount: u32 = 0,
-    // Length field: dynamicStateCount
+    // Length expression: dynamicStateCount
     // Extern sync: false
     // Optional: false
     pDynamicStates: ?[*]const VkDynamicState = null,
@@ -10147,7 +10127,7 @@ pub const VkGraphicsPipelineCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length field: stageCount
+    // Length expression: stageCount
     // Extern sync: false
     // Optional: true
     // Comment: One entry for each active shader stage
@@ -10215,7 +10195,7 @@ pub const VkPipelineCacheCreateInfo = extern struct {
     // Optional: true
     // Comment: Size of initial data to populate cache, in bytes
     initialDataSize: u64 = 0,
-    // Length field: initialDataSize
+    // Length expression: initialDataSize
     // Extern sync: false
     // Optional: false
     // Comment: Initial data to populate cache
@@ -10371,7 +10351,7 @@ pub const VkPipelineBinaryHandlesInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     pipelineBinaryCount: u32 = 0,
-    // Length field: pipelineBinaryCount
+    // Length expression: pipelineBinaryCount
     // Extern sync: false
     // Optional: true
     pPipelineBinaries: ?[*]VkPipelineBinaryKHR = null,
@@ -10383,7 +10363,7 @@ pub const VkPipelineBinaryDataKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*anyopaque = null,
@@ -10395,11 +10375,11 @@ pub const VkPipelineBinaryKeysAndDataKHR = extern struct {
     // Extern sync: false
     // Optional: false
     binaryCount: u32 = 0,
-    // Length field: binaryCount
+    // Length expression: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaryKeys: ?[*]const VkPipelineBinaryKeyKHR = null,
-    // Length field: binaryCount
+    // Length expression: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaryData: ?[*]const VkPipelineBinaryDataKHR = null,
@@ -10435,7 +10415,7 @@ pub const VkPipelineBinaryInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     binaryCount: u32 = 0,
-    // Length field: binaryCount
+    // Length expression: binaryCount
     // Extern sync: false
     // Optional: false
     pPipelineBinaries: ?[*]const VkPipelineBinaryKHR = null,
@@ -10497,7 +10477,7 @@ pub const VkPipelineLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of descriptor sets interfaced by the pipeline
     setLayoutCount: u32 = 0,
-    // Length field: setLayoutCount
+    // Length expression: setLayoutCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of setCount number of descriptor set layout objects defining the layout of the
@@ -10506,7 +10486,7 @@ pub const VkPipelineLayoutCreateInfo = extern struct {
     // Optional: true
     // Comment: Number of push-constant ranges used by the pipeline
     pushConstantRangeCount: u32 = 0,
-    // Length field: pushConstantRangeCount
+    // Length expression: pushConstantRangeCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of pushConstantRangeCount number of ranges used by various shader stages
@@ -10687,7 +10667,7 @@ pub const VkRenderPassBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     clearValueCount: u32 = 0,
-    // Length field: clearValueCount
+    // Length expression: clearValueCount
     // Extern sync: false
     // Optional: false
     pClearValues: ?[*]const VkClearValue = null,
@@ -10778,18 +10758,18 @@ pub const VkSubpassDescription = extern struct {
     // Extern sync: false
     // Optional: true
     inputAttachmentCount: u32 = 0,
-    // Length field: inputAttachmentCount
+    // Length expression: inputAttachmentCount
     // Extern sync: false
     // Optional: false
     pInputAttachments: ?[*]const VkAttachmentReference = null,
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkAttachmentReference = null,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pResolveAttachments: ?[*]const VkAttachmentReference = null,
@@ -10799,7 +10779,7 @@ pub const VkSubpassDescription = extern struct {
     // Extern sync: false
     // Optional: true
     preserveAttachmentCount: u32 = 0,
-    // Length field: preserveAttachmentCount
+    // Length expression: preserveAttachmentCount
     // Extern sync: false
     // Optional: false
     pPreserveAttachments: ?[*]const u32 = null,
@@ -10848,21 +10828,21 @@ pub const VkRenderPassCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkAttachmentDescription = null,
     // Extern sync: false
     // Optional: false
     subpassCount: u32 = 0,
-    // Length field: subpassCount
+    // Length expression: subpassCount
     // Extern sync: false
     // Optional: false
     pSubpasses: ?[*]const VkSubpassDescription = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length field: dependencyCount
+    // Length expression: dependencyCount
     // Extern sync: false
     // Optional: false
     pDependencies: ?[*]const VkSubpassDependency = null,
@@ -11634,7 +11614,7 @@ pub const VkFramebufferCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkImageView = null,
@@ -11737,25 +11717,25 @@ pub const VkSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length field: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphores: ?[*]const VkSemaphore = null,
-    // Length field: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitDstStageMask: ?[*]const VkPipelineStageFlags = null,
     // Extern sync: false
     // Optional: true
     commandBufferCount: u32 = 0,
-    // Length field: commandBufferCount
+    // Length expression: commandBufferCount
     // Extern sync: false
     // Optional: false
     pCommandBuffers: ?[*]const VkCommandBuffer = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length field: signalSemaphoreCount
+    // Length expression: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphores: ?[*]const VkSemaphore = null,
@@ -11768,7 +11748,7 @@ pub const VkDisplayPropertiesKHR = extern struct {
     // Optional: false
     // Comment: Handle of the display object
     display: VkDisplayKHR = .none,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name of the display
@@ -12256,7 +12236,7 @@ pub const VkSwapchainCreateInfoKHR = extern struct {
     // Optional: true
     // Comment: Number of queue families having access to the images in case of concurrent sharing mode
     queueFamilyIndexCount: u32 = 0,
-    // Length field: queueFamilyIndexCount
+    // Length expression: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Array of queue family indices having access to the images in case of concurrent sharing mode
@@ -12296,7 +12276,7 @@ pub const VkPresentInfoKHR = extern struct {
     // Optional: true
     // Comment: Number of semaphores to wait for before presenting
     waitSemaphoreCount: u32 = 0,
-    // Length field: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     // Extern sync: true
     // Optional: false
     // Comment: Semaphores to wait for before presenting
@@ -12305,17 +12285,17 @@ pub const VkPresentInfoKHR = extern struct {
     // Optional: false
     // Comment: Number of swapchains to present in this call
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: true
     // Optional: false
     // Comment: Swapchains to present an image from
     pSwapchains: ?[*]const VkSwapchainKHR = null,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Indices of which presentable images to present
     pImageIndices: ?[*]const u32 = null,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Optional (i.e. if non-NULL) VkResult for each swapchain
@@ -12361,7 +12341,7 @@ pub const VkValidationFlagsEXT = extern struct {
     // Optional: false
     // Comment: Number of validation checks to disable
     disabledValidationCheckCount: u32 = 0,
-    // Length field: disabledValidationCheckCount
+    // Length expression: disabledValidationCheckCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation checks to disable
@@ -12383,7 +12363,7 @@ pub const VkValidationFeaturesEXT = extern struct {
     // Optional: true
     // Comment: Number of validation features to enable
     enabledValidationFeatureCount: u32 = 0,
-    // Length field: enabledValidationFeatureCount
+    // Length expression: enabledValidationFeatureCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to enable
@@ -12392,7 +12372,7 @@ pub const VkValidationFeaturesEXT = extern struct {
     // Optional: true
     // Comment: Number of validation features to disable
     disabledValidationFeatureCount: u32 = 0,
-    // Length field: disabledValidationFeatureCount
+    // Length expression: disabledValidationFeatureCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to disable
@@ -12414,7 +12394,7 @@ pub const VkLayerSettingsCreateInfoEXT = extern struct {
     // Optional: true
     // Comment: Number of settings to configure
     settingCount: u32 = 0,
-    // Length field: settingCount
+    // Length expression: settingCount
     // Extern sync: false
     // Optional: false
     // Comment: Validation features to enable
@@ -12424,11 +12404,11 @@ pub const VkLayerSettingsCreateInfoEXT = extern struct {
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkLayerSettingEXT = extern struct {
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pLayerName: ?[*:0]const u8 = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pSettingName: ?[*:0]const u8 = null,
@@ -12440,7 +12420,7 @@ pub const VkLayerSettingEXT = extern struct {
     // Optional: true
     // Comment: Number of values of the setting
     valueCount: u32 = 0,
-    // Length field: valueCount
+    // Length expression: valueCount
     // Extern sync: false
     // Optional: false
     // Comment: Values to pass for a setting
@@ -12505,7 +12485,7 @@ pub const VkDebugMarkerObjectNameInfoEXT = extern struct {
     // Object type: objectType (Which object handle is this)
     // Comment: The handle of the object, cast to uint64_t
     object: u64 = 0,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name to apply to the object
@@ -12538,7 +12518,7 @@ pub const VkDebugMarkerObjectTagInfoEXT = extern struct {
     // Optional: false
     // Comment: The length in bytes of the tag data
     tagSize: u64 = 0,
-    // Length field: tagSize
+    // Length expression: tagSize
     // Extern sync: false
     // Optional: false
     // Comment: Tag data to attach to the object
@@ -12554,7 +12534,7 @@ pub const VkDebugMarkerMarkerInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     // Comment: Name of the debug marker
@@ -12777,8 +12757,6 @@ pub const VkPhysicalDeviceExternalMemorySciBufFeaturesNV = extern struct {
     // Optional: false
     sciBufExport: u32 = 0,
 };
-// Extension: VK_NV_external_memory_sci_buf
-pub const VkPhysicalDeviceExternalSciBufFeaturesNV = VkPhysicalDeviceExternalMemorySciBufFeaturesNV;
 // Extension: VK_NV_win32_keyed_mutex
 // Extends: VkSubmitInfo,VkSubmitInfo2
 // Returned only: false
@@ -12793,26 +12771,26 @@ pub const VkWin32KeyedMutexAcquireReleaseInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     acquireCount: u32 = 0,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireSyncs: ?[*]const VkDeviceMemory = null,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireKeys: ?[*]const u64 = null,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireTimeoutMilliseconds: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     releaseCount: u32 = 0,
-    // Length field: releaseCount
+    // Length expression: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseSyncs: ?[*]const VkDeviceMemory = null,
-    // Length field: releaseCount
+    // Length expression: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseKeys: ?[*]const u64 = null,
@@ -12869,8 +12847,6 @@ pub const VkDevicePrivateDataCreateInfo = extern struct {
     // Optional: false
     privateDataSlotRequestCount: u32 = 0,
 };
-// Extension: VK_EXT_private_data
-pub const VkDevicePrivateDataCreateInfoEXT = VkDevicePrivateDataCreateInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -12885,8 +12861,6 @@ pub const VkPrivateDataSlotCreateInfo = extern struct {
     // Optional: false
     flags: VkPrivateDataSlotCreateFlags = .{},
 };
-// Extension: VK_EXT_private_data
-pub const VkPrivateDataSlotCreateInfoEXT = VkPrivateDataSlotCreateInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -12902,8 +12876,6 @@ pub const VkPhysicalDevicePrivateDataFeatures = extern struct {
     // Optional: false
     privateData: u32 = 0,
 };
-// Extension: VK_EXT_private_data
-pub const VkPhysicalDevicePrivateDataFeaturesEXT = VkPhysicalDevicePrivateDataFeatures;
 // Extension: VK_NV_device_generated_commands
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -13340,7 +13312,7 @@ pub const VkGraphicsShaderGroupCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     stageCount: u32 = 0,
-    // Length field: stageCount
+    // Length expression: stageCount
     // Extern sync: false
     // Optional: false
     pStages: ?[*]const VkPipelineShaderStageCreateInfo = null,
@@ -13365,14 +13337,14 @@ pub const VkGraphicsPipelineShaderGroupsCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     groupCount: u32 = 0,
-    // Length field: groupCount
+    // Length expression: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkGraphicsShaderGroupCreateInfoNV = null,
     // Extern sync: false
     // Optional: true
     pipelineCount: u32 = 0,
-    // Length field: pipelineCount
+    // Length expression: pipelineCount
     // Extern sync: false
     // Optional: false
     pPipelines: ?[*]const VkPipeline = null,
@@ -13475,11 +13447,11 @@ pub const VkIndirectCommandsLayoutTokenNV = extern struct {
     // Extern sync: false
     // Optional: true
     indexTypeCount: u32 = 0,
-    // Length field: indexTypeCount
+    // Length expression: indexTypeCount
     // Extern sync: false
     // Optional: false
     pIndexTypes: ?[*]const VkIndexType = null,
-    // Length field: indexTypeCount
+    // Length expression: indexTypeCount
     // Extern sync: false
     // Optional: false
     pIndexTypeValues: ?[*]const u32 = null,
@@ -13503,14 +13475,14 @@ pub const VkIndirectCommandsLayoutCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     tokenCount: u32 = 0,
-    // Length field: tokenCount
+    // Length expression: tokenCount
     // Extern sync: false
     // Optional: false
     pTokens: ?[*]const VkIndirectCommandsLayoutTokenNV = null,
     // Extern sync: false
     // Optional: false
     streamCount: u32 = 0,
-    // Length field: streamCount
+    // Length expression: streamCount
     // Extern sync: false
     // Optional: false
     pStreamStrides: ?[*]const u32 = null,
@@ -13537,7 +13509,7 @@ pub const VkGeneratedCommandsInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     streamCount: u32 = 0,
-    // Length field: streamCount
+    // Length expression: streamCount
     // Extern sync: false
     // Optional: false
     pStreams: ?[*]const VkIndirectCommandsStreamNV = null,
@@ -13629,8 +13601,6 @@ pub const VkPhysicalDeviceFeatures2 = extern struct {
     // Optional: false
     features: VkPhysicalDeviceFeatures = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkPhysicalDeviceFeatures2KHR = VkPhysicalDeviceFeatures2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13645,8 +13615,6 @@ pub const VkPhysicalDeviceProperties2 = extern struct {
     // Optional: false
     properties: VkPhysicalDeviceProperties,
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkPhysicalDeviceProperties2KHR = VkPhysicalDeviceProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13661,8 +13629,6 @@ pub const VkFormatProperties2 = extern struct {
     // Optional: false
     formatProperties: VkFormatProperties = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkFormatProperties2KHR = VkFormatProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13677,8 +13643,6 @@ pub const VkImageFormatProperties2 = extern struct {
     // Optional: false
     imageFormatProperties: VkImageFormatProperties = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkImageFormatProperties2KHR = VkImageFormatProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -13705,8 +13669,6 @@ pub const VkPhysicalDeviceImageFormatInfo2 = extern struct {
     // Optional: true
     flags: VkImageCreateFlags = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkPhysicalDeviceImageFormatInfo2KHR = VkPhysicalDeviceImageFormatInfo2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13721,8 +13683,6 @@ pub const VkQueueFamilyProperties2 = extern struct {
     // Optional: false
     queueFamilyProperties: VkQueueFamilyProperties = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkQueueFamilyProperties2KHR = VkQueueFamilyProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13737,8 +13697,6 @@ pub const VkPhysicalDeviceMemoryProperties2 = extern struct {
     // Optional: false
     memoryProperties: VkPhysicalDeviceMemoryProperties = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkPhysicalDeviceMemoryProperties2KHR = VkPhysicalDeviceMemoryProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13753,8 +13711,6 @@ pub const VkSparseImageFormatProperties2 = extern struct {
     // Optional: false
     properties: VkSparseImageFormatProperties = .{},
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkSparseImageFormatProperties2KHR = VkSparseImageFormatProperties2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -13781,8 +13737,6 @@ pub const VkPhysicalDeviceSparseImageFormatInfo2 = extern struct {
     // Optional: false
     tiling: VkImageTiling,
 };
-// Extension: VK_KHR_get_physical_device_properties2
-pub const VkPhysicalDeviceSparseImageFormatInfo2KHR = VkPhysicalDeviceSparseImageFormatInfo2;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -13798,8 +13752,6 @@ pub const VkPhysicalDevicePushDescriptorProperties = extern struct {
     // Optional: false
     maxPushDescriptors: u32 = 0,
 };
-// Extension: VK_KHR_push_descriptor
-pub const VkPhysicalDevicePushDescriptorPropertiesKHR = VkPhysicalDevicePushDescriptorProperties;
 // Extension: VK_BASE_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -13817,8 +13769,6 @@ pub const VkConformanceVersion = extern struct {
     // Optional: false
     patch: u8 = 0,
 };
-// Extension: VK_KHR_driver_properties
-pub const VkConformanceVersionKHR = VkConformanceVersion;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -13833,11 +13783,11 @@ pub const VkPhysicalDeviceDriverProperties = extern struct {
     // Extern sync: false
     // Optional: false
     driverID: VkDriverId,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     driverName: [VK_MAX_DRIVER_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_NAME_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     driverInfo: [VK_MAX_DRIVER_INFO_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_INFO_SIZE]u8),
@@ -13845,8 +13795,6 @@ pub const VkPhysicalDeviceDriverProperties = extern struct {
     // Optional: false
     conformanceVersion: VkConformanceVersion = .{},
 };
-// Extension: VK_KHR_driver_properties
-pub const VkPhysicalDeviceDriverPropertiesKHR = VkPhysicalDeviceDriverProperties;
 // Extension: VK_KHR_incremental_present
 // Extends: VkPresentInfoKHR
 // Returned only: false
@@ -13862,7 +13810,7 @@ pub const VkPresentRegionsKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: The regions that have changed
@@ -13876,7 +13824,7 @@ pub const VkPresentRegionKHR = extern struct {
     // Optional: true
     // Comment: Number of rectangles in pRectangles
     rectangleCount: u32 = 0,
-    // Length field: rectangleCount
+    // Length expression: rectangleCount
     // Extern sync: false
     // Optional: true
     // Comment: Array of rectangles that have changed in a swapchain's image(s)
@@ -13917,12 +13865,6 @@ pub const VkPhysicalDeviceVariablePointersFeatures = extern struct {
     // Optional: false
     variablePointers: u32 = 0,
 };
-// Extension: VK_KHR_variable_pointers
-pub const VkPhysicalDeviceVariablePointersFeaturesKHR = VkPhysicalDeviceVariablePointersFeatures;
-// Extension: VK_KHR_variable_pointers
-pub const VkPhysicalDeviceVariablePointerFeaturesKHR = VkPhysicalDeviceVariablePointersFeatures;
-// Extension: VK_COMPUTE_VERSION_1_1
-pub const VkPhysicalDeviceVariablePointerFeatures = VkPhysicalDeviceVariablePointersFeatures;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -13937,8 +13879,6 @@ pub const VkExternalMemoryProperties = extern struct {
     // Optional: false
     compatibleHandleTypes: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkExternalMemoryPropertiesKHR = VkExternalMemoryProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkPhysicalDeviceImageFormatInfo2
 // Returned only: false
@@ -13954,8 +13894,6 @@ pub const VkPhysicalDeviceExternalImageFormatInfo = extern struct {
     // Optional: true
     handleType: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkPhysicalDeviceExternalImageFormatInfoKHR = VkPhysicalDeviceExternalImageFormatInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkImageFormatProperties2
 // Returned only: true
@@ -13971,8 +13909,6 @@ pub const VkExternalImageFormatProperties = extern struct {
     // Optional: false
     externalMemoryProperties: VkExternalMemoryProperties = .{},
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkExternalImageFormatPropertiesKHR = VkExternalImageFormatProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -13993,8 +13929,6 @@ pub const VkPhysicalDeviceExternalBufferInfo = extern struct {
     // Optional: false
     handleType: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkPhysicalDeviceExternalBufferInfoKHR = VkPhysicalDeviceExternalBufferInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -14009,8 +13943,6 @@ pub const VkExternalBufferProperties = extern struct {
     // Optional: false
     externalMemoryProperties: VkExternalMemoryProperties = .{},
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkExternalBufferPropertiesKHR = VkExternalBufferProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -14038,8 +13970,6 @@ pub const VkPhysicalDeviceIDProperties = extern struct {
     // Optional: false
     deviceLUIDValid: u32 = 0,
 };
-// Extension: VK_KHR_external_memory_capabilities
-pub const VkPhysicalDeviceIDPropertiesKHR = VkPhysicalDeviceIDProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkImageCreateInfo
 // Returned only: false
@@ -14055,8 +13985,6 @@ pub const VkExternalMemoryImageCreateInfo = extern struct {
     // Optional: true
     handleTypes: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory
-pub const VkExternalMemoryImageCreateInfoKHR = VkExternalMemoryImageCreateInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkBufferCreateInfo
 // Returned only: false
@@ -14072,8 +14000,6 @@ pub const VkExternalMemoryBufferCreateInfo = extern struct {
     // Optional: true
     handleTypes: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory
-pub const VkExternalMemoryBufferCreateInfoKHR = VkExternalMemoryBufferCreateInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkMemoryAllocateInfo
 // Returned only: false
@@ -14089,8 +14015,6 @@ pub const VkExportMemoryAllocateInfo = extern struct {
     // Optional: true
     handleTypes: VkExternalMemoryHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_memory
-pub const VkExportMemoryAllocateInfoKHR = VkExportMemoryAllocateInfo;
 // Extension: VK_KHR_external_memory_win32
 // Extends: VkMemoryAllocateInfo
 // Returned only: false
@@ -14270,26 +14194,26 @@ pub const VkWin32KeyedMutexAcquireReleaseInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     acquireCount: u32 = 0,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireSyncs: ?[*]const VkDeviceMemory = null,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireKeys: ?[*]const u64 = null,
-    // Length field: acquireCount
+    // Length expression: acquireCount
     // Extern sync: false
     // Optional: false
     pAcquireTimeouts: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     releaseCount: u32 = 0,
-    // Length field: releaseCount
+    // Length expression: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseSyncs: ?[*]const VkDeviceMemory = null,
-    // Length field: releaseCount
+    // Length expression: releaseCount
     // Extern sync: false
     // Optional: false
     pReleaseKeys: ?[*]const u64 = null,
@@ -14357,8 +14281,6 @@ pub const VkPhysicalDeviceExternalSemaphoreInfo = extern struct {
     // Optional: false
     handleType: VkExternalSemaphoreHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_semaphore_capabilities
-pub const VkPhysicalDeviceExternalSemaphoreInfoKHR = VkPhysicalDeviceExternalSemaphoreInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -14379,8 +14301,6 @@ pub const VkExternalSemaphoreProperties = extern struct {
     // Optional: true
     externalSemaphoreFeatures: VkExternalSemaphoreFeatureFlags = .{},
 };
-// Extension: VK_KHR_external_semaphore_capabilities
-pub const VkExternalSemaphorePropertiesKHR = VkExternalSemaphoreProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkSemaphoreCreateInfo
 // Returned only: false
@@ -14396,8 +14316,6 @@ pub const VkExportSemaphoreCreateInfo = extern struct {
     // Optional: true
     handleTypes: VkExternalSemaphoreHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_semaphore
-pub const VkExportSemaphoreCreateInfoKHR = VkExportSemaphoreCreateInfo;
 // Extension: VK_KHR_external_semaphore_win32
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -14455,14 +14373,14 @@ pub const VkD3D12FenceSubmitInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreValuesCount: u32 = 0,
-    // Length field: waitSemaphoreValuesCount
+    // Length expression: waitSemaphoreValuesCount
     // Extern sync: false
     // Optional: true
     pWaitSemaphoreValues: ?[*]const u64 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreValuesCount: u32 = 0,
-    // Length field: signalSemaphoreValuesCount
+    // Length expression: signalSemaphoreValuesCount
     // Extern sync: false
     // Optional: true
     pSignalSemaphoreValues: ?[*]const u64 = null,
@@ -14576,8 +14494,6 @@ pub const VkPhysicalDeviceExternalFenceInfo = extern struct {
     // Optional: false
     handleType: VkExternalFenceHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_fence_capabilities
-pub const VkPhysicalDeviceExternalFenceInfoKHR = VkPhysicalDeviceExternalFenceInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -14598,8 +14514,6 @@ pub const VkExternalFenceProperties = extern struct {
     // Optional: true
     externalFenceFeatures: VkExternalFenceFeatureFlags = .{},
 };
-// Extension: VK_KHR_external_fence_capabilities
-pub const VkExternalFencePropertiesKHR = VkExternalFenceProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkFenceCreateInfo
 // Returned only: false
@@ -14615,8 +14529,6 @@ pub const VkExportFenceCreateInfo = extern struct {
     // Optional: true
     handleTypes: VkExternalFenceHandleTypeFlags = .{},
 };
-// Extension: VK_KHR_external_fence
-pub const VkExportFenceCreateInfoKHR = VkExportFenceCreateInfo;
 // Extension: VK_KHR_external_fence_win32
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -14956,8 +14868,6 @@ pub const VkPhysicalDeviceMultiviewFeatures = extern struct {
     // Comment: Multiple views in a render pass w/ tessellation shader
     multiviewTessellationShader: u32 = 0,
 };
-// Extension: VK_KHR_multiview
-pub const VkPhysicalDeviceMultiviewFeaturesKHR = VkPhysicalDeviceMultiviewFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -14978,8 +14888,6 @@ pub const VkPhysicalDeviceMultiviewProperties = extern struct {
     // Comment: max instance index for a draw in a multiview subpass
     maxMultiviewInstanceIndex: u32 = 0,
 };
-// Extension: VK_KHR_multiview
-pub const VkPhysicalDeviceMultiviewPropertiesKHR = VkPhysicalDeviceMultiviewProperties;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkRenderPassCreateInfo
 // Returned only: false
@@ -14994,27 +14902,25 @@ pub const VkRenderPassMultiviewCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     subpassCount: u32 = 0,
-    // Length field: subpassCount
+    // Length expression: subpassCount
     // Extern sync: false
     // Optional: false
     pViewMasks: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length field: dependencyCount
+    // Length expression: dependencyCount
     // Extern sync: false
     // Optional: false
     pViewOffsets: ?[*]const i32 = null,
     // Extern sync: false
     // Optional: true
     correlationMaskCount: u32 = 0,
-    // Length field: correlationMaskCount
+    // Length expression: correlationMaskCount
     // Extern sync: false
     // Optional: false
     pCorrelationMasks: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_multiview
-pub const VkRenderPassMultiviewCreateInfoKHR = VkRenderPassMultiviewCreateInfo;
 // Extension: VK_EXT_display_surface_counter
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -15139,7 +15045,7 @@ pub const VkPhysicalDeviceGroupProperties = extern struct {
     // Extern sync: false
     // Optional: false
     physicalDeviceCount: u32 = 0,
-    // Length field: physicalDeviceCount
+    // Length expression: physicalDeviceCount
     // Extern sync: false
     // Optional: false
     physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = @import("std").mem.zeroes([VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice),
@@ -15147,8 +15053,6 @@ pub const VkPhysicalDeviceGroupProperties = extern struct {
     // Optional: false
     subsetAllocation: u32 = 0,
 };
-// Extension: VK_KHR_device_group_creation
-pub const VkPhysicalDeviceGroupPropertiesKHR = VkPhysicalDeviceGroupProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkMemoryAllocateInfo
 // Returned only: false
@@ -15167,8 +15071,6 @@ pub const VkMemoryAllocateFlagsInfo = extern struct {
     // Optional: false
     deviceMask: u32 = 0,
 };
-// Extension: VK_KHR_device_group
-pub const VkMemoryAllocateFlagsInfoKHR = VkMemoryAllocateFlagsInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15189,8 +15091,6 @@ pub const VkBindBufferMemoryInfo = extern struct {
     // Optional: false
     memoryOffset: u64 = 0,
 };
-// Extension: VK_KHR_bind_memory2
-pub const VkBindBufferMemoryInfoKHR = VkBindBufferMemoryInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkBindBufferMemoryInfo
 // Returned only: false
@@ -15205,13 +15105,11 @@ pub const VkBindBufferMemoryDeviceGroupInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length field: deviceIndexCount
+    // Length expression: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_device_group
-pub const VkBindBufferMemoryDeviceGroupInfoKHR = VkBindBufferMemoryDeviceGroupInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15232,8 +15130,6 @@ pub const VkBindImageMemoryInfo = extern struct {
     // Optional: false
     memoryOffset: u64 = 0,
 };
-// Extension: VK_KHR_bind_memory2
-pub const VkBindImageMemoryInfoKHR = VkBindImageMemoryInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkBindImageMemoryInfo
 // Returned only: false
@@ -15248,20 +15144,18 @@ pub const VkBindImageMemoryDeviceGroupInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length field: deviceIndexCount
+    // Length expression: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     splitInstanceBindRegionCount: u32 = 0,
-    // Length field: splitInstanceBindRegionCount
+    // Length expression: splitInstanceBindRegionCount
     // Extern sync: false
     // Optional: false
     pSplitInstanceBindRegions: ?[*]const VkRect2D = null,
 };
-// Extension: VK_KHR_device_group
-pub const VkBindImageMemoryDeviceGroupInfoKHR = VkBindImageMemoryDeviceGroupInfo;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkRenderPassBeginInfo,VkRenderingInfo
 // Returned only: false
@@ -15279,13 +15173,11 @@ pub const VkDeviceGroupRenderPassBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     deviceRenderAreaCount: u32 = 0,
-    // Length field: deviceRenderAreaCount
+    // Length expression: deviceRenderAreaCount
     // Extern sync: false
     // Optional: false
     pDeviceRenderAreas: ?[*]const VkRect2D = null,
 };
-// Extension: VK_KHR_device_group
-pub const VkDeviceGroupRenderPassBeginInfoKHR = VkDeviceGroupRenderPassBeginInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkCommandBufferBeginInfo
 // Returned only: false
@@ -15301,8 +15193,6 @@ pub const VkDeviceGroupCommandBufferBeginInfo = extern struct {
     // Optional: false
     deviceMask: u32 = 0,
 };
-// Extension: VK_KHR_device_group
-pub const VkDeviceGroupCommandBufferBeginInfoKHR = VkDeviceGroupCommandBufferBeginInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkSubmitInfo
 // Returned only: false
@@ -15317,27 +15207,25 @@ pub const VkDeviceGroupSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreCount: u32 = 0,
-    // Length field: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphoreDeviceIndices: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     commandBufferCount: u32 = 0,
-    // Length field: commandBufferCount
+    // Length expression: commandBufferCount
     // Extern sync: false
     // Optional: false
     pCommandBufferDeviceMasks: ?[*]const u32 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreCount: u32 = 0,
-    // Length field: signalSemaphoreCount
+    // Length expression: signalSemaphoreCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphoreDeviceIndices: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_device_group
-pub const VkDeviceGroupSubmitInfoKHR = VkDeviceGroupSubmitInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkBindSparseInfo
 // Returned only: false
@@ -15356,8 +15244,6 @@ pub const VkDeviceGroupBindSparseInfo = extern struct {
     // Optional: false
     memoryDeviceIndex: u32 = 0,
 };
-// Extension: VK_KHR_device_group
-pub const VkDeviceGroupBindSparseInfoKHR = VkDeviceGroupBindSparseInfo;
 // Extension: VK_KHR_swapchain
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -15448,7 +15334,7 @@ pub const VkDeviceGroupPresentInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: false
     pDeviceMasks: ?[*]const u32 = null,
@@ -15470,13 +15356,11 @@ pub const VkDeviceGroupDeviceCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     physicalDeviceCount: u32 = 0,
-    // Length field: physicalDeviceCount
+    // Length expression: physicalDeviceCount
     // Extern sync: false
     // Optional: false
     pPhysicalDevices: ?[*]const VkPhysicalDevice = null,
 };
-// Extension: VK_KHR_device_group_creation
-pub const VkDeviceGroupDeviceCreateInfoKHR = VkDeviceGroupDeviceCreateInfo;
 // Extension: VK_KHR_swapchain
 // Extends: VkSwapchainCreateInfoKHR
 // Returned only: false
@@ -15521,8 +15405,6 @@ pub const VkDescriptorUpdateTemplateEntry = extern struct {
     // Comment: Stride between two descriptors in pData when writing more than one descriptor
     stride: u64 = 0,
 };
-// Extension: VK_KHR_descriptor_update_template
-pub const VkDescriptorUpdateTemplateEntryKHR = VkDescriptorUpdateTemplateEntry;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -15540,7 +15422,7 @@ pub const VkDescriptorUpdateTemplateCreateInfo = extern struct {
     // Optional: false
     // Comment: Number of descriptor update entries to use for the update template
     descriptorUpdateEntryCount: u32 = 0,
-    // Length field: descriptorUpdateEntryCount
+    // Length expression: descriptorUpdateEntryCount
     // Extern sync: false
     // Optional: false
     // Comment: Descriptor update entries for the template
@@ -15562,8 +15444,6 @@ pub const VkDescriptorUpdateTemplateCreateInfo = extern struct {
     // Optional: false
     set: u32 = 0,
 };
-// Extension: VK_KHR_descriptor_update_template
-pub const VkDescriptorUpdateTemplateCreateInfoKHR = VkDescriptorUpdateTemplateCreateInfo;
 // Extension: VK_EXT_hdr_metadata
 // Comment: Chromaticity coordinate
 // Returned only: false
@@ -15607,7 +15487,7 @@ pub const VkPresentIdKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present ID values for each swapchain
@@ -15644,7 +15524,7 @@ pub const VkPresentId2KHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present ID values for each swapchain
@@ -15783,12 +15663,12 @@ pub const VkSwapchainTimeDomainPropertiesEXT = extern struct {
     // Extern sync: false
     // Optional: false
     timeDomainCount: u32 = 0,
-    // Length field: timeDomainCount
+    // Length expression: timeDomainCount
     // Extern sync: false
     // Optional: true
     // Comment: Available time domains to use with the swapchain
     pTimeDomains: ?[*]VkTimeDomainKHR = null,
-    // Length field: timeDomainCount
+    // Length expression: timeDomainCount
     // Extern sync: false
     // Optional: true
     // Comment: Unique identifier for a time domain
@@ -15842,7 +15722,7 @@ pub const VkPastPresentationTimingPropertiesEXT = extern struct {
     // Extern sync: false
     // Optional: false
     presentationTimingCount: u32 = 0,
-    // Length field: presentationTimingCount
+    // Length expression: presentationTimingCount
     // Extern sync: false
     // Optional: false
     pPresentationTimings: ?[*]VkPastPresentationTimingEXT = null,
@@ -15869,7 +15749,7 @@ pub const VkPastPresentationTimingEXT = extern struct {
     // Optional: false
     // Comment: Number of present stages results available in pPresentStages
     presentStageCount: u32 = 0,
-    // Length field: presentStageCount
+    // Length expression: presentStageCount
     // Extern sync: false
     // Optional: false
     // Comment: Reported timings for each present stage
@@ -15902,7 +15782,7 @@ pub const VkPresentTimingsInfoEXT = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: Present timing details for each swapchain
@@ -16015,7 +15895,7 @@ pub const VkHdrVividDynamicMetadataHUAWEI = extern struct {
     // Optional: false
     // Comment: Specified in bytes
     dynamicMetadataSize: u64 = 0,
-    // Length field: dynamicMetadataSize
+    // Length expression: dynamicMetadataSize
     // Extern sync: false
     // Optional: false
     // Comment: Binary code of size dynamicMetadataSize
@@ -16100,7 +15980,7 @@ pub const VkPresentTimesInfoGOOGLE = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: true
     // Comment: The earliest times to present images
@@ -16198,7 +16078,7 @@ pub const VkPipelineViewportWScalingStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     viewportCount: u32 = 0,
-    // Length field: viewportCount
+    // Length expression: viewportCount
     // Extern sync: false
     // Optional: true
     pViewportWScalings: ?[*]const VkViewportWScalingNV = null,
@@ -16237,7 +16117,7 @@ pub const VkPipelineViewportSwizzleStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     viewportCount: u32 = 0,
-    // Length field: viewportCount
+    // Length expression: viewportCount
     // Extern sync: false
     // Optional: false
     pViewportSwizzles: ?[*]const VkViewportSwizzleNV = null,
@@ -16278,7 +16158,7 @@ pub const VkPipelineDiscardRectangleStateCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     discardRectangleCount: u32 = 0,
-    // Length field: discardRectangleCount
+    // Length expression: discardRectangleCount
     // Extern sync: false
     // Optional: false
     pDiscardRectangles: ?[*]const VkRect2D = null,
@@ -16312,8 +16192,6 @@ pub const VkInputAttachmentAspectReference = extern struct {
     // Optional: false
     aspectMask: VkImageAspectFlags = .{},
 };
-// Extension: VK_KHR_maintenance2
-pub const VkInputAttachmentAspectReferenceKHR = VkInputAttachmentAspectReference;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkRenderPassCreateInfo
 // Returned only: false
@@ -16328,13 +16206,11 @@ pub const VkRenderPassInputAttachmentAspectCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     aspectReferenceCount: u32 = 0,
-    // Length field: aspectReferenceCount
+    // Length expression: aspectReferenceCount
     // Extern sync: false
     // Optional: false
     pAspectReferences: ?[*]const VkInputAttachmentAspectReference = null,
 };
-// Extension: VK_KHR_maintenance2
-pub const VkRenderPassInputAttachmentAspectCreateInfoKHR = VkRenderPassInputAttachmentAspectCreateInfo;
 // Extension: VK_KHR_get_surface_capabilities2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16510,8 +16386,6 @@ pub const VkPhysicalDevice16BitStorageFeatures = extern struct {
     // Comment: 16-bit integer/floating-point variables supported in shader inputs and outputs
     storageInputOutput16: u32 = 0,
 };
-// Extension: VK_KHR_16bit_storage
-pub const VkPhysicalDevice16BitStorageFeaturesKHR = VkPhysicalDevice16BitStorageFeatures;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -16556,8 +16430,6 @@ pub const VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures = extern struct {
     // Comment: Flag to specify whether subgroup operations with extended types are supported
     shaderSubgroupExtendedTypes: u32 = 0,
 };
-// Extension: VK_KHR_shader_subgroup_extended_types
-pub const VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR = VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16572,8 +16444,6 @@ pub const VkBufferMemoryRequirementsInfo2 = extern struct {
     // Optional: false
     buffer: VkBuffer = .none,
 };
-// Extension: VK_KHR_get_memory_requirements2
-pub const VkBufferMemoryRequirementsInfo2KHR = VkBufferMemoryRequirementsInfo2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16588,8 +16458,6 @@ pub const VkDeviceBufferMemoryRequirements = extern struct {
     // Optional: false
     pCreateInfo: ?*const VkBufferCreateInfo = null,
 };
-// Extension: VK_KHR_maintenance4
-pub const VkDeviceBufferMemoryRequirementsKHR = VkDeviceBufferMemoryRequirements;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16604,8 +16472,6 @@ pub const VkImageMemoryRequirementsInfo2 = extern struct {
     // Optional: false
     image: VkImage = .none,
 };
-// Extension: VK_KHR_get_memory_requirements2
-pub const VkImageMemoryRequirementsInfo2KHR = VkImageMemoryRequirementsInfo2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16620,8 +16486,6 @@ pub const VkImageSparseMemoryRequirementsInfo2 = extern struct {
     // Optional: false
     image: VkImage = .none,
 };
-// Extension: VK_KHR_get_memory_requirements2
-pub const VkImageSparseMemoryRequirementsInfo2KHR = VkImageSparseMemoryRequirementsInfo2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16639,8 +16503,6 @@ pub const VkDeviceImageMemoryRequirements = extern struct {
     // Optional: true
     planeAspect: VkImageAspectFlags = .{},
 };
-// Extension: VK_KHR_maintenance4
-pub const VkDeviceImageMemoryRequirementsKHR = VkDeviceImageMemoryRequirements;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -16655,8 +16517,6 @@ pub const VkMemoryRequirements2 = extern struct {
     // Optional: false
     memoryRequirements: VkMemoryRequirements = .{},
 };
-// Extension: VK_KHR_get_memory_requirements2
-pub const VkMemoryRequirements2KHR = VkMemoryRequirements2;
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -16671,8 +16531,6 @@ pub const VkSparseImageMemoryRequirements2 = extern struct {
     // Optional: false
     memoryRequirements: VkSparseImageMemoryRequirements = .{},
 };
-// Extension: VK_KHR_get_memory_requirements2
-pub const VkSparseImageMemoryRequirements2KHR = VkSparseImageMemoryRequirements2;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -16688,8 +16546,6 @@ pub const VkPhysicalDevicePointClippingProperties = extern struct {
     // Optional: false
     pointClippingBehavior: VkPointClippingBehavior,
 };
-// Extension: VK_KHR_maintenance2
-pub const VkPhysicalDevicePointClippingPropertiesKHR = VkPhysicalDevicePointClippingProperties;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkMemoryRequirements2
 // Returned only: true
@@ -16708,8 +16564,6 @@ pub const VkMemoryDedicatedRequirements = extern struct {
     // Optional: false
     requiresDedicatedAllocation: u32 = 0,
 };
-// Extension: VK_KHR_dedicated_allocation
-pub const VkMemoryDedicatedRequirementsKHR = VkMemoryDedicatedRequirements;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkMemoryAllocateInfo
 // Returned only: false
@@ -16730,8 +16584,6 @@ pub const VkMemoryDedicatedAllocateInfo = extern struct {
     // Comment: Buffer that this allocation will be bound to
     buffer: VkBuffer = .none,
 };
-// Extension: VK_KHR_dedicated_allocation
-pub const VkMemoryDedicatedAllocateInfoKHR = VkMemoryDedicatedAllocateInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkImageViewCreateInfo
 // Returned only: false
@@ -16765,8 +16617,6 @@ pub const VkImageViewSlicedCreateInfoEXT = extern struct {
     // Optional: false
     sliceCount: u32 = 0,
 };
-// Extension: VK_KHR_maintenance2
-pub const VkImageViewUsageCreateInfoKHR = VkImageViewUsageCreateInfo;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkPipelineTessellationStateCreateInfo
 // Returned only: false
@@ -16782,8 +16632,6 @@ pub const VkPipelineTessellationDomainOriginStateCreateInfo = extern struct {
     // Optional: false
     domainOrigin: VkTessellationDomainOrigin,
 };
-// Extension: VK_KHR_maintenance2
-pub const VkPipelineTessellationDomainOriginStateCreateInfoKHR = VkPipelineTessellationDomainOriginStateCreateInfo;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Extends: VkSamplerCreateInfo,VkImageViewCreateInfo
 // Returned only: false
@@ -16799,8 +16647,6 @@ pub const VkSamplerYcbcrConversionInfo = extern struct {
     // Optional: false
     conversion: VkSamplerYcbcrConversion = .none,
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkSamplerYcbcrConversionInfoKHR = VkSamplerYcbcrConversionInfo;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -16836,8 +16682,6 @@ pub const VkSamplerYcbcrConversionCreateInfo = extern struct {
     // Optional: false
     forceExplicitReconstruction: u32 = 0,
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkSamplerYcbcrConversionCreateInfoKHR = VkSamplerYcbcrConversionCreateInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkBindImageMemoryInfo
 // Returned only: false
@@ -16853,8 +16697,6 @@ pub const VkBindImagePlaneMemoryInfo = extern struct {
     // Optional: false
     planeAspect: VkImageAspectFlags = .{},
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkBindImagePlaneMemoryInfoKHR = VkBindImagePlaneMemoryInfo;
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkImageMemoryRequirementsInfo2
 // Returned only: false
@@ -16870,8 +16712,6 @@ pub const VkImagePlaneMemoryRequirementsInfo = extern struct {
     // Optional: false
     planeAspect: VkImageAspectFlags = .{},
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkImagePlaneMemoryRequirementsInfoKHR = VkImagePlaneMemoryRequirementsInfo;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -16888,8 +16728,6 @@ pub const VkPhysicalDeviceSamplerYcbcrConversionFeatures = extern struct {
     // Comment: Sampler color conversion supported
     samplerYcbcrConversion: u32 = 0,
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR = VkPhysicalDeviceSamplerYcbcrConversionFeatures;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Extends: VkImageFormatProperties2
 // Returned only: true
@@ -16905,8 +16743,6 @@ pub const VkSamplerYcbcrConversionImageFormatProperties = extern struct {
     // Optional: false
     combinedImageSamplerDescriptorCount: u32 = 0,
 };
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const VkSamplerYcbcrConversionImageFormatPropertiesKHR = VkSamplerYcbcrConversionImageFormatProperties;
 // Extension: VK_AMD_texture_gather_bias_lod
 // Extends: VkImageFormatProperties2
 // Returned only: true
@@ -17047,8 +16883,6 @@ pub const VkPhysicalDeviceSamplerFilterMinmaxProperties = extern struct {
     // Optional: false
     filterMinmaxImageComponentMapping: u32 = 0,
 };
-// Extension: VK_EXT_sampler_filter_minmax
-pub const VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT = VkPhysicalDeviceSamplerFilterMinmaxProperties;
 // Extension: VK_EXT_sample_locations
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -17080,7 +16914,7 @@ pub const VkSampleLocationsInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     sampleLocationsCount: u32 = 0,
-    // Length field: sampleLocationsCount
+    // Length expression: sampleLocationsCount
     // Extern sync: false
     // Optional: false
     pSampleLocations: ?[*]const VkSampleLocationEXT = null,
@@ -17121,14 +16955,14 @@ pub const VkRenderPassSampleLocationsBeginInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentInitialSampleLocationsCount: u32 = 0,
-    // Length field: attachmentInitialSampleLocationsCount
+    // Length expression: attachmentInitialSampleLocationsCount
     // Extern sync: false
     // Optional: false
     pAttachmentInitialSampleLocations: ?[*]const VkAttachmentSampleLocationsEXT = null,
     // Extern sync: false
     // Optional: true
     postSubpassSampleLocationsCount: u32 = 0,
-    // Length field: postSubpassSampleLocationsCount
+    // Length expression: postSubpassSampleLocationsCount
     // Extern sync: false
     // Optional: false
     pPostSubpassSampleLocations: ?[*]const VkSubpassSampleLocationsEXT = null,
@@ -17207,8 +17041,6 @@ pub const VkSamplerReductionModeCreateInfo = extern struct {
     // Optional: false
     reductionMode: VkSamplerReductionMode,
 };
-// Extension: VK_EXT_sampler_filter_minmax
-pub const VkSamplerReductionModeCreateInfoEXT = VkSamplerReductionModeCreateInfo;
 // Extension: VK_EXT_blend_operation_advanced
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17308,8 +17140,6 @@ pub const VkPhysicalDeviceInlineUniformBlockFeatures = extern struct {
     // Optional: false
     descriptorBindingInlineUniformBlockUpdateAfterBind: u32 = 0,
 };
-// Extension: VK_EXT_inline_uniform_block
-pub const VkPhysicalDeviceInlineUniformBlockFeaturesEXT = VkPhysicalDeviceInlineUniformBlockFeatures;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -17337,8 +17167,6 @@ pub const VkPhysicalDeviceInlineUniformBlockProperties = extern struct {
     // Optional: false
     maxDescriptorSetUpdateAfterBindInlineUniformBlocks: u32 = 0,
 };
-// Extension: VK_EXT_inline_uniform_block
-pub const VkPhysicalDeviceInlineUniformBlockPropertiesEXT = VkPhysicalDeviceInlineUniformBlockProperties;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkWriteDescriptorSet
 // Returned only: false
@@ -17353,13 +17181,11 @@ pub const VkWriteDescriptorSetInlineUniformBlock = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u32 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
 };
-// Extension: VK_EXT_inline_uniform_block
-pub const VkWriteDescriptorSetInlineUniformBlockEXT = VkWriteDescriptorSetInlineUniformBlock;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkDescriptorPoolCreateInfo
 // Returned only: false
@@ -17375,8 +17201,6 @@ pub const VkDescriptorPoolInlineUniformBlockCreateInfo = extern struct {
     // Optional: false
     maxInlineUniformBlockBindings: u32 = 0,
 };
-// Extension: VK_EXT_inline_uniform_block
-pub const VkDescriptorPoolInlineUniformBlockCreateInfoEXT = VkDescriptorPoolInlineUniformBlockCreateInfo;
 // Extension: VK_NV_framebuffer_mixed_samples
 // Extends: VkPipelineMultisampleStateCreateInfo
 // Returned only: false
@@ -17400,7 +17224,7 @@ pub const VkPipelineCoverageModulationStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     coverageModulationTableCount: u32 = 0,
-    // Length field: coverageModulationTableCount
+    // Length expression: coverageModulationTableCount
     // Extern sync: false
     // Optional: true
     pCoverageModulationTable: ?[*]const f32 = null,
@@ -17419,13 +17243,11 @@ pub const VkImageFormatListCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewFormatCount: u32 = 0,
-    // Length field: viewFormatCount
+    // Length expression: viewFormatCount
     // Extern sync: false
     // Optional: false
     pViewFormats: ?[*]const VkFormat = null,
 };
-// Extension: VK_KHR_image_format_list
-pub const VkImageFormatListCreateInfoKHR = VkImageFormatListCreateInfo;
 // Extension: VK_EXT_validation_cache
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -17442,7 +17264,7 @@ pub const VkValidationCacheCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     initialDataSize: u64 = 0,
-    // Length field: initialDataSize
+    // Length expression: initialDataSize
     // Extern sync: false
     // Optional: false
     pInitialData: ?*const anyopaque = null,
@@ -17480,8 +17302,6 @@ pub const VkPhysicalDeviceMaintenance3Properties = extern struct {
     // Optional: false
     maxMemoryAllocationSize: u64 = 0,
 };
-// Extension: VK_KHR_maintenance3
-pub const VkPhysicalDeviceMaintenance3PropertiesKHR = VkPhysicalDeviceMaintenance3Properties;
 // Extension: VK_BASE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17497,8 +17317,6 @@ pub const VkPhysicalDeviceMaintenance4Features = extern struct {
     // Optional: false
     maintenance4: u32 = 0,
 };
-// Extension: VK_KHR_maintenance4
-pub const VkPhysicalDeviceMaintenance4FeaturesKHR = VkPhysicalDeviceMaintenance4Features;
 // Extension: VK_BASE_VERSION_1_3
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -17514,8 +17332,6 @@ pub const VkPhysicalDeviceMaintenance4Properties = extern struct {
     // Optional: false
     maxBufferSize: u64 = 0,
 };
-// Extension: VK_KHR_maintenance4
-pub const VkPhysicalDeviceMaintenance4PropertiesKHR = VkPhysicalDeviceMaintenance4Properties;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17531,8 +17347,6 @@ pub const VkPhysicalDeviceMaintenance5Features = extern struct {
     // Optional: false
     maintenance5: u32 = 0,
 };
-// Extension: VK_KHR_maintenance5
-pub const VkPhysicalDeviceMaintenance5FeaturesKHR = VkPhysicalDeviceMaintenance5Features;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -17563,8 +17377,6 @@ pub const VkPhysicalDeviceMaintenance5Properties = extern struct {
     // Optional: false
     nonStrictWideLinesUseParallelogram: u32 = 0,
 };
-// Extension: VK_KHR_maintenance5
-pub const VkPhysicalDeviceMaintenance5PropertiesKHR = VkPhysicalDeviceMaintenance5Properties;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17580,8 +17392,6 @@ pub const VkPhysicalDeviceMaintenance6Features = extern struct {
     // Optional: false
     maintenance6: u32 = 0,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkPhysicalDeviceMaintenance6FeaturesKHR = VkPhysicalDeviceMaintenance6Features;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -17603,8 +17413,6 @@ pub const VkPhysicalDeviceMaintenance6Properties = extern struct {
     // Optional: false
     fragmentShadingRateClampCombinerInputs: u32 = 0,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkPhysicalDeviceMaintenance6PropertiesKHR = VkPhysicalDeviceMaintenance6Properties;
 // Extension: VK_KHR_maintenance7
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17670,7 +17478,7 @@ pub const VkPhysicalDeviceLayeredApiPropertiesListKHR = extern struct {
     // Extern sync: false
     // Optional: true
     layeredApiCount: u32 = 0,
-    // Length field: layeredApiCount
+    // Length expression: layeredApiCount
     // Extern sync: false
     // Optional: true
     // Comment: Output list of layered implementations underneath the physical device
@@ -17829,7 +17637,7 @@ pub const VkRenderingAreaInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -17840,8 +17648,6 @@ pub const VkRenderingAreaInfo = extern struct {
     // Optional: false
     stencilAttachmentFormat: VkFormat,
 };
-// Extension: VK_KHR_maintenance5
-pub const VkRenderingAreaInfoKHR = VkRenderingAreaInfo;
 // Extension: VK_COMPUTE_VERSION_1_1
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -17856,8 +17662,6 @@ pub const VkDescriptorSetLayoutSupport = extern struct {
     // Optional: false
     supported: u32 = 0,
 };
-// Extension: VK_KHR_maintenance3
-pub const VkDescriptorSetLayoutSupportKHR = VkDescriptorSetLayoutSupport;
 // Extension: VK_GRAPHICS_VERSION_1_1
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17873,8 +17677,6 @@ pub const VkPhysicalDeviceShaderDrawParametersFeatures = extern struct {
     // Optional: false
     shaderDrawParameters: u32 = 0,
 };
-// Extension: VK_GRAPHICS_VERSION_1_1
-pub const VkPhysicalDeviceShaderDrawParameterFeatures = VkPhysicalDeviceShaderDrawParametersFeatures;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17895,10 +17697,6 @@ pub const VkPhysicalDeviceShaderFloat16Int8Features = extern struct {
     // Comment: 8-bit integers in shaders
     shaderInt8: u32 = 0,
 };
-// Extension: VK_KHR_shader_float16_int8
-pub const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR = VkPhysicalDeviceShaderFloat16Int8Features;
-// Extension: VK_KHR_shader_float16_int8
-pub const VkPhysicalDeviceFloat16Int8FeaturesKHR = VkPhysicalDeviceShaderFloat16Int8Features;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -17977,8 +17775,6 @@ pub const VkPhysicalDeviceFloatControlsProperties = extern struct {
     // Comment: An implementation can support RTZ
     shaderRoundingModeRTZFloat64: u32 = 0,
 };
-// Extension: VK_KHR_shader_float_controls
-pub const VkPhysicalDeviceFloatControlsPropertiesKHR = VkPhysicalDeviceFloatControlsProperties;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -17994,8 +17790,6 @@ pub const VkPhysicalDeviceHostQueryResetFeatures = extern struct {
     // Optional: false
     hostQueryReset: u32 = 0,
 };
-// Extension: VK_EXT_host_query_reset
-pub const VkPhysicalDeviceHostQueryResetFeaturesEXT = VkPhysicalDeviceHostQueryResetFeatures;
 // Extension: VK_AMD_shader_info
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -18057,10 +17851,6 @@ pub const VkDeviceQueueGlobalPriorityCreateInfo = extern struct {
     // Optional: false
     globalPriority: VkQueueGlobalPriority,
 };
-// Extension: VK_KHR_global_priority
-pub const VkDeviceQueueGlobalPriorityCreateInfoKHR = VkDeviceQueueGlobalPriorityCreateInfo;
-// Extension: VK_EXT_global_priority
-pub const VkDeviceQueueGlobalPriorityCreateInfoEXT = VkDeviceQueueGlobalPriorityCreateInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -18076,10 +17866,6 @@ pub const VkPhysicalDeviceGlobalPriorityQueryFeatures = extern struct {
     // Optional: false
     globalPriorityQuery: u32 = 0,
 };
-// Extension: VK_KHR_global_priority
-pub const VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR = VkPhysicalDeviceGlobalPriorityQueryFeatures;
-// Extension: VK_EXT_global_priority_query
-pub const VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT = VkPhysicalDeviceGlobalPriorityQueryFeatures;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkQueueFamilyProperties2
 // Returned only: true
@@ -18094,15 +17880,11 @@ pub const VkQueueFamilyGlobalPriorityProperties = extern struct {
     // Extern sync: false
     // Optional: false
     priorityCount: u32 = 0,
-    // Length field: priorityCount
+    // Length expression: priorityCount
     // Extern sync: false
     // Optional: false
     priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = @import("std").mem.zeroes([VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority),
 };
-// Extension: VK_KHR_global_priority
-pub const VkQueueFamilyGlobalPriorityPropertiesKHR = VkQueueFamilyGlobalPriorityProperties;
-// Extension: VK_EXT_global_priority_query
-pub const VkQueueFamilyGlobalPriorityPropertiesEXT = VkQueueFamilyGlobalPriorityProperties;
 // Extension: VK_EXT_debug_utils
 // Extends: VkPipelineShaderStageCreateInfo
 // Returned only: false
@@ -18121,7 +17903,7 @@ pub const VkDebugUtilsObjectNameInfoEXT = extern struct {
     // Optional: false
     // Object type: objectType (Which object handle is this)
     objectHandle: u64 = 0,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pObjectName: ?[*:0]const u8 = null,
@@ -18149,7 +17931,7 @@ pub const VkDebugUtilsObjectTagInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     tagSize: u64 = 0,
-    // Length field: tagSize
+    // Length expression: tagSize
     // Extern sync: false
     // Optional: false
     pTag: ?*const anyopaque = null,
@@ -18164,7 +17946,7 @@ pub const VkDebugUtilsLabelEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pLabelName: ?[*:0]const u8 = null,
@@ -18212,35 +17994,35 @@ pub const VkDebugUtilsMessengerCallbackDataEXT = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkDebugUtilsMessengerCallbackDataFlagsEXT = .{},
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pMessageIdName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: false
     messageIdNumber: i32 = 0,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pMessage: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: true
     queueLabelCount: u32 = 0,
-    // Length field: queueLabelCount
+    // Length expression: queueLabelCount
     // Extern sync: false
     // Optional: false
     pQueueLabels: ?[*]const VkDebugUtilsLabelEXT = null,
     // Extern sync: false
     // Optional: true
     cmdBufLabelCount: u32 = 0,
-    // Length field: cmdBufLabelCount
+    // Length expression: cmdBufLabelCount
     // Extern sync: false
     // Optional: false
     pCmdBufLabels: ?[*]const VkDebugUtilsLabelEXT = null,
     // Extern sync: false
     // Optional: true
     objectCount: u32 = 0,
-    // Length field: objectCount
+    // Length expression: objectCount
     // Extern sync: false
     // Optional: false
     pObjects: ?[*]const VkDebugUtilsObjectNameInfoEXT = null,
@@ -18423,8 +18205,6 @@ pub const VkCalibratedTimestampInfoKHR = extern struct {
     // Optional: false
     timeDomain: VkTimeDomainKHR,
 };
-// Extension: VK_EXT_calibrated_timestamps
-pub const VkCalibratedTimestampInfoEXT = VkCalibratedTimestampInfoKHR;
 // Extension: VK_AMD_shader_core_properties
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -18610,8 +18390,6 @@ pub const VkPhysicalDeviceDescriptorIndexingFeatures = extern struct {
     // Optional: false
     runtimeDescriptorArray: u32 = 0,
 };
-// Extension: VK_EXT_descriptor_indexing
-pub const VkPhysicalDeviceDescriptorIndexingFeaturesEXT = VkPhysicalDeviceDescriptorIndexingFeatures;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -18693,8 +18471,6 @@ pub const VkPhysicalDeviceDescriptorIndexingProperties = extern struct {
     // Optional: false
     maxDescriptorSetUpdateAfterBindInputAttachments: u32 = 0,
 };
-// Extension: VK_EXT_descriptor_indexing
-pub const VkPhysicalDeviceDescriptorIndexingPropertiesEXT = VkPhysicalDeviceDescriptorIndexingProperties;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkDescriptorSetLayoutCreateInfo
 // Returned only: false
@@ -18709,13 +18485,11 @@ pub const VkDescriptorSetLayoutBindingFlagsCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     bindingCount: u32 = 0,
-    // Length field: bindingCount
+    // Length expression: bindingCount
     // Extern sync: false
     // Optional: false
     pBindingFlags: ?[*]const VkDescriptorBindingFlags = null,
 };
-// Extension: VK_EXT_descriptor_indexing
-pub const VkDescriptorSetLayoutBindingFlagsCreateInfoEXT = VkDescriptorSetLayoutBindingFlagsCreateInfo;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkDescriptorSetAllocateInfo
 // Returned only: false
@@ -18730,13 +18504,11 @@ pub const VkDescriptorSetVariableDescriptorCountAllocateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     descriptorSetCount: u32 = 0,
-    // Length field: descriptorSetCount
+    // Length expression: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pDescriptorCounts: ?[*]const u32 = null,
 };
-// Extension: VK_EXT_descriptor_indexing
-pub const VkDescriptorSetVariableDescriptorCountAllocateInfoEXT = VkDescriptorSetVariableDescriptorCountAllocateInfo;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkDescriptorSetLayoutSupport
 // Returned only: true
@@ -18752,8 +18524,6 @@ pub const VkDescriptorSetVariableDescriptorCountLayoutSupport = extern struct {
     // Optional: false
     maxVariableDescriptorCount: u32 = 0,
 };
-// Extension: VK_EXT_descriptor_indexing
-pub const VkDescriptorSetVariableDescriptorCountLayoutSupportEXT = VkDescriptorSetVariableDescriptorCountLayoutSupport;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18796,8 +18566,6 @@ pub const VkAttachmentDescription2 = extern struct {
     // Optional: false
     finalLayout: VkImageLayout,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkAttachmentDescription2KHR = VkAttachmentDescription2;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18818,8 +18586,6 @@ pub const VkAttachmentReference2 = extern struct {
     // Optional: false
     aspectMask: VkImageAspectFlags = .{},
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkAttachmentReference2KHR = VkAttachmentReference2;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18842,18 +18608,18 @@ pub const VkSubpassDescription2 = extern struct {
     // Extern sync: false
     // Optional: true
     inputAttachmentCount: u32 = 0,
-    // Length field: inputAttachmentCount
+    // Length expression: inputAttachmentCount
     // Extern sync: false
     // Optional: false
     pInputAttachments: ?[*]const VkAttachmentReference2 = null,
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkAttachmentReference2 = null,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pResolveAttachments: ?[*]const VkAttachmentReference2 = null,
@@ -18863,13 +18629,11 @@ pub const VkSubpassDescription2 = extern struct {
     // Extern sync: false
     // Optional: true
     preserveAttachmentCount: u32 = 0,
-    // Length field: preserveAttachmentCount
+    // Length expression: preserveAttachmentCount
     // Extern sync: false
     // Optional: false
     pPreserveAttachments: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkSubpassDescription2KHR = VkSubpassDescription2;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18905,8 +18669,6 @@ pub const VkSubpassDependency2 = extern struct {
     // Optional: false
     viewOffset: i32 = 0,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkSubpassDependency2KHR = VkSubpassDependency2;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18923,34 +18685,32 @@ pub const VkRenderPassCreateInfo2 = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkAttachmentDescription2 = null,
     // Extern sync: false
     // Optional: false
     subpassCount: u32 = 0,
-    // Length field: subpassCount
+    // Length expression: subpassCount
     // Extern sync: false
     // Optional: false
     pSubpasses: ?[*]const VkSubpassDescription2 = null,
     // Extern sync: false
     // Optional: true
     dependencyCount: u32 = 0,
-    // Length field: dependencyCount
+    // Length expression: dependencyCount
     // Extern sync: false
     // Optional: false
     pDependencies: ?[*]const VkSubpassDependency2 = null,
     // Extern sync: false
     // Optional: true
     correlatedViewMaskCount: u32 = 0,
-    // Length field: correlatedViewMaskCount
+    // Length expression: correlatedViewMaskCount
     // Extern sync: false
     // Optional: false
     pCorrelatedViewMasks: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkRenderPassCreateInfo2KHR = VkRenderPassCreateInfo2;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18965,8 +18725,6 @@ pub const VkSubpassBeginInfo = extern struct {
     // Optional: false
     contents: VkSubpassContents,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkSubpassBeginInfoKHR = VkSubpassBeginInfo;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -18978,8 +18736,6 @@ pub const VkSubpassEndInfo = extern struct {
     // Optional: true
     pNext: ?*const anyopaque = null,
 };
-// Extension: VK_KHR_create_renderpass2
-pub const VkSubpassEndInfoKHR = VkSubpassEndInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -18995,8 +18751,6 @@ pub const VkPhysicalDeviceTimelineSemaphoreFeatures = extern struct {
     // Optional: false
     timelineSemaphore: u32 = 0,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkPhysicalDeviceTimelineSemaphoreFeaturesKHR = VkPhysicalDeviceTimelineSemaphoreFeatures;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -19012,8 +18766,6 @@ pub const VkPhysicalDeviceTimelineSemaphoreProperties = extern struct {
     // Optional: false
     maxTimelineSemaphoreValueDifference: u64 = 0,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkPhysicalDeviceTimelineSemaphorePropertiesKHR = VkPhysicalDeviceTimelineSemaphoreProperties;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkSemaphoreCreateInfo,VkPhysicalDeviceExternalSemaphoreInfo
 // Returned only: false
@@ -19032,8 +18784,6 @@ pub const VkSemaphoreTypeCreateInfo = extern struct {
     // Optional: false
     initialValue: u64 = 0,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkSemaphoreTypeCreateInfoKHR = VkSemaphoreTypeCreateInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkSubmitInfo,VkBindSparseInfo
 // Returned only: false
@@ -19048,20 +18798,18 @@ pub const VkTimelineSemaphoreSubmitInfo = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreValueCount: u32 = 0,
-    // Length field: waitSemaphoreValueCount
+    // Length expression: waitSemaphoreValueCount
     // Extern sync: false
     // Optional: true
     pWaitSemaphoreValues: ?[*]const u64 = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreValueCount: u32 = 0,
-    // Length field: signalSemaphoreValueCount
+    // Length expression: signalSemaphoreValueCount
     // Extern sync: false
     // Optional: true
     pSignalSemaphoreValues: ?[*]const u64 = null,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkTimelineSemaphoreSubmitInfoKHR = VkTimelineSemaphoreSubmitInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -19078,17 +18826,15 @@ pub const VkSemaphoreWaitInfo = extern struct {
     // Extern sync: false
     // Optional: false
     semaphoreCount: u32 = 0,
-    // Length field: semaphoreCount
+    // Length expression: semaphoreCount
     // Extern sync: false
     // Optional: false
     pSemaphores: ?[*]const VkSemaphore = null,
-    // Length field: semaphoreCount
+    // Length expression: semaphoreCount
     // Extern sync: false
     // Optional: false
     pValues: ?[*]const u64 = null,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkSemaphoreWaitInfoKHR = VkSemaphoreWaitInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -19106,8 +18852,6 @@ pub const VkSemaphoreSignalInfo = extern struct {
     // Optional: false
     value: u64 = 0,
 };
-// Extension: VK_KHR_timeline_semaphore
-pub const VkSemaphoreSignalInfoKHR = VkSemaphoreSignalInfo;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -19119,10 +18863,6 @@ pub const VkVertexInputBindingDivisorDescription = extern struct {
     // Optional: false
     divisor: u32 = 0,
 };
-// Extension: VK_KHR_vertex_attribute_divisor
-pub const VkVertexInputBindingDivisorDescriptionKHR = VkVertexInputBindingDivisorDescription;
-// Extension: VK_EXT_vertex_attribute_divisor
-pub const VkVertexInputBindingDivisorDescriptionEXT = VkVertexInputBindingDivisorDescription;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkPipelineVertexInputStateCreateInfo
 // Returned only: false
@@ -19137,15 +18877,11 @@ pub const VkPipelineVertexInputDivisorStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     vertexBindingDivisorCount: u32 = 0,
-    // Length field: vertexBindingDivisorCount
+    // Length expression: vertexBindingDivisorCount
     // Extern sync: false
     // Optional: false
     pVertexBindingDivisors: ?[*]const VkVertexInputBindingDivisorDescription = null,
 };
-// Extension: VK_KHR_vertex_attribute_divisor
-pub const VkPipelineVertexInputDivisorStateCreateInfoKHR = VkPipelineVertexInputDivisorStateCreateInfo;
-// Extension: VK_EXT_vertex_attribute_divisor
-pub const VkPipelineVertexInputDivisorStateCreateInfoEXT = VkPipelineVertexInputDivisorStateCreateInfo;
 // Extension: VK_EXT_vertex_attribute_divisor
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -19181,8 +18917,6 @@ pub const VkPhysicalDeviceVertexAttributeDivisorProperties = extern struct {
     // Optional: false
     supportsNonZeroFirstInstance: u32 = 0,
 };
-// Extension: VK_KHR_vertex_attribute_divisor
-pub const VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR = VkPhysicalDeviceVertexAttributeDivisorProperties;
 // Extension: VK_EXT_pci_bus_info
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -19359,8 +19093,6 @@ pub const VkPhysicalDevice8BitStorageFeatures = extern struct {
     // Comment: 8-bit integer variables supported in PushConstant
     storagePushConstant8: u32 = 0,
 };
-// Extension: VK_KHR_8bit_storage
-pub const VkPhysicalDevice8BitStorageFeaturesKHR = VkPhysicalDevice8BitStorageFeatures;
 // Extension: VK_EXT_conditional_rendering
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -19400,8 +19132,6 @@ pub const VkPhysicalDeviceVulkanMemoryModelFeatures = extern struct {
     // Optional: false
     vulkanMemoryModelAvailabilityVisibilityChains: u32 = 0,
 };
-// Extension: VK_KHR_vulkan_memory_model
-pub const VkPhysicalDeviceVulkanMemoryModelFeaturesKHR = VkPhysicalDeviceVulkanMemoryModelFeatures;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -19420,8 +19150,6 @@ pub const VkPhysicalDeviceShaderAtomicInt64Features = extern struct {
     // Optional: false
     shaderSharedInt64Atomics: u32 = 0,
 };
-// Extension: VK_KHR_shader_atomic_int64
-pub const VkPhysicalDeviceShaderAtomicInt64FeaturesKHR = VkPhysicalDeviceShaderAtomicInt64Features;
 // Extension: VK_EXT_shader_atomic_float
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -19536,10 +19264,6 @@ pub const VkPhysicalDeviceVertexAttributeDivisorFeatures = extern struct {
     // Optional: false
     vertexAttributeInstanceRateZeroDivisor: u32 = 0,
 };
-// Extension: VK_KHR_vertex_attribute_divisor
-pub const VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR = VkPhysicalDeviceVertexAttributeDivisorFeatures;
-// Extension: VK_EXT_vertex_attribute_divisor
-pub const VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT = VkPhysicalDeviceVertexAttributeDivisorFeatures;
 // Extension: VK_NV_device_diagnostic_checkpoints
 // Extends: VkQueueFamilyProperties2
 // Returned only: true
@@ -19600,8 +19324,6 @@ pub const VkPhysicalDeviceDepthStencilResolveProperties = extern struct {
     // Comment: depth and stencil resolve modes can be set independently
     independentResolve: u32 = 0,
 };
-// Extension: VK_KHR_depth_stencil_resolve
-pub const VkPhysicalDeviceDepthStencilResolvePropertiesKHR = VkPhysicalDeviceDepthStencilResolveProperties;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Extends: VkSubpassDescription2
 // Returned only: false
@@ -19626,8 +19348,6 @@ pub const VkSubpassDescriptionDepthStencilResolve = extern struct {
     // Comment: depth/stencil resolve attachment
     pDepthStencilResolveAttachment: ?*const VkAttachmentReference2 = null,
 };
-// Extension: VK_KHR_depth_stencil_resolve
-pub const VkSubpassDescriptionDepthStencilResolveKHR = VkSubpassDescriptionDepthStencilResolve;
 // Extension: VK_EXT_astc_decode_mode
 // Extends: VkImageViewCreateInfo
 // Returned only: false
@@ -19795,7 +19515,7 @@ pub const VkPipelineViewportExclusiveScissorStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     exclusiveScissorCount: u32 = 0,
-    // Length field: exclusiveScissorCount
+    // Length expression: exclusiveScissorCount
     // Extern sync: false
     // Optional: false
     pExclusiveScissors: ?[*]const VkRect2D = null,
@@ -19833,8 +19553,6 @@ pub const VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR = extern struct {
     // Optional: false
     computeDerivativeGroupLinear: u32 = 0,
 };
-// Extension: VK_NV_compute_shader_derivatives
-pub const VkPhysicalDeviceComputeShaderDerivativesFeaturesNV = VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR;
 // Extension: VK_KHR_compute_shader_derivatives
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -19850,8 +19568,6 @@ pub const VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR = extern struct 
     // Optional: false
     meshAndTaskShaderDerivatives: u32 = 0,
 };
-// Extension: VK_NV_fragment_shader_barycentric
-pub const VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV = VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR;
 // Extension: VK_NV_shader_image_footprint
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -19931,8 +19647,6 @@ pub const VkPhysicalDeviceCopyMemoryIndirectPropertiesKHR = extern struct {
     // Comment: Bitmask of VkQueueFlagBits indicating the family of queues that support indirect copy
     supportedQueues: VkQueueFlags = .{},
 };
-// Extension: VK_NV_copy_memory_indirect
-pub const VkPhysicalDeviceCopyMemoryIndirectPropertiesNV = VkPhysicalDeviceCopyMemoryIndirectPropertiesKHR;
 // Extension: VK_EXT_memory_decompression
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -19948,8 +19662,6 @@ pub const VkPhysicalDeviceMemoryDecompressionFeaturesEXT = extern struct {
     // Optional: false
     memoryDecompression: u32 = 0,
 };
-// Extension: VK_NV_memory_decompression
-pub const VkPhysicalDeviceMemoryDecompressionFeaturesNV = VkPhysicalDeviceMemoryDecompressionFeaturesEXT;
 // Extension: VK_EXT_memory_decompression
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -19968,8 +19680,6 @@ pub const VkPhysicalDeviceMemoryDecompressionPropertiesEXT = extern struct {
     // Optional: false
     maxDecompressionIndirectCount: u64 = 0,
 };
-// Extension: VK_NV_memory_decompression
-pub const VkPhysicalDeviceMemoryDecompressionPropertiesNV = VkPhysicalDeviceMemoryDecompressionPropertiesEXT;
 // Extension: VK_NV_shading_rate_image
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -19977,7 +19687,7 @@ pub const VkShadingRatePaletteNV = extern struct {
     // Extern sync: false
     // Optional: false
     shadingRatePaletteEntryCount: u32 = 0,
-    // Length field: shadingRatePaletteEntryCount
+    // Length expression: shadingRatePaletteEntryCount
     // Extern sync: false
     // Optional: false
     pShadingRatePaletteEntries: ?[*]const VkShadingRatePaletteEntryNV = null,
@@ -19999,7 +19709,7 @@ pub const VkPipelineViewportShadingRateImageStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     viewportCount: u32 = 0,
-    // Length field: viewportCount
+    // Length expression: viewportCount
     // Extern sync: false
     // Optional: false
     pShadingRatePalettes: ?[*]const VkShadingRatePaletteNV = null,
@@ -20085,7 +19795,7 @@ pub const VkCoarseSampleOrderCustomNV = extern struct {
     // Extern sync: false
     // Optional: false
     sampleLocationCount: u32 = 0,
-    // Length field: sampleLocationCount
+    // Length expression: sampleLocationCount
     // Extern sync: false
     // Optional: false
     pSampleLocations: ?[*]const VkCoarseSampleLocationNV = null,
@@ -20107,7 +19817,7 @@ pub const VkPipelineViewportCoarseSampleOrderStateCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     customSampleOrderCount: u32 = 0,
-    // Length field: customSampleOrderCount
+    // Length expression: customSampleOrderCount
     // Extern sync: false
     // Optional: false
     pCustomSampleOrders: ?[*]const VkCoarseSampleOrderCustomNV = null,
@@ -20403,7 +20113,7 @@ pub const VkRayTracingPipelineCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     stageCount: u32 = 0,
-    // Length field: stageCount
+    // Length expression: stageCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each active shader stage
@@ -20411,7 +20121,7 @@ pub const VkRayTracingPipelineCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     groupCount: u32 = 0,
-    // Length field: groupCount
+    // Length expression: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkRayTracingShaderGroupCreateInfoNV = null,
@@ -20448,7 +20158,7 @@ pub const VkRayTracingPipelineCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length field: stageCount
+    // Length expression: stageCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each active shader stage
@@ -20456,7 +20166,7 @@ pub const VkRayTracingPipelineCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     groupCount: u32 = 0,
-    // Length field: groupCount
+    // Length expression: groupCount
     // Extern sync: false
     // Optional: false
     pGroups: ?[*]const VkRayTracingShaderGroupCreateInfoKHR = null,
@@ -20607,7 +20317,7 @@ pub const VkAccelerationStructureInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     geometryCount: u32 = 0,
-    // Length field: geometryCount
+    // Length expression: geometryCount
     // Extern sync: false
     // Optional: false
     pGeometries: ?[*]const VkGeometryNV = null,
@@ -20651,7 +20361,7 @@ pub const VkBindAccelerationStructureMemoryInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     deviceIndexCount: u32 = 0,
-    // Length field: deviceIndexCount
+    // Length expression: deviceIndexCount
     // Extern sync: false
     // Optional: false
     pDeviceIndices: ?[*]const u32 = null,
@@ -20670,7 +20380,7 @@ pub const VkWriteDescriptorSetAccelerationStructureKHR = extern struct {
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length field: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const VkAccelerationStructureKHR = null,
@@ -20689,7 +20399,7 @@ pub const VkWriteDescriptorSetAccelerationStructureNV = extern struct {
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length field: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const VkAccelerationStructureNV = null,
@@ -20995,7 +20705,7 @@ pub const VkDrmFormatModifierPropertiesListEXT = extern struct {
     // Extern sync: false
     // Optional: true
     drmFormatModifierCount: u32 = 0,
-    // Length field: drmFormatModifierCount
+    // Length expression: drmFormatModifierCount
     // Extern sync: false
     // Optional: true
     pDrmFormatModifierProperties: ?[*]VkDrmFormatModifierPropertiesEXT = null,
@@ -21034,7 +20744,7 @@ pub const VkPhysicalDeviceImageDrmFormatModifierInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length field: queueFamilyIndexCount
+    // Length expression: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -21053,7 +20763,7 @@ pub const VkImageDrmFormatModifierListCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     drmFormatModifierCount: u32 = 0,
-    // Length field: drmFormatModifierCount
+    // Length expression: drmFormatModifierCount
     // Extern sync: false
     // Optional: false
     pDrmFormatModifiers: ?[*]const u64 = null,
@@ -21075,7 +20785,7 @@ pub const VkImageDrmFormatModifierExplicitCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     drmFormatModifierPlaneCount: u32 = 0,
-    // Length field: drmFormatModifierPlaneCount
+    // Length expression: drmFormatModifierPlaneCount
     // Extern sync: false
     // Optional: false
     pPlaneLayouts: ?[*]const VkSubresourceLayout = null,
@@ -21109,8 +20819,6 @@ pub const VkImageStencilUsageCreateInfo = extern struct {
     // Optional: false
     stencilUsage: VkImageUsageFlags = .{},
 };
-// Extension: VK_EXT_separate_stencil_usage
-pub const VkImageStencilUsageCreateInfoEXT = VkImageStencilUsageCreateInfo;
 // Extension: VK_AMD_memory_overallocation_behavior
 // Extends: VkDeviceCreateInfo
 // Returned only: false
@@ -21177,8 +20885,6 @@ pub const VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT = extern struct {
     // Optional: false
     fragmentDensityMapOffset: u32 = 0,
 };
-// Extension: VK_QCOM_fragment_density_map_offset
-pub const VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM = VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT;
 // Extension: VK_EXT_fragment_density_map
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -21239,8 +20945,6 @@ pub const VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT = extern struct 
     // Optional: false
     fragmentDensityOffsetGranularity: VkExtent2D = .{},
 };
-// Extension: VK_QCOM_fragment_density_map_offset
-pub const VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM = VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT;
 // Extension: VK_EXT_fragment_density_map
 // Extends: VkRenderPassCreateInfo,VkRenderPassCreateInfo2
 // Returned only: false
@@ -21270,13 +20974,11 @@ pub const VkRenderPassFragmentDensityMapOffsetEndInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     fragmentDensityOffsetCount: u32 = 0,
-    // Length field: fragmentDensityOffsetCount
+    // Length expression: fragmentDensityOffsetCount
     // Extern sync: false
     // Optional: false
     pFragmentDensityOffsets: ?[*]const VkOffset2D = null,
 };
-// Extension: VK_QCOM_fragment_density_map_offset
-pub const VkSubpassFragmentDensityMapOffsetEndInfoQCOM = VkRenderPassFragmentDensityMapOffsetEndInfoEXT;
 // Extension: VK_COMPUTE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -21292,8 +20994,6 @@ pub const VkPhysicalDeviceScalarBlockLayoutFeatures = extern struct {
     // Optional: false
     scalarBlockLayout: u32 = 0,
 };
-// Extension: VK_EXT_scalar_block_layout
-pub const VkPhysicalDeviceScalarBlockLayoutFeaturesEXT = VkPhysicalDeviceScalarBlockLayoutFeatures;
 // Extension: VK_KHR_surface_protected_capabilities
 // Extends: VkSurfaceCapabilities2KHR
 // Returned only: true
@@ -21325,8 +21025,6 @@ pub const VkPhysicalDeviceUniformBufferStandardLayoutFeatures = extern struct {
     // Optional: false
     uniformBufferStandardLayout: u32 = 0,
 };
-// Extension: VK_KHR_uniform_buffer_standard_layout
-pub const VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR = VkPhysicalDeviceUniformBufferStandardLayoutFeatures;
 // Extension: VK_EXT_depth_clip_enable
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -21445,8 +21143,6 @@ pub const VkPhysicalDeviceBufferDeviceAddressFeatures = extern struct {
     // Optional: false
     bufferDeviceAddressMultiDevice: u32 = 0,
 };
-// Extension: VK_KHR_buffer_device_address
-pub const VkPhysicalDeviceBufferDeviceAddressFeaturesKHR = VkPhysicalDeviceBufferDeviceAddressFeatures;
 // Extension: VK_EXT_buffer_device_address
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -21471,8 +21167,6 @@ pub const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT = extern struct {
     // Feature link: bufferDeviceAddressMultiDeviceEXT
     bufferDeviceAddressMultiDevice: u32 = 0,
 };
-// Extension: VK_EXT_buffer_device_address
-pub const VkPhysicalDeviceBufferAddressFeaturesEXT = VkPhysicalDeviceBufferDeviceAddressFeaturesEXT;
 // Extension: VK_BASE_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -21487,10 +21181,6 @@ pub const VkBufferDeviceAddressInfo = extern struct {
     // Optional: false
     buffer: VkBuffer = .none,
 };
-// Extension: VK_KHR_buffer_device_address
-pub const VkBufferDeviceAddressInfoKHR = VkBufferDeviceAddressInfo;
-// Extension: VK_EXT_buffer_device_address
-pub const VkBufferDeviceAddressInfoEXT = VkBufferDeviceAddressInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkBufferCreateInfo
 // Returned only: false
@@ -21506,8 +21196,6 @@ pub const VkBufferOpaqueCaptureAddressCreateInfo = extern struct {
     // Optional: false
     opaqueCaptureAddress: u64 = 0,
 };
-// Extension: VK_KHR_buffer_device_address
-pub const VkBufferOpaqueCaptureAddressCreateInfoKHR = VkBufferOpaqueCaptureAddressCreateInfo;
 // Extension: VK_EXT_buffer_device_address
 // Extends: VkBufferCreateInfo
 // Returned only: false
@@ -21573,8 +21261,6 @@ pub const VkPhysicalDeviceImagelessFramebufferFeatures = extern struct {
     // Optional: false
     imagelessFramebuffer: u32 = 0,
 };
-// Extension: VK_KHR_imageless_framebuffer
-pub const VkPhysicalDeviceImagelessFramebufferFeaturesKHR = VkPhysicalDeviceImagelessFramebufferFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Extends: VkFramebufferCreateInfo
 // Returned only: false
@@ -21589,13 +21275,11 @@ pub const VkFramebufferAttachmentsCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentImageInfoCount: u32 = 0,
-    // Length field: attachmentImageInfoCount
+    // Length expression: attachmentImageInfoCount
     // Extern sync: false
     // Optional: false
     pAttachmentImageInfos: ?[*]const VkFramebufferAttachmentImageInfo = null,
 };
-// Extension: VK_KHR_imageless_framebuffer
-pub const VkFramebufferAttachmentsCreateInfoKHR = VkFramebufferAttachmentsCreateInfo;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -21626,13 +21310,11 @@ pub const VkFramebufferAttachmentImageInfo = extern struct {
     // Extern sync: false
     // Optional: true
     viewFormatCount: u32 = 0,
-    // Length field: viewFormatCount
+    // Length expression: viewFormatCount
     // Extern sync: false
     // Optional: false
     pViewFormats: ?[*]const VkFormat = null,
 };
-// Extension: VK_KHR_imageless_framebuffer
-pub const VkFramebufferAttachmentImageInfoKHR = VkFramebufferAttachmentImageInfo;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Extends: VkRenderPassBeginInfo
 // Returned only: false
@@ -21647,13 +21329,11 @@ pub const VkRenderPassAttachmentBeginInfo = extern struct {
     // Extern sync: false
     // Optional: true
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: false
     pAttachments: ?[*]const VkImageView = null,
 };
-// Extension: VK_KHR_imageless_framebuffer
-pub const VkRenderPassAttachmentBeginInfoKHR = VkRenderPassAttachmentBeginInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -21669,8 +21349,6 @@ pub const VkPhysicalDeviceTextureCompressionASTCHDRFeatures = extern struct {
     // Optional: false
     textureCompressionASTC_HDR: u32 = 0,
 };
-// Extension: VK_EXT_texture_compression_astc_hdr
-pub const VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT = VkPhysicalDeviceTextureCompressionASTCHDRFeatures;
 // Extension: VK_NV_cooperative_matrix
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -21818,8 +21496,6 @@ pub const VkPipelineCreationFeedback = extern struct {
     // Optional: false
     duration: u64 = 0,
 };
-// Extension: VK_EXT_pipeline_creation_feedback
-pub const VkPipelineCreationFeedbackEXT = VkPipelineCreationFeedback;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkGraphicsPipelineCreateInfo,VkComputePipelineCreateInfo,VkRayTracingPipelineCreateInfoNV,VkRayTracingPipelineCreateInfoKHR,VkExecutionGraphPipelineCreateInfoAMDX,VkDataGraphPipelineCreateInfoARM
 // Returned only: false
@@ -21838,14 +21514,12 @@ pub const VkPipelineCreationFeedbackCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pipelineStageCreationFeedbackCount: u32 = 0,
-    // Length field: pipelineStageCreationFeedbackCount
+    // Length expression: pipelineStageCreationFeedbackCount
     // Extern sync: false
     // Optional: false
     // Comment: One entry for each shader stage specified in the parent Vk*PipelineCreateInfo struct
     pPipelineStageCreationFeedbacks: ?[*]VkPipelineCreationFeedback = null,
 };
-// Extension: VK_EXT_pipeline_creation_feedback
-pub const VkPipelineCreationFeedbackCreateInfoEXT = VkPipelineCreationFeedbackCreateInfo;
 // Extension: VK_EXT_full_screen_exclusive
 // Extends: VkPhysicalDeviceSurfaceInfo2KHR,VkSwapchainCreateInfoKHR
 // Returned only: false
@@ -22007,15 +21681,15 @@ pub const VkPerformanceCounterDescriptionKHR = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkPerformanceCounterDescriptionFlagsKHR = .{},
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     category: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22037,7 +21711,7 @@ pub const VkQueryPoolPerformanceCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     counterIndexCount: u32 = 0,
-    // Length field: counterIndexCount
+    // Length expression: counterIndexCount
     // Extern sync: false
     // Optional: false
     pCounterIndices: ?[*]const u32 = null,
@@ -22219,8 +21893,6 @@ pub const VkQueryPoolPerformanceQueryCreateInfoINTEL = extern struct {
     performanceCountersSampling: VkQueryPoolSamplingModeINTEL,
 };
 // Extension: VK_INTEL_performance_query
-pub const VkQueryPoolCreateInfoINTEL = VkQueryPoolPerformanceQueryCreateInfoINTEL;
-// Extension: VK_INTEL_performance_query
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkPerformanceMarkerInfoINTEL = extern struct {
@@ -22315,10 +21987,6 @@ pub const VkPhysicalDeviceIndexTypeUint8Features = extern struct {
     // Optional: false
     indexTypeUint8: u32 = 0,
 };
-// Extension: VK_KHR_index_type_uint8
-pub const VkPhysicalDeviceIndexTypeUint8FeaturesKHR = VkPhysicalDeviceIndexTypeUint8Features;
-// Extension: VK_EXT_index_type_uint8
-pub const VkPhysicalDeviceIndexTypeUint8FeaturesEXT = VkPhysicalDeviceIndexTypeUint8Features;
 // Extension: VK_NV_shader_sm_builtins
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -22389,8 +22057,6 @@ pub const VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures = extern struct {
     // Optional: false
     separateDepthStencilLayouts: u32 = 0,
 };
-// Extension: VK_KHR_separate_depth_stencil_layouts
-pub const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR = VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Extends: VkAttachmentReference2
 // Returned only: false
@@ -22424,8 +22090,6 @@ pub const VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT = extern struc
     // Optional: false
     primitiveTopologyPatchListRestart: u32 = 0,
 };
-// Extension: VK_KHR_separate_depth_stencil_layouts
-pub const VkAttachmentReferenceStencilLayoutKHR = VkAttachmentReferenceStencilLayout;
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Extends: VkAttachmentDescription2
 // Returned only: false
@@ -22444,8 +22108,6 @@ pub const VkAttachmentDescriptionStencilLayout = extern struct {
     // Optional: false
     stencilFinalLayout: VkImageLayout,
 };
-// Extension: VK_KHR_separate_depth_stencil_layouts
-pub const VkAttachmentDescriptionStencilLayoutKHR = VkAttachmentDescriptionStencilLayout;
 // Extension: VK_KHR_pipeline_executable_properties
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -22475,8 +22137,6 @@ pub const VkPipelineInfoKHR = extern struct {
     // Optional: false
     pipeline: VkPipeline = .none,
 };
-// Extension: VK_EXT_pipeline_properties
-pub const VkPipelineInfoEXT = VkPipelineInfoKHR;
 // Extension: VK_KHR_pipeline_executable_properties
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -22490,11 +22150,11 @@ pub const VkPipelineExecutablePropertiesKHR = extern struct {
     // Extern sync: false
     // Optional: false
     stages: VkShaderStageFlags = .{},
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22529,11 +22189,11 @@ pub const VkPipelineExecutableStatisticKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22555,11 +22215,11 @@ pub const VkPipelineExecutableInternalRepresentationKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -22569,7 +22229,7 @@ pub const VkPipelineExecutableInternalRepresentationKHR = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: true
     pData: ?*anyopaque = null,
@@ -22589,8 +22249,6 @@ pub const VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures = extern struct
     // Optional: false
     shaderDemoteToHelperInvocation: u32 = 0,
 };
-// Extension: VK_EXT_shader_demote_to_helper_invocation
-pub const VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT = VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures;
 // Extension: VK_EXT_texel_buffer_alignment
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -22630,8 +22288,6 @@ pub const VkPhysicalDeviceTexelBufferAlignmentProperties = extern struct {
     // Optional: false
     uniformTexelBufferOffsetSingleTexelAlignment: u32 = 0,
 };
-// Extension: VK_EXT_texel_buffer_alignment
-pub const VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT = VkPhysicalDeviceTexelBufferAlignmentProperties;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -22650,8 +22306,6 @@ pub const VkPhysicalDeviceSubgroupSizeControlFeatures = extern struct {
     // Optional: false
     computeFullSubgroups: u32 = 0,
 };
-// Extension: VK_EXT_subgroup_size_control
-pub const VkPhysicalDeviceSubgroupSizeControlFeaturesEXT = VkPhysicalDeviceSubgroupSizeControlFeatures;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -22680,8 +22334,6 @@ pub const VkPhysicalDeviceSubgroupSizeControlProperties = extern struct {
     // Comment: The shader stages that support specifying a subgroup size
     requiredSubgroupSizeStages: VkShaderStageFlags = .{},
 };
-// Extension: VK_EXT_subgroup_size_control
-pub const VkPhysicalDeviceSubgroupSizeControlPropertiesEXT = VkPhysicalDeviceSubgroupSizeControlProperties;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPipelineShaderStageCreateInfo,VkShaderCreateInfoEXT
 // Returned only: false
@@ -22697,10 +22349,6 @@ pub const VkPipelineShaderStageRequiredSubgroupSizeCreateInfo = extern struct {
     // Optional: false
     requiredSubgroupSize: u32 = 0,
 };
-// Extension: VK_EXT_subgroup_size_control
-pub const VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT = VkPipelineShaderStageRequiredSubgroupSizeCreateInfo;
-// Extension: VK_EXT_shader_object
-pub const VkShaderRequiredSubgroupSizeCreateInfoEXT = VkPipelineShaderStageRequiredSubgroupSizeCreateInfo;
 // Extension: VK_HUAWEI_subpass_shading
 // Extends: VkComputePipelineCreateInfo
 // Returned only: false
@@ -22773,8 +22421,6 @@ pub const VkMemoryOpaqueCaptureAddressAllocateInfo = extern struct {
     // Optional: false
     opaqueCaptureAddress: u64 = 0,
 };
-// Extension: VK_KHR_buffer_device_address
-pub const VkMemoryOpaqueCaptureAddressAllocateInfoKHR = VkMemoryOpaqueCaptureAddressAllocateInfo;
 // Extension: VK_BASE_VERSION_1_2
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -22789,8 +22435,6 @@ pub const VkDeviceMemoryOpaqueCaptureAddressInfo = extern struct {
     // Optional: false
     memory: VkDeviceMemory = .none,
 };
-// Extension: VK_KHR_buffer_device_address
-pub const VkDeviceMemoryOpaqueCaptureAddressInfoKHR = VkDeviceMemoryOpaqueCaptureAddressInfo;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -22821,10 +22465,6 @@ pub const VkPhysicalDeviceLineRasterizationFeatures = extern struct {
     // Optional: false
     stippledSmoothLines: u32 = 0,
 };
-// Extension: VK_KHR_line_rasterization
-pub const VkPhysicalDeviceLineRasterizationFeaturesKHR = VkPhysicalDeviceLineRasterizationFeatures;
-// Extension: VK_EXT_line_rasterization
-pub const VkPhysicalDeviceLineRasterizationFeaturesEXT = VkPhysicalDeviceLineRasterizationFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -22840,10 +22480,6 @@ pub const VkPhysicalDeviceLineRasterizationProperties = extern struct {
     // Optional: false
     lineSubPixelPrecisionBits: u32 = 0,
 };
-// Extension: VK_KHR_line_rasterization
-pub const VkPhysicalDeviceLineRasterizationPropertiesKHR = VkPhysicalDeviceLineRasterizationProperties;
-// Extension: VK_EXT_line_rasterization
-pub const VkPhysicalDeviceLineRasterizationPropertiesEXT = VkPhysicalDeviceLineRasterizationProperties;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkPipelineRasterizationStateCreateInfo
 // Returned only: false
@@ -22868,10 +22504,6 @@ pub const VkPipelineRasterizationLineStateCreateInfo = extern struct {
     // Optional: false
     lineStipplePattern: u16 = 0,
 };
-// Extension: VK_KHR_line_rasterization
-pub const VkPipelineRasterizationLineStateCreateInfoKHR = VkPipelineRasterizationLineStateCreateInfo;
-// Extension: VK_EXT_line_rasterization
-pub const VkPipelineRasterizationLineStateCreateInfoEXT = VkPipelineRasterizationLineStateCreateInfo;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -22887,8 +22519,6 @@ pub const VkPhysicalDevicePipelineCreationCacheControlFeatures = extern struct {
     // Optional: false
     pipelineCreationCacheControl: u32 = 0,
 };
-// Extension: VK_EXT_pipeline_creation_cache_control
-pub const VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT = VkPhysicalDevicePipelineCreationCacheControlFeatures;
 // Extension: VK_BASE_VERSION_1_2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -23180,11 +22810,11 @@ pub const VkPhysicalDeviceVulkan12Properties = extern struct {
     // Extern sync: false
     // Optional: false
     driverID: VkDriverId,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     driverName: [VK_MAX_DRIVER_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_NAME_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     driverInfo: [VK_MAX_DRIVER_INFO_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DRIVER_INFO_SIZE]u8),
@@ -23710,14 +23340,14 @@ pub const VkPhysicalDeviceVulkan14Properties = extern struct {
     // Extern sync: false
     // Optional: true
     copySrcLayoutCount: u32 = 0,
-    // Length field: copySrcLayoutCount
+    // Length expression: copySrcLayoutCount
     // Extern sync: false
     // Optional: true
     pCopySrcLayouts: ?[*]VkImageLayout = null,
     // Extern sync: false
     // Optional: true
     copyDstLayoutCount: u32 = 0,
-    // Length field: copyDstLayoutCount
+    // Length expression: copyDstLayoutCount
     // Extern sync: false
     // Optional: true
     pCopyDstLayouts: ?[*]VkImageLayout = null,
@@ -23789,7 +23419,7 @@ pub const VkFaultCallbackInfo = extern struct {
     // Extern sync: false
     // Optional: true
     faultCount: u32 = 0,
-    // Length field: faultCount
+    // Length expression: faultCount
     // Extern sync: false
     // Optional: true
     pFaults: ?[*]VkFaultData = null,
@@ -23807,28 +23437,26 @@ pub const VkPhysicalDeviceToolProperties = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     version: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
     // Extern sync: false
     // Optional: false
     purposes: VkToolPurposeFlags = .{},
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     layer: [VK_MAX_EXTENSION_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_EXTENSION_NAME_SIZE]u8),
 };
-// Extension: VK_EXT_tooling_info
-pub const VkPhysicalDeviceToolPropertiesEXT = VkPhysicalDeviceToolProperties;
 // Extension: VK_EXT_custom_border_color
 // Extends: VkSamplerCreateInfo
 // Returned only: false
@@ -24115,11 +23743,11 @@ pub const VkAccelerationStructureBuildGeometryInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     geometryCount: u32 = 0,
-    // Length field: geometryCount
+    // Length expression: geometryCount
     // Extern sync: false
     // Optional: true
     pGeometries: ?[*]const VkAccelerationStructureGeometryKHR = null,
-    // Length field: geometryCount,1
+    // Length expression: geometryCount,1
     // Extern sync: false
     // Optional: false
     ppGeometries: ?[*]const *const VkAccelerationStructureGeometryKHR = null,
@@ -24197,8 +23825,6 @@ pub const VkAabbPositionsKHR = extern struct {
     // Optional: false
     maxZ: f32 = 0,
 };
-// Extension: VK_NV_ray_tracing
-pub const VkAabbPositionsNV = VkAabbPositionsKHR;
 // Extension: VK_KHR_acceleration_structure
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -24207,8 +23833,6 @@ pub const VkTransformMatrixKHR = extern struct {
     // Optional: false
     matrix: [3][4]f32 = @import("std").mem.zeroes([3][4]f32),
 };
-// Extension: VK_NV_ray_tracing
-pub const VkTransformMatrixNV = VkTransformMatrixKHR;
 // Extension: VK_KHR_acceleration_structure
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -24226,8 +23850,6 @@ pub const VkAccelerationStructureInstanceKHR = extern struct {
     // Optional: false
     accelerationStructureReference: u64 = 0,
 };
-// Extension: VK_NV_ray_tracing
-pub const VkAccelerationStructureInstanceNV = VkAccelerationStructureInstanceKHR;
 // Extension: VK_KHR_acceleration_structure
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -24252,7 +23874,7 @@ pub const VkAccelerationStructureVersionInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: 2*VK_UUID_SIZE
+    // Length expression: 2*VK_UUID_SIZE
     // Extern sync: false
     // Optional: false
     pVersionData: ?[*]const u8 = null,
@@ -24348,7 +23970,7 @@ pub const VkPipelineLibraryCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     libraryCount: u32 = 0,
-    // Length field: libraryCount
+    // Length expression: libraryCount
     // Extern sync: false
     // Optional: false
     pLibraries: ?[*]const VkPipeline = null,
@@ -24381,7 +24003,7 @@ pub const VkRefreshObjectListKHR = extern struct {
     // Extern sync: false
     // Optional: false
     objectCount: u32 = 0,
-    // Length field: objectCount
+    // Length expression: objectCount
     // Extern sync: false
     // Optional: false
     pObjects: ?[*]const VkRefreshObjectKHR = null,
@@ -24765,7 +24387,7 @@ pub const VkWriteDescriptorSetPartitionedAccelerationStructureNV = extern struct
     // Extern sync: false
     // Optional: false
     accelerationStructureCount: u32 = 0,
-    // Length field: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     // Extern sync: false
     // Optional: false
     pAccelerationStructures: ?[*]const u64 = null,
@@ -24891,8 +24513,6 @@ pub const VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures = extern struct 
     // Optional: false
     shaderZeroInitializeWorkgroupMemory: u32 = 0,
 };
-// Extension: VK_KHR_zero_initialize_workgroup_memory
-pub const VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR = VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures;
 // Extension: VK_KHR_shader_subgroup_uniform_control_flow
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -24929,8 +24549,6 @@ pub const VkPhysicalDeviceRobustness2FeaturesKHR = extern struct {
     // Optional: false
     nullDescriptor: u32 = 0,
 };
-// Extension: VK_EXT_robustness2
-pub const VkPhysicalDeviceRobustness2FeaturesEXT = VkPhysicalDeviceRobustness2FeaturesKHR;
 // Extension: VK_KHR_robustness2
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -24949,8 +24567,6 @@ pub const VkPhysicalDeviceRobustness2PropertiesKHR = extern struct {
     // Optional: false
     robustUniformBufferAccessSizeAlignment: u64 = 0,
 };
-// Extension: VK_EXT_robustness2
-pub const VkPhysicalDeviceRobustness2PropertiesEXT = VkPhysicalDeviceRobustness2PropertiesKHR;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -24966,8 +24582,6 @@ pub const VkPhysicalDeviceImageRobustnessFeatures = extern struct {
     // Optional: false
     robustImageAccess: u32 = 0,
 };
-// Extension: VK_EXT_image_robustness
-pub const VkPhysicalDeviceImageRobustnessFeaturesEXT = VkPhysicalDeviceImageRobustnessFeatures;
 // Extension: VK_KHR_workgroup_memory_explicit_layout
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -25153,8 +24767,6 @@ pub const VkBufferCopy2 = extern struct {
     // Comment: Specified in bytes
     size: u64 = 0,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkBufferCopy2KHR = VkBufferCopy2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25184,8 +24796,6 @@ pub const VkImageCopy2 = extern struct {
     // Comment: Specified in pixels for both compressed and uncompressed images
     extent: VkExtent3D = .{},
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkImageCopy2KHR = VkImageCopy2;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25211,8 +24821,6 @@ pub const VkImageBlit2 = extern struct {
     // Comment: Specified in pixels for both compressed and uncompressed images
     dstOffsets: [2]VkOffset3D = @import("std").mem.zeroes([2]VkOffset3D),
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkImageBlit2KHR = VkImageBlit2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25246,8 +24854,6 @@ pub const VkBufferImageCopy2 = extern struct {
     // Comment: Specified in pixels for both compressed and uncompressed images
     imageExtent: VkExtent3D = .{},
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkBufferImageCopy2KHR = VkBufferImageCopy2;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25274,8 +24880,6 @@ pub const VkImageResolve2 = extern struct {
     // Optional: false
     extent: VkExtent3D = .{},
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkImageResolve2KHR = VkImageResolve2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25295,13 +24899,11 @@ pub const VkCopyBufferInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferCopy2 = null,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkCopyBufferInfo2KHR = VkCopyBufferInfo2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25327,13 +24929,11 @@ pub const VkCopyImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageCopy2 = null,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkCopyImageInfo2KHR = VkCopyImageInfo2;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25359,7 +24959,7 @@ pub const VkBlitImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageBlit2 = null,
@@ -25367,8 +24967,6 @@ pub const VkBlitImageInfo2 = extern struct {
     // Optional: false
     filter: VkFilter,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkBlitImageInfo2KHR = VkBlitImageInfo2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25391,13 +24989,11 @@ pub const VkCopyBufferToImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferImageCopy2 = null,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkCopyBufferToImageInfo2KHR = VkCopyBufferToImageInfo2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25420,13 +25016,11 @@ pub const VkCopyImageToBufferInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkBufferImageCopy2 = null,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkCopyImageToBufferInfo2KHR = VkCopyImageToBufferInfo2;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25452,13 +25046,11 @@ pub const VkResolveImageInfo2 = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageResolve2 = null,
 };
-// Extension: VK_KHR_copy_commands2
-pub const VkResolveImageInfo2KHR = VkResolveImageInfo2;
 // Extension: VK_EXT_shader_image_atomic_int64
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -25629,8 +25221,6 @@ pub const VkPhysicalDeviceShaderTerminateInvocationFeatures = extern struct {
     // Optional: false
     shaderTerminateInvocation: u32 = 0,
 };
-// Extension: VK_KHR_shader_terminate_invocation
-pub const VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR = VkPhysicalDeviceShaderTerminateInvocationFeatures;
 // Extension: VK_NV_fragment_shading_rate_enums
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -25801,8 +25391,6 @@ pub const VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT = extern struct {
     // Optional: false
     mutableDescriptorType: u32 = 0,
 };
-// Extension: VK_VALVE_mutable_descriptor_type
-pub const VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE = VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT;
 // Extension: VK_EXT_mutable_descriptor_type
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -25810,13 +25398,11 @@ pub const VkMutableDescriptorTypeListEXT = extern struct {
     // Extern sync: false
     // Optional: true
     descriptorTypeCount: u32 = 0,
-    // Length field: descriptorTypeCount
+    // Length expression: descriptorTypeCount
     // Extern sync: false
     // Optional: false
     pDescriptorTypes: ?[*]const VkDescriptorType = null,
 };
-// Extension: VK_VALVE_mutable_descriptor_type
-pub const VkMutableDescriptorTypeListVALVE = VkMutableDescriptorTypeListEXT;
 // Extension: VK_EXT_mutable_descriptor_type
 // Extends: VkDescriptorSetLayoutCreateInfo,VkDescriptorPoolCreateInfo
 // Returned only: false
@@ -25831,13 +25417,11 @@ pub const VkMutableDescriptorTypeCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     mutableDescriptorTypeListCount: u32 = 0,
-    // Length field: mutableDescriptorTypeListCount
+    // Length expression: mutableDescriptorTypeListCount
     // Extern sync: false
     // Optional: false
     pMutableDescriptorTypeLists: ?[*]const VkMutableDescriptorTypeListEXT = null,
 };
-// Extension: VK_VALVE_mutable_descriptor_type
-pub const VkMutableDescriptorTypeCreateInfoVALVE = VkMutableDescriptorTypeCreateInfoEXT;
 // Extension: VK_EXT_depth_clip_control
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -25911,7 +25495,7 @@ pub const VkCustomResolveCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -26017,7 +25601,7 @@ pub const VkGeneratedCommandsShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     shaderCount: u32 = 0,
-    // Length field: shaderCount
+    // Length expression: shaderCount
     // Extern sync: false
     // Optional: false
     pShaders: ?[*]const VkShaderEXT = null,
@@ -26075,7 +25659,7 @@ pub const VkIndirectExecutionSetShaderLayoutInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     setLayoutCount: u32 = 0,
-    // Length field: setLayoutCount
+    // Length expression: setLayoutCount
     // Extern sync: false
     // Optional: false
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
@@ -26093,11 +25677,11 @@ pub const VkIndirectExecutionSetShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     shaderCount: u32 = 0,
-    // Length field: shaderCount
+    // Length expression: shaderCount
     // Extern sync: false
     // Optional: false
     pInitialShaders: ?[*]const VkShaderEXT = null,
-    // Length field: shaderCount
+    // Length expression: shaderCount
     // Extern sync: false
     // Optional: true
     pSetLayoutInfos: ?[*]const VkIndirectExecutionSetShaderLayoutInfoEXT = null,
@@ -26107,7 +25691,7 @@ pub const VkIndirectExecutionSetShaderInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pushConstantRangeCount: u32 = 0,
-    // Length field: pushConstantRangeCount
+    // Length expression: pushConstantRangeCount
     // Extern sync: false
     // Optional: false
     pPushConstantRanges: ?[*]const VkPushConstantRange = null,
@@ -26230,7 +25814,7 @@ pub const VkIndirectCommandsLayoutCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     tokenCount: u32 = 0,
-    // Length field: tokenCount
+    // Length expression: tokenCount
     // Extern sync: false
     // Optional: false
     pTokens: ?[*]const VkIndirectCommandsLayoutTokenEXT = null,
@@ -26506,7 +26090,7 @@ pub const VkPipelineColorWriteCreateInfoEXT = extern struct {
     // Optional: true
     // Comment: # of pAttachments
     attachmentCount: u32 = 0,
-    // Length field: attachmentCount
+    // Length expression: attachmentCount
     // Extern sync: false
     // Optional: false
     pColorWriteEnables: ?[*]const u32 = null,
@@ -26535,8 +26119,6 @@ pub const VkMemoryBarrier2 = extern struct {
     // Optional: true
     dstAccessMask: VkAccessFlags2 = .{},
 };
-// Extension: VK_KHR_synchronization2
-pub const VkMemoryBarrier2KHR = VkMemoryBarrier2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26578,8 +26160,6 @@ pub const VkImageMemoryBarrier2 = extern struct {
     // Optional: false
     subresourceRange: VkImageSubresourceRange = .{},
 };
-// Extension: VK_KHR_synchronization2
-pub const VkImageMemoryBarrier2KHR = VkImageMemoryBarrier2;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26618,8 +26198,6 @@ pub const VkBufferMemoryBarrier2 = extern struct {
     // Optional: false
     size: u64 = 0,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkBufferMemoryBarrier2KHR = VkBufferMemoryBarrier2;
 // Extension: VK_KHR_maintenance8
 // Extends: VkSubpassDependency2,VkBufferMemoryBarrier2,VkImageMemoryBarrier2
 // Returned only: false
@@ -26654,27 +26232,25 @@ pub const VkDependencyInfo = extern struct {
     // Extern sync: false
     // Optional: true
     memoryBarrierCount: u32 = 0,
-    // Length field: memoryBarrierCount
+    // Length expression: memoryBarrierCount
     // Extern sync: false
     // Optional: false
     pMemoryBarriers: ?[*]const VkMemoryBarrier2 = null,
     // Extern sync: false
     // Optional: true
     bufferMemoryBarrierCount: u32 = 0,
-    // Length field: bufferMemoryBarrierCount
+    // Length expression: bufferMemoryBarrierCount
     // Extern sync: false
     // Optional: false
     pBufferMemoryBarriers: ?[*]const VkBufferMemoryBarrier2 = null,
     // Extern sync: false
     // Optional: true
     imageMemoryBarrierCount: u32 = 0,
-    // Length field: imageMemoryBarrierCount
+    // Length expression: imageMemoryBarrierCount
     // Extern sync: false
     // Optional: false
     pImageMemoryBarriers: ?[*]const VkImageMemoryBarrier2 = null,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkDependencyInfoKHR = VkDependencyInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26698,8 +26274,6 @@ pub const VkSemaphoreSubmitInfo = extern struct {
     // Optional: false
     deviceIndex: u32 = 0,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkSemaphoreSubmitInfoKHR = VkSemaphoreSubmitInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26717,8 +26291,6 @@ pub const VkCommandBufferSubmitInfo = extern struct {
     // Optional: false
     deviceMask: u32 = 0,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkCommandBufferSubmitInfoKHR = VkCommandBufferSubmitInfo;
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26735,27 +26307,25 @@ pub const VkSubmitInfo2 = extern struct {
     // Extern sync: false
     // Optional: true
     waitSemaphoreInfoCount: u32 = 0,
-    // Length field: waitSemaphoreInfoCount
+    // Length expression: waitSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pWaitSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
     // Extern sync: false
     // Optional: true
     commandBufferInfoCount: u32 = 0,
-    // Length field: commandBufferInfoCount
+    // Length expression: commandBufferInfoCount
     // Extern sync: false
     // Optional: false
     pCommandBufferInfos: ?[*]const VkCommandBufferSubmitInfo = null,
     // Extern sync: false
     // Optional: true
     signalSemaphoreInfoCount: u32 = 0,
-    // Length field: signalSemaphoreInfoCount
+    // Length expression: signalSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pSignalSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkSubmitInfo2KHR = VkSubmitInfo2;
 // Extension: VK_NV_device_diagnostic_checkpoints
 // Extends: VkQueueFamilyProperties2
 // Returned only: true
@@ -26803,8 +26373,6 @@ pub const VkPhysicalDeviceSynchronization2Features = extern struct {
     // Optional: false
     synchronization2: u32 = 0,
 };
-// Extension: VK_KHR_synchronization2
-pub const VkPhysicalDeviceSynchronization2FeaturesKHR = VkPhysicalDeviceSynchronization2Features;
 // Extension: VK_KHR_unified_image_layouts
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -26838,8 +26406,6 @@ pub const VkPhysicalDeviceHostImageCopyFeatures = extern struct {
     // Optional: false
     hostImageCopy: u32 = 0,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkPhysicalDeviceHostImageCopyFeaturesEXT = VkPhysicalDeviceHostImageCopyFeatures;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: false
@@ -26854,14 +26420,14 @@ pub const VkPhysicalDeviceHostImageCopyProperties = extern struct {
     // Extern sync: false
     // Optional: true
     copySrcLayoutCount: u32 = 0,
-    // Length field: copySrcLayoutCount
+    // Length expression: copySrcLayoutCount
     // Extern sync: false
     // Optional: true
     pCopySrcLayouts: ?[*]VkImageLayout = null,
     // Extern sync: false
     // Optional: true
     copyDstLayoutCount: u32 = 0,
-    // Length field: copyDstLayoutCount
+    // Length expression: copyDstLayoutCount
     // Extern sync: false
     // Optional: true
     pCopyDstLayouts: ?[*]VkImageLayout = null,
@@ -26872,8 +26438,6 @@ pub const VkPhysicalDeviceHostImageCopyProperties = extern struct {
     // Optional: false
     identicalMemoryTypeRequirements: u32 = 0,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkPhysicalDeviceHostImageCopyPropertiesEXT = VkPhysicalDeviceHostImageCopyProperties;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26904,8 +26468,6 @@ pub const VkMemoryToImageCopy = extern struct {
     // Optional: false
     imageExtent: VkExtent3D = .{},
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkMemoryToImageCopyEXT = VkMemoryToImageCopy;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26936,8 +26498,6 @@ pub const VkImageToMemoryCopy = extern struct {
     // Optional: false
     imageExtent: VkExtent3D = .{},
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkImageToMemoryCopyEXT = VkImageToMemoryCopy;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26960,13 +26520,11 @@ pub const VkCopyMemoryToImageInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkMemoryToImageCopy = null,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkCopyMemoryToImageInfoEXT = VkCopyMemoryToImageInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -26989,13 +26547,11 @@ pub const VkCopyImageToMemoryInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageToMemoryCopy = null,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkCopyImageToMemoryInfoEXT = VkCopyImageToMemoryInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -27024,13 +26580,11 @@ pub const VkCopyImageToImageInfo = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkImageCopy2 = null,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkCopyImageToImageInfoEXT = VkCopyImageToImageInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -27054,8 +26608,6 @@ pub const VkHostImageLayoutTransitionInfo = extern struct {
     // Optional: false
     subresourceRange: VkImageSubresourceRange = .{},
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkHostImageLayoutTransitionInfoEXT = VkHostImageLayoutTransitionInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkSubresourceLayout2
 // Returned only: true
@@ -27072,8 +26624,6 @@ pub const VkSubresourceHostMemcpySize = extern struct {
     // Comment: Specified in bytes
     size: u64 = 0,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkSubresourceHostMemcpySizeEXT = VkSubresourceHostMemcpySize;
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkImageFormatProperties2
 // Returned only: true
@@ -27094,8 +26644,6 @@ pub const VkHostImageCopyDevicePerformanceQuery = extern struct {
     // Comment: Specifies if memory layout is identical
     identicalMemoryLayout: u32 = 0,
 };
-// Extension: VK_EXT_host_image_copy
-pub const VkHostImageCopyDevicePerformanceQueryEXT = VkHostImageCopyDevicePerformanceQuery;
 // Extension: VKSC_VERSION_1_0
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -27193,14 +26741,14 @@ pub const VkDeviceObjectReservationCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     pipelineCacheCreateInfoCount: u32 = 0,
-    // Length field: pipelineCacheCreateInfoCount
+    // Length expression: pipelineCacheCreateInfoCount
     // Extern sync: false
     // Optional: false
     pPipelineCacheCreateInfos: ?[*]const VkPipelineCacheCreateInfo = null,
     // Extern sync: false
     // Optional: true
     pipelinePoolSizeCount: u32 = 0,
-    // Length field: pipelinePoolSizeCount
+    // Length expression: pipelinePoolSizeCount
     // Extern sync: false
     // Optional: false
     pPipelinePoolSizes: ?[*]const VkPipelinePoolSize = null,
@@ -27498,8 +27046,6 @@ pub const VkPhysicalDevicePipelineProtectedAccessFeatures = extern struct {
     // Optional: false
     pipelineProtectedAccess: u32 = 0,
 };
-// Extension: VK_EXT_pipeline_protected_access
-pub const VkPhysicalDevicePipelineProtectedAccessFeaturesEXT = VkPhysicalDevicePipelineProtectedAccessFeatures;
 // Extension: VK_KHR_video_queue
 // Extends: VkQueueFamilyProperties2
 // Returned only: true
@@ -27544,7 +27090,7 @@ pub const VkVideoProfileListInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     profileCount: u32 = 0,
-    // Length field: profileCount
+    // Length expression: profileCount
     // Extern sync: false
     // Optional: false
     pProfiles: ?[*]const VkVideoProfileInfoKHR = null,
@@ -27915,7 +27461,7 @@ pub const VkVideoDecodeInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length field: referenceSlotCount
+    // Length expression: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28019,14 +27565,14 @@ pub const VkVideoDecodeH264SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length field: stdSPSCount
+    // Length expression: stdSPSCount
     // Extern sync: false
     // Optional: false
     pStdSPSs: ?[*]const StdVideoH264SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length field: stdPPSCount
+    // Length expression: stdPPSCount
     // Extern sync: false
     // Optional: false
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -28088,7 +27634,7 @@ pub const VkVideoDecodeH264PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     sliceCount: u32 = 0,
-    // Length field: sliceCount
+    // Length expression: sliceCount
     // Extern sync: false
     // Optional: false
     pSliceOffsets: ?[*]const u32 = null,
@@ -28150,21 +27696,21 @@ pub const VkVideoDecodeH265SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdVPSCount: u32 = 0,
-    // Length field: stdVPSCount
+    // Length expression: stdVPSCount
     // Extern sync: false
     // Optional: false
     pStdVPSs: ?[*]const StdVideoH265VideoParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length field: stdSPSCount
+    // Length expression: stdSPSCount
     // Extern sync: false
     // Optional: false
     pStdSPSs: ?[*]const StdVideoH265SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length field: stdPPSCount
+    // Length expression: stdPPSCount
     // Extern sync: false
     // Optional: false
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -28232,7 +27778,7 @@ pub const VkVideoDecodeH265PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     sliceSegmentCount: u32 = 0,
-    // Length field: sliceSegmentCount
+    // Length expression: sliceSegmentCount
     // Extern sync: false
     // Optional: false
     pSliceSegmentOffsets: ?[*]const u32 = null,
@@ -28406,11 +27952,11 @@ pub const VkVideoDecodeAV1PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     tileCount: u32 = 0,
-    // Length field: tileCount
+    // Length expression: tileCount
     // Extern sync: false
     // Optional: false
     pTileOffsets: ?[*]const u32 = null,
-    // Length field: tileCount
+    // Length expression: tileCount
     // Extern sync: false
     // Optional: false
     pTileSizes: ?[*]const u32 = null,
@@ -28552,7 +28098,7 @@ pub const VkVideoBeginCodingInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length field: referenceSlotCount
+    // Length expression: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28637,7 +28183,7 @@ pub const VkVideoEncodeInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     referenceSlotCount: u32 = 0,
-    // Length field: referenceSlotCount
+    // Length expression: referenceSlotCount
     // Extern sync: false
     // Optional: false
     pReferenceSlots: ?[*]const VkVideoReferenceSlotInfoKHR = null,
@@ -28777,7 +28323,7 @@ pub const VkVideoEncodeRateControlInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     layerCount: u32 = 0,
-    // Length field: layerCount
+    // Length expression: layerCount
     // Extern sync: false
     // Optional: false
     pLayers: ?[*]const VkVideoEncodeRateControlLayerInfoKHR = null,
@@ -28964,14 +28510,14 @@ pub const VkVideoEncodeH264SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length field: stdSPSCount
+    // Length expression: stdSPSCount
     // Extern sync: false
     // Optional: true
     pStdSPSs: ?[*]const StdVideoH264SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length field: stdPPSCount
+    // Length expression: stdPPSCount
     // Extern sync: false
     // Optional: true
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -29069,7 +28615,7 @@ pub const VkVideoEncodeH264PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     naluSliceEntryCount: u32 = 0,
-    // Length field: naluSliceEntryCount
+    // Length expression: naluSliceEntryCount
     // Extern sync: false
     // Optional: false
     pNaluSliceEntries: ?[*]const VkVideoEncodeH264NaluSliceInfoKHR = null,
@@ -29346,21 +28892,21 @@ pub const VkVideoEncodeH265SessionParametersAddInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdVPSCount: u32 = 0,
-    // Length field: stdVPSCount
+    // Length expression: stdVPSCount
     // Extern sync: false
     // Optional: true
     pStdVPSs: ?[*]const StdVideoH265VideoParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdSPSCount: u32 = 0,
-    // Length field: stdSPSCount
+    // Length expression: stdSPSCount
     // Extern sync: false
     // Optional: true
     pStdSPSs: ?[*]const StdVideoH265SequenceParameterSet = null,
     // Extern sync: false
     // Optional: true
     stdPPSCount: u32 = 0,
-    // Length field: stdPPSCount
+    // Length expression: stdPPSCount
     // Extern sync: false
     // Optional: true
     // Comment: List of Picture Parameters associated with the spsStd, above
@@ -29455,7 +29001,7 @@ pub const VkVideoEncodeH265PictureInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     naluSliceSegmentEntryCount: u32 = 0,
-    // Length field: naluSliceSegmentEntryCount
+    // Length expression: naluSliceSegmentEntryCount
     // Extern sync: false
     // Optional: false
     pNaluSliceSegmentEntries: ?[*]const VkVideoEncodeH265NaluSliceSegmentInfoKHR = null,
@@ -29810,7 +29356,7 @@ pub const VkVideoEncodeAV1SessionParametersCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: true
     stdOperatingPointCount: u32 = 0,
-    // Length field: stdOperatingPointCount
+    // Length expression: stdOperatingPointCount
     // Extern sync: false
     // Optional: true
     pStdOperatingPoints: ?[*]const StdVideoEncodeAV1OperatingPointInfo = null,
@@ -30191,7 +29737,7 @@ pub const VkCuModuleCreateInfoNVX = extern struct {
     // Extern sync: false
     // Optional: true
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
@@ -30224,7 +29770,7 @@ pub const VkCuFunctionCreateInfoNVX = extern struct {
     // Extern sync: false
     // Optional: false
     module: VkCuModuleNVX = .none,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -30266,14 +29812,14 @@ pub const VkCuLaunchInfoNVX = extern struct {
     // Extern sync: false
     // Optional: true
     paramCount: u64 = 0,
-    // Length field: paramCount
+    // Length expression: paramCount
     // Extern sync: false
     // Optional: false
     pParams: ?[*]const *const anyopaque = null,
     // Extern sync: false
     // Optional: true
     extraCount: u64 = 0,
-    // Length field: extraCount
+    // Length expression: extraCount
     // Extern sync: false
     // Optional: false
     pExtras: ?[*]const *const anyopaque = null,
@@ -30601,8 +30147,6 @@ pub const VkPhysicalDeviceShaderIntegerDotProductFeatures = extern struct {
     // Optional: false
     shaderIntegerDotProduct: u32 = 0,
 };
-// Extension: VK_KHR_shader_integer_dot_product
-pub const VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR = VkPhysicalDeviceShaderIntegerDotProductFeatures;
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -30705,8 +30249,6 @@ pub const VkPhysicalDeviceShaderIntegerDotProductProperties = extern struct {
     // Optional: false
     integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated: u32 = 0,
 };
-// Extension: VK_KHR_shader_integer_dot_product
-pub const VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR = VkPhysicalDeviceShaderIntegerDotProductProperties;
 // Extension: VK_EXT_physical_device_drm
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -31167,7 +30709,7 @@ pub const VkImageFormatConstraintsInfoFUCHSIA = extern struct {
     // Extern sync: false
     // Optional: false
     colorSpaceCount: u32 = 0,
-    // Length field: colorSpaceCount
+    // Length expression: colorSpaceCount
     // Extern sync: false
     // Optional: false
     pColorSpaces: ?[*]const VkSysmemColorSpaceFUCHSIA = null,
@@ -31185,7 +30727,7 @@ pub const VkImageConstraintsInfoFUCHSIA = extern struct {
     // Extern sync: false
     // Optional: false
     formatConstraintsCount: u32 = 0,
-    // Length field: formatConstraintsCount
+    // Length expression: formatConstraintsCount
     // Extern sync: false
     // Optional: false
     pFormatConstraints: ?[*]const VkImageFormatConstraintsInfoFUCHSIA = null,
@@ -31235,7 +30777,7 @@ pub const VkCudaModuleCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: false
     pData: ?*const anyopaque = null,
@@ -31253,7 +30795,7 @@ pub const VkCudaFunctionCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     module: VkCudaModuleNV = .none,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -31295,14 +30837,14 @@ pub const VkCudaLaunchInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     paramCount: u64 = 0,
-    // Length field: paramCount
+    // Length expression: paramCount
     // Extern sync: false
     // Optional: false
     pParams: ?[*]const *const anyopaque = null,
     // Extern sync: false
     // Optional: true
     extraCount: u64 = 0,
-    // Length field: extraCount
+    // Length expression: extraCount
     // Extern sync: false
     // Optional: false
     pExtras: ?[*]const *const anyopaque = null,
@@ -31343,8 +30885,6 @@ pub const VkFormatProperties3 = extern struct {
     // Optional: true
     bufferFeatures: VkFormatFeatureFlags2 = .{},
 };
-// Extension: VK_KHR_format_feature_flags2
-pub const VkFormatProperties3KHR = VkFormatProperties3;
 // Extension: VK_EXT_image_drm_format_modifier
 // Extends: VkFormatProperties2
 // Returned only: true
@@ -31359,7 +30899,7 @@ pub const VkDrmFormatModifierPropertiesList2EXT = extern struct {
     // Extern sync: false
     // Optional: true
     drmFormatModifierCount: u32 = 0,
-    // Length field: drmFormatModifierCount
+    // Length expression: drmFormatModifierCount
     // Extern sync: false
     // Optional: true
     pDrmFormatModifierProperties: ?[*]VkDrmFormatModifierProperties2EXT = null,
@@ -31431,7 +30971,7 @@ pub const VkPipelineRenderingCreateInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -31442,8 +30982,6 @@ pub const VkPipelineRenderingCreateInfo = extern struct {
     // Optional: false
     stencilAttachmentFormat: VkFormat,
 };
-// Extension: VK_KHR_dynamic_rendering
-pub const VkPipelineRenderingCreateInfoKHR = VkPipelineRenderingCreateInfo;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -31469,7 +31007,7 @@ pub const VkRenderingInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachments: ?[*]const VkRenderingAttachmentInfo = null,
@@ -31480,8 +31018,6 @@ pub const VkRenderingInfo = extern struct {
     // Optional: true
     pStencilAttachment: ?*const VkRenderingAttachmentInfo = null,
 };
-// Extension: VK_KHR_dynamic_rendering
-pub const VkRenderingInfoKHR = VkRenderingInfo;
 // Extension: VK_KHR_maintenance10
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -31493,8 +31029,6 @@ pub const VkRenderingEndInfoKHR = extern struct {
     // Optional: true
     pNext: ?*const anyopaque = null,
 };
-// Extension: VK_EXT_fragment_density_map_offset
-pub const VkRenderingEndInfoEXT = VkRenderingEndInfoKHR;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -31530,8 +31064,6 @@ pub const VkRenderingAttachmentInfo = extern struct {
     // Optional: false
     clearValue: VkClearValue,
 };
-// Extension: VK_KHR_dynamic_rendering
-pub const VkRenderingAttachmentInfoKHR = VkRenderingAttachmentInfo;
 // Extension: VK_KHR_fragment_shading_rate
 // Extends: VkRenderingInfo
 // Returned only: false
@@ -31586,8 +31118,6 @@ pub const VkPhysicalDeviceDynamicRenderingFeatures = extern struct {
     // Optional: false
     dynamicRendering: u32 = 0,
 };
-// Extension: VK_KHR_dynamic_rendering
-pub const VkPhysicalDeviceDynamicRenderingFeaturesKHR = VkPhysicalDeviceDynamicRenderingFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Extends: VkCommandBufferInheritanceInfo
 // Returned only: false
@@ -31608,7 +31138,7 @@ pub const VkCommandBufferInheritanceRenderingInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentFormats: ?[*]const VkFormat = null,
@@ -31622,8 +31152,6 @@ pub const VkCommandBufferInheritanceRenderingInfo = extern struct {
     // Optional: true
     rasterizationSamples: VkSampleCountFlags = .{},
 };
-// Extension: VK_KHR_dynamic_rendering
-pub const VkCommandBufferInheritanceRenderingInfoKHR = VkCommandBufferInheritanceRenderingInfo;
 // Extension: VK_AMD_mixed_attachment_samples
 // Extends: VkCommandBufferInheritanceInfo,VkGraphicsPipelineCreateInfo
 // Returned only: false
@@ -31638,7 +31166,7 @@ pub const VkAttachmentSampleCountInfoAMD = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentSamples: ?[*]const VkSampleCountFlags = null,
@@ -31646,8 +31174,6 @@ pub const VkAttachmentSampleCountInfoAMD = extern struct {
     // Optional: true
     depthStencilAttachmentSamples: VkSampleCountFlags = .{},
 };
-// Extension: VK_NV_framebuffer_mixed_samples
-pub const VkAttachmentSampleCountInfoNV = VkAttachmentSampleCountInfoAMD;
 // Extension: VK_NVX_multiview_per_view_attributes
 // Extends: VkCommandBufferInheritanceInfo,VkGraphicsPipelineCreateInfo,VkRenderingInfo
 // Returned only: false
@@ -31717,8 +31243,6 @@ pub const VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT = extern
     // Optional: false
     rasterizationOrderStencilAttachmentAccess: u32 = 0,
 };
-// Extension: VK_ARM_rasterization_order_attachment_access
-pub const VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM = VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT;
 // Extension: VK_NV_linear_color_attachment
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -31968,7 +31492,7 @@ pub const VkPipelineShaderStageModuleIdentifierCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     identifierSize: u32 = 0,
-    // Length field: identifierSize
+    // Length expression: identifierSize
     // Extern sync: false
     // Optional: false
     pIdentifier: ?[*]const u8 = null,
@@ -31986,7 +31510,7 @@ pub const VkShaderModuleIdentifierEXT = extern struct {
     // Extern sync: false
     // Optional: false
     identifierSize: u32 = 0,
-    // Length field: identifierSize
+    // Length expression: identifierSize
     // Extern sync: false
     // Optional: false
     identifier: [VK_MAX_SHADER_MODULE_IDENTIFIER_SIZE_EXT]u8 = @import("std").mem.zeroes([VK_MAX_SHADER_MODULE_IDENTIFIER_SIZE_EXT]u8),
@@ -32008,7 +31532,7 @@ pub const VkImageCompressionControlEXT = extern struct {
     // Extern sync: false
     // Optional: true
     compressionControlPlaneCount: u32 = 0,
-    // Length field: compressionControlPlaneCount
+    // Length expression: compressionControlPlaneCount
     // Extern sync: false
     // Optional: false
     pFixedRateFlags: ?[*]VkImageCompressionFixedRateFlagsEXT = null,
@@ -32075,10 +31599,6 @@ pub const VkImageSubresource2 = extern struct {
     // Optional: false
     imageSubresource: VkImageSubresource = .{},
 };
-// Extension: VK_KHR_maintenance5
-pub const VkImageSubresource2KHR = VkImageSubresource2;
-// Extension: VK_EXT_host_image_copy
-pub const VkImageSubresource2EXT = VkImageSubresource2;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: true
 // Allow duplicate in pNext chain: false
@@ -32093,10 +31613,6 @@ pub const VkSubresourceLayout2 = extern struct {
     // Optional: false
     subresourceLayout: VkSubresourceLayout = .{},
 };
-// Extension: VK_KHR_maintenance5
-pub const VkSubresourceLayout2KHR = VkSubresourceLayout2;
-// Extension: VK_EXT_host_image_copy
-pub const VkSubresourceLayout2EXT = VkSubresourceLayout2;
 // Extension: VK_EXT_subpass_merge_feedback
 // Extends: VkRenderPassCreateInfo2,VkSubpassDescription2
 // Returned only: false
@@ -32142,7 +31658,7 @@ pub const VkRenderPassSubpassFeedbackInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     subpassMergeStatus: VkSubpassMergeStatusEXT,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -32205,11 +31721,11 @@ pub const VkMicromapBuildInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length field: usageCountsCount
+    // Length expression: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length field: usageCountsCount,1
+    // Length expression: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -32266,7 +31782,7 @@ pub const VkMicromapVersionInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: 2*VK_UUID_SIZE
+    // Length expression: 2*VK_UUID_SIZE
     // Extern sync: false
     // Optional: false
     pVersionData: ?[*]const u8 = null,
@@ -32446,11 +31962,11 @@ pub const VkAccelerationStructureTrianglesOpacityMicromapEXT = extern struct {
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length field: usageCountsCount
+    // Length expression: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length field: usageCountsCount,1
+    // Length expression: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -32538,11 +32054,11 @@ pub const VkAccelerationStructureTrianglesDisplacementMicromapNV = extern struct
     // Extern sync: false
     // Optional: true
     usageCountsCount: u32 = 0,
-    // Length field: usageCountsCount
+    // Length expression: usageCountsCount
     // Extern sync: false
     // Optional: true
     pUsageCounts: ?[*]const VkMicromapUsageEXT = null,
-    // Length field: usageCountsCount,1
+    // Length expression: usageCountsCount,1
     // Extern sync: false
     // Optional: false
     ppUsageCounts: ?[*]const *const VkMicromapUsageEXT = null,
@@ -32835,8 +32351,6 @@ pub const VkPhysicalDevicePipelineRobustnessFeatures = extern struct {
     // Optional: false
     pipelineRobustness: u32 = 0,
 };
-// Extension: VK_EXT_pipeline_robustness
-pub const VkPhysicalDevicePipelineRobustnessFeaturesEXT = VkPhysicalDevicePipelineRobustnessFeatures;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkGraphicsPipelineCreateInfo,VkComputePipelineCreateInfo,VkPipelineShaderStageCreateInfo,VkRayTracingPipelineCreateInfoKHR
 // Returned only: false
@@ -32861,8 +32375,6 @@ pub const VkPipelineRobustnessCreateInfo = extern struct {
     // Optional: false
     images: VkPipelineRobustnessImageBehavior,
 };
-// Extension: VK_EXT_pipeline_robustness
-pub const VkPipelineRobustnessCreateInfoEXT = VkPipelineRobustnessCreateInfo;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -32887,8 +32399,6 @@ pub const VkPhysicalDevicePipelineRobustnessProperties = extern struct {
     // Optional: false
     defaultRobustnessImages: VkPipelineRobustnessImageBehavior,
 };
-// Extension: VK_EXT_pipeline_robustness
-pub const VkPhysicalDevicePipelineRobustnessPropertiesEXT = VkPhysicalDevicePipelineRobustnessProperties;
 // Extension: VK_QCOM_image_processing
 // Extends: VkImageViewCreateInfo
 // Returned only: false
@@ -33053,8 +32563,6 @@ pub const VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT = extern struc
     // Optional: false
     attachmentFeedbackLoopLayout: u32 = 0,
 };
-// Extension: VK_EXT_depth_clamp_zero_one
-pub const VkPhysicalDeviceDepthClampZeroOneFeaturesEXT = VkPhysicalDeviceDepthClampZeroOneFeaturesKHR;
 // Extension: VK_KHR_unified_image_layouts
 // Extends: VkRenderingAttachmentInfo
 // Returned only: false
@@ -33309,7 +32817,7 @@ pub const VkOpticalFlowExecuteInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkRect2D = null,
@@ -33350,7 +32858,7 @@ pub const VkDeviceFaultAddressInfoEXT = extern struct {
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkDeviceFaultVendorInfoEXT = extern struct {
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -33392,7 +32900,7 @@ pub const VkDeviceFaultInfoEXT = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -33553,7 +33061,7 @@ pub const VkDecompressMemoryInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkDecompressMemoryRegionEXT = null,
@@ -33614,14 +33122,14 @@ pub const VkFrameBoundaryEXT = extern struct {
     // Extern sync: false
     // Optional: true
     imageCount: u32 = 0,
-    // Length field: imageCount
+    // Length expression: imageCount
     // Extern sync: false
     // Optional: true
     pImages: ?[*]const VkImage = null,
     // Extern sync: false
     // Optional: true
     bufferCount: u32 = 0,
-    // Length field: bufferCount
+    // Length expression: bufferCount
     // Extern sync: false
     // Optional: true
     pBuffers: ?[*]const VkBuffer = null,
@@ -33631,7 +33139,7 @@ pub const VkFrameBoundaryEXT = extern struct {
     // Extern sync: false
     // Optional: true
     tagSize: u64 = 0,
-    // Length field: tagSize
+    // Length expression: tagSize
     // Extern sync: false
     // Optional: true
     pTag: ?*const anyopaque = null,
@@ -33681,8 +33189,6 @@ pub const VkSurfacePresentModeKHR = extern struct {
     // Optional: false
     presentMode: VkPresentModeKHR,
 };
-// Extension: VK_EXT_surface_maintenance1
-pub const VkSurfacePresentModeEXT = VkSurfacePresentModeKHR;
 // Extension: VK_KHR_surface_maintenance1
 // Extends: VkSurfaceCapabilities2KHR
 // Returned only: false
@@ -33712,8 +33218,6 @@ pub const VkSurfacePresentScalingCapabilitiesKHR = extern struct {
     // Comment: Supported maximum image width and height for the surface when scaling is used
     maxScaledImageExtent: VkExtent2D = .{},
 };
-// Extension: VK_EXT_surface_maintenance1
-pub const VkSurfacePresentScalingCapabilitiesEXT = VkSurfacePresentScalingCapabilitiesKHR;
 // Extension: VK_KHR_surface_maintenance1
 // Extends: VkSurfaceCapabilities2KHR
 // Returned only: false
@@ -33728,14 +33232,12 @@ pub const VkSurfacePresentModeCompatibilityKHR = extern struct {
     // Extern sync: false
     // Optional: true
     presentModeCount: u32 = 0,
-    // Length field: presentModeCount
+    // Length expression: presentModeCount
     // Extern sync: false
     // Optional: true
     // Comment: Output list of present modes compatible with the one specified in VkSurfacePresentModeKHR
     pPresentModes: ?[*]VkPresentModeKHR = null,
 };
-// Extension: VK_EXT_surface_maintenance1
-pub const VkSurfacePresentModeCompatibilityEXT = VkSurfacePresentModeCompatibilityKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -33751,8 +33253,6 @@ pub const VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR = extern struct {
     // Optional: false
     swapchainMaintenance1: u32 = 0,
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT = VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Extends: VkPresentInfoKHR
 // Returned only: false
@@ -33768,14 +33268,12 @@ pub const VkSwapchainPresentFenceInfoKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Fence to signal for each swapchain
     pFences: ?[*]const VkFence = null,
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkSwapchainPresentFenceInfoEXT = VkSwapchainPresentFenceInfoKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Extends: VkSwapchainCreateInfoKHR
 // Returned only: false
@@ -33790,13 +33288,11 @@ pub const VkSwapchainPresentModesCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     presentModeCount: u32 = 0,
-    // Length field: presentModeCount
+    // Length expression: presentModeCount
     // Extern sync: false
     // Optional: false
     pPresentModes: ?[*]const VkPresentModeKHR = null,
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkSwapchainPresentModesCreateInfoEXT = VkSwapchainPresentModesCreateInfoKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Extends: VkPresentInfoKHR
 // Returned only: false
@@ -33812,14 +33308,12 @@ pub const VkSwapchainPresentModeInfoKHR = extern struct {
     // Optional: false
     // Comment: Copy of VkPresentInfoKHR::swapchainCount
     swapchainCount: u32 = 0,
-    // Length field: swapchainCount
+    // Length expression: swapchainCount
     // Extern sync: false
     // Optional: false
     // Comment: Presentation mode for each swapchain
     pPresentModes: ?[*]const VkPresentModeKHR = null,
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkSwapchainPresentModeInfoEXT = VkSwapchainPresentModeInfoKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Extends: VkSwapchainCreateInfoKHR
 // Returned only: false
@@ -33841,8 +33335,6 @@ pub const VkSwapchainPresentScalingCreateInfoKHR = extern struct {
     // Optional: true
     presentGravityY: VkPresentGravityFlagsKHR = .{},
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkSwapchainPresentScalingCreateInfoEXT = VkSwapchainPresentScalingCreateInfoKHR;
 // Extension: VK_KHR_swapchain_maintenance1
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -33861,14 +33353,12 @@ pub const VkReleaseSwapchainImagesInfoKHR = extern struct {
     // Optional: false
     // Comment: Number of indices to release
     imageIndexCount: u32 = 0,
-    // Length field: imageIndexCount
+    // Length expression: imageIndexCount
     // Extern sync: false
     // Optional: false
     // Comment: Indices of which presentable images to release
     pImageIndices: ?[*]const u32 = null,
 };
-// Extension: VK_EXT_swapchain_maintenance1
-pub const VkReleaseSwapchainImagesInfoEXT = VkReleaseSwapchainImagesInfoKHR;
 // Extension: VK_EXT_depth_bias_control
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -34030,7 +33520,7 @@ pub const VkDirectDriverLoadingListLUNARG = extern struct {
     // Extern sync: false
     // Optional: false
     driverCount: u32 = 0,
-    // Length field: driverCount
+    // Length expression: driverCount
     // Extern sync: false
     // Optional: false
     pDrivers: ?[*]const VkDirectDriverLoadingInfoLUNARG = null,
@@ -34082,8 +33572,6 @@ pub const VkDeviceImageSubresourceInfo = extern struct {
     // Optional: false
     pSubresource: ?*const VkImageSubresource2 = null,
 };
-// Extension: VK_KHR_maintenance5
-pub const VkDeviceImageSubresourceInfoKHR = VkDeviceImageSubresourceInfo;
 // Extension: VK_ARM_shader_core_properties
 // Extends: VkPhysicalDeviceProperties2
 // Returned only: true
@@ -34134,7 +33622,7 @@ pub const VkMultiviewPerViewRenderAreasRenderPassBeginInfoQCOM = extern struct {
     // Extern sync: false
     // Optional: true
     perViewRenderAreaCount: u32 = 0,
-    // Length field: perViewRenderAreaCount
+    // Length expression: perViewRenderAreaCount
     // Extern sync: false
     // Optional: false
     pPerViewRenderAreas: ?[*]const VkRect2D = null,
@@ -34177,8 +33665,6 @@ pub const VkMemoryMapInfo = extern struct {
     // Optional: false
     size: u64 = 0,
 };
-// Extension: VK_KHR_map_memory2
-pub const VkMemoryMapInfoKHR = VkMemoryMapInfo;
 // Extension: VK_BASE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -34196,8 +33682,6 @@ pub const VkMemoryUnmapInfo = extern struct {
     // Optional: false
     memory: VkDeviceMemory = .none,
 };
-// Extension: VK_KHR_map_memory2
-pub const VkMemoryUnmapInfoKHR = VkMemoryUnmapInfo;
 // Extension: VK_EXT_shader_object
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -34256,25 +33740,25 @@ pub const VkShaderCreateInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     codeSize: u64 = 0,
-    // Length field: codeSize
+    // Length expression: codeSize
     // Extern sync: false
     // Optional: false
     pCode: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pName: ?[*:0]const u8 = null,
     // Extern sync: false
     // Optional: true
     setLayoutCount: u32 = 0,
-    // Length field: setLayoutCount
+    // Length expression: setLayoutCount
     // Extern sync: false
     // Optional: true
     pSetLayouts: ?[*]const VkDescriptorSetLayout = null,
     // Extern sync: false
     // Optional: true
     pushConstantRangeCount: u32 = 0,
-    // Length field: pushConstantRangeCount
+    // Length expression: pushConstantRangeCount
     // Extern sync: false
     // Optional: true
     pPushConstantRanges: ?[*]const VkPushConstantRange = null,
@@ -34563,7 +34047,7 @@ pub const VkExecutionGraphPipelineCreateInfoAMDX = extern struct {
     // Extern sync: false
     // Optional: true
     stageCount: u32 = 0,
-    // Length field: stageCount
+    // Length expression: stageCount
     // Extern sync: false
     // Optional: true
     pStages: ?[*]const VkPipelineShaderStageCreateInfo = null,
@@ -34591,7 +34075,7 @@ pub const VkPipelineShaderStageNodeCreateInfoAMDX = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: true
     pName: ?[*:0]const u8 = null,
@@ -34783,8 +34267,6 @@ pub const VkTileMemoryRequirementsQCOM = extern struct {
     // Optional: false
     alignment: u64 = 0,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkBindMemoryStatusKHR = VkBindMemoryStatus;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -34807,20 +34289,18 @@ pub const VkBindDescriptorSetsInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorSetCount: u32 = 0,
-    // Length field: descriptorSetCount
+    // Length expression: descriptorSetCount
     // Extern sync: false
     // Optional: false
     pDescriptorSets: ?[*]const VkDescriptorSet = null,
     // Extern sync: false
     // Optional: true
     dynamicOffsetCount: u32 = 0,
-    // Length field: dynamicOffsetCount
+    // Length expression: dynamicOffsetCount
     // Extern sync: false
     // Optional: false
     pDynamicOffsets: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkBindDescriptorSetsInfoKHR = VkBindDescriptorSetsInfo;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -34843,13 +34323,11 @@ pub const VkPushConstantsInfo = extern struct {
     // Extern sync: false
     // Optional: false
     size: u32 = 0,
-    // Length field: size
+    // Length expression: size
     // Extern sync: false
     // Optional: false
     pValues: ?*const anyopaque = null,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkPushConstantsInfoKHR = VkPushConstantsInfo;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -34872,13 +34350,11 @@ pub const VkPushDescriptorSetInfo = extern struct {
     // Extern sync: false
     // Optional: false
     descriptorWriteCount: u32 = 0,
-    // Length field: descriptorWriteCount
+    // Length expression: descriptorWriteCount
     // Extern sync: false
     // Optional: false
     pDescriptorWrites: ?[*]const VkWriteDescriptorSet = null,
 };
-// Extension: VK_KHR_maintenance6
-pub const VkPushDescriptorSetInfoKHR = VkPushDescriptorSetInfo;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Returned only: false
 // Allow duplicate in pNext chain: false
@@ -34903,8 +34379,6 @@ pub const VkPushDescriptorSetWithTemplateInfo = extern struct {
     pData: ?*const anyopaque = null,
 };
 // Extension: VK_KHR_maintenance6
-pub const VkPushDescriptorSetWithTemplateInfoKHR = VkPushDescriptorSetWithTemplateInfo;
-// Extension: VK_KHR_maintenance6
 // Returned only: false
 // Allow duplicate in pNext chain: false
 pub const VkSetDescriptorBufferOffsetsInfoEXT = extern struct {
@@ -34926,11 +34400,11 @@ pub const VkSetDescriptorBufferOffsetsInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     setCount: u32 = 0,
-    // Length field: setCount
+    // Length expression: setCount
     // Extern sync: false
     // Optional: false
     pBufferIndices: ?[*]const u32 = null,
-    // Length field: setCount
+    // Length expression: setCount
     // Extern sync: false
     // Optional: false
     pOffsets: ?[*]const u64 = null,
@@ -35262,7 +34736,7 @@ pub const VkGetLatencyMarkerInfoNV = extern struct {
     // Extern sync: false
     // Optional: true
     timingCount: u32 = 0,
-    // Length field: timingCount
+    // Length expression: timingCount
     // Extern sync: false
     // Optional: true
     pTimings: ?[*]VkLatencyTimingsFrameReportNV = null,
@@ -35378,7 +34852,7 @@ pub const VkLatencySurfaceCapabilitiesNV = extern struct {
     // Extern sync: false
     // Optional: true
     presentModeCount: u32 = 0,
-    // Length field: presentModeCount
+    // Length expression: presentModeCount
     // Extern sync: false
     // Optional: true
     pPresentModes: ?[*]VkPresentModeKHR = null,
@@ -35537,7 +35011,7 @@ pub const VkRenderPassStripeBeginInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     stripeInfoCount: u32 = 0,
-    // Length field: stripeInfoCount
+    // Length expression: stripeInfoCount
     // Extern sync: false
     // Optional: false
     pStripeInfos: ?[*]const VkRenderPassStripeInfoARM = null,
@@ -35556,7 +35030,7 @@ pub const VkRenderPassStripeSubmitInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     stripeSemaphoreInfoCount: u32 = 0,
-    // Length field: stripeSemaphoreInfoCount
+    // Length expression: stripeSemaphoreInfoCount
     // Extern sync: false
     // Optional: false
     pStripeSemaphoreInfos: ?[*]const VkSemaphoreSubmitInfo = null,
@@ -35609,8 +35083,6 @@ pub const VkPhysicalDeviceShaderSubgroupRotateFeatures = extern struct {
     // Optional: false
     shaderSubgroupRotateClustered: u32 = 0,
 };
-// Extension: VK_KHR_shader_subgroup_rotate
-pub const VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR = VkPhysicalDeviceShaderSubgroupRotateFeatures;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -35626,8 +35098,6 @@ pub const VkPhysicalDeviceShaderExpectAssumeFeatures = extern struct {
     // Optional: false
     shaderExpectAssume: u32 = 0,
 };
-// Extension: VK_KHR_shader_expect_assume
-pub const VkPhysicalDeviceShaderExpectAssumeFeaturesKHR = VkPhysicalDeviceShaderExpectAssumeFeatures;
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -35643,8 +35113,6 @@ pub const VkPhysicalDeviceShaderFloatControls2Features = extern struct {
     // Optional: false
     shaderFloatControls2: u32 = 0,
 };
-// Extension: VK_KHR_shader_float_controls2
-pub const VkPhysicalDeviceShaderFloatControls2FeaturesKHR = VkPhysicalDeviceShaderFloatControls2Features;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -35660,8 +35128,6 @@ pub const VkPhysicalDeviceDynamicRenderingLocalReadFeatures = extern struct {
     // Optional: false
     dynamicRenderingLocalRead: u32 = 0,
 };
-// Extension: VK_KHR_dynamic_rendering_local_read
-pub const VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR = VkPhysicalDeviceDynamicRenderingLocalReadFeatures;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkGraphicsPipelineCreateInfo,VkCommandBufferInheritanceInfo
 // Returned only: false
@@ -35676,13 +35142,11 @@ pub const VkRenderingAttachmentLocationInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: false
     pColorAttachmentLocations: ?[*]const u32 = null,
 };
-// Extension: VK_KHR_dynamic_rendering_local_read
-pub const VkRenderingAttachmentLocationInfoKHR = VkRenderingAttachmentLocationInfo;
 // Extension: VK_GRAPHICS_VERSION_1_4
 // Extends: VkGraphicsPipelineCreateInfo,VkCommandBufferInheritanceInfo
 // Returned only: false
@@ -35697,7 +35161,7 @@ pub const VkRenderingInputAttachmentIndexInfo = extern struct {
     // Extern sync: false
     // Optional: true
     colorAttachmentCount: u32 = 0,
-    // Length field: colorAttachmentCount
+    // Length expression: colorAttachmentCount
     // Extern sync: false
     // Optional: true
     pColorAttachmentInputIndices: ?[*]const u32 = null,
@@ -35708,8 +35172,6 @@ pub const VkRenderingInputAttachmentIndexInfo = extern struct {
     // Optional: true
     pStencilInputAttachmentIndex: ?*const u32 = null,
 };
-// Extension: VK_KHR_dynamic_rendering_local_read
-pub const VkRenderingInputAttachmentIndexInfoKHR = VkRenderingInputAttachmentIndexInfo;
 // Extension: VK_KHR_shader_quad_control
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -35902,8 +35364,6 @@ pub const VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT = extern struct 
     // Optional: false
     shaderReplicatedComposites: u32 = 0,
 };
-// Extension: VK_EXT_present_mode_fifo_latest_ready
-pub const VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT = VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR;
 // Extension: VK_KHR_present_mode_fifo_latest_ready
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
 // Returned only: false
@@ -36554,11 +36014,11 @@ pub const VkTensorDescriptionARM = extern struct {
     // Extern sync: false
     // Optional: false
     dimensionCount: u32 = 0,
-    // Length field: dimensionCount
+    // Length expression: dimensionCount
     // Extern sync: false
     // Optional: false
     pDimensions: ?[*]const i64 = null,
-    // Length field: dimensionCount
+    // Length expression: dimensionCount
     // Extern sync: false
     // Optional: true
     pStrides: ?[*]const i64 = null,
@@ -36588,7 +36048,7 @@ pub const VkTensorCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
-    // Length field: queueFamilyIndexCount
+    // Length expression: queueFamilyIndexCount
     // Extern sync: false
     // Optional: false
     pQueueFamilyIndices: ?[*]const u32 = null,
@@ -36661,7 +36121,7 @@ pub const VkWriteDescriptorSetTensorARM = extern struct {
     // Extern sync: false
     // Optional: false
     tensorViewCount: u32 = 0,
-    // Length field: tensorViewCount
+    // Length expression: tensorViewCount
     // Extern sync: false
     // Optional: false
     pTensorViews: ?[*]const VkTensorViewARM = null,
@@ -36849,7 +36309,7 @@ pub const VkCopyTensorInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
-    // Length field: regionCount
+    // Length expression: regionCount
     // Extern sync: false
     // Optional: false
     pRegions: ?[*]const VkTensorCopyARM = null,
@@ -36867,15 +36327,15 @@ pub const VkTensorCopyARM = extern struct {
     // Extern sync: false
     // Optional: true
     dimensionCount: u32 = 0,
-    // Length field: dimensionCount
+    // Length expression: dimensionCount
     // Extern sync: false
     // Optional: true
     pSrcOffset: ?[*]const u64 = null,
-    // Length field: dimensionCount
+    // Length expression: dimensionCount
     // Extern sync: false
     // Optional: true
     pDstOffset: ?[*]const u64 = null,
-    // Length field: dimensionCount
+    // Length expression: dimensionCount
     // Extern sync: false
     // Optional: true
     pExtent: ?[*]const u64 = null,
@@ -36989,7 +36449,7 @@ pub const VkFrameBoundaryTensorsARM = extern struct {
     // Extern sync: false
     // Optional: false
     tensorCount: u32 = 0,
-    // Length field: tensorCount
+    // Length expression: tensorCount
     // Extern sync: false
     // Optional: false
     pTensors: ?[*]const VkTensorARM = null,
@@ -37174,7 +36634,7 @@ pub const VkDataGraphPipelineCompilerControlCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     pNext: ?*const anyopaque = null,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pVendorOptions: ?[*:0]const u8 = null,
@@ -37197,7 +36657,7 @@ pub const VkDataGraphPipelineCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     resourceInfoCount: u32 = 0,
-    // Length field: resourceInfoCount
+    // Length expression: resourceInfoCount
     // Extern sync: false
     // Optional: false
     pResourceInfos: ?[*]const VkDataGraphPipelineResourceInfoARM = null,
@@ -37216,7 +36676,7 @@ pub const VkDataGraphPipelineShaderModuleCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     module: VkShaderModule = .none,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     pName: ?[*:0]const u8 = null,
@@ -37226,7 +36686,7 @@ pub const VkDataGraphPipelineShaderModuleCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: true
     constantCount: u32 = 0,
-    // Length field: constantCount
+    // Length expression: constantCount
     // Extern sync: false
     // Optional: true
     pConstants: ?[*]const VkDataGraphPipelineConstantARM = null,
@@ -37361,7 +36821,7 @@ pub const VkDataGraphPipelinePropertyQueryResultARM = extern struct {
     // Extern sync: false
     // Optional: true
     dataSize: u64 = 0,
-    // Length field: dataSize
+    // Length expression: dataSize
     // Extern sync: false
     // Optional: true
     pData: ?*anyopaque = null,
@@ -37380,7 +36840,7 @@ pub const VkDataGraphPipelineIdentifierCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     identifierSize: u32 = 0,
-    // Length field: identifierSize
+    // Length expression: identifierSize
     // Extern sync: false
     // Optional: false
     pIdentifier: ?[*]const u8 = null,
@@ -37417,7 +36877,7 @@ pub const VkPhysicalDeviceDataGraphOperationSupportARM = extern struct {
     // Extern sync: false
     // Optional: false
     operationType: VkPhysicalDeviceDataGraphOperationTypeARM,
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM]u8 = @import("std").mem.zeroes([VK_MAX_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_SET_NAME_SIZE_ARM]u8),
@@ -37490,7 +36950,7 @@ pub const VkDataGraphProcessingEngineCreateInfoARM = extern struct {
     // Extern sync: false
     // Optional: false
     processingEngineCount: u32 = 0,
-    // Length field: processingEngineCount
+    // Length expression: processingEngineCount
     // Extern sync: false
     // Optional: false
     pProcessingEngines: ?[*]VkPhysicalDeviceDataGraphProcessingEngineARM = null,
@@ -37875,7 +37335,7 @@ pub const VkPerformanceCounterDescriptionARM = extern struct {
     // Extern sync: false
     // Optional: true
     flags: VkPerformanceCounterDescriptionFlagsARM = .{},
-    // Length field: null-terminated
+    // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
     name: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
@@ -37985,7 +37445,8 @@ pub const VkPerformanceValueDataINTEL = extern union {
     // Selected with: VK_PERFORMANCE_VALUE_TYPE_BOOL_INTEL
     valueBool: u32,
     // Selected with: VK_PERFORMANCE_VALUE_TYPE_STRING_INTEL
-    valueString: [*:0]const u8,
+    // Length expression: null-terminated
+    valueString: *const u8,
 };
 // Extension: VK_KHR_pipeline_executable_properties
 pub const VkPipelineExecutableStatisticValueKHR = extern union {
@@ -37998,13 +37459,11 @@ pub const VkPipelineExecutableStatisticValueKHR = extern union {
     // Selected with: VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_FLOAT64_KHR
     f64: f64,
 };
-// Extension: VK_KHR_acceleration_structure
 // Extension: VK_NV_cooperative_vector
 pub const VkDeviceOrHostAddressKHR = extern union {
     deviceAddress: u64,
     hostAddress: *anyopaque,
 };
-// Extension: VK_KHR_acceleration_structure
 // Extension: VK_NV_cooperative_vector
 pub const VkDeviceOrHostAddressConstKHR = extern union {
     deviceAddress: u64,
@@ -38075,81 +37534,6 @@ pub const VkAccelerationStructureMotionInstanceDataNV = extern union {
     srtMotionInstance: VkAccelerationStructureSRTMotionInstanceNV,
 };
 
-// Functions
-// Can be used without queues: false
-pub const vkInternalAllocationNotification = fn (
-    pUserData: *anyopaque,
-    size: u64,
-    allocationType: VkInternalAllocationType,
-    allocationScope: VkSystemAllocationScope,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkInternalFreeNotification = fn (
-    pUserData: *anyopaque,
-    size: u64,
-    allocationType: VkInternalAllocationType,
-    allocationScope: VkSystemAllocationScope,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkReallocationFunction = fn (
-    pUserData: *anyopaque,
-    pOriginal: *anyopaque,
-    size: u64,
-    alignment: u64,
-    allocationScope: VkSystemAllocationScope,
-) callconv(.c) ?[*]u8;
-// Can be used without queues: false
-pub const vkAllocationFunction = fn (
-    pUserData: *anyopaque,
-    size: u64,
-    alignment: u64,
-    allocationScope: VkSystemAllocationScope,
-) callconv(.c) ?[*]u8;
-// Can be used without queues: false
-pub const vkFreeFunction = fn (
-    pUserData: *anyopaque,
-    pMemory: *anyopaque,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkVoidFunction = fn (
-    pUserData: *anyopaque,
-    pMemory: *anyopaque,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkDebugReportCallbackEXT = fn (
-    flags: VkDebugReportFlagsEXT,
-    objectType: VkDebugReportObjectTypeEXT,
-    object: u64,
-    location: u64,
-    messageCode: i32,
-    pLayerPrefix: *const u8,
-    pMessage: *const u8,
-    pUserData: *anyopaque,
-) callconv(.c) u32;
-// Can be used without queues: false
-pub const vkDebugUtilsMessengerCallbackEXT = fn (
-    messageSeverity: VkDebugUtilsMessageSeverityFlagsEXT,
-    messageTypes: VkDebugUtilsMessageTypeFlagsEXT,
-    pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT,
-    pUserData: *anyopaque,
-) callconv(.c) u32;
-// Can be used without queues: false
-pub const vkFaultCallbackFunction = fn (
-    unrecordedFaults: u32,
-    faultCount: u32,
-    pFaults: *const anyopaque,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkDeviceMemoryReportCallbackEXT = fn (
-    pCallbackData: *const VkDeviceMemoryReportCallbackDataEXT,
-    pUserData: *const anyopaque,
-) callconv(.c) void;
-// Can be used without queues: false
-pub const vkGetInstanceProcAddrLUNARG = fn (
-    instance: VkInstance,
-    pName: *const u8,
-) callconv(.c) ?*const vkVoidFunction;
-
 // Commands
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_LAYER_NOT_PRESENT,VK_ERROR_EXTENSION_NOT_PRESENT,VK_ERROR_INCOMPATIBLE_DRIVER,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -38170,19 +37554,19 @@ pub const vkDestroyInstance = fn (
 pub const vkEnumeratePhysicalDevices = fn (
     instance: VkInstance,
     pPhysicalDeviceCount: *u32,
-    // len: pPhysicalDeviceCount
+    // Length expression: pPhysicalDeviceCount
     pPhysicalDevices: ?[*]VkPhysicalDevice,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
 pub const vkGetDeviceProcAddr = fn (
     device: VkDevice,
-    // len: null-terminated
+    // Length expression: null-terminated
     pName: [*:0]const u8,
 ) callconv(.c) ?*const vkVoidFunction;
 // Can be used without queues: false
 pub const vkGetInstanceProcAddr = fn (
     instance: VkInstance,
-    // len: null-terminated
+    // Length expression: null-terminated
     pName: [*:0]const u8,
 ) callconv(.c) ?*const vkVoidFunction;
 // Can be used without queues: false
@@ -38194,7 +37578,7 @@ pub const vkGetPhysicalDeviceProperties = fn (
 pub const vkGetPhysicalDeviceQueueFamilyProperties = fn (
     physicalDevice: VkPhysicalDevice,
     pQueueFamilyPropertyCount: *u32,
-    // len: pQueueFamilyPropertyCount
+    // Length expression: pQueueFamilyPropertyCount
     pQueueFamilyProperties: ?[*]VkQueueFamilyProperties,
 ) callconv(.c) void;
 // Can be used without queues: false
@@ -38222,7 +37606,7 @@ pub const vkGetPhysicalDeviceImageFormatProperties = fn (
     type: VkImageType,
     tiling: VkImageTiling,
     usage: VkImageUsageFlags,
-    flags: ?VkImageCreateFlags,
+    flags: VkImageCreateFlags,
     pImageFormatProperties: *VkImageFormatProperties,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
@@ -38250,17 +37634,17 @@ pub const vkEnumerateInstanceVersion = fn (
 // Can be used without queues: false
 pub const vkEnumerateInstanceLayerProperties = fn (
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkLayerProperties,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_LAYER_NOT_PRESENT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkEnumerateInstanceExtensionProperties = fn (
-    // len: null-terminated
+    // Length expression: null-terminated
     pLayerName: ?[*:0]const u8,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkExtensionProperties,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
@@ -38269,7 +37653,7 @@ pub const vkEnumerateInstanceExtensionProperties = fn (
 pub const vkEnumerateDeviceLayerProperties = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkLayerProperties,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
@@ -38277,10 +37661,10 @@ pub const vkEnumerateDeviceLayerProperties = fn (
 // Can be used without queues: false
 pub const vkEnumerateDeviceExtensionProperties = fn (
     physicalDevice: VkPhysicalDevice,
-    // len: null-terminated
+    // Length expression: null-terminated
     pLayerName: ?[*:0]const u8,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkExtensionProperties,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -38295,8 +37679,8 @@ pub const vkGetDeviceQueue = fn (
 // Can be used without queues: false
 pub const vkQueueSubmit = fn (
     queue: VkQueue,
-    submitCount: ?u32,
-    // len: submitCount
+    submitCount: u32,
+    // Length expression: submitCount
     pSubmits: [*]const VkSubmitInfo,
     fence: VkFence,
 ) callconv(.c) VkResult;
@@ -38335,7 +37719,7 @@ pub const vkMapMemory = fn (
     memory: VkDeviceMemory,
     offset: u64,
     size: u64,
-    flags: ?VkMemoryMapFlags,
+    flags: VkMemoryMapFlags,
     ppData: **anyopaque,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -38349,7 +37733,7 @@ pub const vkUnmapMemory = fn (
 pub const vkFlushMappedMemoryRanges = fn (
     device: VkDevice,
     memoryRangeCount: u32,
-    // len: memoryRangeCount
+    // Length expression: memoryRangeCount
     pMemoryRanges: [*]const VkMappedMemoryRange,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
@@ -38358,7 +37742,7 @@ pub const vkFlushMappedMemoryRanges = fn (
 pub const vkInvalidateMappedMemoryRanges = fn (
     device: VkDevice,
     memoryRangeCount: u32,
-    // len: memoryRangeCount
+    // Length expression: memoryRangeCount
     pMemoryRanges: [*]const VkMappedMemoryRange,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -38402,7 +37786,7 @@ pub const vkGetImageSparseMemoryRequirements = fn (
     device: VkDevice,
     image: VkImage,
     pSparseMemoryRequirementCount: *u32,
-    // len: pSparseMemoryRequirementCount
+    // Length expression: pSparseMemoryRequirementCount
     pSparseMemoryRequirements: ?[*]VkSparseImageMemoryRequirements,
 ) callconv(.c) void;
 // Can be used without queues: false
@@ -38414,7 +37798,7 @@ pub const vkGetPhysicalDeviceSparseImageFormatProperties = fn (
     usage: VkImageUsageFlags,
     tiling: VkImageTiling,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkSparseImageFormatProperties,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_SPARSE_BINDING_BIT
@@ -38423,8 +37807,8 @@ pub const vkGetPhysicalDeviceSparseImageFormatProperties = fn (
 // Can be used without queues: false
 pub const vkQueueBindSparse = fn (
     queue: VkQueue,
-    bindInfoCount: ?u32,
-    // len: bindInfoCount
+    bindInfoCount: u32,
+    // Length expression: bindInfoCount
     pBindInfo: [*]const VkBindSparseInfo,
     fence: VkFence,
 ) callconv(.c) VkResult;
@@ -38449,7 +37833,7 @@ pub const vkDestroyFence = fn (
 pub const vkResetFences = fn (
     device: VkDevice,
     fenceCount: u32,
-    // len: fenceCount
+    // Length expression: fenceCount
     pFences: [*]const VkFence,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_NOT_READY
@@ -38465,7 +37849,7 @@ pub const vkGetFenceStatus = fn (
 pub const vkWaitForFences = fn (
     device: VkDevice,
     fenceCount: u32,
-    // len: fenceCount
+    // Length expression: fenceCount
     pFences: [*]const VkFence,
     waitAll: u32,
     timeout: u64,
@@ -38545,10 +37929,10 @@ pub const vkGetQueryPoolResults = fn (
     firstQuery: u32,
     queryCount: u32,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
     stride: u64,
-    flags: ?VkQueryResultFlags,
+    flags: VkQueryResultFlags,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
 pub const vkResetQueryPool = fn (
@@ -38557,8 +37941,6 @@ pub const vkResetQueryPool = fn (
     firstQuery: u32,
     queryCount: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_host_query_reset
-pub const vkResetQueryPoolEXT = vkResetQueryPool;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -38663,7 +38045,7 @@ pub const vkGetPipelineCacheData = fn (
     device: VkDevice,
     pipelineCache: VkPipelineCache,
     pDataSize: *u64,
-    // len: pDataSize
+    // Length expression: pDataSize
     pData: ?*anyopaque,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
@@ -38673,10 +38055,9 @@ pub const vkMergePipelineCaches = fn (
     device: VkDevice,
     dstCache: VkPipelineCache,
     srcCacheCount: u32,
-    // len: srcCacheCount
+    // Length expression: srcCacheCount
     pSrcCaches: [*]const VkPipelineCache,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_binary
 // Success codes: VK_SUCCESS,VK_INCOMPLETE,VK_PIPELINE_BINARY_MISSING_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
@@ -38686,14 +38067,12 @@ pub const vkCreatePipelineBinariesKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pBinaries: *VkPipelineBinaryHandlesInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_binary
 // Can be used without queues: false
 pub const vkDestroyPipelineBinaryKHR = fn (
     device: VkDevice,
     pipelineBinary: VkPipelineBinaryKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_pipeline_binary
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -38702,7 +38081,6 @@ pub const vkGetPipelineKeyKHR = fn (
     pPipelineCreateInfo: ?*const VkPipelineCreateInfoKHR,
     pPipelineKey: *VkPipelineBinaryKeyKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_binary
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NOT_ENOUGH_SPACE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -38711,10 +38089,9 @@ pub const vkGetPipelineBinaryDataKHR = fn (
     pInfo: *const VkPipelineBinaryDataInfoKHR,
     pPipelineBinaryKey: *VkPipelineBinaryKeyKHR,
     pPipelineBinaryDataSize: *u64,
-    // len: pPipelineBinaryDataSize
+    // Length expression: pPipelineBinaryDataSize
     pPipelineBinaryData: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_binary
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -38730,10 +38107,10 @@ pub const vkCreateGraphicsPipelines = fn (
     device: VkDevice,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkGraphicsPipelineCreateInfo,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_PIPELINE_COMPILE_REQUIRED_EXT
@@ -38743,20 +38120,19 @@ pub const vkCreateComputePipelines = fn (
     device: VkDevice,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkComputePipelineCreateInfo,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
-// Extension: VK_HUAWEI_subpass_shading
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI = fn (
     device: VkDevice,
     renderpass: VkRenderPass,
-    // len: 1
+    // Length expression: 1
     pMaxWorkgroupSize: *VkExtent2D,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -38831,7 +38207,7 @@ pub const vkDestroyDescriptorPool = fn (
 pub const vkResetDescriptorPool = fn (
     device: VkDevice,
     descriptorPool: VkDescriptorPool,
-    flags: ?VkDescriptorPoolResetFlags,
+    flags: VkDescriptorPoolResetFlags,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_FRAGMENTED_POOL,VK_ERROR_OUT_OF_POOL_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -38839,7 +38215,7 @@ pub const vkResetDescriptorPool = fn (
 pub const vkAllocateDescriptorSets = fn (
     device: VkDevice,
     pAllocateInfo: *const VkDescriptorSetAllocateInfo,
-    // len: pAllocateInfo-&gt;descriptorSetCount
+    // Length expression: pAllocateInfo-&gt;descriptorSetCount
     pDescriptorSets: [*]VkDescriptorSet,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
@@ -38849,17 +38225,17 @@ pub const vkFreeDescriptorSets = fn (
     device: VkDevice,
     descriptorPool: VkDescriptorPool,
     descriptorSetCount: u32,
-    // len: descriptorSetCount
+    // Length expression: descriptorSetCount
     pDescriptorSets: [*]const VkDescriptorSet,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
 pub const vkUpdateDescriptorSets = fn (
     device: VkDevice,
-    descriptorWriteCount: ?u32,
-    // len: descriptorWriteCount
+    descriptorWriteCount: u32,
+    // Length expression: descriptorWriteCount
     pDescriptorWrites: [*]const VkWriteDescriptorSet,
-    descriptorCopyCount: ?u32,
-    // len: descriptorCopyCount
+    descriptorCopyCount: u32,
+    // Length expression: descriptorCopyCount
     pDescriptorCopies: [*]const VkCopyDescriptorSet,
 ) callconv(.c) void;
 // Success codes: VK_SUCCESS
@@ -38904,8 +38280,6 @@ pub const vkGetRenderingAreaGranularity = fn (
     pRenderingAreaInfo: *const VkRenderingAreaInfo,
     pGranularity: *VkExtent2D,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance5
-pub const vkGetRenderingAreaGranularityKHR = vkGetRenderingAreaGranularity;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -38927,7 +38301,7 @@ pub const vkDestroyCommandPool = fn (
 pub const vkResetCommandPool = fn (
     device: VkDevice,
     commandPool: VkCommandPool,
-    flags: ?VkCommandPoolResetFlags,
+    flags: VkCommandPoolResetFlags,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -38935,7 +38309,7 @@ pub const vkResetCommandPool = fn (
 pub const vkAllocateCommandBuffers = fn (
     device: VkDevice,
     pAllocateInfo: *const VkCommandBufferAllocateInfo,
-    // len: pAllocateInfo-&gt;commandBufferCount
+    // Length expression: pAllocateInfo-&gt;commandBufferCount
     pCommandBuffers: [*]VkCommandBuffer,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -38943,7 +38317,7 @@ pub const vkFreeCommandBuffers = fn (
     device: VkDevice,
     commandPool: VkCommandPool,
     commandBufferCount: u32,
-    // len: commandBufferCount
+    // Length expression: commandBufferCount
     pCommandBuffers: [*]const VkCommandBuffer,
 ) callconv(.c) void;
 // Success codes: VK_SUCCESS
@@ -38964,7 +38338,7 @@ pub const vkEndCommandBuffer = fn (
 // Can be used without queues: false
 pub const vkResetCommandBuffer = fn (
     commandBuffer: VkCommandBuffer,
-    flags: ?VkCommandBufferResetFlags,
+    flags: VkCommandBufferResetFlags,
 ) callconv(.c) VkResult;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_DATA_GRAPH_BIT_ARM
 // Render pass: both
@@ -38976,7 +38350,6 @@ pub const vkCmdBindPipeline = fn (
     pipelineBindPoint: VkPipelineBindPoint,
     pipeline: VkPipeline,
 ) callconv(.c) void;
-// Extension: VK_EXT_attachment_feedback_loop_dynamic_state
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -38984,7 +38357,7 @@ pub const vkCmdBindPipeline = fn (
 // Can be used without queues: false
 pub const vkCmdSetAttachmentFeedbackLoopEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
-    aspectMask: ?VkImageAspectFlags,
+    aspectMask: VkImageAspectFlags,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
@@ -38995,7 +38368,7 @@ pub const vkCmdSetViewport = fn (
     commandBuffer: VkCommandBuffer,
     firstViewport: u32,
     viewportCount: u32,
-    // len: viewportCount
+    // Length expression: viewportCount
     pViewports: [*]const VkViewport,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39007,7 +38380,7 @@ pub const vkCmdSetScissor = fn (
     commandBuffer: VkCommandBuffer,
     firstScissor: u32,
     scissorCount: u32,
-    // len: scissorCount
+    // Length expression: scissorCount
     pScissors: [*]const VkRect2D,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39090,10 +38463,10 @@ pub const vkCmdBindDescriptorSets = fn (
     layout: VkPipelineLayout,
     firstSet: u32,
     descriptorSetCount: u32,
-    // len: descriptorSetCount
+    // Length expression: descriptorSetCount
     pDescriptorSets: [*]const VkDescriptorSet,
-    dynamicOffsetCount: ?u32,
-    // len: dynamicOffsetCount
+    dynamicOffsetCount: u32,
+    // Length expression: dynamicOffsetCount
     pDynamicOffsets: [*]const u32,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39116,9 +38489,9 @@ pub const vkCmdBindVertexBuffers = fn (
     commandBuffer: VkCommandBuffer,
     firstBinding: u32,
     bindingCount: u32,
-    // len: bindingCount
+    // Length expression: bindingCount
     pBuffers: [*]const VkBuffer,
-    // len: bindingCount
+    // Length expression: bindingCount
     pOffsets: [*]const u64,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39146,7 +38519,6 @@ pub const vkCmdDrawIndexed = fn (
     vertexOffset: i32,
     firstInstance: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_multi_draw
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39154,14 +38526,13 @@ pub const vkCmdDrawIndexed = fn (
 // Can be used without queues: false
 pub const vkCmdDrawMultiEXT = fn (
     commandBuffer: VkCommandBuffer,
-    drawCount: ?u32,
-    // len: drawCount
+    drawCount: u32,
+    // Length expression: drawCount
     pVertexInfo: [*]const VkMultiDrawInfoEXT,
     instanceCount: u32,
     firstInstance: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_multi_draw
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39169,8 +38540,8 @@ pub const vkCmdDrawMultiEXT = fn (
 // Can be used without queues: false
 pub const vkCmdDrawMultiIndexedEXT = fn (
     commandBuffer: VkCommandBuffer,
-    drawCount: ?u32,
-    // len: drawCount
+    drawCount: u32,
+    // Length expression: drawCount
     pIndexInfo: [*]const VkMultiDrawIndexedInfoEXT,
     instanceCount: u32,
     firstInstance: u32,
@@ -39222,7 +38593,6 @@ pub const vkCmdDispatchIndirect = fn (
     buffer: VkBuffer,
     offset: u64,
 ) callconv(.c) void;
-// Extension: VK_HUAWEI_subpass_shading
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39231,7 +38601,6 @@ pub const vkCmdDispatchIndirect = fn (
 pub const vkCmdSubpassShadingHUAWEI = fn (
     commandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_HUAWEI_cluster_culling_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39243,7 +38612,6 @@ pub const vkCmdDrawClusterHUAWEI = fn (
     groupCountY: u32,
     groupCountZ: u32,
 ) callconv(.c) void;
-// Extension: VK_HUAWEI_cluster_culling_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39254,7 +38622,6 @@ pub const vkCmdDrawClusterIndirectHUAWEI = fn (
     buffer: VkBuffer,
     offset: u64,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands_compute
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -39275,7 +38642,7 @@ pub const vkCmdCopyBuffer = fn (
     srcBuffer: VkBuffer,
     dstBuffer: VkBuffer,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkBufferCopy,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
@@ -39290,7 +38657,7 @@ pub const vkCmdCopyImage = fn (
     dstImage: VkImage,
     dstImageLayout: VkImageLayout,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkImageCopy,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39305,7 +38672,7 @@ pub const vkCmdBlitImage = fn (
     dstImage: VkImage,
     dstImageLayout: VkImageLayout,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkImageBlit,
     filter: VkFilter,
 ) callconv(.c) void;
@@ -39320,7 +38687,7 @@ pub const vkCmdCopyBufferToImage = fn (
     dstImage: VkImage,
     dstImageLayout: VkImageLayout,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkBufferImageCopy,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
@@ -39334,10 +38701,9 @@ pub const vkCmdCopyImageToBuffer = fn (
     srcImageLayout: VkImageLayout,
     dstBuffer: VkBuffer,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkBufferImageCopy,
 ) callconv(.c) void;
-// Extension: VK_NV_copy_memory_indirect
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -39349,7 +38715,6 @@ pub const vkCmdCopyMemoryIndirectNV = fn (
     copyCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_memory_indirect
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -39359,7 +38724,6 @@ pub const vkCmdCopyMemoryIndirectKHR = fn (
     commandBuffer: VkCommandBuffer,
     pCopyMemoryIndirectInfo: *const VkCopyMemoryIndirectInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_NV_copy_memory_indirect
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -39372,10 +38736,9 @@ pub const vkCmdCopyMemoryToImageIndirectNV = fn (
     stride: u32,
     dstImage: VkImage,
     dstImageLayout: VkImageLayout,
-    // len: copyCount
+    // Length expression: copyCount
     pImageSubresources: [*]const VkImageSubresourceLayers,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_memory_indirect
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -39395,7 +38758,7 @@ pub const vkCmdUpdateBuffer = fn (
     dstBuffer: VkBuffer,
     dstOffset: u64,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *const anyopaque,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
@@ -39422,7 +38785,7 @@ pub const vkCmdClearColorImage = fn (
     imageLayout: VkImageLayout,
     pColor: *const VkClearColorValue,
     rangeCount: u32,
-    // len: rangeCount
+    // Length expression: rangeCount
     pRanges: [*]const VkImageSubresourceRange,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39436,7 +38799,7 @@ pub const vkCmdClearDepthStencilImage = fn (
     imageLayout: VkImageLayout,
     pDepthStencil: *const VkClearDepthStencilValue,
     rangeCount: u32,
-    // len: rangeCount
+    // Length expression: rangeCount
     pRanges: [*]const VkImageSubresourceRange,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39447,10 +38810,10 @@ pub const vkCmdClearDepthStencilImage = fn (
 pub const vkCmdClearAttachments = fn (
     commandBuffer: VkCommandBuffer,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pAttachments: [*]const VkClearAttachment,
     rectCount: u32,
-    // len: rectCount
+    // Length expression: rectCount
     pRects: [*]const VkClearRect,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39465,7 +38828,7 @@ pub const vkCmdResolveImage = fn (
     dstImage: VkImage,
     dstImageLayout: VkImageLayout,
     regionCount: u32,
-    // len: regionCount
+    // Length expression: regionCount
     pRegions: [*]const VkImageResolve,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
@@ -39477,7 +38840,7 @@ pub const vkCmdResolveImage = fn (
 pub const vkCmdSetEvent = fn (
     commandBuffer: VkCommandBuffer,
     event: VkEvent,
-    stageMask: ?VkPipelineStageFlags,
+    stageMask: VkPipelineStageFlags,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
@@ -39488,7 +38851,7 @@ pub const vkCmdSetEvent = fn (
 pub const vkCmdResetEvent = fn (
     commandBuffer: VkCommandBuffer,
     event: VkEvent,
-    stageMask: ?VkPipelineStageFlags,
+    stageMask: VkPipelineStageFlags,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
@@ -39499,18 +38862,18 @@ pub const vkCmdResetEvent = fn (
 pub const vkCmdWaitEvents = fn (
     commandBuffer: VkCommandBuffer,
     eventCount: u32,
-    // len: eventCount
+    // Length expression: eventCount
     pEvents: [*]const VkEvent,
-    srcStageMask: ?VkPipelineStageFlags,
-    dstStageMask: ?VkPipelineStageFlags,
-    memoryBarrierCount: ?u32,
-    // len: memoryBarrierCount
+    srcStageMask: VkPipelineStageFlags,
+    dstStageMask: VkPipelineStageFlags,
+    memoryBarrierCount: u32,
+    // Length expression: memoryBarrierCount
     pMemoryBarriers: [*]const VkMemoryBarrier,
-    bufferMemoryBarrierCount: ?u32,
-    // len: bufferMemoryBarrierCount
+    bufferMemoryBarrierCount: u32,
+    // Length expression: bufferMemoryBarrierCount
     pBufferMemoryBarriers: [*]const VkBufferMemoryBarrier,
-    imageMemoryBarrierCount: ?u32,
-    // len: imageMemoryBarrierCount
+    imageMemoryBarrierCount: u32,
+    // Length expression: imageMemoryBarrierCount
     pImageMemoryBarriers: [*]const VkImageMemoryBarrier,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
@@ -39521,17 +38884,17 @@ pub const vkCmdWaitEvents = fn (
 // Can be used without queues: false
 pub const vkCmdPipelineBarrier = fn (
     commandBuffer: VkCommandBuffer,
-    srcStageMask: ?VkPipelineStageFlags,
-    dstStageMask: ?VkPipelineStageFlags,
-    dependencyFlags: ?VkDependencyFlags,
-    memoryBarrierCount: ?u32,
-    // len: memoryBarrierCount
+    srcStageMask: VkPipelineStageFlags,
+    dstStageMask: VkPipelineStageFlags,
+    dependencyFlags: VkDependencyFlags,
+    memoryBarrierCount: u32,
+    // Length expression: memoryBarrierCount
     pMemoryBarriers: [*]const VkMemoryBarrier,
-    bufferMemoryBarrierCount: ?u32,
-    // len: bufferMemoryBarrierCount
+    bufferMemoryBarrierCount: u32,
+    // Length expression: bufferMemoryBarrierCount
     pBufferMemoryBarriers: [*]const VkBufferMemoryBarrier,
-    imageMemoryBarrierCount: ?u32,
-    // len: imageMemoryBarrierCount
+    imageMemoryBarrierCount: u32,
+    // Length expression: imageMemoryBarrierCount
     pImageMemoryBarriers: [*]const VkImageMemoryBarrier,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
@@ -39544,7 +38907,7 @@ pub const vkCmdBeginQuery = fn (
     commandBuffer: VkCommandBuffer,
     queryPool: VkQueryPool,
     query: u32,
-    flags: ?VkQueryControlFlags,
+    flags: VkQueryControlFlags,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
@@ -39557,7 +38920,6 @@ pub const vkCmdEndQuery = fn (
     queryPool: VkQueryPool,
     query: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_conditional_rendering
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -39567,7 +38929,6 @@ pub const vkCmdBeginConditionalRenderingEXT = fn (
     commandBuffer: VkCommandBuffer,
     pConditionalRenderingBegin: *const VkConditionalRenderingBeginInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_conditional_rendering
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -39576,7 +38937,6 @@ pub const vkCmdBeginConditionalRenderingEXT = fn (
 pub const vkCmdEndConditionalRenderingEXT = fn (
     commandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_EXT_custom_resolve
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -39622,7 +38982,7 @@ pub const vkCmdCopyQueryPoolResults = fn (
     dstBuffer: VkBuffer,
     dstOffset: u64,
     stride: u64,
-    flags: ?VkQueryResultFlags,
+    flags: VkQueryResultFlags,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
@@ -39635,7 +38995,7 @@ pub const vkCmdPushConstants = fn (
     stageFlags: VkShaderStageFlags,
     offset: u32,
     size: u32,
-    // len: size
+    // Length expression: size
     pValues: *const anyopaque,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -39673,10 +39033,9 @@ pub const vkCmdEndRenderPass = fn (
 pub const vkCmdExecuteCommands = fn (
     commandBuffer: VkCommandBuffer,
     commandBufferCount: u32,
-    // len: commandBufferCount
+    // Length expression: commandBufferCount
     pCommandBuffers: [*]const VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_KHR_android_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39686,7 +39045,6 @@ pub const vkCreateAndroidSurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_OHOS_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39696,27 +39054,24 @@ pub const vkCreateSurfaceOHOS = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceDisplayPropertiesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayPropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceDisplayPlanePropertiesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayPlanePropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39724,10 +39079,9 @@ pub const vkGetDisplayPlaneSupportedDisplaysKHR = fn (
     physicalDevice: VkPhysicalDevice,
     planeIndex: u32,
     pDisplayCount: *u32,
-    // len: pDisplayCount
+    // Length expression: pDisplayCount
     pDisplays: ?[*]VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39735,10 +39089,9 @@ pub const vkGetDisplayModePropertiesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     display: VkDisplayKHR,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayModePropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39749,7 +39102,6 @@ pub const vkCreateDisplayModeKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pMode: *VkDisplayModeKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39759,7 +39111,6 @@ pub const vkGetDisplayPlaneCapabilitiesKHR = fn (
     planeIndex: u32,
     pCapabilities: *VkDisplayPlaneCapabilitiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39769,27 +39120,24 @@ pub const vkCreateDisplayPlaneSurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_display_swapchain
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INCOMPATIBLE_DISPLAY_KHR,VK_ERROR_DEVICE_LOST,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkCreateSharedSwapchainsKHR = fn (
     device: VkDevice,
     swapchainCount: u32,
-    // len: swapchainCount
+    // Length expression: swapchainCount
     pCreateInfos: [*]const VkSwapchainCreateInfoKHR,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: swapchainCount
+    // Length expression: swapchainCount
     pSwapchains: [*]VkSwapchainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_surface
 // Can be used without queues: false
 pub const vkDestroySurfaceKHR = fn (
     instance: VkInstance,
     surface: VkSurfaceKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39799,7 +39147,6 @@ pub const vkGetPhysicalDeviceSurfaceSupportKHR = fn (
     surface: VkSurfaceKHR,
     pSupported: *u32,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39808,7 +39155,6 @@ pub const vkGetPhysicalDeviceSurfaceCapabilitiesKHR = fn (
     surface: VkSurfaceKHR,
     pSurfaceCapabilities: *VkSurfaceCapabilitiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_surface
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39816,10 +39162,9 @@ pub const vkGetPhysicalDeviceSurfaceFormatsKHR = fn (
     physicalDevice: VkPhysicalDevice,
     surface: VkSurfaceKHR,
     pSurfaceFormatCount: *u32,
-    // len: pSurfaceFormatCount
+    // Length expression: pSurfaceFormatCount
     pSurfaceFormats: ?[*]VkSurfaceFormatKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_surface
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39827,10 +39172,9 @@ pub const vkGetPhysicalDeviceSurfacePresentModesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     surface: VkSurfaceKHR,
     pPresentModeCount: *u32,
-    // len: pPresentModeCount
+    // Length expression: pPresentModeCount
     pPresentModes: ?[*]VkPresentModeKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_COMPRESSION_EXHAUSTED_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39840,14 +39184,12 @@ pub const vkCreateSwapchainKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSwapchain: *VkSwapchainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
 // Can be used without queues: false
 pub const vkDestroySwapchainKHR = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_swapchain
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39855,10 +39197,9 @@ pub const vkGetSwapchainImagesKHR = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
     pSwapchainImageCount: *u32,
-    // len: pSwapchainImageCount
+    // Length expression: pSwapchainImageCount
     pSwapchainImages: ?[*]VkImage,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
 // Success codes: VK_SUCCESS,VK_TIMEOUT,VK_NOT_READY,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39870,7 +39211,6 @@ pub const vkAcquireNextImageKHR = fn (
     fence: VkFence,
     pImageIndex: *u32,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
 // Success codes: VK_SUCCESS,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED,VK_ERROR_PRESENT_TIMING_QUEUE_FULL_EXT
 // Can be used without queues: false
@@ -39878,7 +39218,6 @@ pub const vkQueuePresentKHR = fn (
     queue: VkQueue,
     pPresentInfo: *const VkPresentInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NN_vi_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39888,7 +39227,6 @@ pub const vkCreateViSurfaceNN = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_wayland_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39898,14 +39236,12 @@ pub const vkCreateWaylandSurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_wayland_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceWaylandPresentationSupportKHR = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     display: *wl_display,
 ) callconv(.c) u32;
-// Extension: VK_KHR_win32_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39915,13 +39251,11 @@ pub const vkCreateWin32SurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_win32_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceWin32PresentationSupportKHR = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
 ) callconv(.c) u32;
-// Extension: VK_KHR_xlib_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39931,7 +39265,6 @@ pub const vkCreateXlibSurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_xlib_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceXlibPresentationSupportKHR = fn (
     physicalDevice: VkPhysicalDevice,
@@ -39939,7 +39272,6 @@ pub const vkGetPhysicalDeviceXlibPresentationSupportKHR = fn (
     dpy: *Display,
     visualID: VisualID,
 ) callconv(.c) u32;
-// Extension: VK_KHR_xcb_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39949,7 +39281,6 @@ pub const vkCreateXcbSurfaceKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_xcb_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceXcbPresentationSupportKHR = fn (
     physicalDevice: VkPhysicalDevice,
@@ -39957,7 +39288,6 @@ pub const vkGetPhysicalDeviceXcbPresentationSupportKHR = fn (
     connection: *xcb_connection_t,
     visual_id: xcb_visualid_t,
 ) callconv(.c) u32;
-// Extension: VK_EXT_directfb_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39967,14 +39297,12 @@ pub const vkCreateDirectFBSurfaceEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_directfb_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceDirectFBPresentationSupportEXT = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     dfb: *IDirectFB,
 ) callconv(.c) u32;
-// Extension: VK_FUCHSIA_imagepipe_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39984,7 +39312,6 @@ pub const vkCreateImagePipeSurfaceFUCHSIA = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_GGP_stream_descriptor_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -39994,7 +39321,6 @@ pub const vkCreateStreamDescriptorSurfaceGGP = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_QNX_screen_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40004,14 +39330,12 @@ pub const vkCreateScreenSurfaceQNX = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_QNX_screen_surface
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceScreenPresentationSupportQNX = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     window: *_screen_window,
 ) callconv(.c) u32;
-// Extension: VK_EXT_debug_report
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40021,14 +39345,12 @@ pub const vkCreateDebugReportCallbackEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pCallback: *VkDebugReportCallbackEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_report
 // Can be used without queues: false
 pub const vkDestroyDebugReportCallbackEXT = fn (
     instance: VkInstance,
     callback: VkDebugReportCallbackEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_report
 // Can be used without queues: false
 pub const vkDebugReportMessageEXT = fn (
     instance: VkInstance,
@@ -40037,12 +39359,11 @@ pub const vkDebugReportMessageEXT = fn (
     object: u64,
     location: u64,
     messageCode: i32,
-    // len: null-terminated
+    // Length expression: null-terminated
     pLayerPrefix: [*:0]const u8,
-    // len: null-terminated
+    // Length expression: null-terminated
     pMessage: [*:0]const u8,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_marker
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40050,7 +39371,6 @@ pub const vkDebugMarkerSetObjectNameEXT = fn (
     device: VkDevice,
     pNameInfo: *const VkDebugMarkerObjectNameInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_marker
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40058,7 +39378,6 @@ pub const vkDebugMarkerSetObjectTagEXT = fn (
     device: VkDevice,
     pTagInfo: *const VkDebugMarkerObjectTagInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_marker
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -40069,7 +39388,6 @@ pub const vkCmdDebugMarkerBeginEXT = fn (
     commandBuffer: VkCommandBuffer,
     pMarkerInfo: *const VkDebugMarkerMarkerInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_marker
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -40079,7 +39397,6 @@ pub const vkCmdDebugMarkerBeginEXT = fn (
 pub const vkCmdDebugMarkerEndEXT = fn (
     commandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_marker
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -40090,7 +39407,6 @@ pub const vkCmdDebugMarkerInsertEXT = fn (
     commandBuffer: VkCommandBuffer,
     pMarkerInfo: *const VkDebugMarkerMarkerInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_NV_external_memory_capabilities
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40100,11 +39416,10 @@ pub const vkGetPhysicalDeviceExternalImageFormatPropertiesNV = fn (
     type: VkImageType,
     tiling: VkImageTiling,
     usage: VkImageUsageFlags,
-    flags: ?VkImageCreateFlags,
-    externalHandleType: ?VkExternalMemoryHandleTypeFlagsNV,
+    flags: VkImageCreateFlags,
+    externalHandleType: VkExternalMemoryHandleTypeFlagsNV,
     pExternalImageFormatProperties: *VkExternalImageFormatPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_memory_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40114,7 +39429,6 @@ pub const vkGetMemoryWin32HandleNV = fn (
     handleType: VkExternalMemoryHandleTypeFlagsNV,
     pHandle: *HANDLE,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_device_generated_commands
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -40125,7 +39439,6 @@ pub const vkCmdExecuteGeneratedCommandsNV = fn (
     isPreprocessed: u32,
     pGeneratedCommandsInfo: *const VkGeneratedCommandsInfoNV,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -40135,7 +39448,6 @@ pub const vkCmdPreprocessGeneratedCommandsNV = fn (
     commandBuffer: VkCommandBuffer,
     pGeneratedCommandsInfo: *const VkGeneratedCommandsInfoNV,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40147,14 +39459,12 @@ pub const vkCmdBindPipelineShaderGroupNV = fn (
     pipeline: VkPipeline,
     groupIndex: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands
 // Can be used without queues: false
 pub const vkGetGeneratedCommandsMemoryRequirementsNV = fn (
     device: VkDevice,
     pInfo: *const VkGeneratedCommandsMemoryRequirementsInfoNV,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40164,14 +39474,12 @@ pub const vkCreateIndirectCommandsLayoutNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pIndirectCommandsLayout: *VkIndirectCommandsLayoutNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_device_generated_commands
 // Can be used without queues: false
 pub const vkDestroyIndirectCommandsLayoutNV = fn (
     device: VkDevice,
     indirectCommandsLayout: VkIndirectCommandsLayoutNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary
@@ -40182,7 +39490,6 @@ pub const vkCmdExecuteGeneratedCommandsEXT = fn (
     isPreprocessed: u32,
     pGeneratedCommandsInfo: *const VkGeneratedCommandsInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary
@@ -40193,14 +39500,12 @@ pub const vkCmdPreprocessGeneratedCommandsEXT = fn (
     pGeneratedCommandsInfo: *const VkGeneratedCommandsInfoEXT,
     stateCommandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Can be used without queues: false
 pub const vkGetGeneratedCommandsMemoryRequirementsEXT = fn (
     device: VkDevice,
     pInfo: *const VkGeneratedCommandsMemoryRequirementsInfoEXT,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40210,14 +39515,12 @@ pub const vkCreateIndirectCommandsLayoutEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pIndirectCommandsLayout: *VkIndirectCommandsLayoutEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_device_generated_commands
 // Can be used without queues: false
 pub const vkDestroyIndirectCommandsLayoutEXT = fn (
     device: VkDevice,
     indirectCommandsLayout: VkIndirectCommandsLayoutEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40227,29 +39530,26 @@ pub const vkCreateIndirectExecutionSetEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pIndirectExecutionSet: *VkIndirectExecutionSetEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_device_generated_commands
 // Can be used without queues: false
 pub const vkDestroyIndirectExecutionSetEXT = fn (
     device: VkDevice,
     indirectExecutionSet: VkIndirectExecutionSetEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Can be used without queues: false
 pub const vkUpdateIndirectExecutionSetPipelineEXT = fn (
     device: VkDevice,
     indirectExecutionSet: VkIndirectExecutionSetEXT,
     executionSetWriteCount: u32,
-    // len: executionSetWriteCount
+    // Length expression: executionSetWriteCount
     pExecutionSetWrites: [*]const VkWriteIndirectExecutionSetPipelineEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_generated_commands
 // Can be used without queues: false
 pub const vkUpdateIndirectExecutionSetShaderEXT = fn (
     device: VkDevice,
     indirectExecutionSet: VkIndirectExecutionSetEXT,
     executionSetWriteCount: u32,
-    // len: executionSetWriteCount
+    // Length expression: executionSetWriteCount
     pExecutionSetWrites: [*]const VkWriteIndirectExecutionSetShaderEXT,
 ) callconv(.c) void;
 // Can be used without queues: false
@@ -40257,23 +39557,17 @@ pub const vkGetPhysicalDeviceFeatures2 = fn (
     physicalDevice: VkPhysicalDevice,
     pFeatures: *VkPhysicalDeviceFeatures2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceFeatures2KHR = vkGetPhysicalDeviceFeatures2;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceProperties2 = fn (
     physicalDevice: VkPhysicalDevice,
     pProperties: *VkPhysicalDeviceProperties2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceProperties2KHR = vkGetPhysicalDeviceProperties2;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceFormatProperties2 = fn (
     physicalDevice: VkPhysicalDevice,
     format: VkFormat,
     pFormatProperties: *VkFormatProperties2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceFormatProperties2KHR = vkGetPhysicalDeviceFormatProperties2;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED,VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40282,34 +39576,26 @@ pub const vkGetPhysicalDeviceImageFormatProperties2 = fn (
     pImageFormatInfo: *const VkPhysicalDeviceImageFormatInfo2,
     pImageFormatProperties: *VkImageFormatProperties2,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceImageFormatProperties2KHR = vkGetPhysicalDeviceImageFormatProperties2;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceQueueFamilyProperties2 = fn (
     physicalDevice: VkPhysicalDevice,
     pQueueFamilyPropertyCount: *u32,
-    // len: pQueueFamilyPropertyCount
+    // Length expression: pQueueFamilyPropertyCount
     pQueueFamilyProperties: ?[*]VkQueueFamilyProperties2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceQueueFamilyProperties2KHR = vkGetPhysicalDeviceQueueFamilyProperties2;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceMemoryProperties2 = fn (
     physicalDevice: VkPhysicalDevice,
     pMemoryProperties: *VkPhysicalDeviceMemoryProperties2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceSparseImageFormatProperties2 = fn (
     physicalDevice: VkPhysicalDevice,
     pFormatInfo: *const VkPhysicalDeviceSparseImageFormatInfo2,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkSparseImageFormatProperties2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_physical_device_properties2
-pub const vkGetPhysicalDeviceSparseImageFormatProperties2KHR = vkGetPhysicalDeviceSparseImageFormatProperties2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40321,28 +39607,21 @@ pub const vkCmdPushDescriptorSet = fn (
     layout: VkPipelineLayout,
     set: u32,
     descriptorWriteCount: u32,
-    // len: descriptorWriteCount
+    // Length expression: descriptorWriteCount
     pDescriptorWrites: [*]const VkWriteDescriptorSet,
 ) callconv(.c) void;
-// Extension: VK_KHR_push_descriptor
-pub const vkCmdPushDescriptorSetKHR = vkCmdPushDescriptorSet;
 // Can be used without queues: false
 pub const vkTrimCommandPool = fn (
     device: VkDevice,
     commandPool: VkCommandPool,
-    flags: ?VkCommandPoolTrimFlags,
+    flags: VkCommandPoolTrimFlags,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance1
-pub const vkTrimCommandPoolKHR = vkTrimCommandPool;
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceExternalBufferProperties = fn (
     physicalDevice: VkPhysicalDevice,
     pExternalBufferInfo: *const VkPhysicalDeviceExternalBufferInfo,
     pExternalBufferProperties: *VkExternalBufferProperties,
 ) callconv(.c) void;
-// Extension: VK_KHR_external_memory_capabilities
-pub const vkGetPhysicalDeviceExternalBufferPropertiesKHR = vkGetPhysicalDeviceExternalBufferProperties;
-// Extension: VK_KHR_external_memory_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40351,7 +39630,6 @@ pub const vkGetMemoryWin32HandleKHR = fn (
     pGetWin32HandleInfo: *const VkMemoryGetWin32HandleInfoKHR,
     pHandle: *HANDLE,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_memory_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40361,7 +39639,6 @@ pub const vkGetMemoryWin32HandlePropertiesKHR = fn (
     handle: HANDLE,
     pMemoryWin32HandleProperties: *VkMemoryWin32HandlePropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_memory_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40370,7 +39647,6 @@ pub const vkGetMemoryFdKHR = fn (
     pGetFdInfo: *const VkMemoryGetFdInfoKHR,
     pFd: *int,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_memory_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40380,7 +39656,6 @@ pub const vkGetMemoryFdPropertiesKHR = fn (
     fd: int,
     pMemoryFdProperties: *VkMemoryFdPropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_external_memory
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40389,7 +39664,6 @@ pub const vkGetMemoryZirconHandleFUCHSIA = fn (
     pGetZirconHandleInfo: *const VkMemoryGetZirconHandleInfoFUCHSIA,
     pZirconHandle: *zx_handle_t,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_external_memory
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40399,7 +39673,6 @@ pub const vkGetMemoryZirconHandlePropertiesFUCHSIA = fn (
     zirconHandle: zx_handle_t,
     pMemoryZirconHandleProperties: *VkMemoryZirconHandlePropertiesFUCHSIA,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_memory_rdma
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40408,7 +39681,6 @@ pub const vkGetMemoryRemoteAddressNV = fn (
     pMemoryGetRemoteAddressInfo: *const VkMemoryGetRemoteAddressInfoNV,
     pAddress: **anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_memory_sci_buf
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40417,7 +39689,6 @@ pub const vkGetMemorySciBufNV = fn (
     pGetSciBufInfo: *const VkMemoryGetSciBufInfoNV,
     pHandle: *NvSciBufObj,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_memory_sci_buf
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40427,7 +39698,6 @@ pub const vkGetPhysicalDeviceExternalMemorySciBufPropertiesNV = fn (
     handle: NvSciBufObj,
     pMemorySciBufProperties: *VkMemorySciBufPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_memory_sci_buf
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40441,9 +39711,6 @@ pub const vkGetPhysicalDeviceExternalSemaphoreProperties = fn (
     pExternalSemaphoreInfo: *const VkPhysicalDeviceExternalSemaphoreInfo,
     pExternalSemaphoreProperties: *VkExternalSemaphoreProperties,
 ) callconv(.c) void;
-// Extension: VK_KHR_external_semaphore_capabilities
-pub const vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = vkGetPhysicalDeviceExternalSemaphoreProperties;
-// Extension: VK_KHR_external_semaphore_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40452,7 +39719,6 @@ pub const vkGetSemaphoreWin32HandleKHR = fn (
     pGetWin32HandleInfo: *const VkSemaphoreGetWin32HandleInfoKHR,
     pHandle: *HANDLE,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_semaphore_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40460,7 +39726,6 @@ pub const vkImportSemaphoreWin32HandleKHR = fn (
     device: VkDevice,
     pImportSemaphoreWin32HandleInfo: *const VkImportSemaphoreWin32HandleInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_semaphore_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40469,7 +39734,6 @@ pub const vkGetSemaphoreFdKHR = fn (
     pGetFdInfo: *const VkSemaphoreGetFdInfoKHR,
     pFd: *int,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_semaphore_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40477,7 +39741,6 @@ pub const vkImportSemaphoreFdKHR = fn (
     device: VkDevice,
     pImportSemaphoreFdInfo: *const VkImportSemaphoreFdInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_external_semaphore
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40486,7 +39749,6 @@ pub const vkGetSemaphoreZirconHandleFUCHSIA = fn (
     pGetZirconHandleInfo: *const VkSemaphoreGetZirconHandleInfoFUCHSIA,
     pZirconHandle: *zx_handle_t,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_external_semaphore
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40500,9 +39762,6 @@ pub const vkGetPhysicalDeviceExternalFenceProperties = fn (
     pExternalFenceInfo: *const VkPhysicalDeviceExternalFenceInfo,
     pExternalFenceProperties: *VkExternalFenceProperties,
 ) callconv(.c) void;
-// Extension: VK_KHR_external_fence_capabilities
-pub const vkGetPhysicalDeviceExternalFencePropertiesKHR = vkGetPhysicalDeviceExternalFenceProperties;
-// Extension: VK_KHR_external_fence_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40511,7 +39770,6 @@ pub const vkGetFenceWin32HandleKHR = fn (
     pGetWin32HandleInfo: *const VkFenceGetWin32HandleInfoKHR,
     pHandle: *HANDLE,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_fence_win32
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40519,7 +39777,6 @@ pub const vkImportFenceWin32HandleKHR = fn (
     device: VkDevice,
     pImportFenceWin32HandleInfo: *const VkImportFenceWin32HandleInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_fence_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40528,7 +39785,6 @@ pub const vkGetFenceFdKHR = fn (
     pGetFdInfo: *const VkFenceGetFdInfoKHR,
     pFd: *int,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_external_fence_fd
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40536,8 +39792,6 @@ pub const vkImportFenceFdKHR = fn (
     device: VkDevice,
     pImportFenceFdInfo: *const VkImportFenceFdInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40546,8 +39800,6 @@ pub const vkGetFenceSciSyncFenceNV = fn (
     pGetSciSyncHandleInfo: *const VkFenceGetSciSyncInfoNV,
     pHandle: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40556,8 +39808,6 @@ pub const vkGetFenceSciSyncObjNV = fn (
     pGetSciSyncHandleInfo: *const VkFenceGetSciSyncInfoNV,
     pHandle: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40565,8 +39815,6 @@ pub const vkImportFenceSciSyncFenceNV = fn (
     device: VkDevice,
     pImportFenceSciSyncInfo: *const VkImportFenceSciSyncInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40574,7 +39822,6 @@ pub const vkImportFenceSciSyncObjNV = fn (
     device: VkDevice,
     pImportFenceSciSyncInfo: *const VkImportFenceSciSyncInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40583,7 +39830,6 @@ pub const vkGetSemaphoreSciSyncObjNV = fn (
     pGetSciSyncInfo: *const VkSemaphoreGetSciSyncInfoNV,
     pHandle: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_NOT_PERMITTED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40591,8 +39837,6 @@ pub const vkImportSemaphoreSciSyncObjNV = fn (
     device: VkDevice,
     pImportSemaphoreSciSyncInfo: *const VkImportSemaphoreSciSyncInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40601,7 +39845,6 @@ pub const vkGetPhysicalDeviceSciSyncAttributesNV = fn (
     pSciSyncAttributesInfo: *const VkSciSyncAttributesInfoNV,
     pAttributes: NvSciSyncAttrList,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40611,14 +39854,12 @@ pub const vkCreateSemaphoreSciSyncPoolNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSemaphorePool: *VkSemaphoreSciSyncPoolNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_sci_sync2
 // Can be used without queues: false
 pub const vkDestroySemaphoreSciSyncPoolNV = fn (
     device: VkDevice,
     semaphorePool: VkSemaphoreSciSyncPoolNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_direct_mode_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40626,7 +39867,6 @@ pub const vkReleaseDisplayEXT = fn (
     physicalDevice: VkPhysicalDevice,
     display: VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_acquire_xlib_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40635,7 +39875,6 @@ pub const vkAcquireXlibDisplayEXT = fn (
     dpy: *Display,
     display: VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_acquire_xlib_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40645,7 +39884,6 @@ pub const vkGetRandROutputDisplayEXT = fn (
     rrOutput: RROutput,
     pDisplay: *VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_acquire_winrt_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40653,7 +39891,6 @@ pub const vkAcquireWinrtDisplayNV = fn (
     physicalDevice: VkPhysicalDevice,
     display: VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_acquire_winrt_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40662,7 +39899,6 @@ pub const vkGetWinrtDisplayNV = fn (
     deviceRelativeId: u32,
     pDisplay: *VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_display_control
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40671,7 +39907,6 @@ pub const vkDisplayPowerControlEXT = fn (
     display: VkDisplayKHR,
     pDisplayPowerInfo: *const VkDisplayPowerInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_display_control
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40681,7 +39916,6 @@ pub const vkRegisterDeviceEventEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pFence: *VkFence,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_display_control
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40692,7 +39926,6 @@ pub const vkRegisterDisplayEventEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pFence: *VkFence,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_display_control
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40702,7 +39935,6 @@ pub const vkGetSwapchainCounterEXT = fn (
     counter: VkSurfaceCounterFlagsEXT,
     pCounterValue: *u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_display_surface_counter
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40717,11 +39949,9 @@ pub const vkGetPhysicalDeviceSurfaceCapabilities2EXT = fn (
 pub const vkEnumeratePhysicalDeviceGroups = fn (
     instance: VkInstance,
     pPhysicalDeviceGroupCount: *u32,
-    // len: pPhysicalDeviceGroupCount
+    // Length expression: pPhysicalDeviceGroupCount
     pPhysicalDeviceGroupProperties: ?[*]VkPhysicalDeviceGroupProperties,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_device_group_creation
-pub const vkEnumeratePhysicalDeviceGroupsKHR = vkEnumeratePhysicalDeviceGroups;
 // Can be used without queues: false
 pub const vkGetDeviceGroupPeerMemoryFeatures = fn (
     device: VkDevice,
@@ -40730,30 +39960,24 @@ pub const vkGetDeviceGroupPeerMemoryFeatures = fn (
     remoteDeviceIndex: u32,
     pPeerMemoryFeatures: *VkPeerMemoryFeatureFlags,
 ) callconv(.c) void;
-// Extension: VK_KHR_device_group
-pub const vkGetDeviceGroupPeerMemoryFeaturesKHR = vkGetDeviceGroupPeerMemoryFeatures;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkBindBufferMemory2 = fn (
     device: VkDevice,
     bindInfoCount: u32,
-    // len: bindInfoCount
+    // Length expression: bindInfoCount
     pBindInfos: [*]const VkBindBufferMemoryInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_bind_memory2
-pub const vkBindBufferMemory2KHR = vkBindBufferMemory2;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkBindImageMemory2 = fn (
     device: VkDevice,
     bindInfoCount: u32,
-    // len: bindInfoCount
+    // Length expression: bindInfoCount
     pBindInfos: [*]const VkBindImageMemoryInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_bind_memory2
-pub const vkBindImageMemory2KHR = vkBindImageMemory2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Render pass: both
 // Video conding: both
@@ -40764,10 +39988,6 @@ pub const vkCmdSetDeviceMask = fn (
     commandBuffer: VkCommandBuffer,
     deviceMask: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_device_group
-pub const vkCmdSetDeviceMaskKHR = vkCmdSetDeviceMask;
-// Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40775,8 +39995,6 @@ pub const vkGetDeviceGroupPresentCapabilitiesKHR = fn (
     device: VkDevice,
     pDeviceGroupPresentCapabilities: *VkDeviceGroupPresentCapabilitiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40785,8 +40003,6 @@ pub const vkGetDeviceGroupSurfacePresentModesKHR = fn (
     surface: VkSurfaceKHR,
     pModes: *VkDeviceGroupPresentModeFlagsKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Success codes: VK_SUCCESS,VK_TIMEOUT,VK_NOT_READY,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40809,10 +40025,6 @@ pub const vkCmdDispatchBase = fn (
     groupCountY: u32,
     groupCountZ: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_device_group
-pub const vkCmdDispatchBaseKHR = vkCmdDispatchBase;
-// Extension: VK_KHR_swapchain
-// Extension: VK_KHR_device_group
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40820,7 +40032,7 @@ pub const vkGetPhysicalDevicePresentRectanglesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     surface: VkSurfaceKHR,
     pRectCount: *u32,
-    // len: pRectCount
+    // Length expression: pRectCount
     pRects: ?[*]VkRect2D,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS
@@ -40832,16 +40044,12 @@ pub const vkCreateDescriptorUpdateTemplate = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pDescriptorUpdateTemplate: *VkDescriptorUpdateTemplate,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_descriptor_update_template
-pub const vkCreateDescriptorUpdateTemplateKHR = vkCreateDescriptorUpdateTemplate;
 // Can be used without queues: false
 pub const vkDestroyDescriptorUpdateTemplate = fn (
     device: VkDevice,
     descriptorUpdateTemplate: VkDescriptorUpdateTemplate,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_descriptor_update_template
-pub const vkDestroyDescriptorUpdateTemplateKHR = vkDestroyDescriptorUpdateTemplate;
 // Can be used without queues: false
 pub const vkUpdateDescriptorSetWithTemplate = fn (
     device: VkDevice,
@@ -40849,8 +40057,6 @@ pub const vkUpdateDescriptorSetWithTemplate = fn (
     descriptorUpdateTemplate: VkDescriptorUpdateTemplate,
     pData: *const anyopaque,
 ) callconv(.c) void;
-// Extension: VK_KHR_descriptor_update_template
-pub const vkUpdateDescriptorSetWithTemplateKHR = vkUpdateDescriptorSetWithTemplate;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40863,20 +40069,15 @@ pub const vkCmdPushDescriptorSetWithTemplate = fn (
     set: u32,
     pData: *const anyopaque,
 ) callconv(.c) void;
-// Extension: VK_KHR_push_descriptor
-// Extension: VK_KHR_descriptor_update_template
-pub const vkCmdPushDescriptorSetWithTemplateKHR = vkCmdPushDescriptorSetWithTemplate;
-// Extension: VK_EXT_hdr_metadata
 // Can be used without queues: false
 pub const vkSetHdrMetadataEXT = fn (
     device: VkDevice,
     swapchainCount: u32,
-    // len: swapchainCount
+    // Length expression: swapchainCount
     pSwapchains: [*]const VkSwapchainKHR,
-    // len: swapchainCount
+    // Length expression: swapchainCount
     pMetadata: [*]const VkHdrMetadataEXT,
 ) callconv(.c) void;
-// Extension: VK_KHR_shared_presentable_image
 // Success codes: VK_SUCCESS,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40884,7 +40085,6 @@ pub const vkGetSwapchainStatusKHR = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_GOOGLE_display_timing
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40893,7 +40093,6 @@ pub const vkGetRefreshCycleDurationGOOGLE = fn (
     swapchain: VkSwapchainKHR,
     pDisplayTimingProperties: *VkRefreshCycleDurationGOOGLE,
 ) callconv(.c) VkResult;
-// Extension: VK_GOOGLE_display_timing
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40901,10 +40100,9 @@ pub const vkGetPastPresentationTimingGOOGLE = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
     pPresentationTimingCount: *u32,
-    // len: pPresentationTimingCount
+    // Length expression: pPresentationTimingCount
     pPresentationTimings: ?[*]VkPastPresentationTimingGOOGLE,
 ) callconv(.c) VkResult;
-// Extension: VK_MVK_ios_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40914,7 +40112,6 @@ pub const vkCreateIOSSurfaceMVK = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_MVK_macos_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40924,7 +40121,6 @@ pub const vkCreateMacOSSurfaceMVK = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_metal_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -40934,7 +40130,6 @@ pub const vkCreateMetalSurfaceEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_clip_space_w_scaling
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40944,10 +40139,9 @@ pub const vkCmdSetViewportWScalingNV = fn (
     commandBuffer: VkCommandBuffer,
     firstViewport: u32,
     viewportCount: u32,
-    // len: viewportCount
+    // Length expression: viewportCount
     pViewportWScalings: [*]const VkViewportWScalingNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_discard_rectangles
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40957,10 +40151,9 @@ pub const vkCmdSetDiscardRectangleEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstDiscardRectangle: u32,
     discardRectangleCount: u32,
-    // len: discardRectangleCount
+    // Length expression: discardRectangleCount
     pDiscardRectangles: [*]const VkRect2D,
 ) callconv(.c) void;
-// Extension: VK_EXT_discard_rectangles
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40970,7 +40163,6 @@ pub const vkCmdSetDiscardRectangleEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     discardRectangleEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_discard_rectangles
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40980,7 +40172,6 @@ pub const vkCmdSetDiscardRectangleModeEXT = fn (
     commandBuffer: VkCommandBuffer,
     discardRectangleMode: VkDiscardRectangleModeEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_sample_locations
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -40990,14 +40181,12 @@ pub const vkCmdSetSampleLocationsEXT = fn (
     commandBuffer: VkCommandBuffer,
     pSampleLocationsInfo: *const VkSampleLocationsInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_sample_locations
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceMultisamplePropertiesEXT = fn (
     physicalDevice: VkPhysicalDevice,
     samples: VkSampleCountFlags,
     pMultisampleProperties: *VkMultisamplePropertiesEXT,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_surface_capabilities2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41006,7 +40195,6 @@ pub const vkGetPhysicalDeviceSurfaceCapabilities2KHR = fn (
     pSurfaceInfo: *const VkPhysicalDeviceSurfaceInfo2KHR,
     pSurfaceCapabilities: *VkSurfaceCapabilities2KHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_surface_capabilities2
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41014,30 +40202,27 @@ pub const vkGetPhysicalDeviceSurfaceFormats2KHR = fn (
     physicalDevice: VkPhysicalDevice,
     pSurfaceInfo: *const VkPhysicalDeviceSurfaceInfo2KHR,
     pSurfaceFormatCount: *u32,
-    // len: pSurfaceFormatCount
+    // Length expression: pSurfaceFormatCount
     pSurfaceFormats: ?[*]VkSurfaceFormat2KHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_display_properties2
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceDisplayProperties2KHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayProperties2KHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_display_properties2
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceDisplayPlaneProperties2KHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayPlaneProperties2KHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_display_properties2
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41045,10 +40230,9 @@ pub const vkGetDisplayModeProperties2KHR = fn (
     physicalDevice: VkPhysicalDevice,
     display: VkDisplayKHR,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkDisplayModeProperties2KHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_get_display_properties2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41063,52 +40247,40 @@ pub const vkGetBufferMemoryRequirements2 = fn (
     pInfo: *const VkBufferMemoryRequirementsInfo2,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_memory_requirements2
-pub const vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2;
 // Can be used without queues: false
 pub const vkGetImageMemoryRequirements2 = fn (
     device: VkDevice,
     pInfo: *const VkImageMemoryRequirementsInfo2,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_memory_requirements2
-pub const vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2;
 // Can be used without queues: false
 pub const vkGetImageSparseMemoryRequirements2 = fn (
     device: VkDevice,
     pInfo: *const VkImageSparseMemoryRequirementsInfo2,
     pSparseMemoryRequirementCount: *u32,
-    // len: pSparseMemoryRequirementCount
+    // Length expression: pSparseMemoryRequirementCount
     pSparseMemoryRequirements: ?[*]VkSparseImageMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_get_memory_requirements2
-pub const vkGetImageSparseMemoryRequirements2KHR = vkGetImageSparseMemoryRequirements2;
 // Can be used without queues: false
 pub const vkGetDeviceBufferMemoryRequirements = fn (
     device: VkDevice,
     pInfo: *const VkDeviceBufferMemoryRequirements,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance4
-pub const vkGetDeviceBufferMemoryRequirementsKHR = vkGetDeviceBufferMemoryRequirements;
 // Can be used without queues: false
 pub const vkGetDeviceImageMemoryRequirements = fn (
     device: VkDevice,
     pInfo: *const VkDeviceImageMemoryRequirements,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance4
-pub const vkGetDeviceImageMemoryRequirementsKHR = vkGetDeviceImageMemoryRequirements;
 // Can be used without queues: false
 pub const vkGetDeviceImageSparseMemoryRequirements = fn (
     device: VkDevice,
     pInfo: *const VkDeviceImageMemoryRequirements,
     pSparseMemoryRequirementCount: *u32,
-    // len: pSparseMemoryRequirementCount
+    // Length expression: pSparseMemoryRequirementCount
     pSparseMemoryRequirements: ?[*]VkSparseImageMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance4
-pub const vkGetDeviceImageSparseMemoryRequirementsKHR = vkGetDeviceImageSparseMemoryRequirements;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
@@ -41118,23 +40290,18 @@ pub const vkCreateSamplerYcbcrConversion = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pYcbcrConversion: *VkSamplerYcbcrConversion,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const vkCreateSamplerYcbcrConversionKHR = vkCreateSamplerYcbcrConversion;
 // Can be used without queues: false
 pub const vkDestroySamplerYcbcrConversion = fn (
     device: VkDevice,
     ycbcrConversion: VkSamplerYcbcrConversion,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_sampler_ycbcr_conversion
-pub const vkDestroySamplerYcbcrConversionKHR = vkDestroySamplerYcbcrConversion;
 // Can be used without queues: false
 pub const vkGetDeviceQueue2 = fn (
     device: VkDevice,
     pQueueInfo: *const VkDeviceQueueInfo2,
     pQueue: *VkQueue,
 ) callconv(.c) void;
-// Extension: VK_EXT_validation_cache
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41144,14 +40311,12 @@ pub const vkCreateValidationCacheEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pValidationCache: *VkValidationCacheEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_validation_cache
 // Can be used without queues: false
 pub const vkDestroyValidationCacheEXT = fn (
     device: VkDevice,
     validationCache: VkValidationCacheEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_validation_cache
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41159,10 +40324,9 @@ pub const vkGetValidationCacheDataEXT = fn (
     device: VkDevice,
     validationCache: VkValidationCacheEXT,
     pDataSize: *u64,
-    // len: pDataSize
+    // Length expression: pDataSize
     pData: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_validation_cache
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41170,7 +40334,7 @@ pub const vkMergeValidationCachesEXT = fn (
     device: VkDevice,
     dstCache: VkValidationCacheEXT,
     srcCacheCount: u32,
-    // len: srcCacheCount
+    // Length expression: srcCacheCount
     pSrcCaches: [*]const VkValidationCacheEXT,
 ) callconv(.c) VkResult;
 // Can be used without queues: false
@@ -41179,9 +40343,6 @@ pub const vkGetDescriptorSetLayoutSupport = fn (
     pCreateInfo: *const VkDescriptorSetLayoutCreateInfo,
     pSupport: *VkDescriptorSetLayoutSupport,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance3
-pub const vkGetDescriptorSetLayoutSupportKHR = vkGetDescriptorSetLayoutSupport;
-// Extension: VK_ANDROID_native_buffer
 // Can be used without queues: false
 pub const vkGetSwapchainGrallocUsageANDROID = fn (
     device: VkDevice,
@@ -41189,7 +40350,6 @@ pub const vkGetSwapchainGrallocUsageANDROID = fn (
     imageUsage: VkImageUsageFlags,
     grallocUsage: *int,
 ) callconv(.c) VkResult;
-// Extension: VK_ANDROID_native_buffer
 // Can be used without queues: false
 pub const vkGetSwapchainGrallocUsage2ANDROID = fn (
     device: VkDevice,
@@ -41199,7 +40359,6 @@ pub const vkGetSwapchainGrallocUsage2ANDROID = fn (
     grallocConsumerUsage: *u64,
     grallocProducerUsage: *u64,
 ) callconv(.c) VkResult;
-// Extension: VK_ANDROID_native_buffer
 // Can be used without queues: false
 pub const vkAcquireImageANDROID = fn (
     device: VkDevice,
@@ -41208,17 +40367,15 @@ pub const vkAcquireImageANDROID = fn (
     semaphore: VkSemaphore,
     fence: VkFence,
 ) callconv(.c) VkResult;
-// Extension: VK_ANDROID_native_buffer
 // Can be used without queues: false
 pub const vkQueueSignalReleaseImageANDROID = fn (
     queue: VkQueue,
     waitSemaphoreCount: u32,
-    // len: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     pWaitSemaphores: [*]const VkSemaphore,
     image: VkImage,
     pNativeFenceFd: *int,
 ) callconv(.c) VkResult;
-// Extension: VK_AMD_shader_info
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_FEATURE_NOT_PRESENT,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41228,44 +40385,36 @@ pub const vkGetShaderInfoAMD = fn (
     shaderStage: VkShaderStageFlags,
     infoType: VkShaderInfoTypeAMD,
     pInfoSize: *u64,
-    // len: pInfoSize
+    // Length expression: pInfoSize
     pInfo: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_AMD_display_native_hdr
 // Can be used without queues: false
 pub const vkSetLocalDimmingAMD = fn (
     device: VkDevice,
     swapChain: VkSwapchainKHR,
     localDimmingEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_calibrated_timestamps
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pTimeDomainCount: *u32,
-    // len: pTimeDomainCount
+    // Length expression: pTimeDomainCount
     pTimeDomains: ?[*]VkTimeDomainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_calibrated_timestamps
-pub const vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = vkGetPhysicalDeviceCalibrateableTimeDomainsKHR;
-// Extension: VK_KHR_calibrated_timestamps
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetCalibratedTimestampsKHR = fn (
     device: VkDevice,
     timestampCount: u32,
-    // len: timestampCount
+    // Length expression: timestampCount
     pTimestampInfos: [*]const VkCalibratedTimestampInfoKHR,
-    // len: timestampCount
+    // Length expression: timestampCount
     pTimestamps: [*]u64,
     pMaxDeviation: *u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_calibrated_timestamps
-pub const vkGetCalibratedTimestampsEXT = vkGetCalibratedTimestampsKHR;
-// Extension: VK_EXT_debug_utils
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41273,7 +40422,6 @@ pub const vkSetDebugUtilsObjectNameEXT = fn (
     device: VkDevice,
     pNameInfo: *const VkDebugUtilsObjectNameInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_utils
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41281,24 +40429,20 @@ pub const vkSetDebugUtilsObjectTagEXT = fn (
     device: VkDevice,
     pTagInfo: *const VkDebugUtilsObjectTagInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_utils
 // Can be used without queues: false
 pub const vkQueueBeginDebugUtilsLabelEXT = fn (
     queue: VkQueue,
     pLabelInfo: *const VkDebugUtilsLabelEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Can be used without queues: false
 pub const vkQueueEndDebugUtilsLabelEXT = fn (
     queue: VkQueue,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Can be used without queues: false
 pub const vkQueueInsertDebugUtilsLabelEXT = fn (
     queue: VkQueue,
     pLabelInfo: *const VkDebugUtilsLabelEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -41309,7 +40453,6 @@ pub const vkCmdBeginDebugUtilsLabelEXT = fn (
     commandBuffer: VkCommandBuffer,
     pLabelInfo: *const VkDebugUtilsLabelEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -41319,7 +40462,6 @@ pub const vkCmdBeginDebugUtilsLabelEXT = fn (
 pub const vkCmdEndDebugUtilsLabelEXT = fn (
     commandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR,VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: both
 // Video conding: both
@@ -41330,7 +40472,6 @@ pub const vkCmdInsertDebugUtilsLabelEXT = fn (
     commandBuffer: VkCommandBuffer,
     pLabelInfo: *const VkDebugUtilsLabelEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41340,14 +40481,12 @@ pub const vkCreateDebugUtilsMessengerEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pMessenger: *VkDebugUtilsMessengerEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_debug_utils
 // Can be used without queues: false
 pub const vkDestroyDebugUtilsMessengerEXT = fn (
     instance: VkInstance,
     messenger: VkDebugUtilsMessengerEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_debug_utils
 // Can be used without queues: false
 pub const vkSubmitDebugUtilsMessageEXT = fn (
     instance: VkInstance,
@@ -41355,7 +40494,6 @@ pub const vkSubmitDebugUtilsMessageEXT = fn (
     messageTypes: VkDebugUtilsMessageTypeFlagsEXT,
     pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_external_memory_host
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41365,7 +40503,6 @@ pub const vkGetMemoryHostPointerPropertiesEXT = fn (
     pHostPointer: *const anyopaque,
     pMemoryHostPointerProperties: *VkMemoryHostPointerPropertiesEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_AMD_buffer_marker
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41373,7 +40510,7 @@ pub const vkGetMemoryHostPointerPropertiesEXT = fn (
 // Can be used without queues: false
 pub const vkCmdWriteBufferMarkerAMD = fn (
     commandBuffer: VkCommandBuffer,
-    pipelineStage: ?VkPipelineStageFlags,
+    pipelineStage: VkPipelineStageFlags,
     dstBuffer: VkBuffer,
     dstOffset: u64,
     marker: u32,
@@ -41387,8 +40524,6 @@ pub const vkCreateRenderPass2 = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pRenderPass: *VkRenderPass,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_create_renderpass2
-pub const vkCreateRenderPass2KHR = vkCreateRenderPass2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: outside
 // Command buffer levels: primary
@@ -41399,8 +40534,6 @@ pub const vkCmdBeginRenderPass2 = fn (
     pRenderPassBegin: *const VkRenderPassBeginInfo,
     pSubpassBeginInfo: *const VkSubpassBeginInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_create_renderpass2
-pub const vkCmdBeginRenderPass2KHR = vkCmdBeginRenderPass2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary
@@ -41411,8 +40544,6 @@ pub const vkCmdNextSubpass2 = fn (
     pSubpassBeginInfo: *const VkSubpassBeginInfo,
     pSubpassEndInfo: *const VkSubpassEndInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_create_renderpass2
-pub const vkCmdNextSubpass2KHR = vkCmdNextSubpass2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary
@@ -41422,8 +40553,6 @@ pub const vkCmdEndRenderPass2 = fn (
     commandBuffer: VkCommandBuffer,
     pSubpassEndInfo: *const VkSubpassEndInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_create_renderpass2
-pub const vkCmdEndRenderPass2KHR = vkCmdEndRenderPass2;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41432,8 +40561,6 @@ pub const vkGetSemaphoreCounterValue = fn (
     semaphore: VkSemaphore,
     pValue: *u64,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_timeline_semaphore
-pub const vkGetSemaphoreCounterValueKHR = vkGetSemaphoreCounterValue;
 // Success codes: VK_SUCCESS,VK_TIMEOUT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41442,8 +40569,6 @@ pub const vkWaitSemaphores = fn (
     pWaitInfo: *const VkSemaphoreWaitInfo,
     timeout: u64,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_timeline_semaphore
-pub const vkWaitSemaphoresKHR = vkWaitSemaphores;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41451,9 +40576,6 @@ pub const vkSignalSemaphore = fn (
     device: VkDevice,
     pSignalInfo: *const VkSemaphoreSignalInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_timeline_semaphore
-pub const vkSignalSemaphoreKHR = vkSignalSemaphore;
-// Extension: VK_ANDROID_external_memory_android_hardware_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41462,7 +40584,6 @@ pub const vkGetAndroidHardwareBufferPropertiesANDROID = fn (
     buffer: *const AHardwareBuffer,
     pProperties: *VkAndroidHardwareBufferPropertiesANDROID,
 ) callconv(.c) VkResult;
-// Extension: VK_ANDROID_external_memory_android_hardware_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41485,10 +40606,6 @@ pub const vkCmdDrawIndirectCount = fn (
     maxDrawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_draw_indirect_count
-pub const vkCmdDrawIndirectCountKHR = vkCmdDrawIndirectCount;
-// Extension: VK_AMD_draw_indirect_count
-pub const vkCmdDrawIndirectCountAMD = vkCmdDrawIndirectCount;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41503,11 +40620,6 @@ pub const vkCmdDrawIndexedIndirectCount = fn (
     maxDrawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_draw_indirect_count
-pub const vkCmdDrawIndexedIndirectCountKHR = vkCmdDrawIndexedIndirectCount;
-// Extension: VK_AMD_draw_indirect_count
-pub const vkCmdDrawIndexedIndirectCountAMD = vkCmdDrawIndexedIndirectCount;
-// Extension: VK_NV_device_diagnostic_checkpoints
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41517,15 +40629,13 @@ pub const vkCmdSetCheckpointNV = fn (
     commandBuffer: VkCommandBuffer,
     pCheckpointMarker: *const anyopaque,
 ) callconv(.c) void;
-// Extension: VK_NV_device_diagnostic_checkpoints
 // Can be used without queues: false
 pub const vkGetQueueCheckpointDataNV = fn (
     queue: VkQueue,
     pCheckpointDataCount: *u32,
-    // len: pCheckpointDataCount
+    // Length expression: pCheckpointDataCount
     pCheckpointData: ?[*]VkCheckpointDataNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41535,14 +40645,13 @@ pub const vkCmdBindTransformFeedbackBuffersEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstBinding: u32,
     bindingCount: u32,
-    // len: bindingCount
+    // Length expression: bindingCount
     pBuffers: [*]const VkBuffer,
-    // len: bindingCount
+    // Length expression: bindingCount
     pOffsets: [*]const u64,
-    // len: bindingCount
+    // Length expression: bindingCount
     pSizes: ?[*]const u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41551,13 +40660,12 @@ pub const vkCmdBindTransformFeedbackBuffersEXT = fn (
 pub const vkCmdBeginTransformFeedbackEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstCounterBuffer: u32,
-    counterBufferCount: ?u32,
-    // len: counterBufferCount
+    counterBufferCount: u32,
+    // Length expression: counterBufferCount
     pCounterBuffers: [*]const VkBuffer,
-    // len: counterBufferCount
+    // Length expression: counterBufferCount
     pCounterBufferOffsets: ?[*]const u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41566,13 +40674,12 @@ pub const vkCmdBeginTransformFeedbackEXT = fn (
 pub const vkCmdEndTransformFeedbackEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstCounterBuffer: u32,
-    counterBufferCount: ?u32,
-    // len: counterBufferCount
+    counterBufferCount: u32,
+    // Length expression: counterBufferCount
     pCounterBuffers: [*]const VkBuffer,
-    // len: counterBufferCount
+    // Length expression: counterBufferCount
     pCounterBufferOffsets: ?[*]const u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41582,10 +40689,9 @@ pub const vkCmdBeginQueryIndexedEXT = fn (
     commandBuffer: VkCommandBuffer,
     queryPool: VkQueryPool,
     query: u32,
-    flags: ?VkQueryControlFlags,
+    flags: VkQueryControlFlags,
     index: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41597,7 +40703,6 @@ pub const vkCmdEndQueryIndexedEXT = fn (
     query: u32,
     index: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_transform_feedback
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41612,7 +40717,6 @@ pub const vkCmdDrawIndirectByteCountEXT = fn (
     counterOffset: u32,
     vertexStride: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_scissor_exclusive
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41622,10 +40726,9 @@ pub const vkCmdSetExclusiveScissorNV = fn (
     commandBuffer: VkCommandBuffer,
     firstExclusiveScissor: u32,
     exclusiveScissorCount: u32,
-    // len: exclusiveScissorCount
+    // Length expression: exclusiveScissorCount
     pExclusiveScissors: [*]const VkRect2D,
 ) callconv(.c) void;
-// Extension: VK_NV_scissor_exclusive
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41635,10 +40738,9 @@ pub const vkCmdSetExclusiveScissorEnableNV = fn (
     commandBuffer: VkCommandBuffer,
     firstExclusiveScissor: u32,
     exclusiveScissorCount: u32,
-    // len: exclusiveScissorCount
+    // Length expression: exclusiveScissorCount
     pExclusiveScissorEnables: [*]const u32,
 ) callconv(.c) void;
-// Extension: VK_NV_shading_rate_image
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41649,7 +40751,6 @@ pub const vkCmdBindShadingRateImageNV = fn (
     imageView: VkImageView,
     imageLayout: VkImageLayout,
 ) callconv(.c) void;
-// Extension: VK_NV_shading_rate_image
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41659,10 +40760,9 @@ pub const vkCmdSetViewportShadingRatePaletteNV = fn (
     commandBuffer: VkCommandBuffer,
     firstViewport: u32,
     viewportCount: u32,
-    // len: viewportCount
+    // Length expression: viewportCount
     pShadingRatePalettes: [*]const VkShadingRatePaletteNV,
 ) callconv(.c) void;
-// Extension: VK_NV_shading_rate_image
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -41671,11 +40771,10 @@ pub const vkCmdSetViewportShadingRatePaletteNV = fn (
 pub const vkCmdSetCoarseSampleOrderNV = fn (
     commandBuffer: VkCommandBuffer,
     sampleOrderType: VkCoarseSampleOrderTypeNV,
-    customSampleOrderCount: ?u32,
-    // len: customSampleOrderCount
+    customSampleOrderCount: u32,
+    // Length expression: customSampleOrderCount
     pCustomSampleOrders: [*]const VkCoarseSampleOrderCustomNV,
 ) callconv(.c) void;
-// Extension: VK_NV_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41686,7 +40785,6 @@ pub const vkCmdDrawMeshTasksNV = fn (
     taskCount: u32,
     firstTask: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41699,7 +40797,6 @@ pub const vkCmdDrawMeshTasksIndirectNV = fn (
     drawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41714,7 +40811,6 @@ pub const vkCmdDrawMeshTasksIndirectCountNV = fn (
     maxDrawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41726,7 +40822,6 @@ pub const vkCmdDrawMeshTasksEXT = fn (
     groupCountY: u32,
     groupCountZ: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41739,7 +40834,6 @@ pub const vkCmdDrawMeshTasksIndirectEXT = fn (
     drawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_mesh_shader
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -41754,7 +40848,6 @@ pub const vkCmdDrawMeshTasksIndirectCountEXT = fn (
     maxDrawCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41763,7 +40856,6 @@ pub const vkCompileDeferredNV = fn (
     pipeline: VkPipeline,
     shader: u32,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41773,7 +40865,6 @@ pub const vkCreateAccelerationStructureNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pAccelerationStructure: *VkAccelerationStructureNV,
 ) callconv(.c) VkResult;
-// Extension: VK_HUAWEI_invocation_mask
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41784,38 +40875,33 @@ pub const vkCmdBindInvocationMaskHUAWEI = fn (
     imageView: VkImageView,
     imageLayout: VkImageLayout,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Can be used without queues: false
 pub const vkDestroyAccelerationStructureKHR = fn (
     device: VkDevice,
     accelerationStructure: VkAccelerationStructureKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Can be used without queues: false
 pub const vkDestroyAccelerationStructureNV = fn (
     device: VkDevice,
     accelerationStructure: VkAccelerationStructureNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Can be used without queues: false
 pub const vkGetAccelerationStructureMemoryRequirementsNV = fn (
     device: VkDevice,
     pInfo: *const VkAccelerationStructureMemoryRequirementsInfoNV,
-    pMemoryRequirements: *VkMemoryRequirements2KHR,
+    pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkBindAccelerationStructureMemoryNV = fn (
     device: VkDevice,
     bindInfoCount: u32,
-    // len: bindInfoCount
+    // Length expression: bindInfoCount
     pBindInfos: [*]const VkBindAccelerationStructureMemoryInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_ray_tracing
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41827,7 +40913,6 @@ pub const vkCmdCopyAccelerationStructureNV = fn (
     src: VkAccelerationStructureNV,
     mode: VkCopyAccelerationStructureModeKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41837,7 +40922,6 @@ pub const vkCmdCopyAccelerationStructureKHR = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyAccelerationStructureInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41846,7 +40930,6 @@ pub const vkCopyAccelerationStructureKHR = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyAccelerationStructureInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41856,7 +40939,6 @@ pub const vkCmdCopyAccelerationStructureToMemoryKHR = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyAccelerationStructureToMemoryInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41865,7 +40947,6 @@ pub const vkCopyAccelerationStructureToMemoryKHR = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyAccelerationStructureToMemoryInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41875,7 +40956,6 @@ pub const vkCmdCopyMemoryToAccelerationStructureKHR = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyMemoryToAccelerationStructureInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41884,7 +40964,6 @@ pub const vkCopyMemoryToAccelerationStructureKHR = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyMemoryToAccelerationStructureInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41893,13 +40972,12 @@ pub const vkCopyMemoryToAccelerationStructureKHR = fn (
 pub const vkCmdWriteAccelerationStructuresPropertiesKHR = fn (
     commandBuffer: VkCommandBuffer,
     accelerationStructureCount: u32,
-    // len: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     pAccelerationStructures: [*]const VkAccelerationStructureKHR,
     queryType: VkQueryType,
     queryPool: VkQueryPool,
     firstQuery: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41908,13 +40986,12 @@ pub const vkCmdWriteAccelerationStructuresPropertiesKHR = fn (
 pub const vkCmdWriteAccelerationStructuresPropertiesNV = fn (
     commandBuffer: VkCommandBuffer,
     accelerationStructureCount: u32,
-    // len: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     pAccelerationStructures: [*]const VkAccelerationStructureNV,
     queryType: VkQueryType,
     queryPool: VkQueryPool,
     firstQuery: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41931,22 +41008,20 @@ pub const vkCmdBuildAccelerationStructureNV = fn (
     scratch: VkBuffer,
     scratchOffset: u64,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkWriteAccelerationStructuresPropertiesKHR = fn (
     device: VkDevice,
     accelerationStructureCount: u32,
-    // len: accelerationStructureCount
+    // Length expression: accelerationStructureCount
     pAccelerationStructures: [*]const VkAccelerationStructureKHR,
     queryType: VkQueryType,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
     stride: u64,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41962,7 +41037,6 @@ pub const vkCmdTraceRaysKHR = fn (
     height: u32,
     depth: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_ray_tracing
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -41985,7 +41059,6 @@ pub const vkCmdTraceRaysNV = fn (
     height: u32,
     depth: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -41995,12 +41068,9 @@ pub const vkGetRayTracingShaderGroupHandlesKHR = fn (
     firstGroup: u32,
     groupCount: u32,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_ray_tracing
-pub const vkGetRayTracingShaderGroupHandlesNV = vkGetRayTracingShaderGroupHandlesKHR;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42010,10 +41080,9 @@ pub const vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = fn (
     firstGroup: u32,
     groupCount: u32,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42021,10 +41090,9 @@ pub const vkGetAccelerationStructureHandleNV = fn (
     device: VkDevice,
     accelerationStructure: VkAccelerationStructureNV,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_ray_tracing
 // Success codes: VK_SUCCESS,VK_PIPELINE_COMPILE_REQUIRED_EXT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_SHADER_NV,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
@@ -42032,13 +41100,12 @@ pub const vkCreateRayTracingPipelinesNV = fn (
     device: VkDevice,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkRayTracingPipelineCreateInfoNV,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR,VK_PIPELINE_COMPILE_REQUIRED_EXT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
@@ -42047,23 +41114,21 @@ pub const vkCreateRayTracingPipelinesKHR = fn (
     deferredOperation: VkDeferredOperationKHR,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkRayTracingPipelineCreateInfoKHR,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cooperative_matrix
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceCooperativeMatrixPropertiesNV = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkCooperativeMatrixPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42077,7 +41142,6 @@ pub const vkCmdTraceRaysIndirectKHR = fn (
     pCallableShaderBindingTable: *const VkStridedDeviceAddressRegionKHR,
     indirectDeviceAddress: u64,
 ) callconv(.c) void;
-// Extension: VK_KHR_ray_tracing_maintenance1
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42087,14 +41151,12 @@ pub const vkCmdTraceRaysIndirect2KHR = fn (
     commandBuffer: VkCommandBuffer,
     indirectDeviceAddress: u64,
 ) callconv(.c) void;
-// Extension: VK_NV_cluster_acceleration_structure
 // Can be used without queues: false
 pub const vkGetClusterAccelerationStructureBuildSizesNV = fn (
     device: VkDevice,
     pInfo: *const VkClusterAccelerationStructureInputInfoNV,
     pSizeInfo: *VkAccelerationStructureBuildSizesInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_NV_cluster_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42104,14 +41166,12 @@ pub const vkCmdBuildClusterAccelerationStructureIndirectNV = fn (
     commandBuffer: VkCommandBuffer,
     pCommandInfos: *const VkClusterAccelerationStructureCommandsInfoNV,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Can be used without queues: false
 pub const vkGetDeviceAccelerationStructureCompatibilityKHR = fn (
     device: VkDevice,
     pVersionInfo: *const VkAccelerationStructureVersionInfoKHR,
     pCompatibility: *VkAccelerationStructureCompatibilityKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Can be used without queues: false
 pub const vkGetRayTracingShaderGroupStackSizeKHR = fn (
     device: VkDevice,
@@ -42119,7 +41179,6 @@ pub const vkGetRayTracingShaderGroupStackSizeKHR = fn (
     group: u32,
     groupShader: VkShaderGroupShaderKHR,
 ) callconv(.c) u64;
-// Extension: VK_KHR_ray_tracing_pipeline
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42129,19 +41188,16 @@ pub const vkCmdSetRayTracingPipelineStackSizeKHR = fn (
     commandBuffer: VkCommandBuffer,
     pipelineStackSize: u32,
 ) callconv(.c) void;
-// Extension: VK_NVX_image_view_handle
 // Can be used without queues: false
 pub const vkGetImageViewHandleNVX = fn (
     device: VkDevice,
     pInfo: *const VkImageViewHandleInfoNVX,
 ) callconv(.c) u32;
-// Extension: VK_NVX_image_view_handle
 // Can be used without queues: false
 pub const vkGetImageViewHandle64NVX = fn (
     device: VkDevice,
     pInfo: *const VkImageViewHandleInfoNVX,
 ) callconv(.c) u64;
-// Extension: VK_NVX_image_view_handle
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42150,7 +41206,6 @@ pub const vkGetImageViewAddressNVX = fn (
     imageView: VkImageView,
     pProperties: *VkImageViewAddressPropertiesNVX,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_full_screen_exclusive
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42158,10 +41213,9 @@ pub const vkGetPhysicalDeviceSurfacePresentModes2EXT = fn (
     physicalDevice: VkPhysicalDevice,
     pSurfaceInfo: *const VkPhysicalDeviceSurfaceInfo2KHR,
     pPresentModeCount: *u32,
-    // len: pPresentModeCount
+    // Length expression: pPresentModeCount
     pPresentModes: ?[*]VkPresentModeKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_full_screen_exclusive
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42170,7 +41224,6 @@ pub const vkGetDeviceGroupSurfacePresentModes2EXT = fn (
     pSurfaceInfo: *const VkPhysicalDeviceSurfaceInfo2KHR,
     pModes: *VkDeviceGroupPresentModeFlagsKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_full_screen_exclusive
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42178,7 +41231,6 @@ pub const vkAcquireFullScreenExclusiveModeEXT = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_full_screen_exclusive
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42186,7 +41238,6 @@ pub const vkReleaseFullScreenExclusiveModeEXT = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_performance_query
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42194,19 +41245,17 @@ pub const vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     pCounterCount: *u32,
-    // len: pCounterCount
+    // Length expression: pCounterCount
     pCounters: ?[*]VkPerformanceCounterKHR,
-    // len: pCounterCount
+    // Length expression: pCounterCount
     pCounterDescriptions: ?[*]VkPerformanceCounterDescriptionKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_performance_query
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPerformanceQueryCreateInfo: *const VkQueryPoolPerformanceCreateInfoKHR,
     pNumPasses: *u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_TIMEOUT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42214,12 +41263,10 @@ pub const vkAcquireProfilingLockKHR = fn (
     device: VkDevice,
     pInfo: *const VkAcquireProfilingLockInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_performance_query
 // Can be used without queues: false
 pub const vkReleaseProfilingLockKHR = fn (
     device: VkDevice,
 ) callconv(.c) void;
-// Extension: VK_EXT_image_drm_format_modifier
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42233,18 +41280,11 @@ pub const vkGetBufferOpaqueCaptureAddress = fn (
     device: VkDevice,
     pInfo: *const VkBufferDeviceAddressInfo,
 ) callconv(.c) u64;
-// Extension: VK_KHR_buffer_device_address
-pub const vkGetBufferOpaqueCaptureAddressKHR = vkGetBufferOpaqueCaptureAddress;
 // Can be used without queues: false
 pub const vkGetBufferDeviceAddress = fn (
     device: VkDevice,
     pInfo: *const VkBufferDeviceAddressInfo,
 ) callconv(.c) u64;
-// Extension: VK_KHR_buffer_device_address
-pub const vkGetBufferDeviceAddressKHR = vkGetBufferDeviceAddress;
-// Extension: VK_EXT_buffer_device_address
-pub const vkGetBufferDeviceAddressEXT = vkGetBufferDeviceAddress;
-// Extension: VK_EXT_headless_surface
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42254,17 +41294,15 @@ pub const vkCreateHeadlessSurfaceEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSurface: *VkSurfaceKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_coverage_reduction_mode
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV = fn (
     physicalDevice: VkPhysicalDevice,
     pCombinationCount: *u32,
-    // len: pCombinationCount
+    // Length expression: pCombinationCount
     pCombinations: ?[*]VkFramebufferMixedSamplesCombinationNV,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42272,12 +41310,10 @@ pub const vkInitializePerformanceApiINTEL = fn (
     device: VkDevice,
     pInitializeInfo: *const VkInitializePerformanceApiInfoINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Can be used without queues: false
 pub const vkUninitializePerformanceApiINTEL = fn (
     device: VkDevice,
 ) callconv(.c) void;
-// Extension: VK_INTEL_performance_query
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -42289,7 +41325,6 @@ pub const vkCmdSetPerformanceMarkerINTEL = fn (
     commandBuffer: VkCommandBuffer,
     pMarkerInfo: *const VkPerformanceMarkerInfoINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -42301,7 +41336,6 @@ pub const vkCmdSetPerformanceStreamMarkerINTEL = fn (
     commandBuffer: VkCommandBuffer,
     pMarkerInfo: *const VkPerformanceStreamMarkerInfoINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
@@ -42313,7 +41347,6 @@ pub const vkCmdSetPerformanceOverrideINTEL = fn (
     commandBuffer: VkCommandBuffer,
     pOverrideInfo: *const VkPerformanceOverrideInfoINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42322,7 +41355,6 @@ pub const vkAcquirePerformanceConfigurationINTEL = fn (
     pAcquireInfo: *const VkPerformanceConfigurationAcquireInfoINTEL,
     pConfiguration: *VkPerformanceConfigurationINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42330,7 +41362,6 @@ pub const vkReleasePerformanceConfigurationINTEL = fn (
     device: VkDevice,
     configuration: VkPerformanceConfigurationINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42338,7 +41369,6 @@ pub const vkQueueSetPerformanceConfigurationINTEL = fn (
     queue: VkQueue,
     configuration: VkPerformanceConfigurationINTEL,
 ) callconv(.c) VkResult;
-// Extension: VK_INTEL_performance_query
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42352,9 +41382,6 @@ pub const vkGetDeviceMemoryOpaqueCaptureAddress = fn (
     device: VkDevice,
     pInfo: *const VkDeviceMemoryOpaqueCaptureAddressInfo,
 ) callconv(.c) u64;
-// Extension: VK_KHR_buffer_device_address
-pub const vkGetDeviceMemoryOpaqueCaptureAddressKHR = vkGetDeviceMemoryOpaqueCaptureAddress;
-// Extension: VK_KHR_pipeline_executable_properties
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42362,10 +41389,9 @@ pub const vkGetPipelineExecutablePropertiesKHR = fn (
     device: VkDevice,
     pPipelineInfo: *const VkPipelineInfoKHR,
     pExecutableCount: *u32,
-    // len: pExecutableCount
+    // Length expression: pExecutableCount
     pProperties: ?[*]VkPipelineExecutablePropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_executable_properties
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42373,10 +41399,9 @@ pub const vkGetPipelineExecutableStatisticsKHR = fn (
     device: VkDevice,
     pExecutableInfo: *const VkPipelineExecutableInfoKHR,
     pStatisticCount: *u32,
-    // len: pStatisticCount
+    // Length expression: pStatisticCount
     pStatistics: ?[*]VkPipelineExecutableStatisticKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_pipeline_executable_properties
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42384,7 +41409,7 @@ pub const vkGetPipelineExecutableInternalRepresentationsKHR = fn (
     device: VkDevice,
     pExecutableInfo: *const VkPipelineExecutableInfoKHR,
     pInternalRepresentationCount: *u32,
-    // len: pInternalRepresentationCount
+    // Length expression: pInternalRepresentationCount
     pInternalRepresentations: ?[*]VkPipelineExecutableInternalRepresentationKHR,
 ) callconv(.c) VkResult;
 // Queues: VK_QUEUE_GRAPHICS_BIT
@@ -42397,10 +41422,6 @@ pub const vkCmdSetLineStipple = fn (
     lineStippleFactor: u32,
     lineStipplePattern: u16,
 ) callconv(.c) void;
-// Extension: VK_KHR_line_rasterization
-pub const vkCmdSetLineStippleKHR = vkCmdSetLineStipple;
-// Extension: VK_EXT_line_rasterization
-pub const vkCmdSetLineStippleEXT = vkCmdSetLineStipple;
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42409,7 +41430,7 @@ pub const vkGetFaultData = fn (
     faultQueryBehavior: VkFaultQueryBehavior,
     pUnrecordedFaults: *u32,
     pFaultCount: *u32,
-    // len: pFaultCount
+    // Length expression: pFaultCount
     pFaults: ?[*]VkFaultData,
 ) callconv(.c) VkResult;
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
@@ -42418,12 +41439,9 @@ pub const vkGetFaultData = fn (
 pub const vkGetPhysicalDeviceToolProperties = fn (
     physicalDevice: VkPhysicalDevice,
     pToolCount: *u32,
-    // len: pToolCount
+    // Length expression: pToolCount
     pToolProperties: ?[*]VkPhysicalDeviceToolProperties,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_tooling_info
-pub const vkGetPhysicalDeviceToolPropertiesEXT = vkGetPhysicalDeviceToolProperties;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42433,7 +41451,6 @@ pub const vkCreateAccelerationStructureKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pAccelerationStructure: *VkAccelerationStructureKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42442,12 +41459,11 @@ pub const vkCreateAccelerationStructureKHR = fn (
 pub const vkCmdBuildAccelerationStructuresKHR = fn (
     commandBuffer: VkCommandBuffer,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkAccelerationStructureBuildGeometryInfoKHR,
-    // len: infoCount
+    // Length expression: infoCount
     ppBuildRangeInfos: [*]const *const VkAccelerationStructureBuildRangeInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -42456,16 +41472,15 @@ pub const vkCmdBuildAccelerationStructuresKHR = fn (
 pub const vkCmdBuildAccelerationStructuresIndirectKHR = fn (
     commandBuffer: VkCommandBuffer,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkAccelerationStructureBuildGeometryInfoKHR,
-    // len: infoCount
+    // Length expression: infoCount
     pIndirectDeviceAddresses: [*]const u64,
-    // len: infoCount
+    // Length expression: infoCount
     pIndirectStrides: [*]const u32,
-    // len: infoCount
+    // Length expression: infoCount
     ppMaxPrimitiveCounts: [*]const *const u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42473,18 +41488,16 @@ pub const vkBuildAccelerationStructuresKHR = fn (
     device: VkDevice,
     deferredOperation: VkDeferredOperationKHR,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkAccelerationStructureBuildGeometryInfoKHR,
-    // len: infoCount
+    // Length expression: infoCount
     ppBuildRangeInfos: [*]const *const VkAccelerationStructureBuildRangeInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_acceleration_structure
 // Can be used without queues: false
 pub const vkGetAccelerationStructureDeviceAddressKHR = fn (
     device: VkDevice,
     pInfo: *const VkAccelerationStructureDeviceAddressInfoKHR,
 ) callconv(.c) u64;
-// Extension: VK_KHR_deferred_host_operations
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42493,20 +41506,17 @@ pub const vkCreateDeferredOperationKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pDeferredOperation: *VkDeferredOperationKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_deferred_host_operations
 // Can be used without queues: false
 pub const vkDestroyDeferredOperationKHR = fn (
     device: VkDevice,
     operation: VkDeferredOperationKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_deferred_host_operations
 // Can be used without queues: false
 pub const vkGetDeferredOperationMaxConcurrencyKHR = fn (
     device: VkDevice,
     operation: VkDeferredOperationKHR,
 ) callconv(.c) u32;
-// Extension: VK_KHR_deferred_host_operations
 // Success codes: VK_SUCCESS,VK_NOT_READY
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42514,7 +41524,6 @@ pub const vkGetDeferredOperationResultKHR = fn (
     device: VkDevice,
     operation: VkDeferredOperationKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_deferred_host_operations
 // Success codes: VK_SUCCESS,VK_THREAD_DONE_KHR,VK_THREAD_IDLE_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -42522,20 +41531,17 @@ pub const vkDeferredOperationJoinKHR = fn (
     device: VkDevice,
     operation: VkDeferredOperationKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_device_generated_commands_compute
 // Can be used without queues: false
 pub const vkGetPipelineIndirectMemoryRequirementsNV = fn (
     device: VkDevice,
     pCreateInfo: *const VkComputePipelineCreateInfo,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_NV_device_generated_commands_compute
 // Can be used without queues: false
 pub const vkGetPipelineIndirectDeviceAddressNV = fn (
     device: VkDevice,
     pInfo: *const VkPipelineIndirectDeviceAddressInfoNV,
 ) callconv(.c) u64;
-// Extension: VK_AMD_anti_lag
 // Can be used without queues: false
 pub const vkAntiLagUpdateAMD = fn (
     device: VkDevice,
@@ -42548,11 +41554,8 @@ pub const vkAntiLagUpdateAMD = fn (
 // Can be used without queues: false
 pub const vkCmdSetCullMode = fn (
     commandBuffer: VkCommandBuffer,
-    cullMode: ?VkCullModeFlags,
+    cullMode: VkCullModeFlags,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetCullModeEXT = vkCmdSetCullMode;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42562,9 +41565,6 @@ pub const vkCmdSetFrontFace = fn (
     commandBuffer: VkCommandBuffer,
     frontFace: VkFrontFace,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetFrontFaceEXT = vkCmdSetFrontFace;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42574,9 +41574,6 @@ pub const vkCmdSetPrimitiveTopology = fn (
     commandBuffer: VkCommandBuffer,
     primitiveTopology: VkPrimitiveTopology,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopology;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42585,12 +41582,9 @@ pub const vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopology;
 pub const vkCmdSetViewportWithCount = fn (
     commandBuffer: VkCommandBuffer,
     viewportCount: u32,
-    // len: viewportCount
+    // Length expression: viewportCount
     pViewports: [*]const VkViewport,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCount;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42599,12 +41593,9 @@ pub const vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCount;
 pub const vkCmdSetScissorWithCount = fn (
     commandBuffer: VkCommandBuffer,
     scissorCount: u32,
-    // len: scissorCount
+    // Length expression: scissorCount
     pScissors: [*]const VkRect2D,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCount;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42617,8 +41608,6 @@ pub const vkCmdBindIndexBuffer2 = fn (
     size: u64,
     indexType: VkIndexType,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance5
-pub const vkCmdBindIndexBuffer2KHR = vkCmdBindIndexBuffer2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42628,18 +41617,15 @@ pub const vkCmdBindVertexBuffers2 = fn (
     commandBuffer: VkCommandBuffer,
     firstBinding: u32,
     bindingCount: u32,
-    // len: bindingCount
+    // Length expression: bindingCount
     pBuffers: [*]const VkBuffer,
-    // len: bindingCount
+    // Length expression: bindingCount
     pOffsets: [*]const u64,
-    // len: bindingCount
+    // Length expression: bindingCount
     pSizes: ?[*]const u64,
-    // len: bindingCount
+    // Length expression: bindingCount
     pStrides: ?[*]const u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdBindVertexBuffers2EXT = vkCmdBindVertexBuffers2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42649,9 +41635,6 @@ pub const vkCmdSetDepthTestEnable = fn (
     commandBuffer: VkCommandBuffer,
     depthTestEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnable;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42661,9 +41644,6 @@ pub const vkCmdSetDepthWriteEnable = fn (
     commandBuffer: VkCommandBuffer,
     depthWriteEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnable;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42673,9 +41653,6 @@ pub const vkCmdSetDepthCompareOp = fn (
     commandBuffer: VkCommandBuffer,
     depthCompareOp: VkCompareOp,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetDepthCompareOpEXT = vkCmdSetDepthCompareOp;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42685,9 +41662,6 @@ pub const vkCmdSetDepthBoundsTestEnable = fn (
     commandBuffer: VkCommandBuffer,
     depthBoundsTestEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnable;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42697,9 +41671,6 @@ pub const vkCmdSetStencilTestEnable = fn (
     commandBuffer: VkCommandBuffer,
     stencilTestEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnable;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42713,11 +41684,6 @@ pub const vkCmdSetStencilOp = fn (
     depthFailOp: VkStencilOp,
     compareOp: VkCompareOp,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetStencilOpEXT = vkCmdSetStencilOp;
-// Extension: VK_EXT_extended_dynamic_state2
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42736,9 +41702,6 @@ pub const vkCmdSetRasterizerDiscardEnable = fn (
     commandBuffer: VkCommandBuffer,
     rasterizerDiscardEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state2
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetRasterizerDiscardEnableEXT = vkCmdSetRasterizerDiscardEnable;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42748,11 +41711,6 @@ pub const vkCmdSetDepthBiasEnable = fn (
     commandBuffer: VkCommandBuffer,
     depthBiasEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state2
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetDepthBiasEnableEXT = vkCmdSetDepthBiasEnable;
-// Extension: VK_EXT_extended_dynamic_state2
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42771,11 +41729,6 @@ pub const vkCmdSetPrimitiveRestartEnable = fn (
     commandBuffer: VkCommandBuffer,
     primitiveRestartEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state2
-// Extension: VK_EXT_shader_object
-pub const vkCmdSetPrimitiveRestartEnableEXT = vkCmdSetPrimitiveRestartEnable;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42785,8 +41738,6 @@ pub const vkCmdSetTessellationDomainOriginEXT = fn (
     commandBuffer: VkCommandBuffer,
     domainOrigin: VkTessellationDomainOrigin,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42796,8 +41747,6 @@ pub const vkCmdSetDepthClampEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     depthClampEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42807,8 +41756,6 @@ pub const vkCmdSetPolygonModeEXT = fn (
     commandBuffer: VkCommandBuffer,
     polygonMode: VkPolygonMode,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42818,8 +41765,6 @@ pub const vkCmdSetRasterizationSamplesEXT = fn (
     commandBuffer: VkCommandBuffer,
     rasterizationSamples: VkSampleCountFlags,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42828,11 +41773,9 @@ pub const vkCmdSetRasterizationSamplesEXT = fn (
 pub const vkCmdSetSampleMaskEXT = fn (
     commandBuffer: VkCommandBuffer,
     samples: VkSampleCountFlags,
-    // len: (samples + 31) / 32
+    // Length expression: (samples + 31) / 32
     pSampleMask: ?[*]const u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42842,8 +41785,6 @@ pub const vkCmdSetAlphaToCoverageEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     alphaToCoverageEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42853,8 +41794,6 @@ pub const vkCmdSetAlphaToOneEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     alphaToOneEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42864,8 +41803,6 @@ pub const vkCmdSetLogicOpEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     logicOpEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42875,11 +41812,9 @@ pub const vkCmdSetColorBlendEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstAttachment: u32,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pColorBlendEnables: [*]const u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42889,11 +41824,9 @@ pub const vkCmdSetColorBlendEquationEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstAttachment: u32,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pColorBlendEquations: [*]const VkColorBlendEquationEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42903,11 +41836,9 @@ pub const vkCmdSetColorWriteMaskEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstAttachment: u32,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pColorWriteMasks: [*]const VkColorComponentFlags,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42917,8 +41848,6 @@ pub const vkCmdSetRasterizationStreamEXT = fn (
     commandBuffer: VkCommandBuffer,
     rasterizationStream: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42928,8 +41857,6 @@ pub const vkCmdSetConservativeRasterizationModeEXT = fn (
     commandBuffer: VkCommandBuffer,
     conservativeRasterizationMode: VkConservativeRasterizationModeEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42939,8 +41866,6 @@ pub const vkCmdSetExtraPrimitiveOverestimationSizeEXT = fn (
     commandBuffer: VkCommandBuffer,
     extraPrimitiveOverestimationSize: f32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42950,8 +41875,6 @@ pub const vkCmdSetDepthClipEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     depthClipEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42961,8 +41884,6 @@ pub const vkCmdSetSampleLocationsEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     sampleLocationsEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42972,11 +41893,9 @@ pub const vkCmdSetColorBlendAdvancedEXT = fn (
     commandBuffer: VkCommandBuffer,
     firstAttachment: u32,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pColorBlendAdvanced: [*]const VkColorBlendAdvancedEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42986,8 +41905,6 @@ pub const vkCmdSetProvokingVertexModeEXT = fn (
     commandBuffer: VkCommandBuffer,
     provokingVertexMode: VkProvokingVertexModeEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -42997,8 +41914,6 @@ pub const vkCmdSetLineRasterizationModeEXT = fn (
     commandBuffer: VkCommandBuffer,
     lineRasterizationMode: VkLineRasterizationMode,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43008,8 +41923,6 @@ pub const vkCmdSetLineStippleEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     stippledLineEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43019,8 +41932,6 @@ pub const vkCmdSetDepthClipNegativeOneToOneEXT = fn (
     commandBuffer: VkCommandBuffer,
     negativeOneToOne: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43030,8 +41941,6 @@ pub const vkCmdSetViewportWScalingEnableNV = fn (
     commandBuffer: VkCommandBuffer,
     viewportWScalingEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43041,11 +41950,9 @@ pub const vkCmdSetViewportSwizzleNV = fn (
     commandBuffer: VkCommandBuffer,
     firstViewport: u32,
     viewportCount: u32,
-    // len: viewportCount
+    // Length expression: viewportCount
     pViewportSwizzles: [*]const VkViewportSwizzleNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43055,8 +41962,6 @@ pub const vkCmdSetCoverageToColorEnableNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageToColorEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43066,8 +41971,6 @@ pub const vkCmdSetCoverageToColorLocationNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageToColorLocation: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43077,8 +41980,6 @@ pub const vkCmdSetCoverageModulationModeNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageModulationMode: VkCoverageModulationModeNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43088,8 +41989,6 @@ pub const vkCmdSetCoverageModulationTableEnableNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageModulationTableEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43098,11 +41997,9 @@ pub const vkCmdSetCoverageModulationTableEnableNV = fn (
 pub const vkCmdSetCoverageModulationTableNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageModulationTableCount: u32,
-    // len: coverageModulationTableCount
+    // Length expression: coverageModulationTableCount
     pCoverageModulationTable: [*]const f32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43112,8 +42009,6 @@ pub const vkCmdSetShadingRateImageEnableNV = fn (
     commandBuffer: VkCommandBuffer,
     shadingRateImageEnable: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43123,8 +42018,6 @@ pub const vkCmdSetCoverageReductionModeNV = fn (
     commandBuffer: VkCommandBuffer,
     coverageReductionMode: VkCoverageReductionModeNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_extended_dynamic_state3
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43143,16 +42036,12 @@ pub const vkCreatePrivateDataSlot = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pPrivateDataSlot: *VkPrivateDataSlot,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_private_data
-pub const vkCreatePrivateDataSlotEXT = vkCreatePrivateDataSlot;
 // Can be used without queues: false
 pub const vkDestroyPrivateDataSlot = fn (
     device: VkDevice,
     privateDataSlot: VkPrivateDataSlot,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_private_data
-pub const vkDestroyPrivateDataSlotEXT = vkDestroyPrivateDataSlot;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43163,8 +42052,6 @@ pub const vkSetPrivateData = fn (
     privateDataSlot: VkPrivateDataSlot,
     data: u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_private_data
-pub const vkSetPrivateDataEXT = vkSetPrivateData;
 // Can be used without queues: false
 pub const vkGetPrivateData = fn (
     device: VkDevice,
@@ -43173,8 +42060,6 @@ pub const vkGetPrivateData = fn (
     privateDataSlot: VkPrivateDataSlot,
     pData: *u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_private_data
-pub const vkGetPrivateDataEXT = vkGetPrivateData;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43184,8 +42069,6 @@ pub const vkCmdCopyBuffer2 = fn (
     commandBuffer: VkCommandBuffer,
     pCopyBufferInfo: *const VkCopyBufferInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdCopyBuffer2KHR = vkCmdCopyBuffer2;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43195,8 +42078,6 @@ pub const vkCmdCopyImage2 = fn (
     commandBuffer: VkCommandBuffer,
     pCopyImageInfo: *const VkCopyImageInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdCopyImage2KHR = vkCmdCopyImage2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43206,8 +42087,6 @@ pub const vkCmdBlitImage2 = fn (
     commandBuffer: VkCommandBuffer,
     pBlitImageInfo: *const VkBlitImageInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdBlitImage2KHR = vkCmdBlitImage2;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43217,8 +42096,6 @@ pub const vkCmdCopyBufferToImage2 = fn (
     commandBuffer: VkCommandBuffer,
     pCopyBufferToImageInfo: *const VkCopyBufferToImageInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdCopyBufferToImage2KHR = vkCmdCopyBufferToImage2;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43228,8 +42105,6 @@ pub const vkCmdCopyImageToBuffer2 = fn (
     commandBuffer: VkCommandBuffer,
     pCopyImageToBufferInfo: *const VkCopyImageToBufferInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdCopyImageToBuffer2KHR = vkCmdCopyImageToBuffer2;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43239,9 +42114,6 @@ pub const vkCmdResolveImage2 = fn (
     commandBuffer: VkCommandBuffer,
     pResolveImageInfo: *const VkResolveImageInfo2,
 ) callconv(.c) void;
-// Extension: VK_KHR_copy_commands2
-pub const vkCmdResolveImage2KHR = vkCmdResolveImage2;
-// Extension: VK_KHR_object_refresh
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_TRANSFER_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43251,17 +42123,15 @@ pub const vkCmdRefreshObjectsKHR = fn (
     commandBuffer: VkCommandBuffer,
     pRefreshObjects: *const VkRefreshObjectListKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_object_refresh
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceRefreshableObjectTypesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pRefreshableObjectTypeCount: *u32,
-    // len: pRefreshableObjectTypeCount
+    // Length expression: pRefreshableObjectTypeCount
     pRefreshableObjectTypes: ?[*]VkObjectType,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_fragment_shading_rate
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43272,17 +42142,15 @@ pub const vkCmdSetFragmentShadingRateKHR = fn (
     pFragmentSize: *const VkExtent2D,
     combinerOps: *const [2]VkFragmentShadingRateCombinerOpKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_fragment_shading_rate
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceFragmentShadingRatesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pFragmentShadingRateCount: *u32,
-    // len: pFragmentShadingRateCount
+    // Length expression: pFragmentShadingRateCount
     pFragmentShadingRates: ?[*]VkPhysicalDeviceFragmentShadingRateKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_fragment_shading_rate_enums
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43293,18 +42161,15 @@ pub const vkCmdSetFragmentShadingRateEnumNV = fn (
     shadingRate: VkFragmentShadingRateNV,
     combinerOps: *const [2]VkFragmentShadingRateCombinerOpKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_acceleration_structure
 // Can be used without queues: false
 pub const vkGetAccelerationStructureBuildSizesKHR = fn (
     device: VkDevice,
     buildType: VkAccelerationStructureBuildTypeKHR,
     pBuildInfo: *const VkAccelerationStructureBuildGeometryInfoKHR,
-    // len: pBuildInfo-&gt;geometryCount
+    // Length expression: pBuildInfo-&gt;geometryCount
     pMaxPrimitiveCounts: ?[*]const u32,
     pSizeInfo: *VkAccelerationStructureBuildSizesInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_EXT_vertex_input_dynamic_state
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43312,14 +42177,13 @@ pub const vkGetAccelerationStructureBuildSizesKHR = fn (
 // Can be used without queues: false
 pub const vkCmdSetVertexInputEXT = fn (
     commandBuffer: VkCommandBuffer,
-    vertexBindingDescriptionCount: ?u32,
-    // len: vertexBindingDescriptionCount
+    vertexBindingDescriptionCount: u32,
+    // Length expression: vertexBindingDescriptionCount
     pVertexBindingDescriptions: [*]const VkVertexInputBindingDescription2EXT,
-    vertexAttributeDescriptionCount: ?u32,
-    // len: vertexAttributeDescriptionCount
+    vertexAttributeDescriptionCount: u32,
+    // Length expression: vertexAttributeDescriptionCount
     pVertexAttributeDescriptions: [*]const VkVertexInputAttributeDescription2EXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_color_write_enable
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43328,7 +42192,7 @@ pub const vkCmdSetVertexInputEXT = fn (
 pub const vkCmdSetColorWriteEnableEXT = fn (
     commandBuffer: VkCommandBuffer,
     attachmentCount: u32,
-    // len: attachmentCount
+    // Length expression: attachmentCount
     pColorWriteEnables: [*]const u32,
 ) callconv(.c) void;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
@@ -43342,8 +42206,6 @@ pub const vkCmdSetEvent2 = fn (
     event: VkEvent,
     pDependencyInfo: *const VkDependencyInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_synchronization2
-pub const vkCmdSetEvent2KHR = vkCmdSetEvent2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
 // Video conding: both
@@ -43353,10 +42215,8 @@ pub const vkCmdSetEvent2KHR = vkCmdSetEvent2;
 pub const vkCmdResetEvent2 = fn (
     commandBuffer: VkCommandBuffer,
     event: VkEvent,
-    stageMask: ?VkPipelineStageFlags2,
+    stageMask: VkPipelineStageFlags2,
 ) callconv(.c) void;
-// Extension: VK_KHR_synchronization2
-pub const vkCmdResetEvent2KHR = vkCmdResetEvent2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
 // Video conding: both
@@ -43366,13 +42226,11 @@ pub const vkCmdResetEvent2KHR = vkCmdResetEvent2;
 pub const vkCmdWaitEvents2 = fn (
     commandBuffer: VkCommandBuffer,
     eventCount: u32,
-    // len: eventCount
+    // Length expression: eventCount
     pEvents: [*]const VkEvent,
-    // len: eventCount
+    // Length expression: eventCount
     pDependencyInfos: [*]const VkDependencyInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_synchronization2
-pub const vkCmdWaitEvents2KHR = vkCmdWaitEvents2;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
 // Video conding: both
@@ -43383,20 +42241,16 @@ pub const vkCmdPipelineBarrier2 = fn (
     commandBuffer: VkCommandBuffer,
     pDependencyInfo: *const VkDependencyInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_synchronization2
-pub const vkCmdPipelineBarrier2KHR = vkCmdPipelineBarrier2;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkQueueSubmit2 = fn (
     queue: VkQueue,
-    submitCount: ?u32,
-    // len: submitCount
+    submitCount: u32,
+    // Length expression: submitCount
     pSubmits: [*]const VkSubmitInfo2,
     fence: VkFence,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_synchronization2
-pub const vkQueueSubmit2KHR = vkQueueSubmit2;
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: both
 // Video conding: both
@@ -43405,13 +42259,10 @@ pub const vkQueueSubmit2KHR = vkQueueSubmit2;
 // Can be used without queues: false
 pub const vkCmdWriteTimestamp2 = fn (
     commandBuffer: VkCommandBuffer,
-    stage: ?VkPipelineStageFlags2,
+    stage: VkPipelineStageFlags2,
     queryPool: VkQueryPool,
     query: u32,
 ) callconv(.c) void;
-// Extension: VK_KHR_synchronization2
-pub const vkCmdWriteTimestamp2KHR = vkCmdWriteTimestamp2;
-// Extension: VK_AMD_buffer_marker
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43419,17 +42270,16 @@ pub const vkCmdWriteTimestamp2KHR = vkCmdWriteTimestamp2;
 // Can be used without queues: false
 pub const vkCmdWriteBufferMarker2AMD = fn (
     commandBuffer: VkCommandBuffer,
-    stage: ?VkPipelineStageFlags2,
+    stage: VkPipelineStageFlags2,
     dstBuffer: VkBuffer,
     dstOffset: u64,
     marker: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_device_diagnostic_checkpoints
 // Can be used without queues: false
 pub const vkGetQueueCheckpointData2NV = fn (
     queue: VkQueue,
     pCheckpointDataCount: *u32,
-    // len: pCheckpointDataCount
+    // Length expression: pCheckpointDataCount
     pCheckpointData: ?[*]VkCheckpointData2NV,
 ) callconv(.c) void;
 // Success codes: VK_SUCCESS
@@ -43439,8 +42289,6 @@ pub const vkCopyMemoryToImage = fn (
     device: VkDevice,
     pCopyMemoryToImageInfo: *const VkCopyMemoryToImageInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_host_image_copy
-pub const vkCopyMemoryToImageEXT = vkCopyMemoryToImage;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_MEMORY_MAP_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43448,8 +42296,6 @@ pub const vkCopyImageToMemory = fn (
     device: VkDevice,
     pCopyImageToMemoryInfo: *const VkCopyImageToMemoryInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_host_image_copy
-pub const vkCopyImageToMemoryEXT = vkCopyImageToMemory;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_MEMORY_MAP_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43457,19 +42303,15 @@ pub const vkCopyImageToImage = fn (
     device: VkDevice,
     pCopyImageToImageInfo: *const VkCopyImageToImageInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_host_image_copy
-pub const vkCopyImageToImageEXT = vkCopyImageToImage;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_MEMORY_MAP_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkTransitionImageLayout = fn (
     device: VkDevice,
     transitionCount: u32,
-    // len: transitionCount
+    // Length expression: transitionCount
     pTransitions: [*]const VkHostImageLayoutTransitionInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_host_image_copy
-pub const vkTransitionImageLayoutEXT = vkTransitionImageLayout;
 // Can be used without queues: false
 pub const vkGetCommandPoolMemoryConsumption = fn (
     device: VkDevice,
@@ -43477,7 +42319,6 @@ pub const vkGetCommandPoolMemoryConsumption = fn (
     commandBuffer: VkCommandBuffer,
     pConsumption: *VkCommandPoolMemoryConsumption,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43486,7 +42327,6 @@ pub const vkGetPhysicalDeviceVideoCapabilitiesKHR = fn (
     pVideoProfile: *const VkVideoProfileInfoKHR,
     pCapabilities: *VkVideoCapabilitiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43494,10 +42334,9 @@ pub const vkGetPhysicalDeviceVideoFormatPropertiesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pVideoFormatInfo: *const VkPhysicalDeviceVideoFormatInfoKHR,
     pVideoFormatPropertyCount: *u32,
-    // len: pVideoFormatPropertyCount
+    // Length expression: pVideoFormatPropertyCount
     pVideoFormatProperties: ?[*]VkVideoFormatPropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_encode_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR,VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43506,7 +42345,6 @@ pub const vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR = fn (
     pQualityLevelInfo: *const VkPhysicalDeviceVideoEncodeQualityLevelInfoKHR,
     pQualityLevelProperties: *VkVideoEncodeQualityLevelPropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR,VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43516,14 +42354,12 @@ pub const vkCreateVideoSessionKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pVideoSession: *VkVideoSessionKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Can be used without queues: false
 pub const vkDestroyVideoSessionKHR = fn (
     device: VkDevice,
     videoSession: VkVideoSessionKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43533,7 +42369,6 @@ pub const vkCreateVideoSessionParametersKHR = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pVideoSessionParameters: *VkVideoSessionParametersKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43542,7 +42377,6 @@ pub const vkUpdateVideoSessionParametersKHR = fn (
     videoSessionParameters: VkVideoSessionParametersKHR,
     pUpdateInfo: *const VkVideoSessionParametersUpdateInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_encode_queue
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43551,17 +42385,15 @@ pub const vkGetEncodedVideoSessionParametersKHR = fn (
     pVideoSessionParametersInfo: *const VkVideoEncodeSessionParametersGetInfoKHR,
     pFeedbackInfo: ?*VkVideoEncodeSessionParametersFeedbackInfoKHR,
     pDataSize: *u64,
-    // len: pDataSize
+    // Length expression: pDataSize
     pData: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Can be used without queues: false
 pub const vkDestroyVideoSessionParametersKHR = fn (
     device: VkDevice,
     videoSessionParameters: VkVideoSessionParametersKHR,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43569,10 +42401,9 @@ pub const vkGetVideoSessionMemoryRequirementsKHR = fn (
     device: VkDevice,
     videoSession: VkVideoSessionKHR,
     pMemoryRequirementsCount: *u32,
-    // len: pMemoryRequirementsCount
+    // Length expression: pMemoryRequirementsCount
     pMemoryRequirements: ?[*]VkVideoSessionMemoryRequirementsKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43580,10 +42411,9 @@ pub const vkBindVideoSessionMemoryKHR = fn (
     device: VkDevice,
     videoSession: VkVideoSessionKHR,
     bindSessionMemoryInfoCount: u32,
-    // len: bindSessionMemoryInfoCount
+    // Length expression: bindSessionMemoryInfoCount
     pBindSessionMemoryInfos: [*]const VkBindVideoSessionMemoryInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_video_decode_queue
 // Queues: VK_QUEUE_VIDEO_DECODE_BIT_KHR
 // Render pass: outside
 // Video conding: inside
@@ -43594,7 +42424,6 @@ pub const vkCmdDecodeVideoKHR = fn (
     commandBuffer: VkCommandBuffer,
     pDecodeInfo: *const VkVideoDecodeInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Queues: VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
 // Video conding: outside
@@ -43605,7 +42434,6 @@ pub const vkCmdBeginVideoCodingKHR = fn (
     commandBuffer: VkCommandBuffer,
     pBeginInfo: *const VkVideoBeginCodingInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Queues: VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
 // Video conding: inside
@@ -43616,7 +42444,6 @@ pub const vkCmdControlVideoCodingKHR = fn (
     commandBuffer: VkCommandBuffer,
     pCodingControlInfo: *const VkVideoCodingControlInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_queue
 // Queues: VK_QUEUE_VIDEO_DECODE_BIT_KHR,VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
 // Video conding: inside
@@ -43627,7 +42454,6 @@ pub const vkCmdEndVideoCodingKHR = fn (
     commandBuffer: VkCommandBuffer,
     pEndCodingInfo: *const VkVideoEndCodingInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_KHR_video_encode_queue
 // Queues: VK_QUEUE_VIDEO_ENCODE_BIT_KHR
 // Render pass: outside
 // Video conding: inside
@@ -43638,7 +42464,6 @@ pub const vkCmdEncodeVideoKHR = fn (
     commandBuffer: VkCommandBuffer,
     pEncodeInfo: *const VkVideoEncodeInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_NV_memory_decompression
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43647,10 +42472,9 @@ pub const vkCmdEncodeVideoKHR = fn (
 pub const vkCmdDecompressMemoryNV = fn (
     commandBuffer: VkCommandBuffer,
     decompressRegionCount: u32,
-    // len: decompressRegionCount
+    // Length expression: decompressRegionCount
     pDecompressMemoryRegions: [*]const VkDecompressMemoryRegionNV,
 ) callconv(.c) void;
-// Extension: VK_NV_memory_decompression
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43662,14 +42486,12 @@ pub const vkCmdDecompressMemoryIndirectCountNV = fn (
     indirectCommandsCountAddress: u64,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_NV_partitioned_acceleration_structure
 // Can be used without queues: false
 pub const vkGetPartitionedAccelerationStructuresBuildSizesNV = fn (
     device: VkDevice,
     pInfo: *const VkPartitionedAccelerationStructureInstancesInputNV,
     pSizeInfo: *VkAccelerationStructureBuildSizesInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_NV_partitioned_acceleration_structure
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43679,7 +42501,6 @@ pub const vkCmdBuildPartitionedAccelerationStructuresNV = fn (
     commandBuffer: VkCommandBuffer,
     pBuildInfo: *const VkBuildPartitionedAccelerationStructureInfoNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_memory_decompression
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43689,7 +42510,6 @@ pub const vkCmdDecompressMemoryEXT = fn (
     commandBuffer: VkCommandBuffer,
     pDecompressMemoryInfoEXT: *const VkDecompressMemoryInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_memory_decompression
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -43703,7 +42523,6 @@ pub const vkCmdDecompressMemoryIndirectCountEXT = fn (
     maxDecompressionCount: u32,
     stride: u32,
 ) callconv(.c) void;
-// Extension: VK_NVX_binary_import
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43713,7 +42532,6 @@ pub const vkCreateCuModuleNVX = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pModule: *VkCuModuleNVX,
 ) callconv(.c) VkResult;
-// Extension: VK_NVX_binary_import
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43723,21 +42541,18 @@ pub const vkCreateCuFunctionNVX = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pFunction: *VkCuFunctionNVX,
 ) callconv(.c) VkResult;
-// Extension: VK_NVX_binary_import
 // Can be used without queues: false
 pub const vkDestroyCuModuleNVX = fn (
     device: VkDevice,
     module: VkCuModuleNVX,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NVX_binary_import
 // Can be used without queues: false
 pub const vkDestroyCuFunctionNVX = fn (
     device: VkDevice,
     function: VkCuFunctionNVX,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NVX_binary_import
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43747,14 +42562,12 @@ pub const vkCmdCuLaunchKernelNVX = fn (
     commandBuffer: VkCommandBuffer,
     pLaunchInfo: *const VkCuLaunchInfoNVX,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Can be used without queues: false
 pub const vkGetDescriptorSetLayoutSizeEXT = fn (
     device: VkDevice,
     layout: VkDescriptorSetLayout,
     pLayoutSizeInBytes: *u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Can be used without queues: false
 pub const vkGetDescriptorSetLayoutBindingOffsetEXT = fn (
     device: VkDevice,
@@ -43762,16 +42575,14 @@ pub const vkGetDescriptorSetLayoutBindingOffsetEXT = fn (
     binding: u32,
     pOffset: *u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Can be used without queues: false
 pub const vkGetDescriptorEXT = fn (
     device: VkDevice,
     pDescriptorInfo: *const VkDescriptorGetInfoEXT,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pDescriptor: *anyopaque,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_DATA_GRAPH_BIT_ARM
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43780,10 +42591,9 @@ pub const vkGetDescriptorEXT = fn (
 pub const vkCmdBindDescriptorBuffersEXT = fn (
     commandBuffer: VkCommandBuffer,
     bufferCount: u32,
-    // len: bufferCount
+    // Length expression: bufferCount
     pBindingInfos: [*]const VkDescriptorBufferBindingInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_DATA_GRAPH_BIT_ARM
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43795,12 +42605,11 @@ pub const vkCmdSetDescriptorBufferOffsetsEXT = fn (
     layout: VkPipelineLayout,
     firstSet: u32,
     setCount: u32,
-    // len: setCount
+    // Length expression: setCount
     pBufferIndices: [*]const u32,
-    // len: setCount
+    // Length expression: setCount
     pOffsets: [*]const u64,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -43812,7 +42621,6 @@ pub const vkCmdBindDescriptorBufferEmbeddedSamplersEXT = fn (
     layout: VkPipelineLayout,
     set: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_descriptor_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43821,7 +42629,6 @@ pub const vkGetBufferOpaqueCaptureDescriptorDataEXT = fn (
     pInfo: *const VkBufferCaptureDescriptorDataInfoEXT,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_descriptor_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43830,7 +42637,6 @@ pub const vkGetImageOpaqueCaptureDescriptorDataEXT = fn (
     pInfo: *const VkImageCaptureDescriptorDataInfoEXT,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_descriptor_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43839,7 +42645,6 @@ pub const vkGetImageViewOpaqueCaptureDescriptorDataEXT = fn (
     pInfo: *const VkImageViewCaptureDescriptorDataInfoEXT,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_descriptor_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43848,7 +42653,6 @@ pub const vkGetSamplerOpaqueCaptureDescriptorDataEXT = fn (
     pInfo: *const VkSamplerCaptureDescriptorDataInfoEXT,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_descriptor_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43857,14 +42661,12 @@ pub const vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT = fn (
     pInfo: *const VkAccelerationStructureCaptureDescriptorDataInfoEXT,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_pageable_device_local_memory
 // Can be used without queues: false
 pub const vkSetDeviceMemoryPriorityEXT = fn (
     device: VkDevice,
     memory: VkDeviceMemory,
     priority: f32,
 ) callconv(.c) void;
-// Extension: VK_EXT_acquire_drm_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43873,7 +42675,6 @@ pub const vkAcquireDrmDisplayEXT = fn (
     drmFd: i32,
     display: VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_acquire_drm_display
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43883,7 +42684,6 @@ pub const vkGetDrmDisplayEXT = fn (
     connectorId: u32,
     display: *VkDisplayKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_present_wait2
 // Success codes: VK_SUCCESS,VK_TIMEOUT,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43892,7 +42692,6 @@ pub const vkWaitForPresent2KHR = fn (
     swapchain: VkSwapchainKHR,
     pPresentWait2Info: *const VkPresentWait2InfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_present_wait
 // Success codes: VK_SUCCESS,VK_TIMEOUT,VK_SUBOPTIMAL_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43902,7 +42701,6 @@ pub const vkWaitForPresentKHR = fn (
     presentId: u64,
     timeout: u64,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_buffer_collection
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43912,7 +42710,6 @@ pub const vkCreateBufferCollectionFUCHSIA = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pCollection: *VkBufferCollectionFUCHSIA,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_buffer_collection
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43921,7 +42718,6 @@ pub const vkSetBufferCollectionBufferConstraintsFUCHSIA = fn (
     collection: VkBufferCollectionFUCHSIA,
     pBufferConstraintsInfo: *const VkBufferConstraintsInfoFUCHSIA,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_buffer_collection
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43930,14 +42726,12 @@ pub const vkSetBufferCollectionImageConstraintsFUCHSIA = fn (
     collection: VkBufferCollectionFUCHSIA,
     pImageConstraintsInfo: *const VkImageConstraintsInfoFUCHSIA,
 ) callconv(.c) VkResult;
-// Extension: VK_FUCHSIA_buffer_collection
 // Can be used without queues: false
 pub const vkDestroyBufferCollectionFUCHSIA = fn (
     device: VkDevice,
     collection: VkBufferCollectionFUCHSIA,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_FUCHSIA_buffer_collection
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43946,7 +42740,6 @@ pub const vkGetBufferCollectionPropertiesFUCHSIA = fn (
     collection: VkBufferCollectionFUCHSIA,
     pProperties: *VkBufferCollectionPropertiesFUCHSIA,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cuda_kernel_launch
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43956,7 +42749,6 @@ pub const vkCreateCudaModuleNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pModule: *VkCudaModuleNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cuda_kernel_launch
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43964,10 +42756,9 @@ pub const vkGetCudaModuleCacheNV = fn (
     device: VkDevice,
     module: VkCudaModuleNV,
     pCacheSize: *u64,
-    // len: pCacheSize
+    // Length expression: pCacheSize
     pCacheData: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cuda_kernel_launch
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -43977,21 +42768,18 @@ pub const vkCreateCudaFunctionNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pFunction: *VkCudaFunctionNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cuda_kernel_launch
 // Can be used without queues: false
 pub const vkDestroyCudaModuleNV = fn (
     device: VkDevice,
     module: VkCudaModuleNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_cuda_kernel_launch
 // Can be used without queues: false
 pub const vkDestroyCudaFunctionNV = fn (
     device: VkDevice,
     function: VkCudaFunctionNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_cuda_kernel_launch
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44010,8 +42798,6 @@ pub const vkCmdBeginRendering = fn (
     commandBuffer: VkCommandBuffer,
     pRenderingInfo: *const VkRenderingInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_dynamic_rendering
-pub const vkCmdBeginRenderingKHR = vkCmdBeginRendering;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44020,7 +42806,6 @@ pub const vkCmdBeginRenderingKHR = vkCmdBeginRendering;
 pub const vkCmdEndRendering = fn (
     commandBuffer: VkCommandBuffer,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance10
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44030,25 +42815,18 @@ pub const vkCmdEndRendering2KHR = fn (
     commandBuffer: VkCommandBuffer,
     pRenderingEndInfo: ?*const VkRenderingEndInfoKHR,
 ) callconv(.c) void;
-// Extension: VK_EXT_fragment_density_map_offset
-pub const vkCmdEndRendering2EXT = vkCmdEndRendering2KHR;
-// Extension: VK_KHR_dynamic_rendering
-pub const vkCmdEndRenderingKHR = vkCmdEndRendering;
-// Extension: VK_VALVE_descriptor_set_host_mapping
 // Can be used without queues: false
 pub const vkGetDescriptorSetLayoutHostMappingInfoVALVE = fn (
     device: VkDevice,
     pBindingReference: *const VkDescriptorSetBindingReferenceVALVE,
     pHostMapping: *VkDescriptorSetLayoutHostMappingInfoVALVE,
 ) callconv(.c) void;
-// Extension: VK_VALVE_descriptor_set_host_mapping
 // Can be used without queues: false
 pub const vkGetDescriptorSetHostMappingVALVE = fn (
     device: VkDevice,
     descriptorSet: VkDescriptorSet,
     ppData: **anyopaque,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44058,7 +42836,6 @@ pub const vkCreateMicromapEXT = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pMicromap: *VkMicromapEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44067,10 +42844,9 @@ pub const vkCreateMicromapEXT = fn (
 pub const vkCmdBuildMicromapsEXT = fn (
     commandBuffer: VkCommandBuffer,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkMicromapBuildInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44078,17 +42854,15 @@ pub const vkBuildMicromapsEXT = fn (
     device: VkDevice,
     deferredOperation: VkDeferredOperationKHR,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkMicromapBuildInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Can be used without queues: false
 pub const vkDestroyMicromapEXT = fn (
     device: VkDevice,
     micromap: VkMicromapEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44098,7 +42872,6 @@ pub const vkCmdCopyMicromapEXT = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyMicromapInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44107,7 +42880,6 @@ pub const vkCopyMicromapEXT = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyMicromapInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44117,7 +42889,6 @@ pub const vkCmdCopyMicromapToMemoryEXT = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyMicromapToMemoryInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44126,7 +42897,6 @@ pub const vkCopyMicromapToMemoryEXT = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyMicromapToMemoryInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44136,7 +42906,6 @@ pub const vkCmdCopyMemoryToMicromapEXT = fn (
     commandBuffer: VkCommandBuffer,
     pInfo: *const VkCopyMemoryToMicromapInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS,VK_OPERATION_DEFERRED_KHR,VK_OPERATION_NOT_DEFERRED_KHR
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44145,7 +42914,6 @@ pub const vkCopyMemoryToMicromapEXT = fn (
     deferredOperation: VkDeferredOperationKHR,
     pInfo: *const VkCopyMemoryToMicromapInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44154,35 +42922,32 @@ pub const vkCopyMemoryToMicromapEXT = fn (
 pub const vkCmdWriteMicromapsPropertiesEXT = fn (
     commandBuffer: VkCommandBuffer,
     micromapCount: u32,
-    // len: micromapCount
+    // Length expression: micromapCount
     pMicromaps: [*]const VkMicromapEXT,
     queryType: VkQueryType,
     queryPool: VkQueryPool,
     firstQuery: u32,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkWriteMicromapsPropertiesEXT = fn (
     device: VkDevice,
     micromapCount: u32,
-    // len: micromapCount
+    // Length expression: micromapCount
     pMicromaps: [*]const VkMicromapEXT,
     queryType: VkQueryType,
     dataSize: u64,
-    // len: dataSize
+    // Length expression: dataSize
     pData: *anyopaque,
     stride: u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_opacity_micromap
 // Can be used without queues: false
 pub const vkGetDeviceMicromapCompatibilityEXT = fn (
     device: VkDevice,
     pVersionInfo: *const VkMicromapVersionInfoEXT,
     pCompatibility: *VkAccelerationStructureCompatibilityKHR,
 ) callconv(.c) void;
-// Extension: VK_EXT_opacity_micromap
 // Can be used without queues: false
 pub const vkGetMicromapBuildSizesEXT = fn (
     device: VkDevice,
@@ -44190,14 +42955,12 @@ pub const vkGetMicromapBuildSizesEXT = fn (
     pBuildInfo: *const VkMicromapBuildInfoEXT,
     pSizeInfo: *VkMicromapBuildSizesInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_shader_module_identifier
 // Can be used without queues: false
 pub const vkGetShaderModuleIdentifierEXT = fn (
     device: VkDevice,
     shaderModule: VkShaderModule,
     pIdentifier: *VkShaderModuleIdentifierEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_shader_module_identifier
 // Can be used without queues: false
 pub const vkGetShaderModuleCreateInfoIdentifierEXT = fn (
     device: VkDevice,
@@ -44211,28 +42974,20 @@ pub const vkGetImageSubresourceLayout2 = fn (
     pSubresource: *const VkImageSubresource2,
     pLayout: *VkSubresourceLayout2,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance5
-pub const vkGetImageSubresourceLayout2KHR = vkGetImageSubresourceLayout2;
-// Extension: VK_EXT_host_image_copy
-// Extension: VK_EXT_image_compression_control
-pub const vkGetImageSubresourceLayout2EXT = vkGetImageSubresourceLayout2;
-// Extension: VK_EXT_pipeline_properties
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPipelinePropertiesEXT = fn (
     device: VkDevice,
-    pPipelineInfo: *const VkPipelineInfoEXT,
+    pPipelineInfo: *const VkPipelineInfoKHR,
     // valid structs: VkPipelinePropertiesIdentifierEXT
     pPipelineProperties: *VkBaseOutStructure,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_metal_objects
 // Can be used without queues: false
 pub const vkExportMetalObjectsEXT = fn (
     device: VkDevice,
     pMetalObjectsInfo: *VkExportMetalObjectsInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_QCOM_tile_memory_heap
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44242,7 +42997,6 @@ pub const vkCmdBindTileMemoryQCOM = fn (
     commandBuffer: VkCommandBuffer,
     pTileMemoryBindInfo: ?*const VkTileMemoryBindInfoQCOM,
 ) callconv(.c) void;
-// Extension: VK_QCOM_tile_properties
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44250,10 +43004,9 @@ pub const vkGetFramebufferTilePropertiesQCOM = fn (
     device: VkDevice,
     framebuffer: VkFramebuffer,
     pPropertiesCount: *u32,
-    // len: pPropertiesCount
+    // Length expression: pPropertiesCount
     pProperties: ?[*]VkTilePropertiesQCOM,
 ) callconv(.c) VkResult;
-// Extension: VK_QCOM_tile_properties
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44262,7 +43015,6 @@ pub const vkGetDynamicRenderingTilePropertiesQCOM = fn (
     pRenderingInfo: *const VkRenderingInfo,
     pProperties: *VkTilePropertiesQCOM,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_optical_flow
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_EXTENSION_NOT_PRESENT,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_FORMAT_NOT_SUPPORTED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44270,10 +43022,9 @@ pub const vkGetPhysicalDeviceOpticalFlowImageFormatsNV = fn (
     physicalDevice: VkPhysicalDevice,
     pOpticalFlowImageFormatInfo: *const VkOpticalFlowImageFormatInfoNV,
     pFormatCount: *u32,
-    // len: pFormatCount
+    // Length expression: pFormatCount
     pImageFormatProperties: ?[*]VkOpticalFlowImageFormatPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_optical_flow
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44283,14 +43034,12 @@ pub const vkCreateOpticalFlowSessionNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSession: *VkOpticalFlowSessionNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_optical_flow
 // Can be used without queues: false
 pub const vkDestroyOpticalFlowSessionNV = fn (
     device: VkDevice,
     session: VkOpticalFlowSessionNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_optical_flow
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44301,7 +43050,6 @@ pub const vkBindOpticalFlowSessionImageNV = fn (
     view: VkImageView,
     layout: VkImageLayout,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_optical_flow
 // Queues: VK_QUEUE_OPTICAL_FLOW_BIT_NV
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44312,7 +43060,6 @@ pub const vkCmdOpticalFlowExecuteNV = fn (
     session: VkOpticalFlowSessionNV,
     pExecuteInfo: *const VkOpticalFlowExecuteInfoNV,
 ) callconv(.c) void;
-// Extension: VK_EXT_device_fault
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44321,7 +43068,6 @@ pub const vkGetDeviceFaultInfoEXT = fn (
     pFaultCounts: *VkDeviceFaultCountsEXT,
     pFaultInfo: ?*VkDeviceFaultInfoEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_depth_bias_control
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44331,7 +43077,6 @@ pub const vkCmdSetDepthBias2EXT = fn (
     commandBuffer: VkCommandBuffer,
     pDepthBiasInfo: *const VkDepthBiasInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_KHR_swapchain_maintenance1
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44339,16 +43084,12 @@ pub const vkReleaseSwapchainImagesKHR = fn (
     device: VkDevice,
     pReleaseInfo: *const VkReleaseSwapchainImagesInfoKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_swapchain_maintenance1
-pub const vkReleaseSwapchainImagesEXT = vkReleaseSwapchainImagesKHR;
 // Can be used without queues: false
 pub const vkGetDeviceImageSubresourceLayout = fn (
     device: VkDevice,
     pInfo: *const VkDeviceImageSubresourceInfo,
     pLayout: *VkSubresourceLayout2,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance5
-pub const vkGetDeviceImageSubresourceLayoutKHR = vkGetDeviceImageSubresourceLayout;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_MEMORY_MAP_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44357,8 +43098,6 @@ pub const vkMapMemory2 = fn (
     pMemoryMapInfo: *const VkMemoryMapInfo,
     ppData: **anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_map_memory2
-pub const vkMapMemory2KHR = vkMapMemory2;
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_MEMORY_MAP_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44366,29 +43105,24 @@ pub const vkUnmapMemory2 = fn (
     device: VkDevice,
     pMemoryUnmapInfo: *const VkMemoryUnmapInfo,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_map_memory2
-pub const vkUnmapMemory2KHR = vkUnmapMemory2;
-// Extension: VK_EXT_shader_object
 // Success codes: VK_SUCCESS,VK_INCOMPATIBLE_SHADER_BINARY_EXT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
 pub const vkCreateShadersEXT = fn (
     device: VkDevice,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkShaderCreateInfoEXT,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pShaders: [*]VkShaderEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_shader_object
 // Can be used without queues: false
 pub const vkDestroyShaderEXT = fn (
     device: VkDevice,
     shader: VkShaderEXT,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_EXT_shader_object
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44396,10 +43130,9 @@ pub const vkGetShaderBinaryDataEXT = fn (
     device: VkDevice,
     shader: VkShaderEXT,
     pDataSize: *u64,
-    // len: pDataSize
+    // Length expression: pDataSize
     pData: ?*anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_shader_object
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44408,12 +43141,11 @@ pub const vkGetShaderBinaryDataEXT = fn (
 pub const vkCmdBindShadersEXT = fn (
     commandBuffer: VkCommandBuffer,
     stageCount: u32,
-    // len: stageCount
+    // Length expression: stageCount
     pStages: [*]const VkShaderStageFlags,
-    // len: stageCount
+    // Length expression: stageCount
     pShaders: [*]const VkShaderEXT,
 ) callconv(.c) void;
-// Extension: VK_EXT_present_timing
 // Success codes: VK_SUCCESS,VK_NOT_READY
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44422,7 +43154,6 @@ pub const vkSetSwapchainPresentTimingQueueSizeEXT = fn (
     swapchain: VkSwapchainKHR,
     size: u32,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_present_timing
 // Success codes: VK_SUCCESS,VK_NOT_READY
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44432,7 +43163,6 @@ pub const vkGetSwapchainTimingPropertiesEXT = fn (
     pSwapchainTimingProperties: *VkSwapchainTimingPropertiesEXT,
     pSwapchainTimingPropertiesCounter: ?*u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_present_timing
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44442,7 +43172,6 @@ pub const vkGetSwapchainTimeDomainPropertiesEXT = fn (
     pSwapchainTimeDomainProperties: *VkSwapchainTimeDomainPropertiesEXT,
     pTimeDomainsCounter: ?*u64,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_present_timing
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_DEVICE_LOST,VK_ERROR_OUT_OF_DATE_KHR,VK_ERROR_SURFACE_LOST_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44451,7 +43180,6 @@ pub const vkGetPastPresentationTimingEXT = fn (
     pPastPresentationTimingInfo: *const VkPastPresentationTimingInfoEXT,
     pPastPresentationTimingProperties: *VkPastPresentationTimingPropertiesEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_QNX_external_memory_screen_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44460,17 +43188,15 @@ pub const vkGetScreenBufferPropertiesQNX = fn (
     buffer: *const _screen_buffer,
     pProperties: *VkScreenBufferPropertiesQNX,
 ) callconv(.c) VkResult;
-// Extension: VK_KHR_cooperative_matrix
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkCooperativeMatrixPropertiesKHR,
 ) callconv(.c) VkResult;
-// Extension: VK_AMDX_shader_enqueue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44479,7 +43205,6 @@ pub const vkGetExecutionGraphPipelineScratchSizeAMDX = fn (
     executionGraph: VkPipeline,
     pSizeInfo: *VkExecutionGraphPipelineScratchSizeAMDX,
 ) callconv(.c) VkResult;
-// Extension: VK_AMDX_shader_enqueue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44489,7 +43214,6 @@ pub const vkGetExecutionGraphPipelineNodeIndexAMDX = fn (
     pNodeInfo: *const VkPipelineShaderStageNodeCreateInfoAMDX,
     pNodeIndex: *u32,
 ) callconv(.c) VkResult;
-// Extension: VK_AMDX_shader_enqueue
 // Success codes: VK_SUCCESS,VK_PIPELINE_COMPILE_REQUIRED_EXT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: true
@@ -44497,13 +43221,12 @@ pub const vkCreateExecutionGraphPipelinesAMDX = fn (
     device: VkDevice,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkExecutionGraphPipelineCreateInfoAMDX,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
-// Extension: VK_AMDX_shader_enqueue
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary
@@ -44515,7 +43238,6 @@ pub const vkCmdInitializeGraphScratchMemoryAMDX = fn (
     scratch: u64,
     scratchSize: u64,
 ) callconv(.c) void;
-// Extension: VK_AMDX_shader_enqueue
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary
@@ -44527,7 +43249,6 @@ pub const vkCmdDispatchGraphAMDX = fn (
     scratchSize: u64,
     pCountInfo: *const VkDispatchGraphCountInfoAMDX,
 ) callconv(.c) void;
-// Extension: VK_AMDX_shader_enqueue
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary
@@ -44539,7 +43260,6 @@ pub const vkCmdDispatchGraphIndirectAMDX = fn (
     scratchSize: u64,
     pCountInfo: *const VkDispatchGraphCountInfoAMDX,
 ) callconv(.c) void;
-// Extension: VK_AMDX_shader_enqueue
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary
@@ -44560,8 +43280,6 @@ pub const vkCmdBindDescriptorSets2 = fn (
     commandBuffer: VkCommandBuffer,
     pBindDescriptorSetsInfo: *const VkBindDescriptorSetsInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance6
-pub const vkCmdBindDescriptorSets2KHR = vkCmdBindDescriptorSets2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44571,8 +43289,6 @@ pub const vkCmdPushConstants2 = fn (
     commandBuffer: VkCommandBuffer,
     pPushConstantsInfo: *const VkPushConstantsInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance6
-pub const vkCmdPushConstants2KHR = vkCmdPushConstants2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44582,8 +43298,6 @@ pub const vkCmdPushDescriptorSet2 = fn (
     commandBuffer: VkCommandBuffer,
     pPushDescriptorSetInfo: *const VkPushDescriptorSetInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance6
-pub const vkCmdPushDescriptorSet2KHR = vkCmdPushDescriptorSet2;
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44593,9 +43307,6 @@ pub const vkCmdPushDescriptorSetWithTemplate2 = fn (
     commandBuffer: VkCommandBuffer,
     pPushDescriptorSetWithTemplateInfo: *const VkPushDescriptorSetWithTemplateInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance6
-pub const vkCmdPushDescriptorSetWithTemplate2KHR = vkCmdPushDescriptorSetWithTemplate2;
-// Extension: VK_KHR_maintenance6
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,VK_QUEUE_DATA_GRAPH_BIT_ARM
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44605,7 +43316,6 @@ pub const vkCmdSetDescriptorBufferOffsets2EXT = fn (
     commandBuffer: VkCommandBuffer,
     pSetDescriptorBufferOffsetsInfo: *const VkSetDescriptorBufferOffsetsInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_KHR_maintenance6
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44615,7 +43325,6 @@ pub const vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = fn (
     commandBuffer: VkCommandBuffer,
     pBindDescriptorBufferEmbeddedSamplersInfo: *const VkBindDescriptorBufferEmbeddedSamplersInfoEXT,
 ) callconv(.c) void;
-// Extension: VK_NV_low_latency2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44624,7 +43333,6 @@ pub const vkSetLatencySleepModeNV = fn (
     swapchain: VkSwapchainKHR,
     pSleepModeInfo: *const VkLatencySleepModeInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_low_latency2
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44633,21 +43341,18 @@ pub const vkLatencySleepNV = fn (
     swapchain: VkSwapchainKHR,
     pSleepInfo: *const VkLatencySleepInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_low_latency2
 // Can be used without queues: false
 pub const vkSetLatencyMarkerNV = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
     pLatencyMarkerInfo: *const VkSetLatencyMarkerInfoNV,
 ) callconv(.c) void;
-// Extension: VK_NV_low_latency2
 // Can be used without queues: false
 pub const vkGetLatencyTimingsNV = fn (
     device: VkDevice,
     swapchain: VkSwapchainKHR,
     pLatencyMarkerInfo: *VkGetLatencyMarkerInfoNV,
 ) callconv(.c) void;
-// Extension: VK_NV_low_latency2
 // Can be used without queues: false
 pub const vkQueueNotifyOutOfBandNV = fn (
     queue: VkQueue,
@@ -44662,8 +43367,6 @@ pub const vkCmdSetRenderingAttachmentLocations = fn (
     commandBuffer: VkCommandBuffer,
     pLocationInfo: *const VkRenderingAttachmentLocationInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_dynamic_rendering_local_read
-pub const vkCmdSetRenderingAttachmentLocationsKHR = vkCmdSetRenderingAttachmentLocations;
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44673,10 +43376,6 @@ pub const vkCmdSetRenderingInputAttachmentIndices = fn (
     commandBuffer: VkCommandBuffer,
     pInputAttachmentIndexInfo: *const VkRenderingInputAttachmentIndexInfo,
 ) callconv(.c) void;
-// Extension: VK_KHR_dynamic_rendering_local_read
-pub const vkCmdSetRenderingInputAttachmentIndicesKHR = vkCmdSetRenderingInputAttachmentIndices;
-// Extension: VK_EXT_shader_object
-// Extension: VK_EXT_depth_clamp_control
 // Queues: VK_QUEUE_GRAPHICS_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -44687,17 +43386,15 @@ pub const vkCmdSetDepthClampRangeEXT = fn (
     depthClampMode: VkDepthClampModeEXT,
     pDepthClampRange: ?*const VkDepthClampRangeEXT,
 ) callconv(.c) void;
-// Extension: VK_NV_cooperative_matrix2
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceCooperativeMatrixFlexibleDimensionsPropertiesNV = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkCooperativeMatrixFlexibleDimensionsPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_external_memory_metal
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44706,7 +43403,6 @@ pub const vkGetMemoryMetalHandleEXT = fn (
     pGetMetalHandleInfo: *const VkMemoryGetMetalHandleInfoEXT,
     pHandle: **anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_EXT_external_memory_metal
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44716,17 +43412,15 @@ pub const vkGetMemoryMetalHandlePropertiesEXT = fn (
     pHandle: *const anyopaque,
     pMemoryMetalHandleProperties: *VkMemoryMetalHandlePropertiesEXT,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cooperative_vector
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceCooperativeVectorPropertiesNV = fn (
     physicalDevice: VkPhysicalDevice,
     pPropertyCount: *u32,
-    // len: pPropertyCount
+    // Length expression: pPropertyCount
     pProperties: ?[*]VkCooperativeVectorPropertiesNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cooperative_vector
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44734,7 +43428,6 @@ pub const vkConvertCooperativeVectorMatrixNV = fn (
     device: VkDevice,
     pInfo: *const VkConvertCooperativeVectorMatrixInfoNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_cooperative_vector
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44743,10 +43436,9 @@ pub const vkConvertCooperativeVectorMatrixNV = fn (
 pub const vkCmdConvertCooperativeVectorMatrixNV = fn (
     commandBuffer: VkCommandBuffer,
     infoCount: u32,
-    // len: infoCount
+    // Length expression: infoCount
     pInfos: [*]const VkConvertCooperativeVectorMatrixInfoNV,
 ) callconv(.c) void;
-// Extension: VK_QCOM_tile_shading
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44756,7 +43448,6 @@ pub const vkCmdDispatchTileQCOM = fn (
     commandBuffer: VkCommandBuffer,
     pDispatchTileInfo: *const VkDispatchTileInfoQCOM,
 ) callconv(.c) void;
-// Extension: VK_QCOM_tile_shading
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44766,7 +43457,6 @@ pub const vkCmdBeginPerTileExecutionQCOM = fn (
     commandBuffer: VkCommandBuffer,
     pPerTileBeginInfo: *const VkPerTileBeginInfoQCOM,
 ) callconv(.c) void;
-// Extension: VK_QCOM_tile_shading
 // Queues: VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: inside
 // Command buffer levels: primary,secondary
@@ -44776,7 +43466,6 @@ pub const vkCmdEndPerTileExecutionQCOM = fn (
     commandBuffer: VkCommandBuffer,
     pPerTileEndInfo: *const VkPerTileEndInfoQCOM,
 ) callconv(.c) void;
-// Extension: VK_NV_external_compute_queue
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44786,21 +43475,18 @@ pub const vkCreateExternalComputeQueueNV = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pExternalQueue: *VkExternalComputeQueueNV,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_external_compute_queue
 // Can be used without queues: false
 pub const vkDestroyExternalComputeQueueNV = fn (
     device: VkDevice,
     externalQueue: VkExternalComputeQueueNV,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_NV_external_compute_queue
 // Can be used without queues: false
 pub const vkGetExternalComputeQueueDataNV = fn (
     externalQueue: VkExternalComputeQueueNV,
     params: *VkExternalComputeQueueDataParamsNV,
     pData: *anyopaque,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44810,14 +43496,12 @@ pub const vkCreateTensorARM = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pTensor: *VkTensorARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_tensors
 // Can be used without queues: false
 pub const vkDestroyTensorARM = fn (
     device: VkDevice,
     tensor: VkTensorARM,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44827,38 +43511,33 @@ pub const vkCreateTensorViewARM = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pView: *VkTensorViewARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_tensors
 // Can be used without queues: false
 pub const vkDestroyTensorViewARM = fn (
     device: VkDevice,
     tensorView: VkTensorViewARM,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Can be used without queues: false
 pub const vkGetTensorMemoryRequirementsARM = fn (
     device: VkDevice,
     pInfo: *const VkTensorMemoryRequirementsInfoARM,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkBindTensorMemoryARM = fn (
     device: VkDevice,
     bindInfoCount: u32,
-    // len: bindInfoCount
+    // Length expression: bindInfoCount
     pBindInfos: [*]const VkBindTensorMemoryInfoARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_tensors
 // Can be used without queues: false
 pub const vkGetDeviceTensorMemoryRequirementsARM = fn (
     device: VkDevice,
     pInfo: *const VkDeviceTensorMemoryRequirementsARM,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Queues: VK_QUEUE_TRANSFER_BIT,VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44868,7 +43547,6 @@ pub const vkCmdCopyTensorARM = fn (
     commandBuffer: VkCommandBuffer,
     pCopyTensorInfo: *const VkCopyTensorInfoARM,
 ) callconv(.c) void;
-// Extension: VK_ARM_tensors
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44877,7 +43555,6 @@ pub const vkGetTensorOpaqueCaptureDescriptorDataARM = fn (
     pInfo: *const VkTensorCaptureDescriptorDataInfoARM,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_tensors
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44886,14 +43563,12 @@ pub const vkGetTensorViewOpaqueCaptureDescriptorDataARM = fn (
     pInfo: *const VkTensorViewCaptureDescriptorDataInfoARM,
     pData: *anyopaque,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_tensors
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceExternalTensorPropertiesARM = fn (
     physicalDevice: VkPhysicalDevice,
     pExternalTensorInfo: *const VkPhysicalDeviceExternalTensorInfoARM,
     pExternalTensorProperties: *VkExternalTensorPropertiesARM,
 ) callconv(.c) void;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS,VK_PIPELINE_COMPILE_REQUIRED_EXT
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44902,13 +43577,12 @@ pub const vkCreateDataGraphPipelinesARM = fn (
     deferredOperation: VkDeferredOperationKHR,
     pipelineCache: VkPipelineCache,
     createInfoCount: u32,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pCreateInfos: [*]const VkDataGraphPipelineCreateInfoARM,
     pAllocator: ?*const VkAllocationCallbacks,
-    // len: createInfoCount
+    // Length expression: createInfoCount
     pPipelines: [*]VkPipeline,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44918,7 +43592,6 @@ pub const vkCreateDataGraphPipelineSessionARM = fn (
     pAllocator: ?*const VkAllocationCallbacks,
     pSession: *VkDataGraphPipelineSessionARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44926,34 +43599,30 @@ pub const vkGetDataGraphPipelineSessionBindPointRequirementsARM = fn (
     device: VkDevice,
     pInfo: *const VkDataGraphPipelineSessionBindPointRequirementsInfoARM,
     pBindPointRequirementCount: *u32,
-    // len: pBindPointRequirementCount
+    // Length expression: pBindPointRequirementCount
     pBindPointRequirements: ?[*]VkDataGraphPipelineSessionBindPointRequirementARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Can be used without queues: false
 pub const vkGetDataGraphPipelineSessionMemoryRequirementsARM = fn (
     device: VkDevice,
     pInfo: *const VkDataGraphPipelineSessionMemoryRequirementsInfoARM,
     pMemoryRequirements: *VkMemoryRequirements2,
 ) callconv(.c) void;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkBindDataGraphPipelineSessionMemoryARM = fn (
     device: VkDevice,
     bindInfoCount: u32,
-    // len: bindInfoCount
+    // Length expression: bindInfoCount
     pBindInfos: [*]const VkBindDataGraphPipelineSessionMemoryInfoARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Can be used without queues: false
 pub const vkDestroyDataGraphPipelineSessionARM = fn (
     device: VkDevice,
     session: VkDataGraphPipelineSessionARM,
     pAllocator: ?*const VkAllocationCallbacks,
 ) callconv(.c) void;
-// Extension: VK_ARM_data_graph
 // Queues: VK_QUEUE_DATA_GRAPH_BIT_ARM
 // Render pass: outside
 // Command buffer levels: primary,secondary
@@ -44964,7 +43633,6 @@ pub const vkCmdDispatchDataGraphARM = fn (
     session: VkDataGraphPipelineSessionARM,
     pInfo: ?*const VkDataGraphPipelineDispatchInfoARM,
 ) callconv(.c) void;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44972,10 +43640,9 @@ pub const vkGetDataGraphPipelineAvailablePropertiesARM = fn (
     device: VkDevice,
     pPipelineInfo: *const VkDataGraphPipelineInfoARM,
     pPropertiesCount: *u32,
-    // len: pPropertiesCount
+    // Length expression: pPropertiesCount
     pProperties: ?[*]VkDataGraphPipelinePropertyARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44983,10 +43650,9 @@ pub const vkGetDataGraphPipelinePropertiesARM = fn (
     device: VkDevice,
     pPipelineInfo: *const VkDataGraphPipelineInfoARM,
     propertiesCount: u32,
-    // len: propertiesCount
+    // Length expression: propertiesCount
     pProperties: [*]VkDataGraphPipelinePropertyQueryResultARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -44994,17 +43660,15 @@ pub const vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM = fn (
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     pQueueFamilyDataGraphPropertyCount: *u32,
-    // len: pQueueFamilyDataGraphPropertyCount
+    // Length expression: pQueueFamilyDataGraphPropertyCount
     pQueueFamilyDataGraphProperties: ?[*]VkQueueFamilyDataGraphPropertiesARM,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_data_graph
 // Can be used without queues: false
 pub const vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM = fn (
     physicalDevice: VkPhysicalDevice,
     pQueueFamilyDataGraphProcessingEngineInfo: *const VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM,
     pQueueFamilyDataGraphProcessingEngineProperties: *VkQueueFamilyDataGraphProcessingEnginePropertiesARM,
 ) callconv(.c) void;
-// Extension: VK_OHOS_external_memory
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -45013,7 +43677,6 @@ pub const vkGetNativeBufferPropertiesOHOS = fn (
     buffer: *const OH_NativeBuffer,
     pProperties: *VkNativeBufferPropertiesOHOS,
 ) callconv(.c) VkResult;
-// Extension: VK_OHOS_external_memory
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -45022,7 +43685,6 @@ pub const vkGetMemoryNativeBufferOHOS = fn (
     pInfo: *const VkMemoryGetNativeBufferInfoOHOS,
     pBuffer: **OH_NativeBuffer,
 ) callconv(.c) VkResult;
-// Extension: VK_OHOS_native_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -45032,7 +43694,6 @@ pub const vkGetSwapchainGrallocUsageOHOS = fn (
     imageUsage: VkImageUsageFlags,
     grallocUsage: *u64,
 ) callconv(.c) VkResult;
-// Extension: VK_OHOS_native_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -45043,19 +43704,17 @@ pub const vkAcquireImageOHOS = fn (
     semaphore: VkSemaphore,
     fence: VkFence,
 ) callconv(.c) VkResult;
-// Extension: VK_OHOS_native_buffer
 // Success codes: VK_SUCCESS
 // Error codes: VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
 pub const vkQueueSignalReleaseImageOHOS = fn (
     queue: VkQueue,
     waitSemaphoreCount: u32,
-    // len: waitSemaphoreCount
+    // Length expression: waitSemaphoreCount
     pWaitSemaphores: [*]const VkSemaphore,
     image: VkImage,
     pNativeFenceFd: *i32,
 ) callconv(.c) VkResult;
-// Extension: VK_ARM_performance_counters_by_region
 // Success codes: VK_SUCCESS,VK_INCOMPLETE
 // Error codes: VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_UNKNOWN,VK_ERROR_VALIDATION_FAILED
 // Can be used without queues: false
@@ -45063,12 +43722,11 @@ pub const vkEnumeratePhysicalDeviceQueueFamilyPerformanceCountersByRegionARM = f
     physicalDevice: VkPhysicalDevice,
     queueFamilyIndex: u32,
     pCounterCount: *u32,
-    // len: pCounterCount
+    // Length expression: pCounterCount
     pCounters: ?[*]VkPerformanceCounterARM,
-    // len: pCounterCount
+    // Length expression: pCounterCount
     pCounterDescriptions: ?[*]VkPerformanceCounterDescriptionARM,
 ) callconv(.c) VkResult;
-// Extension: VK_NV_compute_occupancy_priority
 // Queues: VK_QUEUE_COMPUTE_BIT
 // Render pass: both
 // Command buffer levels: primary,secondary
@@ -45078,6 +43736,1474 @@ pub const vkCmdSetComputeOccupancyPriorityNV = fn (
     commandBuffer: VkCommandBuffer,
     pParameters: *const VkComputeOccupancyPriorityParametersNV,
 ) callconv(.c) void;
+// Can be used without queues: false
+pub const vkInternalAllocationNotification = fn (
+    pUserData: *anyopaque,
+    size: u64,
+    allocationType: VkInternalAllocationType,
+    allocationScope: VkSystemAllocationScope,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkInternalFreeNotification = fn (
+    pUserData: *anyopaque,
+    size: u64,
+    allocationType: VkInternalAllocationType,
+    allocationScope: VkSystemAllocationScope,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkReallocationFunction = fn (
+    pUserData: *anyopaque,
+    pOriginal: *anyopaque,
+    size: u64,
+    alignment: u64,
+    allocationScope: VkSystemAllocationScope,
+) callconv(.c) ?[*]u8;
+// Can be used without queues: false
+pub const vkAllocationFunction = fn (
+    pUserData: *anyopaque,
+    size: u64,
+    alignment: u64,
+    allocationScope: VkSystemAllocationScope,
+) callconv(.c) ?[*]u8;
+// Can be used without queues: false
+pub const vkFreeFunction = fn (
+    pUserData: *anyopaque,
+    pMemory: *anyopaque,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkVoidFunction = fn (
+    pUserData: *anyopaque,
+    pMemory: *anyopaque,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkDebugReportCallbackEXT = fn (
+    flags: VkDebugReportFlagsEXT,
+    objectType: VkDebugReportObjectTypeEXT,
+    object: u64,
+    location: u64,
+    messageCode: i32,
+    pLayerPrefix: *const u8,
+    pMessage: *const u8,
+    pUserData: *anyopaque,
+) callconv(.c) u32;
+// Can be used without queues: false
+pub const vkDebugUtilsMessengerCallbackEXT = fn (
+    messageSeverity: VkDebugUtilsMessageSeverityFlagsEXT,
+    messageTypes: VkDebugUtilsMessageTypeFlagsEXT,
+    pCallbackData: *const VkDebugUtilsMessengerCallbackDataEXT,
+    pUserData: *anyopaque,
+) callconv(.c) u32;
+// Can be used without queues: false
+pub const vkFaultCallbackFunction = fn (
+    unrecordedFaults: u32,
+    faultCount: u32,
+    pFaults: *const anyopaque,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkDeviceMemoryReportCallbackEXT = fn (
+    pCallbackData: *const VkDeviceMemoryReportCallbackDataEXT,
+    pUserData: *const anyopaque,
+) callconv(.c) void;
+// Can be used without queues: false
+pub const vkGetInstanceProcAddrLUNARG = fn (
+    instance: VkInstance,
+    pName: *const u8,
+) callconv(.c) ?*const vkVoidFunction;
+
+// Aliases
+pub const char = u8;
+pub const uint8_t = u8;
+pub const uint16_t = u16;
+pub const int32_t = i32;
+pub const uint32_t = u32;
+pub const int64_t = i64;
+pub const size_t = u64;
+pub const uint64_t = u64;
+pub const float = f32;
+pub const double = f64;
+pub const u8_slice = [*]u8;
+pub const VkSampleMask = u32;
+pub const VkBool32 = u32;
+pub const VkFlags = u32;
+pub const VkFlags64 = u64;
+pub const VkDeviceSize = u64;
+pub const VkDeviceAddress = u64;
+pub const VkRemoteAddressNV = *anyopaque;
+pub const VkDescriptorUpdateTemplateKHR = VkDescriptorUpdateTemplate;
+pub const VkSamplerYcbcrConversionKHR = VkSamplerYcbcrConversion;
+pub const VkPrivateDataSlotEXT = VkPrivateDataSlot;
+pub const VkFramebufferCreateFlagBits = VkFramebufferCreateFlags;
+pub const VkQueryPoolCreateFlagBits = VkQueryPoolCreateFlags;
+pub const VkRenderPassCreateFlagBits = VkRenderPassCreateFlags;
+pub const VkSamplerCreateFlagBits = VkSamplerCreateFlags;
+pub const VkPipelineLayoutCreateFlagBits = VkPipelineLayoutCreateFlags;
+pub const VkPipelineCacheCreateFlagBits = VkPipelineCacheCreateFlags;
+pub const VkPipelineDepthStencilStateCreateFlagBits = VkPipelineDepthStencilStateCreateFlags;
+pub const VkPipelineColorBlendStateCreateFlagBits = VkPipelineColorBlendStateCreateFlags;
+pub const VkPipelineShaderStageCreateFlagBits = VkPipelineShaderStageCreateFlags;
+pub const VkDescriptorSetLayoutCreateFlagBits = VkDescriptorSetLayoutCreateFlags;
+pub const VkInstanceCreateFlagBits = VkInstanceCreateFlags;
+pub const VkDeviceQueueCreateFlagBits = VkDeviceQueueCreateFlags;
+pub const VkQueueFlagBits = VkQueueFlags;
+pub const VkMemoryPropertyFlagBits = VkMemoryPropertyFlags;
+pub const VkMemoryHeapFlagBits = VkMemoryHeapFlags;
+pub const VkAccessFlagBits = VkAccessFlags;
+pub const VkBufferUsageFlagBits = VkBufferUsageFlags;
+pub const VkBufferCreateFlagBits = VkBufferCreateFlags;
+pub const VkShaderStageFlagBits = VkShaderStageFlags;
+pub const VkImageUsageFlagBits = VkImageUsageFlags;
+pub const VkImageCreateFlagBits = VkImageCreateFlags;
+pub const VkImageViewCreateFlagBits = VkImageViewCreateFlags;
+pub const VkPipelineCreateFlagBits = VkPipelineCreateFlags;
+pub const VkColorComponentFlagBits = VkColorComponentFlags;
+pub const VkFenceCreateFlagBits = VkFenceCreateFlags;
+pub const VkFormatFeatureFlagBits = VkFormatFeatureFlags;
+pub const VkQueryControlFlagBits = VkQueryControlFlags;
+pub const VkQueryResultFlagBits = VkQueryResultFlags;
+pub const VkEventCreateFlagBits = VkEventCreateFlags;
+pub const VkCommandPoolCreateFlagBits = VkCommandPoolCreateFlags;
+pub const VkCommandPoolResetFlagBits = VkCommandPoolResetFlags;
+pub const VkCommandBufferResetFlagBits = VkCommandBufferResetFlags;
+pub const VkCommandBufferUsageFlagBits = VkCommandBufferUsageFlags;
+pub const VkQueryPipelineStatisticFlagBits = VkQueryPipelineStatisticFlags;
+pub const VkMemoryMapFlagBits = VkMemoryMapFlags;
+pub const VkMemoryUnmapFlagBits = VkMemoryUnmapFlags;
+pub const VkImageAspectFlagBits = VkImageAspectFlags;
+pub const VkSparseMemoryBindFlagBits = VkSparseMemoryBindFlags;
+pub const VkSparseImageFormatFlagBits = VkSparseImageFormatFlags;
+pub const VkSubpassDescriptionFlagBits = VkSubpassDescriptionFlags;
+pub const VkPipelineStageFlagBits = VkPipelineStageFlags;
+pub const VkSampleCountFlagBits = VkSampleCountFlags;
+pub const VkAttachmentDescriptionFlagBits = VkAttachmentDescriptionFlags;
+pub const VkStencilFaceFlagBits = VkStencilFaceFlags;
+pub const VkCullModeFlagBits = VkCullModeFlags;
+pub const VkDescriptorPoolCreateFlagBits = VkDescriptorPoolCreateFlags;
+pub const VkDependencyFlagBits = VkDependencyFlags;
+pub const VkSubgroupFeatureFlagBits = VkSubgroupFeatureFlags;
+pub const VkIndirectCommandsLayoutUsageFlagBitsNV = VkIndirectCommandsLayoutUsageFlagsNV;
+pub const VkIndirectStateFlagBitsNV = VkIndirectStateFlagsNV;
+pub const VkGeometryFlagBitsKHR = VkGeometryFlagsKHR;
+pub const VkGeometryInstanceFlagBitsKHR = VkGeometryInstanceFlagsKHR;
+pub const VkClusterAccelerationStructureGeometryFlagBitsNV = VkClusterAccelerationStructureGeometryFlagsNV;
+pub const VkClusterAccelerationStructureClusterFlagBitsNV = VkClusterAccelerationStructureClusterFlagsNV;
+pub const VkClusterAccelerationStructureAddressResolutionFlagBitsNV = VkClusterAccelerationStructureAddressResolutionFlagsNV;
+pub const VkBuildAccelerationStructureFlagBitsKHR = VkBuildAccelerationStructureFlagsKHR;
+pub const VkAccelerationStructureCreateFlagBitsKHR = VkAccelerationStructureCreateFlagsKHR;
+pub const VkPipelineCreationFeedbackFlagBits = VkPipelineCreationFeedbackFlags;
+pub const VkPerformanceCounterDescriptionFlagBitsKHR = VkPerformanceCounterDescriptionFlagsKHR;
+pub const VkAcquireProfilingLockFlagBitsKHR = VkAcquireProfilingLockFlagsKHR;
+pub const VkSemaphoreWaitFlagBits = VkSemaphoreWaitFlags;
+pub const VkPipelineCompilerControlFlagBitsAMD = VkPipelineCompilerControlFlagsAMD;
+pub const VkShaderCorePropertiesFlagBitsAMD = VkShaderCorePropertiesFlagsAMD;
+pub const VkDeviceDiagnosticsConfigFlagBitsNV = VkDeviceDiagnosticsConfigFlagsNV;
+pub const VkRefreshObjectFlagBitsKHR = VkRefreshObjectFlagsKHR;
+pub const VkAccessFlagBits2 = VkAccessFlags2;
+pub const VkPipelineStageFlagBits2 = VkPipelineStageFlags2;
+pub const VkFormatFeatureFlagBits2 = VkFormatFeatureFlags2;
+pub const VkRenderingFlagBits = VkRenderingFlags;
+pub const VkMemoryDecompressionMethodFlagBitsEXT = VkMemoryDecompressionMethodFlagsEXT;
+pub const VkBuildMicromapFlagBitsEXT = VkBuildMicromapFlagsEXT;
+pub const VkMicromapCreateFlagBitsEXT = VkMicromapCreateFlagsEXT;
+pub const VkIndirectCommandsLayoutUsageFlagBitsEXT = VkIndirectCommandsLayoutUsageFlagsEXT;
+pub const VkIndirectCommandsInputModeFlagBitsEXT = VkIndirectCommandsInputModeFlagsEXT;
+pub const VkPipelineCreateFlagBits2 = VkPipelineCreateFlags2;
+pub const VkBufferUsageFlagBits2 = VkBufferUsageFlags2;
+pub const VkAddressCopyFlagBitsKHR = VkAddressCopyFlagsKHR;
+pub const VkTensorCreateFlagBitsARM = VkTensorCreateFlagsARM;
+pub const VkTensorUsageFlagBitsARM = VkTensorUsageFlagsARM;
+pub const VkTensorViewCreateFlagBitsARM = VkTensorViewCreateFlagsARM;
+pub const VkDataGraphPipelineSessionCreateFlagBitsARM = VkDataGraphPipelineSessionCreateFlagsARM;
+pub const VkDataGraphPipelineDispatchFlagBitsARM = VkDataGraphPipelineDispatchFlagsARM;
+pub const VkVideoEncodeRgbModelConversionFlagBitsVALVE = VkVideoEncodeRgbModelConversionFlagsVALVE;
+pub const VkVideoEncodeRgbRangeCompressionFlagBitsVALVE = VkVideoEncodeRgbRangeCompressionFlagsVALVE;
+pub const VkVideoEncodeRgbChromaOffsetFlagBitsVALVE = VkVideoEncodeRgbChromaOffsetFlagsVALVE;
+pub const VkCompositeAlphaFlagBitsKHR = VkCompositeAlphaFlagsKHR;
+pub const VkDisplayPlaneAlphaFlagBitsKHR = VkDisplayPlaneAlphaFlagsKHR;
+pub const VkSurfaceTransformFlagBitsKHR = VkSurfaceTransformFlagsKHR;
+pub const VkSwapchainCreateFlagBitsKHR = VkSwapchainCreateFlagsKHR;
+pub const VkPeerMemoryFeatureFlagBits = VkPeerMemoryFeatureFlags;
+pub const VkMemoryAllocateFlagBits = VkMemoryAllocateFlags;
+pub const VkDeviceGroupPresentModeFlagBitsKHR = VkDeviceGroupPresentModeFlagsKHR;
+pub const VkDebugReportFlagBitsEXT = VkDebugReportFlagsEXT;
+pub const VkExternalMemoryHandleTypeFlagBitsNV = VkExternalMemoryHandleTypeFlagsNV;
+pub const VkClusterAccelerationStructureIndexFormatFlagBitsNV = VkClusterAccelerationStructureIndexFormatFlagsNV;
+pub const VkExternalMemoryFeatureFlagBitsNV = VkExternalMemoryFeatureFlagsNV;
+pub const VkExternalMemoryHandleTypeFlagBits = VkExternalMemoryHandleTypeFlags;
+pub const VkExternalMemoryFeatureFlagBits = VkExternalMemoryFeatureFlags;
+pub const VkExternalSemaphoreHandleTypeFlagBits = VkExternalSemaphoreHandleTypeFlags;
+pub const VkExternalSemaphoreFeatureFlagBits = VkExternalSemaphoreFeatureFlags;
+pub const VkSemaphoreImportFlagBits = VkSemaphoreImportFlags;
+pub const VkExternalFenceHandleTypeFlagBits = VkExternalFenceHandleTypeFlags;
+pub const VkExternalFenceFeatureFlagBits = VkExternalFenceFeatureFlags;
+pub const VkFenceImportFlagBits = VkFenceImportFlags;
+pub const VkSurfaceCounterFlagBitsEXT = VkSurfaceCounterFlagsEXT;
+pub const VkDebugUtilsMessageSeverityFlagBitsEXT = VkDebugUtilsMessageSeverityFlagsEXT;
+pub const VkDebugUtilsMessageTypeFlagBitsEXT = VkDebugUtilsMessageTypeFlagsEXT;
+pub const VkDescriptorBindingFlagBits = VkDescriptorBindingFlags;
+pub const VkConditionalRenderingFlagBitsEXT = VkConditionalRenderingFlagsEXT;
+pub const VkResolveModeFlagBits = VkResolveModeFlags;
+pub const VkSwapchainImageUsageFlagBitsANDROID = VkSwapchainImageUsageFlagsANDROID;
+pub const VkToolPurposeFlagBits = VkToolPurposeFlags;
+pub const VkSubmitFlagBits = VkSubmitFlags;
+pub const VkHostImageCopyFlagBits = VkHostImageCopyFlags;
+pub const VkPartitionedAccelerationStructureInstanceFlagBitsNV = VkPartitionedAccelerationStructureInstanceFlagsNV;
+pub const VkImageConstraintsInfoFlagBitsFUCHSIA = VkImageConstraintsInfoFlagsFUCHSIA;
+pub const VkGraphicsPipelineLibraryFlagBitsEXT = VkGraphicsPipelineLibraryFlagsEXT;
+pub const VkImageCompressionFlagBitsEXT = VkImageCompressionFlagsEXT;
+pub const VkImageCompressionFixedRateFlagBitsEXT = VkImageCompressionFixedRateFlagsEXT;
+pub const VkExportMetalObjectTypeFlagBitsEXT = VkExportMetalObjectTypeFlagsEXT;
+pub const VkRenderingAttachmentFlagBitsKHR = VkRenderingAttachmentFlagsKHR;
+pub const VkResolveImageFlagBitsKHR = VkResolveImageFlagsKHR;
+pub const VkDeviceAddressBindingFlagBitsEXT = VkDeviceAddressBindingFlagsEXT;
+pub const VkOpticalFlowGridSizeFlagBitsNV = VkOpticalFlowGridSizeFlagsNV;
+pub const VkOpticalFlowUsageFlagBitsNV = VkOpticalFlowUsageFlagsNV;
+pub const VkOpticalFlowSessionCreateFlagBitsNV = VkOpticalFlowSessionCreateFlagsNV;
+pub const VkOpticalFlowExecuteFlagBitsNV = VkOpticalFlowExecuteFlagsNV;
+pub const VkFrameBoundaryFlagBitsEXT = VkFrameBoundaryFlagsEXT;
+pub const VkPresentScalingFlagBitsKHR = VkPresentScalingFlagsKHR;
+pub const VkPresentGravityFlagBitsKHR = VkPresentGravityFlagsKHR;
+pub const VkShaderCreateFlagBitsEXT = VkShaderCreateFlagsEXT;
+pub const VkTileShadingRenderPassFlagBitsQCOM = VkTileShadingRenderPassFlagsQCOM;
+pub const VkPhysicalDeviceSchedulingControlsFlagBitsARM = VkPhysicalDeviceSchedulingControlsFlagsARM;
+pub const VkPresentStageFlagBitsEXT = VkPresentStageFlagsEXT;
+pub const VkPastPresentationTimingFlagBitsEXT = VkPastPresentationTimingFlagsEXT;
+pub const VkPresentTimingInfoFlagBitsEXT = VkPresentTimingInfoFlagsEXT;
+pub const VkSwapchainImageUsageFlagBitsOHOS = VkSwapchainImageUsageFlagsOHOS;
+pub const VkVideoCodecOperationFlagBitsKHR = VkVideoCodecOperationFlagsKHR;
+pub const VkVideoCapabilityFlagBitsKHR = VkVideoCapabilityFlagsKHR;
+pub const VkVideoSessionCreateFlagBitsKHR = VkVideoSessionCreateFlagsKHR;
+pub const VkVideoSessionParametersCreateFlagBitsKHR = VkVideoSessionParametersCreateFlagsKHR;
+pub const VkVideoCodingControlFlagBitsKHR = VkVideoCodingControlFlagsKHR;
+pub const VkVideoDecodeUsageFlagBitsKHR = VkVideoDecodeUsageFlagsKHR;
+pub const VkVideoDecodeCapabilityFlagBitsKHR = VkVideoDecodeCapabilityFlagsKHR;
+pub const VkVideoDecodeH264PictureLayoutFlagBitsKHR = VkVideoDecodeH264PictureLayoutFlagsKHR;
+pub const VkVideoEncodeFlagBitsKHR = VkVideoEncodeFlagsKHR;
+pub const VkVideoEncodeUsageFlagBitsKHR = VkVideoEncodeUsageFlagsKHR;
+pub const VkVideoEncodeContentFlagBitsKHR = VkVideoEncodeContentFlagsKHR;
+pub const VkVideoEncodeCapabilityFlagBitsKHR = VkVideoEncodeCapabilityFlagsKHR;
+pub const VkVideoEncodeFeedbackFlagBitsKHR = VkVideoEncodeFeedbackFlagsKHR;
+pub const VkVideoEncodeRateControlModeFlagBitsKHR = VkVideoEncodeRateControlModeFlagsKHR;
+pub const VkVideoEncodeIntraRefreshModeFlagBitsKHR = VkVideoEncodeIntraRefreshModeFlagsKHR;
+pub const VkVideoChromaSubsamplingFlagBitsKHR = VkVideoChromaSubsamplingFlagsKHR;
+pub const VkVideoComponentBitDepthFlagBitsKHR = VkVideoComponentBitDepthFlagsKHR;
+pub const VkVideoEncodeH264CapabilityFlagBitsKHR = VkVideoEncodeH264CapabilityFlagsKHR;
+pub const VkVideoEncodeH264StdFlagBitsKHR = VkVideoEncodeH264StdFlagsKHR;
+pub const VkVideoEncodeH264RateControlFlagBitsKHR = VkVideoEncodeH264RateControlFlagsKHR;
+pub const VkVideoEncodeH265CapabilityFlagBitsKHR = VkVideoEncodeH265CapabilityFlagsKHR;
+pub const VkVideoEncodeH265StdFlagBitsKHR = VkVideoEncodeH265StdFlagsKHR;
+pub const VkVideoEncodeH265RateControlFlagBitsKHR = VkVideoEncodeH265RateControlFlagsKHR;
+pub const VkVideoEncodeH265CtbSizeFlagBitsKHR = VkVideoEncodeH265CtbSizeFlagsKHR;
+pub const VkVideoEncodeH265TransformBlockSizeFlagBitsKHR = VkVideoEncodeH265TransformBlockSizeFlagsKHR;
+pub const VkVideoEncodeAV1CapabilityFlagBitsKHR = VkVideoEncodeAV1CapabilityFlagsKHR;
+pub const VkVideoEncodeAV1StdFlagBitsKHR = VkVideoEncodeAV1StdFlagsKHR;
+pub const VkVideoEncodeAV1RateControlFlagBitsKHR = VkVideoEncodeAV1RateControlFlagsKHR;
+pub const VkVideoEncodeAV1SuperblockSizeFlagBitsKHR = VkVideoEncodeAV1SuperblockSizeFlagsKHR;
+pub const VkAccessFlagBits3KHR = VkAccessFlags3KHR;
+pub const VkRayTracingInvocationReorderModeNV = VkRayTracingInvocationReorderModeEXT;
+pub const VkPrivateDataSlotCreateFlagBitsEXT = VkPrivateDataSlotCreateFlagBits;
+pub const VkDescriptorUpdateTemplateTypeKHR = VkDescriptorUpdateTemplateType;
+pub const VkPointClippingBehaviorKHR = VkPointClippingBehavior;
+pub const VkQueueGlobalPriorityKHR = VkQueueGlobalPriority;
+pub const VkQueueGlobalPriorityEXT = VkQueueGlobalPriority;
+pub const VkTimeDomainEXT = VkTimeDomainKHR;
+pub const VkResolveModeFlagBitsKHR = VkResolveModeFlags;
+pub const VkDescriptorBindingFlagBitsEXT = VkDescriptorBindingFlags;
+pub const VkSemaphoreTypeKHR = VkSemaphoreType;
+pub const VkGeometryFlagBitsNV = VkGeometryFlagsKHR;
+pub const VkGeometryInstanceFlagBitsNV = VkGeometryInstanceFlagsKHR;
+pub const VkBuildAccelerationStructureFlagBitsNV = VkBuildAccelerationStructureFlagsKHR;
+pub const VkCopyAccelerationStructureModeNV = VkCopyAccelerationStructureModeKHR;
+pub const VkAccelerationStructureTypeNV = VkAccelerationStructureTypeKHR;
+pub const VkGeometryTypeNV = VkGeometryTypeKHR;
+pub const VkRayTracingShaderGroupTypeNV = VkRayTracingShaderGroupTypeKHR;
+pub const VkPipelineCreationFeedbackFlagBitsEXT = VkPipelineCreationFeedbackFlags;
+pub const VkSemaphoreWaitFlagBitsKHR = VkSemaphoreWaitFlags;
+pub const VkLineRasterizationModeKHR = VkLineRasterizationMode;
+pub const VkLineRasterizationModeEXT = VkLineRasterizationMode;
+pub const VkToolPurposeFlagBitsEXT = VkToolPurposeFlags;
+pub const VkAccessFlagBits2KHR = VkAccessFlags2;
+pub const VkPipelineStageFlagBits2KHR = VkPipelineStageFlags2;
+pub const VkHostImageCopyFlagBitsEXT = VkHostImageCopyFlags;
+pub const VkFormatFeatureFlagBits2KHR = VkFormatFeatureFlags2;
+pub const VkRenderingFlagBitsKHR = VkRenderingFlags;
+pub const VkPipelineRobustnessBufferBehaviorEXT = VkPipelineRobustnessBufferBehavior;
+pub const VkPipelineRobustnessImageBehaviorEXT = VkPipelineRobustnessImageBehavior;
+pub const VkMemoryDecompressionMethodFlagBitsNV = VkMemoryDecompressionMethodFlagsEXT;
+pub const VkPipelineCreateFlagBits2KHR = VkPipelineCreateFlags2;
+pub const VkBufferUsageFlagBits2KHR = VkBufferUsageFlags2;
+pub const VkScopeNV = VkScopeKHR;
+pub const VkComponentTypeNV = VkComponentTypeKHR;
+pub const VkExternalMemoryHandleTypeFlagBitsKHR = VkExternalMemoryHandleTypeFlags;
+pub const VkExternalMemoryFeatureFlagBitsKHR = VkExternalMemoryFeatureFlags;
+pub const VkExternalSemaphoreHandleTypeFlagBitsKHR = VkExternalSemaphoreHandleTypeFlags;
+pub const VkExternalSemaphoreFeatureFlagBitsKHR = VkExternalSemaphoreFeatureFlags;
+pub const VkSemaphoreImportFlagBitsKHR = VkSemaphoreImportFlags;
+pub const VkExternalFenceHandleTypeFlagBitsKHR = VkExternalFenceHandleTypeFlags;
+pub const VkExternalFenceFeatureFlagBitsKHR = VkExternalFenceFeatureFlags;
+pub const VkFenceImportFlagBitsKHR = VkFenceImportFlags;
+pub const VkPeerMemoryFeatureFlagBitsKHR = VkPeerMemoryFeatureFlags;
+pub const VkMemoryAllocateFlagBitsKHR = VkMemoryAllocateFlags;
+pub const VkTessellationDomainOriginKHR = VkTessellationDomainOrigin;
+pub const VkSamplerYcbcrModelConversionKHR = VkSamplerYcbcrModelConversion;
+pub const VkSamplerYcbcrRangeKHR = VkSamplerYcbcrRange;
+pub const VkChromaLocationKHR = VkChromaLocation;
+pub const VkSamplerReductionModeEXT = VkSamplerReductionMode;
+pub const VkShaderFloatControlsIndependenceKHR = VkShaderFloatControlsIndependence;
+pub const VkSubmitFlagBitsKHR = VkSubmitFlags;
+pub const VkPresentScalingFlagBitsEXT = VkPresentScalingFlagsKHR;
+pub const VkPresentGravityFlagBitsEXT = VkPresentGravityFlagsKHR;
+pub const VkMemoryUnmapFlagBitsKHR = VkMemoryUnmapFlags;
+pub const VkDriverIdKHR = VkDriverId;
+pub const PFN_vkAllocationFunction = *const vkAllocationFunction;
+pub const PFN_vkReallocationFunction = *const vkReallocationFunction;
+pub const PFN_vkFreeFunction = *const vkFreeFunction;
+pub const PFN_vkInternalAllocationNotification = *const vkInternalAllocationNotification;
+pub const PFN_vkInternalFreeNotification = *const vkInternalFreeNotification;
+pub const VkBufferUsageFlags2CreateInfoKHR = VkBufferUsageFlags2CreateInfo;
+pub const VkCopyMemoryIndirectCommandNV = VkCopyMemoryIndirectCommandKHR;
+pub const VkCopyMemoryToImageIndirectCommandNV = VkCopyMemoryToImageIndirectCommandKHR;
+pub const VkPipelineCreateFlags2CreateInfoKHR = VkPipelineCreateFlags2CreateInfo;
+pub const PFN_vkDebugReportCallbackEXT = *const vkDebugReportCallbackEXT;
+pub const VkPhysicalDeviceExternalSciBufFeaturesNV = VkPhysicalDeviceExternalMemorySciBufFeaturesNV;
+pub const VkDevicePrivateDataCreateInfoEXT = VkDevicePrivateDataCreateInfo;
+pub const VkPrivateDataSlotCreateInfoEXT = VkPrivateDataSlotCreateInfo;
+pub const VkPhysicalDevicePrivateDataFeaturesEXT = VkPhysicalDevicePrivateDataFeatures;
+pub const VkPhysicalDeviceFeatures2KHR = VkPhysicalDeviceFeatures2;
+pub const VkPhysicalDeviceProperties2KHR = VkPhysicalDeviceProperties2;
+pub const VkFormatProperties2KHR = VkFormatProperties2;
+pub const VkImageFormatProperties2KHR = VkImageFormatProperties2;
+pub const VkPhysicalDeviceImageFormatInfo2KHR = VkPhysicalDeviceImageFormatInfo2;
+pub const VkQueueFamilyProperties2KHR = VkQueueFamilyProperties2;
+pub const VkPhysicalDeviceMemoryProperties2KHR = VkPhysicalDeviceMemoryProperties2;
+pub const VkSparseImageFormatProperties2KHR = VkSparseImageFormatProperties2;
+pub const VkPhysicalDeviceSparseImageFormatInfo2KHR = VkPhysicalDeviceSparseImageFormatInfo2;
+pub const VkPhysicalDevicePushDescriptorPropertiesKHR = VkPhysicalDevicePushDescriptorProperties;
+pub const VkConformanceVersionKHR = VkConformanceVersion;
+pub const VkPhysicalDeviceDriverPropertiesKHR = VkPhysicalDeviceDriverProperties;
+pub const VkPhysicalDeviceVariablePointersFeaturesKHR = VkPhysicalDeviceVariablePointersFeatures;
+pub const VkPhysicalDeviceVariablePointerFeaturesKHR = VkPhysicalDeviceVariablePointersFeatures;
+pub const VkPhysicalDeviceVariablePointerFeatures = VkPhysicalDeviceVariablePointersFeatures;
+pub const VkExternalMemoryPropertiesKHR = VkExternalMemoryProperties;
+pub const VkPhysicalDeviceExternalImageFormatInfoKHR = VkPhysicalDeviceExternalImageFormatInfo;
+pub const VkExternalImageFormatPropertiesKHR = VkExternalImageFormatProperties;
+pub const VkPhysicalDeviceExternalBufferInfoKHR = VkPhysicalDeviceExternalBufferInfo;
+pub const VkExternalBufferPropertiesKHR = VkExternalBufferProperties;
+pub const VkPhysicalDeviceIDPropertiesKHR = VkPhysicalDeviceIDProperties;
+pub const VkExternalMemoryImageCreateInfoKHR = VkExternalMemoryImageCreateInfo;
+pub const VkExternalMemoryBufferCreateInfoKHR = VkExternalMemoryBufferCreateInfo;
+pub const VkExportMemoryAllocateInfoKHR = VkExportMemoryAllocateInfo;
+pub const VkPhysicalDeviceExternalSemaphoreInfoKHR = VkPhysicalDeviceExternalSemaphoreInfo;
+pub const VkExternalSemaphorePropertiesKHR = VkExternalSemaphoreProperties;
+pub const VkExportSemaphoreCreateInfoKHR = VkExportSemaphoreCreateInfo;
+pub const VkPhysicalDeviceExternalFenceInfoKHR = VkPhysicalDeviceExternalFenceInfo;
+pub const VkExternalFencePropertiesKHR = VkExternalFenceProperties;
+pub const VkExportFenceCreateInfoKHR = VkExportFenceCreateInfo;
+pub const VkPhysicalDeviceMultiviewFeaturesKHR = VkPhysicalDeviceMultiviewFeatures;
+pub const VkPhysicalDeviceMultiviewPropertiesKHR = VkPhysicalDeviceMultiviewProperties;
+pub const VkRenderPassMultiviewCreateInfoKHR = VkRenderPassMultiviewCreateInfo;
+pub const VkPhysicalDeviceGroupPropertiesKHR = VkPhysicalDeviceGroupProperties;
+pub const VkMemoryAllocateFlagsInfoKHR = VkMemoryAllocateFlagsInfo;
+pub const VkBindBufferMemoryInfoKHR = VkBindBufferMemoryInfo;
+pub const VkBindBufferMemoryDeviceGroupInfoKHR = VkBindBufferMemoryDeviceGroupInfo;
+pub const VkBindImageMemoryInfoKHR = VkBindImageMemoryInfo;
+pub const VkBindImageMemoryDeviceGroupInfoKHR = VkBindImageMemoryDeviceGroupInfo;
+pub const VkDeviceGroupRenderPassBeginInfoKHR = VkDeviceGroupRenderPassBeginInfo;
+pub const VkDeviceGroupCommandBufferBeginInfoKHR = VkDeviceGroupCommandBufferBeginInfo;
+pub const VkDeviceGroupSubmitInfoKHR = VkDeviceGroupSubmitInfo;
+pub const VkDeviceGroupBindSparseInfoKHR = VkDeviceGroupBindSparseInfo;
+pub const VkDeviceGroupDeviceCreateInfoKHR = VkDeviceGroupDeviceCreateInfo;
+pub const VkDescriptorUpdateTemplateEntryKHR = VkDescriptorUpdateTemplateEntry;
+pub const VkDescriptorUpdateTemplateCreateInfoKHR = VkDescriptorUpdateTemplateCreateInfo;
+pub const VkInputAttachmentAspectReferenceKHR = VkInputAttachmentAspectReference;
+pub const VkRenderPassInputAttachmentAspectCreateInfoKHR = VkRenderPassInputAttachmentAspectCreateInfo;
+pub const VkPhysicalDevice16BitStorageFeaturesKHR = VkPhysicalDevice16BitStorageFeatures;
+pub const VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR = VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+pub const VkBufferMemoryRequirementsInfo2KHR = VkBufferMemoryRequirementsInfo2;
+pub const VkDeviceBufferMemoryRequirementsKHR = VkDeviceBufferMemoryRequirements;
+pub const VkImageMemoryRequirementsInfo2KHR = VkImageMemoryRequirementsInfo2;
+pub const VkImageSparseMemoryRequirementsInfo2KHR = VkImageSparseMemoryRequirementsInfo2;
+pub const VkDeviceImageMemoryRequirementsKHR = VkDeviceImageMemoryRequirements;
+pub const VkMemoryRequirements2KHR = VkMemoryRequirements2;
+pub const VkSparseImageMemoryRequirements2KHR = VkSparseImageMemoryRequirements2;
+pub const VkPhysicalDevicePointClippingPropertiesKHR = VkPhysicalDevicePointClippingProperties;
+pub const VkMemoryDedicatedRequirementsKHR = VkMemoryDedicatedRequirements;
+pub const VkMemoryDedicatedAllocateInfoKHR = VkMemoryDedicatedAllocateInfo;
+pub const VkImageViewUsageCreateInfoKHR = VkImageViewUsageCreateInfo;
+pub const VkPipelineTessellationDomainOriginStateCreateInfoKHR = VkPipelineTessellationDomainOriginStateCreateInfo;
+pub const VkSamplerYcbcrConversionInfoKHR = VkSamplerYcbcrConversionInfo;
+pub const VkSamplerYcbcrConversionCreateInfoKHR = VkSamplerYcbcrConversionCreateInfo;
+pub const VkBindImagePlaneMemoryInfoKHR = VkBindImagePlaneMemoryInfo;
+pub const VkImagePlaneMemoryRequirementsInfoKHR = VkImagePlaneMemoryRequirementsInfo;
+pub const VkPhysicalDeviceSamplerYcbcrConversionFeaturesKHR = VkPhysicalDeviceSamplerYcbcrConversionFeatures;
+pub const VkSamplerYcbcrConversionImageFormatPropertiesKHR = VkSamplerYcbcrConversionImageFormatProperties;
+pub const VkPhysicalDeviceSamplerFilterMinmaxPropertiesEXT = VkPhysicalDeviceSamplerFilterMinmaxProperties;
+pub const VkSamplerReductionModeCreateInfoEXT = VkSamplerReductionModeCreateInfo;
+pub const VkPhysicalDeviceInlineUniformBlockFeaturesEXT = VkPhysicalDeviceInlineUniformBlockFeatures;
+pub const VkPhysicalDeviceInlineUniformBlockPropertiesEXT = VkPhysicalDeviceInlineUniformBlockProperties;
+pub const VkWriteDescriptorSetInlineUniformBlockEXT = VkWriteDescriptorSetInlineUniformBlock;
+pub const VkDescriptorPoolInlineUniformBlockCreateInfoEXT = VkDescriptorPoolInlineUniformBlockCreateInfo;
+pub const VkImageFormatListCreateInfoKHR = VkImageFormatListCreateInfo;
+pub const VkPhysicalDeviceMaintenance3PropertiesKHR = VkPhysicalDeviceMaintenance3Properties;
+pub const VkPhysicalDeviceMaintenance4FeaturesKHR = VkPhysicalDeviceMaintenance4Features;
+pub const VkPhysicalDeviceMaintenance4PropertiesKHR = VkPhysicalDeviceMaintenance4Properties;
+pub const VkPhysicalDeviceMaintenance5FeaturesKHR = VkPhysicalDeviceMaintenance5Features;
+pub const VkPhysicalDeviceMaintenance5PropertiesKHR = VkPhysicalDeviceMaintenance5Properties;
+pub const VkPhysicalDeviceMaintenance6FeaturesKHR = VkPhysicalDeviceMaintenance6Features;
+pub const VkPhysicalDeviceMaintenance6PropertiesKHR = VkPhysicalDeviceMaintenance6Properties;
+pub const VkRenderingAreaInfoKHR = VkRenderingAreaInfo;
+pub const VkDescriptorSetLayoutSupportKHR = VkDescriptorSetLayoutSupport;
+pub const VkPhysicalDeviceShaderDrawParameterFeatures = VkPhysicalDeviceShaderDrawParametersFeatures;
+pub const VkPhysicalDeviceShaderFloat16Int8FeaturesKHR = VkPhysicalDeviceShaderFloat16Int8Features;
+pub const VkPhysicalDeviceFloat16Int8FeaturesKHR = VkPhysicalDeviceShaderFloat16Int8Features;
+pub const VkPhysicalDeviceFloatControlsPropertiesKHR = VkPhysicalDeviceFloatControlsProperties;
+pub const VkPhysicalDeviceHostQueryResetFeaturesEXT = VkPhysicalDeviceHostQueryResetFeatures;
+pub const VkDeviceQueueGlobalPriorityCreateInfoKHR = VkDeviceQueueGlobalPriorityCreateInfo;
+pub const VkDeviceQueueGlobalPriorityCreateInfoEXT = VkDeviceQueueGlobalPriorityCreateInfo;
+pub const VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR = VkPhysicalDeviceGlobalPriorityQueryFeatures;
+pub const VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT = VkPhysicalDeviceGlobalPriorityQueryFeatures;
+pub const VkQueueFamilyGlobalPriorityPropertiesKHR = VkQueueFamilyGlobalPriorityProperties;
+pub const VkQueueFamilyGlobalPriorityPropertiesEXT = VkQueueFamilyGlobalPriorityProperties;
+pub const PFN_vkDebugUtilsMessengerCallbackEXT = *const vkDebugUtilsMessengerCallbackEXT;
+pub const PFN_vkDeviceMemoryReportCallbackEXT = *const vkDeviceMemoryReportCallbackEXT;
+pub const VkCalibratedTimestampInfoEXT = VkCalibratedTimestampInfoKHR;
+pub const VkPhysicalDeviceDescriptorIndexingFeaturesEXT = VkPhysicalDeviceDescriptorIndexingFeatures;
+pub const VkPhysicalDeviceDescriptorIndexingPropertiesEXT = VkPhysicalDeviceDescriptorIndexingProperties;
+pub const VkDescriptorSetLayoutBindingFlagsCreateInfoEXT = VkDescriptorSetLayoutBindingFlagsCreateInfo;
+pub const VkDescriptorSetVariableDescriptorCountAllocateInfoEXT = VkDescriptorSetVariableDescriptorCountAllocateInfo;
+pub const VkDescriptorSetVariableDescriptorCountLayoutSupportEXT = VkDescriptorSetVariableDescriptorCountLayoutSupport;
+pub const VkAttachmentDescription2KHR = VkAttachmentDescription2;
+pub const VkAttachmentReference2KHR = VkAttachmentReference2;
+pub const VkSubpassDescription2KHR = VkSubpassDescription2;
+pub const VkSubpassDependency2KHR = VkSubpassDependency2;
+pub const VkRenderPassCreateInfo2KHR = VkRenderPassCreateInfo2;
+pub const VkSubpassBeginInfoKHR = VkSubpassBeginInfo;
+pub const VkSubpassEndInfoKHR = VkSubpassEndInfo;
+pub const VkPhysicalDeviceTimelineSemaphoreFeaturesKHR = VkPhysicalDeviceTimelineSemaphoreFeatures;
+pub const VkPhysicalDeviceTimelineSemaphorePropertiesKHR = VkPhysicalDeviceTimelineSemaphoreProperties;
+pub const VkSemaphoreTypeCreateInfoKHR = VkSemaphoreTypeCreateInfo;
+pub const VkTimelineSemaphoreSubmitInfoKHR = VkTimelineSemaphoreSubmitInfo;
+pub const VkSemaphoreWaitInfoKHR = VkSemaphoreWaitInfo;
+pub const VkSemaphoreSignalInfoKHR = VkSemaphoreSignalInfo;
+pub const VkVertexInputBindingDivisorDescriptionKHR = VkVertexInputBindingDivisorDescription;
+pub const VkVertexInputBindingDivisorDescriptionEXT = VkVertexInputBindingDivisorDescription;
+pub const VkPipelineVertexInputDivisorStateCreateInfoKHR = VkPipelineVertexInputDivisorStateCreateInfo;
+pub const VkPipelineVertexInputDivisorStateCreateInfoEXT = VkPipelineVertexInputDivisorStateCreateInfo;
+pub const VkPhysicalDeviceVertexAttributeDivisorPropertiesKHR = VkPhysicalDeviceVertexAttributeDivisorProperties;
+pub const VkPhysicalDevice8BitStorageFeaturesKHR = VkPhysicalDevice8BitStorageFeatures;
+pub const VkPhysicalDeviceVulkanMemoryModelFeaturesKHR = VkPhysicalDeviceVulkanMemoryModelFeatures;
+pub const VkPhysicalDeviceShaderAtomicInt64FeaturesKHR = VkPhysicalDeviceShaderAtomicInt64Features;
+pub const VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR = VkPhysicalDeviceVertexAttributeDivisorFeatures;
+pub const VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT = VkPhysicalDeviceVertexAttributeDivisorFeatures;
+pub const VkPhysicalDeviceDepthStencilResolvePropertiesKHR = VkPhysicalDeviceDepthStencilResolveProperties;
+pub const VkSubpassDescriptionDepthStencilResolveKHR = VkSubpassDescriptionDepthStencilResolve;
+pub const VkPhysicalDeviceComputeShaderDerivativesFeaturesNV = VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR;
+pub const VkPhysicalDeviceFragmentShaderBarycentricFeaturesNV = VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR;
+pub const VkPhysicalDeviceCopyMemoryIndirectPropertiesNV = VkPhysicalDeviceCopyMemoryIndirectPropertiesKHR;
+pub const VkPhysicalDeviceMemoryDecompressionFeaturesNV = VkPhysicalDeviceMemoryDecompressionFeaturesEXT;
+pub const VkPhysicalDeviceMemoryDecompressionPropertiesNV = VkPhysicalDeviceMemoryDecompressionPropertiesEXT;
+pub const VkImageStencilUsageCreateInfoEXT = VkImageStencilUsageCreateInfo;
+pub const VkPhysicalDeviceFragmentDensityMapOffsetFeaturesQCOM = VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT;
+pub const VkPhysicalDeviceFragmentDensityMapOffsetPropertiesQCOM = VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT;
+pub const VkSubpassFragmentDensityMapOffsetEndInfoQCOM = VkRenderPassFragmentDensityMapOffsetEndInfoEXT;
+pub const VkPhysicalDeviceScalarBlockLayoutFeaturesEXT = VkPhysicalDeviceScalarBlockLayoutFeatures;
+pub const VkPhysicalDeviceUniformBufferStandardLayoutFeaturesKHR = VkPhysicalDeviceUniformBufferStandardLayoutFeatures;
+pub const VkPhysicalDeviceBufferDeviceAddressFeaturesKHR = VkPhysicalDeviceBufferDeviceAddressFeatures;
+pub const VkPhysicalDeviceBufferAddressFeaturesEXT = VkPhysicalDeviceBufferDeviceAddressFeaturesEXT;
+pub const VkBufferDeviceAddressInfoKHR = VkBufferDeviceAddressInfo;
+pub const VkBufferDeviceAddressInfoEXT = VkBufferDeviceAddressInfo;
+pub const VkBufferOpaqueCaptureAddressCreateInfoKHR = VkBufferOpaqueCaptureAddressCreateInfo;
+pub const VkPhysicalDeviceImagelessFramebufferFeaturesKHR = VkPhysicalDeviceImagelessFramebufferFeatures;
+pub const VkFramebufferAttachmentsCreateInfoKHR = VkFramebufferAttachmentsCreateInfo;
+pub const VkFramebufferAttachmentImageInfoKHR = VkFramebufferAttachmentImageInfo;
+pub const VkRenderPassAttachmentBeginInfoKHR = VkRenderPassAttachmentBeginInfo;
+pub const VkPhysicalDeviceTextureCompressionASTCHDRFeaturesEXT = VkPhysicalDeviceTextureCompressionASTCHDRFeatures;
+pub const VkPipelineCreationFeedbackEXT = VkPipelineCreationFeedback;
+pub const VkPipelineCreationFeedbackCreateInfoEXT = VkPipelineCreationFeedbackCreateInfo;
+pub const VkQueryPoolCreateInfoINTEL = VkQueryPoolPerformanceQueryCreateInfoINTEL;
+pub const VkPhysicalDeviceIndexTypeUint8FeaturesKHR = VkPhysicalDeviceIndexTypeUint8Features;
+pub const VkPhysicalDeviceIndexTypeUint8FeaturesEXT = VkPhysicalDeviceIndexTypeUint8Features;
+pub const VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR = VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures;
+pub const VkAttachmentReferenceStencilLayoutKHR = VkAttachmentReferenceStencilLayout;
+pub const VkAttachmentDescriptionStencilLayoutKHR = VkAttachmentDescriptionStencilLayout;
+pub const VkPipelineInfoEXT = VkPipelineInfoKHR;
+pub const VkPhysicalDeviceShaderDemoteToHelperInvocationFeaturesEXT = VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures;
+pub const VkPhysicalDeviceTexelBufferAlignmentPropertiesEXT = VkPhysicalDeviceTexelBufferAlignmentProperties;
+pub const VkPhysicalDeviceSubgroupSizeControlFeaturesEXT = VkPhysicalDeviceSubgroupSizeControlFeatures;
+pub const VkPhysicalDeviceSubgroupSizeControlPropertiesEXT = VkPhysicalDeviceSubgroupSizeControlProperties;
+pub const VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT = VkPipelineShaderStageRequiredSubgroupSizeCreateInfo;
+pub const VkShaderRequiredSubgroupSizeCreateInfoEXT = VkPipelineShaderStageRequiredSubgroupSizeCreateInfo;
+pub const VkMemoryOpaqueCaptureAddressAllocateInfoKHR = VkMemoryOpaqueCaptureAddressAllocateInfo;
+pub const VkDeviceMemoryOpaqueCaptureAddressInfoKHR = VkDeviceMemoryOpaqueCaptureAddressInfo;
+pub const VkPhysicalDeviceLineRasterizationFeaturesKHR = VkPhysicalDeviceLineRasterizationFeatures;
+pub const VkPhysicalDeviceLineRasterizationFeaturesEXT = VkPhysicalDeviceLineRasterizationFeatures;
+pub const VkPhysicalDeviceLineRasterizationPropertiesKHR = VkPhysicalDeviceLineRasterizationProperties;
+pub const VkPhysicalDeviceLineRasterizationPropertiesEXT = VkPhysicalDeviceLineRasterizationProperties;
+pub const VkPipelineRasterizationLineStateCreateInfoKHR = VkPipelineRasterizationLineStateCreateInfo;
+pub const VkPipelineRasterizationLineStateCreateInfoEXT = VkPipelineRasterizationLineStateCreateInfo;
+pub const VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT = VkPhysicalDevicePipelineCreationCacheControlFeatures;
+pub const PFN_vkFaultCallbackFunction = *const vkFaultCallbackFunction;
+pub const VkPhysicalDeviceToolPropertiesEXT = VkPhysicalDeviceToolProperties;
+pub const VkAabbPositionsNV = VkAabbPositionsKHR;
+pub const VkTransformMatrixNV = VkTransformMatrixKHR;
+pub const VkAccelerationStructureInstanceNV = VkAccelerationStructureInstanceKHR;
+pub const VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR = VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures;
+pub const VkPhysicalDeviceRobustness2FeaturesEXT = VkPhysicalDeviceRobustness2FeaturesKHR;
+pub const VkPhysicalDeviceRobustness2PropertiesEXT = VkPhysicalDeviceRobustness2PropertiesKHR;
+pub const VkPhysicalDeviceImageRobustnessFeaturesEXT = VkPhysicalDeviceImageRobustnessFeatures;
+pub const VkBufferCopy2KHR = VkBufferCopy2;
+pub const VkImageCopy2KHR = VkImageCopy2;
+pub const VkImageBlit2KHR = VkImageBlit2;
+pub const VkBufferImageCopy2KHR = VkBufferImageCopy2;
+pub const VkImageResolve2KHR = VkImageResolve2;
+pub const VkCopyBufferInfo2KHR = VkCopyBufferInfo2;
+pub const VkCopyImageInfo2KHR = VkCopyImageInfo2;
+pub const VkBlitImageInfo2KHR = VkBlitImageInfo2;
+pub const VkCopyBufferToImageInfo2KHR = VkCopyBufferToImageInfo2;
+pub const VkCopyImageToBufferInfo2KHR = VkCopyImageToBufferInfo2;
+pub const VkResolveImageInfo2KHR = VkResolveImageInfo2;
+pub const VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR = VkPhysicalDeviceShaderTerminateInvocationFeatures;
+pub const VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE = VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT;
+pub const VkMutableDescriptorTypeListVALVE = VkMutableDescriptorTypeListEXT;
+pub const VkMutableDescriptorTypeCreateInfoVALVE = VkMutableDescriptorTypeCreateInfoEXT;
+pub const VkMemoryBarrier2KHR = VkMemoryBarrier2;
+pub const VkImageMemoryBarrier2KHR = VkImageMemoryBarrier2;
+pub const VkBufferMemoryBarrier2KHR = VkBufferMemoryBarrier2;
+pub const VkDependencyInfoKHR = VkDependencyInfo;
+pub const VkSemaphoreSubmitInfoKHR = VkSemaphoreSubmitInfo;
+pub const VkCommandBufferSubmitInfoKHR = VkCommandBufferSubmitInfo;
+pub const VkSubmitInfo2KHR = VkSubmitInfo2;
+pub const VkPhysicalDeviceSynchronization2FeaturesKHR = VkPhysicalDeviceSynchronization2Features;
+pub const VkPhysicalDeviceHostImageCopyFeaturesEXT = VkPhysicalDeviceHostImageCopyFeatures;
+pub const VkPhysicalDeviceHostImageCopyPropertiesEXT = VkPhysicalDeviceHostImageCopyProperties;
+pub const VkMemoryToImageCopyEXT = VkMemoryToImageCopy;
+pub const VkImageToMemoryCopyEXT = VkImageToMemoryCopy;
+pub const VkCopyMemoryToImageInfoEXT = VkCopyMemoryToImageInfo;
+pub const VkCopyImageToMemoryInfoEXT = VkCopyImageToMemoryInfo;
+pub const VkCopyImageToImageInfoEXT = VkCopyImageToImageInfo;
+pub const VkHostImageLayoutTransitionInfoEXT = VkHostImageLayoutTransitionInfo;
+pub const VkSubresourceHostMemcpySizeEXT = VkSubresourceHostMemcpySize;
+pub const VkHostImageCopyDevicePerformanceQueryEXT = VkHostImageCopyDevicePerformanceQuery;
+pub const VkPhysicalDevicePipelineProtectedAccessFeaturesEXT = VkPhysicalDevicePipelineProtectedAccessFeatures;
+pub const VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR = VkPhysicalDeviceShaderIntegerDotProductFeatures;
+pub const VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR = VkPhysicalDeviceShaderIntegerDotProductProperties;
+pub const VkFormatProperties3KHR = VkFormatProperties3;
+pub const VkPipelineRenderingCreateInfoKHR = VkPipelineRenderingCreateInfo;
+pub const VkRenderingInfoKHR = VkRenderingInfo;
+pub const VkRenderingEndInfoEXT = VkRenderingEndInfoKHR;
+pub const VkRenderingAttachmentInfoKHR = VkRenderingAttachmentInfo;
+pub const VkPhysicalDeviceDynamicRenderingFeaturesKHR = VkPhysicalDeviceDynamicRenderingFeatures;
+pub const VkCommandBufferInheritanceRenderingInfoKHR = VkCommandBufferInheritanceRenderingInfo;
+pub const VkAttachmentSampleCountInfoNV = VkAttachmentSampleCountInfoAMD;
+pub const VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM = VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT;
+pub const VkImageSubresource2KHR = VkImageSubresource2;
+pub const VkImageSubresource2EXT = VkImageSubresource2;
+pub const VkSubresourceLayout2KHR = VkSubresourceLayout2;
+pub const VkSubresourceLayout2EXT = VkSubresourceLayout2;
+pub const VkPhysicalDevicePipelineRobustnessFeaturesEXT = VkPhysicalDevicePipelineRobustnessFeatures;
+pub const VkPipelineRobustnessCreateInfoEXT = VkPipelineRobustnessCreateInfo;
+pub const VkPhysicalDevicePipelineRobustnessPropertiesEXT = VkPhysicalDevicePipelineRobustnessProperties;
+pub const VkPhysicalDeviceDepthClampZeroOneFeaturesEXT = VkPhysicalDeviceDepthClampZeroOneFeaturesKHR;
+pub const VkSurfacePresentModeEXT = VkSurfacePresentModeKHR;
+pub const VkSurfacePresentScalingCapabilitiesEXT = VkSurfacePresentScalingCapabilitiesKHR;
+pub const VkSurfacePresentModeCompatibilityEXT = VkSurfacePresentModeCompatibilityKHR;
+pub const VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT = VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR;
+pub const VkSwapchainPresentFenceInfoEXT = VkSwapchainPresentFenceInfoKHR;
+pub const VkSwapchainPresentModesCreateInfoEXT = VkSwapchainPresentModesCreateInfoKHR;
+pub const VkSwapchainPresentModeInfoEXT = VkSwapchainPresentModeInfoKHR;
+pub const VkSwapchainPresentScalingCreateInfoEXT = VkSwapchainPresentScalingCreateInfoKHR;
+pub const VkReleaseSwapchainImagesInfoEXT = VkReleaseSwapchainImagesInfoKHR;
+pub const PFN_vkGetInstanceProcAddrLUNARG = *const vkGetInstanceProcAddrLUNARG;
+pub const VkDeviceImageSubresourceInfoKHR = VkDeviceImageSubresourceInfo;
+pub const VkMemoryMapInfoKHR = VkMemoryMapInfo;
+pub const VkMemoryUnmapInfoKHR = VkMemoryUnmapInfo;
+pub const VkBindMemoryStatusKHR = VkBindMemoryStatus;
+pub const VkBindDescriptorSetsInfoKHR = VkBindDescriptorSetsInfo;
+pub const VkPushConstantsInfoKHR = VkPushConstantsInfo;
+pub const VkPushDescriptorSetInfoKHR = VkPushDescriptorSetInfo;
+pub const VkPushDescriptorSetWithTemplateInfoKHR = VkPushDescriptorSetWithTemplateInfo;
+pub const VkPhysicalDeviceShaderSubgroupRotateFeaturesKHR = VkPhysicalDeviceShaderSubgroupRotateFeatures;
+pub const VkPhysicalDeviceShaderExpectAssumeFeaturesKHR = VkPhysicalDeviceShaderExpectAssumeFeatures;
+pub const VkPhysicalDeviceShaderFloatControls2FeaturesKHR = VkPhysicalDeviceShaderFloatControls2Features;
+pub const VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR = VkPhysicalDeviceDynamicRenderingLocalReadFeatures;
+pub const VkRenderingAttachmentLocationInfoKHR = VkRenderingAttachmentLocationInfo;
+pub const VkRenderingInputAttachmentIndexInfoKHR = VkRenderingInputAttachmentIndexInfo;
+pub const VkPhysicalDevicePresentModeFifoLatestReadyFeaturesEXT = VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR;
+pub const PFN_vkCreateInstance = *const vkCreateInstance;
+pub const PFN_vkDestroyInstance = *const vkDestroyInstance;
+pub const PFN_vkEnumeratePhysicalDevices = *const vkEnumeratePhysicalDevices;
+pub const PFN_vkVoidFunction = *const vkVoidFunction;
+pub const PFN_vkGetDeviceProcAddr = *const vkGetDeviceProcAddr;
+pub const PFN_vkGetInstanceProcAddr = *const vkGetInstanceProcAddr;
+pub const PFN_vkGetPhysicalDeviceProperties = *const vkGetPhysicalDeviceProperties;
+pub const PFN_vkGetPhysicalDeviceQueueFamilyProperties = *const vkGetPhysicalDeviceQueueFamilyProperties;
+pub const PFN_vkGetPhysicalDeviceMemoryProperties = *const vkGetPhysicalDeviceMemoryProperties;
+pub const PFN_vkGetPhysicalDeviceFeatures = *const vkGetPhysicalDeviceFeatures;
+pub const PFN_vkGetPhysicalDeviceFormatProperties = *const vkGetPhysicalDeviceFormatProperties;
+pub const PFN_vkGetPhysicalDeviceImageFormatProperties = *const vkGetPhysicalDeviceImageFormatProperties;
+pub const PFN_vkCreateDevice = *const vkCreateDevice;
+pub const PFN_vkDestroyDevice = *const vkDestroyDevice;
+pub const PFN_vkEnumerateInstanceVersion = *const vkEnumerateInstanceVersion;
+pub const PFN_vkEnumerateInstanceLayerProperties = *const vkEnumerateInstanceLayerProperties;
+pub const PFN_vkEnumerateInstanceExtensionProperties = *const vkEnumerateInstanceExtensionProperties;
+pub const PFN_vkEnumerateDeviceLayerProperties = *const vkEnumerateDeviceLayerProperties;
+pub const PFN_vkEnumerateDeviceExtensionProperties = *const vkEnumerateDeviceExtensionProperties;
+pub const PFN_vkGetDeviceQueue = *const vkGetDeviceQueue;
+pub const PFN_vkQueueSubmit = *const vkQueueSubmit;
+pub const PFN_vkQueueWaitIdle = *const vkQueueWaitIdle;
+pub const PFN_vkDeviceWaitIdle = *const vkDeviceWaitIdle;
+pub const PFN_vkAllocateMemory = *const vkAllocateMemory;
+pub const PFN_vkFreeMemory = *const vkFreeMemory;
+pub const PFN_vkMapMemory = *const vkMapMemory;
+pub const PFN_vkUnmapMemory = *const vkUnmapMemory;
+pub const PFN_vkFlushMappedMemoryRanges = *const vkFlushMappedMemoryRanges;
+pub const PFN_vkInvalidateMappedMemoryRanges = *const vkInvalidateMappedMemoryRanges;
+pub const PFN_vkGetDeviceMemoryCommitment = *const vkGetDeviceMemoryCommitment;
+pub const PFN_vkGetBufferMemoryRequirements = *const vkGetBufferMemoryRequirements;
+pub const PFN_vkBindBufferMemory = *const vkBindBufferMemory;
+pub const PFN_vkGetImageMemoryRequirements = *const vkGetImageMemoryRequirements;
+pub const PFN_vkBindImageMemory = *const vkBindImageMemory;
+pub const PFN_vkGetImageSparseMemoryRequirements = *const vkGetImageSparseMemoryRequirements;
+pub const PFN_vkGetPhysicalDeviceSparseImageFormatProperties = *const vkGetPhysicalDeviceSparseImageFormatProperties;
+pub const PFN_vkQueueBindSparse = *const vkQueueBindSparse;
+pub const PFN_vkCreateFence = *const vkCreateFence;
+pub const PFN_vkDestroyFence = *const vkDestroyFence;
+pub const PFN_vkResetFences = *const vkResetFences;
+pub const PFN_vkGetFenceStatus = *const vkGetFenceStatus;
+pub const PFN_vkWaitForFences = *const vkWaitForFences;
+pub const PFN_vkCreateSemaphore = *const vkCreateSemaphore;
+pub const PFN_vkDestroySemaphore = *const vkDestroySemaphore;
+pub const PFN_vkCreateEvent = *const vkCreateEvent;
+pub const PFN_vkDestroyEvent = *const vkDestroyEvent;
+pub const PFN_vkGetEventStatus = *const vkGetEventStatus;
+pub const PFN_vkSetEvent = *const vkSetEvent;
+pub const PFN_vkResetEvent = *const vkResetEvent;
+pub const PFN_vkCreateQueryPool = *const vkCreateQueryPool;
+pub const PFN_vkDestroyQueryPool = *const vkDestroyQueryPool;
+pub const PFN_vkGetQueryPoolResults = *const vkGetQueryPoolResults;
+pub const PFN_vkResetQueryPool = *const vkResetQueryPool;
+pub const vkResetQueryPoolEXT = vkResetQueryPool;
+pub const PFN_vkCreateBuffer = *const vkCreateBuffer;
+pub const PFN_vkDestroyBuffer = *const vkDestroyBuffer;
+pub const PFN_vkCreateBufferView = *const vkCreateBufferView;
+pub const PFN_vkDestroyBufferView = *const vkDestroyBufferView;
+pub const PFN_vkCreateImage = *const vkCreateImage;
+pub const PFN_vkDestroyImage = *const vkDestroyImage;
+pub const PFN_vkGetImageSubresourceLayout = *const vkGetImageSubresourceLayout;
+pub const PFN_vkCreateImageView = *const vkCreateImageView;
+pub const PFN_vkDestroyImageView = *const vkDestroyImageView;
+pub const PFN_vkCreateShaderModule = *const vkCreateShaderModule;
+pub const PFN_vkDestroyShaderModule = *const vkDestroyShaderModule;
+pub const PFN_vkCreatePipelineCache = *const vkCreatePipelineCache;
+pub const PFN_vkDestroyPipelineCache = *const vkDestroyPipelineCache;
+pub const PFN_vkGetPipelineCacheData = *const vkGetPipelineCacheData;
+pub const PFN_vkMergePipelineCaches = *const vkMergePipelineCaches;
+pub const PFN_vkCreatePipelineBinariesKHR = *const vkCreatePipelineBinariesKHR;
+pub const PFN_vkDestroyPipelineBinaryKHR = *const vkDestroyPipelineBinaryKHR;
+pub const PFN_vkGetPipelineKeyKHR = *const vkGetPipelineKeyKHR;
+pub const PFN_vkGetPipelineBinaryDataKHR = *const vkGetPipelineBinaryDataKHR;
+pub const PFN_vkReleaseCapturedPipelineDataKHR = *const vkReleaseCapturedPipelineDataKHR;
+pub const PFN_vkCreateGraphicsPipelines = *const vkCreateGraphicsPipelines;
+pub const PFN_vkCreateComputePipelines = *const vkCreateComputePipelines;
+pub const PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI = *const vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI;
+pub const PFN_vkDestroyPipeline = *const vkDestroyPipeline;
+pub const PFN_vkCreatePipelineLayout = *const vkCreatePipelineLayout;
+pub const PFN_vkDestroyPipelineLayout = *const vkDestroyPipelineLayout;
+pub const PFN_vkCreateSampler = *const vkCreateSampler;
+pub const PFN_vkDestroySampler = *const vkDestroySampler;
+pub const PFN_vkCreateDescriptorSetLayout = *const vkCreateDescriptorSetLayout;
+pub const PFN_vkDestroyDescriptorSetLayout = *const vkDestroyDescriptorSetLayout;
+pub const PFN_vkCreateDescriptorPool = *const vkCreateDescriptorPool;
+pub const PFN_vkDestroyDescriptorPool = *const vkDestroyDescriptorPool;
+pub const PFN_vkResetDescriptorPool = *const vkResetDescriptorPool;
+pub const PFN_vkAllocateDescriptorSets = *const vkAllocateDescriptorSets;
+pub const PFN_vkFreeDescriptorSets = *const vkFreeDescriptorSets;
+pub const PFN_vkUpdateDescriptorSets = *const vkUpdateDescriptorSets;
+pub const PFN_vkCreateFramebuffer = *const vkCreateFramebuffer;
+pub const PFN_vkDestroyFramebuffer = *const vkDestroyFramebuffer;
+pub const PFN_vkCreateRenderPass = *const vkCreateRenderPass;
+pub const PFN_vkDestroyRenderPass = *const vkDestroyRenderPass;
+pub const PFN_vkGetRenderAreaGranularity = *const vkGetRenderAreaGranularity;
+pub const PFN_vkGetRenderingAreaGranularity = *const vkGetRenderingAreaGranularity;
+pub const vkGetRenderingAreaGranularityKHR = vkGetRenderingAreaGranularity;
+pub const PFN_vkCreateCommandPool = *const vkCreateCommandPool;
+pub const PFN_vkDestroyCommandPool = *const vkDestroyCommandPool;
+pub const PFN_vkResetCommandPool = *const vkResetCommandPool;
+pub const PFN_vkAllocateCommandBuffers = *const vkAllocateCommandBuffers;
+pub const PFN_vkFreeCommandBuffers = *const vkFreeCommandBuffers;
+pub const PFN_vkBeginCommandBuffer = *const vkBeginCommandBuffer;
+pub const PFN_vkEndCommandBuffer = *const vkEndCommandBuffer;
+pub const PFN_vkResetCommandBuffer = *const vkResetCommandBuffer;
+pub const PFN_vkCmdBindPipeline = *const vkCmdBindPipeline;
+pub const PFN_vkCmdSetAttachmentFeedbackLoopEnableEXT = *const vkCmdSetAttachmentFeedbackLoopEnableEXT;
+pub const PFN_vkCmdSetViewport = *const vkCmdSetViewport;
+pub const PFN_vkCmdSetScissor = *const vkCmdSetScissor;
+pub const PFN_vkCmdSetLineWidth = *const vkCmdSetLineWidth;
+pub const PFN_vkCmdSetDepthBias = *const vkCmdSetDepthBias;
+pub const PFN_vkCmdSetBlendConstants = *const vkCmdSetBlendConstants;
+pub const PFN_vkCmdSetDepthBounds = *const vkCmdSetDepthBounds;
+pub const PFN_vkCmdSetStencilCompareMask = *const vkCmdSetStencilCompareMask;
+pub const PFN_vkCmdSetStencilWriteMask = *const vkCmdSetStencilWriteMask;
+pub const PFN_vkCmdSetStencilReference = *const vkCmdSetStencilReference;
+pub const PFN_vkCmdBindDescriptorSets = *const vkCmdBindDescriptorSets;
+pub const PFN_vkCmdBindIndexBuffer = *const vkCmdBindIndexBuffer;
+pub const PFN_vkCmdBindVertexBuffers = *const vkCmdBindVertexBuffers;
+pub const PFN_vkCmdDraw = *const vkCmdDraw;
+pub const PFN_vkCmdDrawIndexed = *const vkCmdDrawIndexed;
+pub const PFN_vkCmdDrawMultiEXT = *const vkCmdDrawMultiEXT;
+pub const PFN_vkCmdDrawMultiIndexedEXT = *const vkCmdDrawMultiIndexedEXT;
+pub const PFN_vkCmdDrawIndirect = *const vkCmdDrawIndirect;
+pub const PFN_vkCmdDrawIndexedIndirect = *const vkCmdDrawIndexedIndirect;
+pub const PFN_vkCmdDispatch = *const vkCmdDispatch;
+pub const PFN_vkCmdDispatchIndirect = *const vkCmdDispatchIndirect;
+pub const PFN_vkCmdSubpassShadingHUAWEI = *const vkCmdSubpassShadingHUAWEI;
+pub const PFN_vkCmdDrawClusterHUAWEI = *const vkCmdDrawClusterHUAWEI;
+pub const PFN_vkCmdDrawClusterIndirectHUAWEI = *const vkCmdDrawClusterIndirectHUAWEI;
+pub const PFN_vkCmdUpdatePipelineIndirectBufferNV = *const vkCmdUpdatePipelineIndirectBufferNV;
+pub const PFN_vkCmdCopyBuffer = *const vkCmdCopyBuffer;
+pub const PFN_vkCmdCopyImage = *const vkCmdCopyImage;
+pub const PFN_vkCmdBlitImage = *const vkCmdBlitImage;
+pub const PFN_vkCmdCopyBufferToImage = *const vkCmdCopyBufferToImage;
+pub const PFN_vkCmdCopyImageToBuffer = *const vkCmdCopyImageToBuffer;
+pub const PFN_vkCmdCopyMemoryIndirectNV = *const vkCmdCopyMemoryIndirectNV;
+pub const PFN_vkCmdCopyMemoryIndirectKHR = *const vkCmdCopyMemoryIndirectKHR;
+pub const PFN_vkCmdCopyMemoryToImageIndirectNV = *const vkCmdCopyMemoryToImageIndirectNV;
+pub const PFN_vkCmdCopyMemoryToImageIndirectKHR = *const vkCmdCopyMemoryToImageIndirectKHR;
+pub const PFN_vkCmdUpdateBuffer = *const vkCmdUpdateBuffer;
+pub const PFN_vkCmdFillBuffer = *const vkCmdFillBuffer;
+pub const PFN_vkCmdClearColorImage = *const vkCmdClearColorImage;
+pub const PFN_vkCmdClearDepthStencilImage = *const vkCmdClearDepthStencilImage;
+pub const PFN_vkCmdClearAttachments = *const vkCmdClearAttachments;
+pub const PFN_vkCmdResolveImage = *const vkCmdResolveImage;
+pub const PFN_vkCmdSetEvent = *const vkCmdSetEvent;
+pub const PFN_vkCmdResetEvent = *const vkCmdResetEvent;
+pub const PFN_vkCmdWaitEvents = *const vkCmdWaitEvents;
+pub const PFN_vkCmdPipelineBarrier = *const vkCmdPipelineBarrier;
+pub const PFN_vkCmdBeginQuery = *const vkCmdBeginQuery;
+pub const PFN_vkCmdEndQuery = *const vkCmdEndQuery;
+pub const PFN_vkCmdBeginConditionalRenderingEXT = *const vkCmdBeginConditionalRenderingEXT;
+pub const PFN_vkCmdEndConditionalRenderingEXT = *const vkCmdEndConditionalRenderingEXT;
+pub const PFN_vkCmdBeginCustomResolveEXT = *const vkCmdBeginCustomResolveEXT;
+pub const PFN_vkCmdResetQueryPool = *const vkCmdResetQueryPool;
+pub const PFN_vkCmdWriteTimestamp = *const vkCmdWriteTimestamp;
+pub const PFN_vkCmdCopyQueryPoolResults = *const vkCmdCopyQueryPoolResults;
+pub const PFN_vkCmdPushConstants = *const vkCmdPushConstants;
+pub const PFN_vkCmdBeginRenderPass = *const vkCmdBeginRenderPass;
+pub const PFN_vkCmdNextSubpass = *const vkCmdNextSubpass;
+pub const PFN_vkCmdEndRenderPass = *const vkCmdEndRenderPass;
+pub const PFN_vkCmdExecuteCommands = *const vkCmdExecuteCommands;
+pub const PFN_vkCreateAndroidSurfaceKHR = *const vkCreateAndroidSurfaceKHR;
+pub const PFN_vkCreateSurfaceOHOS = *const vkCreateSurfaceOHOS;
+pub const PFN_vkGetPhysicalDeviceDisplayPropertiesKHR = *const vkGetPhysicalDeviceDisplayPropertiesKHR;
+pub const PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR = *const vkGetPhysicalDeviceDisplayPlanePropertiesKHR;
+pub const PFN_vkGetDisplayPlaneSupportedDisplaysKHR = *const vkGetDisplayPlaneSupportedDisplaysKHR;
+pub const PFN_vkGetDisplayModePropertiesKHR = *const vkGetDisplayModePropertiesKHR;
+pub const PFN_vkCreateDisplayModeKHR = *const vkCreateDisplayModeKHR;
+pub const PFN_vkGetDisplayPlaneCapabilitiesKHR = *const vkGetDisplayPlaneCapabilitiesKHR;
+pub const PFN_vkCreateDisplayPlaneSurfaceKHR = *const vkCreateDisplayPlaneSurfaceKHR;
+pub const PFN_vkCreateSharedSwapchainsKHR = *const vkCreateSharedSwapchainsKHR;
+pub const PFN_vkDestroySurfaceKHR = *const vkDestroySurfaceKHR;
+pub const PFN_vkGetPhysicalDeviceSurfaceSupportKHR = *const vkGetPhysicalDeviceSurfaceSupportKHR;
+pub const PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = *const vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+pub const PFN_vkGetPhysicalDeviceSurfaceFormatsKHR = *const vkGetPhysicalDeviceSurfaceFormatsKHR;
+pub const PFN_vkGetPhysicalDeviceSurfacePresentModesKHR = *const vkGetPhysicalDeviceSurfacePresentModesKHR;
+pub const PFN_vkCreateSwapchainKHR = *const vkCreateSwapchainKHR;
+pub const PFN_vkDestroySwapchainKHR = *const vkDestroySwapchainKHR;
+pub const PFN_vkGetSwapchainImagesKHR = *const vkGetSwapchainImagesKHR;
+pub const PFN_vkAcquireNextImageKHR = *const vkAcquireNextImageKHR;
+pub const PFN_vkQueuePresentKHR = *const vkQueuePresentKHR;
+pub const PFN_vkCreateViSurfaceNN = *const vkCreateViSurfaceNN;
+pub const PFN_vkCreateWaylandSurfaceKHR = *const vkCreateWaylandSurfaceKHR;
+pub const PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR = *const vkGetPhysicalDeviceWaylandPresentationSupportKHR;
+pub const PFN_vkCreateWin32SurfaceKHR = *const vkCreateWin32SurfaceKHR;
+pub const PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR = *const vkGetPhysicalDeviceWin32PresentationSupportKHR;
+pub const PFN_vkCreateXlibSurfaceKHR = *const vkCreateXlibSurfaceKHR;
+pub const PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR = *const vkGetPhysicalDeviceXlibPresentationSupportKHR;
+pub const PFN_vkCreateXcbSurfaceKHR = *const vkCreateXcbSurfaceKHR;
+pub const PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR = *const vkGetPhysicalDeviceXcbPresentationSupportKHR;
+pub const PFN_vkCreateDirectFBSurfaceEXT = *const vkCreateDirectFBSurfaceEXT;
+pub const PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT = *const vkGetPhysicalDeviceDirectFBPresentationSupportEXT;
+pub const PFN_vkCreateImagePipeSurfaceFUCHSIA = *const vkCreateImagePipeSurfaceFUCHSIA;
+pub const PFN_vkCreateStreamDescriptorSurfaceGGP = *const vkCreateStreamDescriptorSurfaceGGP;
+pub const PFN_vkCreateScreenSurfaceQNX = *const vkCreateScreenSurfaceQNX;
+pub const PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX = *const vkGetPhysicalDeviceScreenPresentationSupportQNX;
+pub const PFN_vkCreateDebugReportCallbackEXT = *const vkCreateDebugReportCallbackEXT;
+pub const PFN_vkDestroyDebugReportCallbackEXT = *const vkDestroyDebugReportCallbackEXT;
+pub const PFN_vkDebugReportMessageEXT = *const vkDebugReportMessageEXT;
+pub const PFN_vkDebugMarkerSetObjectNameEXT = *const vkDebugMarkerSetObjectNameEXT;
+pub const PFN_vkDebugMarkerSetObjectTagEXT = *const vkDebugMarkerSetObjectTagEXT;
+pub const PFN_vkCmdDebugMarkerBeginEXT = *const vkCmdDebugMarkerBeginEXT;
+pub const PFN_vkCmdDebugMarkerEndEXT = *const vkCmdDebugMarkerEndEXT;
+pub const PFN_vkCmdDebugMarkerInsertEXT = *const vkCmdDebugMarkerInsertEXT;
+pub const PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV = *const vkGetPhysicalDeviceExternalImageFormatPropertiesNV;
+pub const PFN_vkGetMemoryWin32HandleNV = *const vkGetMemoryWin32HandleNV;
+pub const PFN_vkCmdExecuteGeneratedCommandsNV = *const vkCmdExecuteGeneratedCommandsNV;
+pub const PFN_vkCmdPreprocessGeneratedCommandsNV = *const vkCmdPreprocessGeneratedCommandsNV;
+pub const PFN_vkCmdBindPipelineShaderGroupNV = *const vkCmdBindPipelineShaderGroupNV;
+pub const PFN_vkGetGeneratedCommandsMemoryRequirementsNV = *const vkGetGeneratedCommandsMemoryRequirementsNV;
+pub const PFN_vkCreateIndirectCommandsLayoutNV = *const vkCreateIndirectCommandsLayoutNV;
+pub const PFN_vkDestroyIndirectCommandsLayoutNV = *const vkDestroyIndirectCommandsLayoutNV;
+pub const PFN_vkCmdExecuteGeneratedCommandsEXT = *const vkCmdExecuteGeneratedCommandsEXT;
+pub const PFN_vkCmdPreprocessGeneratedCommandsEXT = *const vkCmdPreprocessGeneratedCommandsEXT;
+pub const PFN_vkGetGeneratedCommandsMemoryRequirementsEXT = *const vkGetGeneratedCommandsMemoryRequirementsEXT;
+pub const PFN_vkCreateIndirectCommandsLayoutEXT = *const vkCreateIndirectCommandsLayoutEXT;
+pub const PFN_vkDestroyIndirectCommandsLayoutEXT = *const vkDestroyIndirectCommandsLayoutEXT;
+pub const PFN_vkCreateIndirectExecutionSetEXT = *const vkCreateIndirectExecutionSetEXT;
+pub const PFN_vkDestroyIndirectExecutionSetEXT = *const vkDestroyIndirectExecutionSetEXT;
+pub const PFN_vkUpdateIndirectExecutionSetPipelineEXT = *const vkUpdateIndirectExecutionSetPipelineEXT;
+pub const PFN_vkUpdateIndirectExecutionSetShaderEXT = *const vkUpdateIndirectExecutionSetShaderEXT;
+pub const PFN_vkGetPhysicalDeviceFeatures2 = *const vkGetPhysicalDeviceFeatures2;
+pub const vkGetPhysicalDeviceFeatures2KHR = vkGetPhysicalDeviceFeatures2;
+pub const PFN_vkGetPhysicalDeviceProperties2 = *const vkGetPhysicalDeviceProperties2;
+pub const vkGetPhysicalDeviceProperties2KHR = vkGetPhysicalDeviceProperties2;
+pub const PFN_vkGetPhysicalDeviceFormatProperties2 = *const vkGetPhysicalDeviceFormatProperties2;
+pub const vkGetPhysicalDeviceFormatProperties2KHR = vkGetPhysicalDeviceFormatProperties2;
+pub const PFN_vkGetPhysicalDeviceImageFormatProperties2 = *const vkGetPhysicalDeviceImageFormatProperties2;
+pub const vkGetPhysicalDeviceImageFormatProperties2KHR = vkGetPhysicalDeviceImageFormatProperties2;
+pub const PFN_vkGetPhysicalDeviceQueueFamilyProperties2 = *const vkGetPhysicalDeviceQueueFamilyProperties2;
+pub const vkGetPhysicalDeviceQueueFamilyProperties2KHR = vkGetPhysicalDeviceQueueFamilyProperties2;
+pub const PFN_vkGetPhysicalDeviceMemoryProperties2 = *const vkGetPhysicalDeviceMemoryProperties2;
+pub const vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2;
+pub const PFN_vkGetPhysicalDeviceSparseImageFormatProperties2 = *const vkGetPhysicalDeviceSparseImageFormatProperties2;
+pub const vkGetPhysicalDeviceSparseImageFormatProperties2KHR = vkGetPhysicalDeviceSparseImageFormatProperties2;
+pub const PFN_vkCmdPushDescriptorSet = *const vkCmdPushDescriptorSet;
+pub const vkCmdPushDescriptorSetKHR = vkCmdPushDescriptorSet;
+pub const PFN_vkTrimCommandPool = *const vkTrimCommandPool;
+pub const vkTrimCommandPoolKHR = vkTrimCommandPool;
+pub const PFN_vkGetPhysicalDeviceExternalBufferProperties = *const vkGetPhysicalDeviceExternalBufferProperties;
+pub const vkGetPhysicalDeviceExternalBufferPropertiesKHR = vkGetPhysicalDeviceExternalBufferProperties;
+pub const PFN_vkGetMemoryWin32HandleKHR = *const vkGetMemoryWin32HandleKHR;
+pub const PFN_vkGetMemoryWin32HandlePropertiesKHR = *const vkGetMemoryWin32HandlePropertiesKHR;
+pub const PFN_vkGetMemoryFdKHR = *const vkGetMemoryFdKHR;
+pub const PFN_vkGetMemoryFdPropertiesKHR = *const vkGetMemoryFdPropertiesKHR;
+pub const PFN_vkGetMemoryZirconHandleFUCHSIA = *const vkGetMemoryZirconHandleFUCHSIA;
+pub const PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA = *const vkGetMemoryZirconHandlePropertiesFUCHSIA;
+pub const PFN_vkGetMemoryRemoteAddressNV = *const vkGetMemoryRemoteAddressNV;
+pub const PFN_vkGetMemorySciBufNV = *const vkGetMemorySciBufNV;
+pub const PFN_vkGetPhysicalDeviceExternalMemorySciBufPropertiesNV = *const vkGetPhysicalDeviceExternalMemorySciBufPropertiesNV;
+pub const PFN_vkGetPhysicalDeviceSciBufAttributesNV = *const vkGetPhysicalDeviceSciBufAttributesNV;
+pub const PFN_vkGetPhysicalDeviceExternalSemaphoreProperties = *const vkGetPhysicalDeviceExternalSemaphoreProperties;
+pub const vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = vkGetPhysicalDeviceExternalSemaphoreProperties;
+pub const PFN_vkGetSemaphoreWin32HandleKHR = *const vkGetSemaphoreWin32HandleKHR;
+pub const PFN_vkImportSemaphoreWin32HandleKHR = *const vkImportSemaphoreWin32HandleKHR;
+pub const PFN_vkGetSemaphoreFdKHR = *const vkGetSemaphoreFdKHR;
+pub const PFN_vkImportSemaphoreFdKHR = *const vkImportSemaphoreFdKHR;
+pub const PFN_vkGetSemaphoreZirconHandleFUCHSIA = *const vkGetSemaphoreZirconHandleFUCHSIA;
+pub const PFN_vkImportSemaphoreZirconHandleFUCHSIA = *const vkImportSemaphoreZirconHandleFUCHSIA;
+pub const PFN_vkGetPhysicalDeviceExternalFenceProperties = *const vkGetPhysicalDeviceExternalFenceProperties;
+pub const vkGetPhysicalDeviceExternalFencePropertiesKHR = vkGetPhysicalDeviceExternalFenceProperties;
+pub const PFN_vkGetFenceWin32HandleKHR = *const vkGetFenceWin32HandleKHR;
+pub const PFN_vkImportFenceWin32HandleKHR = *const vkImportFenceWin32HandleKHR;
+pub const PFN_vkGetFenceFdKHR = *const vkGetFenceFdKHR;
+pub const PFN_vkImportFenceFdKHR = *const vkImportFenceFdKHR;
+pub const PFN_vkGetFenceSciSyncFenceNV = *const vkGetFenceSciSyncFenceNV;
+pub const PFN_vkGetFenceSciSyncObjNV = *const vkGetFenceSciSyncObjNV;
+pub const PFN_vkImportFenceSciSyncFenceNV = *const vkImportFenceSciSyncFenceNV;
+pub const PFN_vkImportFenceSciSyncObjNV = *const vkImportFenceSciSyncObjNV;
+pub const PFN_vkGetSemaphoreSciSyncObjNV = *const vkGetSemaphoreSciSyncObjNV;
+pub const PFN_vkImportSemaphoreSciSyncObjNV = *const vkImportSemaphoreSciSyncObjNV;
+pub const PFN_vkGetPhysicalDeviceSciSyncAttributesNV = *const vkGetPhysicalDeviceSciSyncAttributesNV;
+pub const PFN_vkCreateSemaphoreSciSyncPoolNV = *const vkCreateSemaphoreSciSyncPoolNV;
+pub const PFN_vkDestroySemaphoreSciSyncPoolNV = *const vkDestroySemaphoreSciSyncPoolNV;
+pub const PFN_vkReleaseDisplayEXT = *const vkReleaseDisplayEXT;
+pub const PFN_vkAcquireXlibDisplayEXT = *const vkAcquireXlibDisplayEXT;
+pub const PFN_vkGetRandROutputDisplayEXT = *const vkGetRandROutputDisplayEXT;
+pub const PFN_vkAcquireWinrtDisplayNV = *const vkAcquireWinrtDisplayNV;
+pub const PFN_vkGetWinrtDisplayNV = *const vkGetWinrtDisplayNV;
+pub const PFN_vkDisplayPowerControlEXT = *const vkDisplayPowerControlEXT;
+pub const PFN_vkRegisterDeviceEventEXT = *const vkRegisterDeviceEventEXT;
+pub const PFN_vkRegisterDisplayEventEXT = *const vkRegisterDisplayEventEXT;
+pub const PFN_vkGetSwapchainCounterEXT = *const vkGetSwapchainCounterEXT;
+pub const PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT = *const vkGetPhysicalDeviceSurfaceCapabilities2EXT;
+pub const PFN_vkEnumeratePhysicalDeviceGroups = *const vkEnumeratePhysicalDeviceGroups;
+pub const vkEnumeratePhysicalDeviceGroupsKHR = vkEnumeratePhysicalDeviceGroups;
+pub const PFN_vkGetDeviceGroupPeerMemoryFeatures = *const vkGetDeviceGroupPeerMemoryFeatures;
+pub const vkGetDeviceGroupPeerMemoryFeaturesKHR = vkGetDeviceGroupPeerMemoryFeatures;
+pub const PFN_vkBindBufferMemory2 = *const vkBindBufferMemory2;
+pub const vkBindBufferMemory2KHR = vkBindBufferMemory2;
+pub const PFN_vkBindImageMemory2 = *const vkBindImageMemory2;
+pub const vkBindImageMemory2KHR = vkBindImageMemory2;
+pub const PFN_vkCmdSetDeviceMask = *const vkCmdSetDeviceMask;
+pub const vkCmdSetDeviceMaskKHR = vkCmdSetDeviceMask;
+pub const PFN_vkGetDeviceGroupPresentCapabilitiesKHR = *const vkGetDeviceGroupPresentCapabilitiesKHR;
+pub const PFN_vkGetDeviceGroupSurfacePresentModesKHR = *const vkGetDeviceGroupSurfacePresentModesKHR;
+pub const PFN_vkAcquireNextImage2KHR = *const vkAcquireNextImage2KHR;
+pub const PFN_vkCmdDispatchBase = *const vkCmdDispatchBase;
+pub const vkCmdDispatchBaseKHR = vkCmdDispatchBase;
+pub const PFN_vkGetPhysicalDevicePresentRectanglesKHR = *const vkGetPhysicalDevicePresentRectanglesKHR;
+pub const PFN_vkCreateDescriptorUpdateTemplate = *const vkCreateDescriptorUpdateTemplate;
+pub const vkCreateDescriptorUpdateTemplateKHR = vkCreateDescriptorUpdateTemplate;
+pub const PFN_vkDestroyDescriptorUpdateTemplate = *const vkDestroyDescriptorUpdateTemplate;
+pub const vkDestroyDescriptorUpdateTemplateKHR = vkDestroyDescriptorUpdateTemplate;
+pub const PFN_vkUpdateDescriptorSetWithTemplate = *const vkUpdateDescriptorSetWithTemplate;
+pub const vkUpdateDescriptorSetWithTemplateKHR = vkUpdateDescriptorSetWithTemplate;
+pub const PFN_vkCmdPushDescriptorSetWithTemplate = *const vkCmdPushDescriptorSetWithTemplate;
+pub const vkCmdPushDescriptorSetWithTemplateKHR = vkCmdPushDescriptorSetWithTemplate;
+pub const PFN_vkSetHdrMetadataEXT = *const vkSetHdrMetadataEXT;
+pub const PFN_vkGetSwapchainStatusKHR = *const vkGetSwapchainStatusKHR;
+pub const PFN_vkGetRefreshCycleDurationGOOGLE = *const vkGetRefreshCycleDurationGOOGLE;
+pub const PFN_vkGetPastPresentationTimingGOOGLE = *const vkGetPastPresentationTimingGOOGLE;
+pub const PFN_vkCreateIOSSurfaceMVK = *const vkCreateIOSSurfaceMVK;
+pub const PFN_vkCreateMacOSSurfaceMVK = *const vkCreateMacOSSurfaceMVK;
+pub const PFN_vkCreateMetalSurfaceEXT = *const vkCreateMetalSurfaceEXT;
+pub const PFN_vkCmdSetViewportWScalingNV = *const vkCmdSetViewportWScalingNV;
+pub const PFN_vkCmdSetDiscardRectangleEXT = *const vkCmdSetDiscardRectangleEXT;
+pub const PFN_vkCmdSetDiscardRectangleEnableEXT = *const vkCmdSetDiscardRectangleEnableEXT;
+pub const PFN_vkCmdSetDiscardRectangleModeEXT = *const vkCmdSetDiscardRectangleModeEXT;
+pub const PFN_vkCmdSetSampleLocationsEXT = *const vkCmdSetSampleLocationsEXT;
+pub const PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT = *const vkGetPhysicalDeviceMultisamplePropertiesEXT;
+pub const PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR = *const vkGetPhysicalDeviceSurfaceCapabilities2KHR;
+pub const PFN_vkGetPhysicalDeviceSurfaceFormats2KHR = *const vkGetPhysicalDeviceSurfaceFormats2KHR;
+pub const PFN_vkGetPhysicalDeviceDisplayProperties2KHR = *const vkGetPhysicalDeviceDisplayProperties2KHR;
+pub const PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR = *const vkGetPhysicalDeviceDisplayPlaneProperties2KHR;
+pub const PFN_vkGetDisplayModeProperties2KHR = *const vkGetDisplayModeProperties2KHR;
+pub const PFN_vkGetDisplayPlaneCapabilities2KHR = *const vkGetDisplayPlaneCapabilities2KHR;
+pub const PFN_vkGetBufferMemoryRequirements2 = *const vkGetBufferMemoryRequirements2;
+pub const vkGetBufferMemoryRequirements2KHR = vkGetBufferMemoryRequirements2;
+pub const PFN_vkGetImageMemoryRequirements2 = *const vkGetImageMemoryRequirements2;
+pub const vkGetImageMemoryRequirements2KHR = vkGetImageMemoryRequirements2;
+pub const PFN_vkGetImageSparseMemoryRequirements2 = *const vkGetImageSparseMemoryRequirements2;
+pub const vkGetImageSparseMemoryRequirements2KHR = vkGetImageSparseMemoryRequirements2;
+pub const PFN_vkGetDeviceBufferMemoryRequirements = *const vkGetDeviceBufferMemoryRequirements;
+pub const vkGetDeviceBufferMemoryRequirementsKHR = vkGetDeviceBufferMemoryRequirements;
+pub const PFN_vkGetDeviceImageMemoryRequirements = *const vkGetDeviceImageMemoryRequirements;
+pub const vkGetDeviceImageMemoryRequirementsKHR = vkGetDeviceImageMemoryRequirements;
+pub const PFN_vkGetDeviceImageSparseMemoryRequirements = *const vkGetDeviceImageSparseMemoryRequirements;
+pub const vkGetDeviceImageSparseMemoryRequirementsKHR = vkGetDeviceImageSparseMemoryRequirements;
+pub const PFN_vkCreateSamplerYcbcrConversion = *const vkCreateSamplerYcbcrConversion;
+pub const vkCreateSamplerYcbcrConversionKHR = vkCreateSamplerYcbcrConversion;
+pub const PFN_vkDestroySamplerYcbcrConversion = *const vkDestroySamplerYcbcrConversion;
+pub const vkDestroySamplerYcbcrConversionKHR = vkDestroySamplerYcbcrConversion;
+pub const PFN_vkGetDeviceQueue2 = *const vkGetDeviceQueue2;
+pub const PFN_vkCreateValidationCacheEXT = *const vkCreateValidationCacheEXT;
+pub const PFN_vkDestroyValidationCacheEXT = *const vkDestroyValidationCacheEXT;
+pub const PFN_vkGetValidationCacheDataEXT = *const vkGetValidationCacheDataEXT;
+pub const PFN_vkMergeValidationCachesEXT = *const vkMergeValidationCachesEXT;
+pub const PFN_vkGetDescriptorSetLayoutSupport = *const vkGetDescriptorSetLayoutSupport;
+pub const vkGetDescriptorSetLayoutSupportKHR = vkGetDescriptorSetLayoutSupport;
+pub const PFN_vkGetSwapchainGrallocUsageANDROID = *const vkGetSwapchainGrallocUsageANDROID;
+pub const PFN_vkGetSwapchainGrallocUsage2ANDROID = *const vkGetSwapchainGrallocUsage2ANDROID;
+pub const PFN_vkAcquireImageANDROID = *const vkAcquireImageANDROID;
+pub const PFN_vkQueueSignalReleaseImageANDROID = *const vkQueueSignalReleaseImageANDROID;
+pub const PFN_vkGetShaderInfoAMD = *const vkGetShaderInfoAMD;
+pub const PFN_vkSetLocalDimmingAMD = *const vkSetLocalDimmingAMD;
+pub const PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = *const vkGetPhysicalDeviceCalibrateableTimeDomainsKHR;
+pub const vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = vkGetPhysicalDeviceCalibrateableTimeDomainsKHR;
+pub const PFN_vkGetCalibratedTimestampsKHR = *const vkGetCalibratedTimestampsKHR;
+pub const vkGetCalibratedTimestampsEXT = vkGetCalibratedTimestampsKHR;
+pub const PFN_vkSetDebugUtilsObjectNameEXT = *const vkSetDebugUtilsObjectNameEXT;
+pub const PFN_vkSetDebugUtilsObjectTagEXT = *const vkSetDebugUtilsObjectTagEXT;
+pub const PFN_vkQueueBeginDebugUtilsLabelEXT = *const vkQueueBeginDebugUtilsLabelEXT;
+pub const PFN_vkQueueEndDebugUtilsLabelEXT = *const vkQueueEndDebugUtilsLabelEXT;
+pub const PFN_vkQueueInsertDebugUtilsLabelEXT = *const vkQueueInsertDebugUtilsLabelEXT;
+pub const PFN_vkCmdBeginDebugUtilsLabelEXT = *const vkCmdBeginDebugUtilsLabelEXT;
+pub const PFN_vkCmdEndDebugUtilsLabelEXT = *const vkCmdEndDebugUtilsLabelEXT;
+pub const PFN_vkCmdInsertDebugUtilsLabelEXT = *const vkCmdInsertDebugUtilsLabelEXT;
+pub const PFN_vkCreateDebugUtilsMessengerEXT = *const vkCreateDebugUtilsMessengerEXT;
+pub const PFN_vkDestroyDebugUtilsMessengerEXT = *const vkDestroyDebugUtilsMessengerEXT;
+pub const PFN_vkSubmitDebugUtilsMessageEXT = *const vkSubmitDebugUtilsMessageEXT;
+pub const PFN_vkGetMemoryHostPointerPropertiesEXT = *const vkGetMemoryHostPointerPropertiesEXT;
+pub const PFN_vkCmdWriteBufferMarkerAMD = *const vkCmdWriteBufferMarkerAMD;
+pub const PFN_vkCreateRenderPass2 = *const vkCreateRenderPass2;
+pub const vkCreateRenderPass2KHR = vkCreateRenderPass2;
+pub const PFN_vkCmdBeginRenderPass2 = *const vkCmdBeginRenderPass2;
+pub const vkCmdBeginRenderPass2KHR = vkCmdBeginRenderPass2;
+pub const PFN_vkCmdNextSubpass2 = *const vkCmdNextSubpass2;
+pub const vkCmdNextSubpass2KHR = vkCmdNextSubpass2;
+pub const PFN_vkCmdEndRenderPass2 = *const vkCmdEndRenderPass2;
+pub const vkCmdEndRenderPass2KHR = vkCmdEndRenderPass2;
+pub const PFN_vkGetSemaphoreCounterValue = *const vkGetSemaphoreCounterValue;
+pub const vkGetSemaphoreCounterValueKHR = vkGetSemaphoreCounterValue;
+pub const PFN_vkWaitSemaphores = *const vkWaitSemaphores;
+pub const vkWaitSemaphoresKHR = vkWaitSemaphores;
+pub const PFN_vkSignalSemaphore = *const vkSignalSemaphore;
+pub const vkSignalSemaphoreKHR = vkSignalSemaphore;
+pub const PFN_vkGetAndroidHardwareBufferPropertiesANDROID = *const vkGetAndroidHardwareBufferPropertiesANDROID;
+pub const PFN_vkGetMemoryAndroidHardwareBufferANDROID = *const vkGetMemoryAndroidHardwareBufferANDROID;
+pub const PFN_vkCmdDrawIndirectCount = *const vkCmdDrawIndirectCount;
+pub const vkCmdDrawIndirectCountKHR = vkCmdDrawIndirectCount;
+pub const vkCmdDrawIndirectCountAMD = vkCmdDrawIndirectCount;
+pub const PFN_vkCmdDrawIndexedIndirectCount = *const vkCmdDrawIndexedIndirectCount;
+pub const vkCmdDrawIndexedIndirectCountKHR = vkCmdDrawIndexedIndirectCount;
+pub const vkCmdDrawIndexedIndirectCountAMD = vkCmdDrawIndexedIndirectCount;
+pub const PFN_vkCmdSetCheckpointNV = *const vkCmdSetCheckpointNV;
+pub const PFN_vkGetQueueCheckpointDataNV = *const vkGetQueueCheckpointDataNV;
+pub const PFN_vkCmdBindTransformFeedbackBuffersEXT = *const vkCmdBindTransformFeedbackBuffersEXT;
+pub const PFN_vkCmdBeginTransformFeedbackEXT = *const vkCmdBeginTransformFeedbackEXT;
+pub const PFN_vkCmdEndTransformFeedbackEXT = *const vkCmdEndTransformFeedbackEXT;
+pub const PFN_vkCmdBeginQueryIndexedEXT = *const vkCmdBeginQueryIndexedEXT;
+pub const PFN_vkCmdEndQueryIndexedEXT = *const vkCmdEndQueryIndexedEXT;
+pub const PFN_vkCmdDrawIndirectByteCountEXT = *const vkCmdDrawIndirectByteCountEXT;
+pub const PFN_vkCmdSetExclusiveScissorNV = *const vkCmdSetExclusiveScissorNV;
+pub const PFN_vkCmdSetExclusiveScissorEnableNV = *const vkCmdSetExclusiveScissorEnableNV;
+pub const PFN_vkCmdBindShadingRateImageNV = *const vkCmdBindShadingRateImageNV;
+pub const PFN_vkCmdSetViewportShadingRatePaletteNV = *const vkCmdSetViewportShadingRatePaletteNV;
+pub const PFN_vkCmdSetCoarseSampleOrderNV = *const vkCmdSetCoarseSampleOrderNV;
+pub const PFN_vkCmdDrawMeshTasksNV = *const vkCmdDrawMeshTasksNV;
+pub const PFN_vkCmdDrawMeshTasksIndirectNV = *const vkCmdDrawMeshTasksIndirectNV;
+pub const PFN_vkCmdDrawMeshTasksIndirectCountNV = *const vkCmdDrawMeshTasksIndirectCountNV;
+pub const PFN_vkCmdDrawMeshTasksEXT = *const vkCmdDrawMeshTasksEXT;
+pub const PFN_vkCmdDrawMeshTasksIndirectEXT = *const vkCmdDrawMeshTasksIndirectEXT;
+pub const PFN_vkCmdDrawMeshTasksIndirectCountEXT = *const vkCmdDrawMeshTasksIndirectCountEXT;
+pub const PFN_vkCompileDeferredNV = *const vkCompileDeferredNV;
+pub const PFN_vkCreateAccelerationStructureNV = *const vkCreateAccelerationStructureNV;
+pub const PFN_vkCmdBindInvocationMaskHUAWEI = *const vkCmdBindInvocationMaskHUAWEI;
+pub const PFN_vkDestroyAccelerationStructureKHR = *const vkDestroyAccelerationStructureKHR;
+pub const PFN_vkDestroyAccelerationStructureNV = *const vkDestroyAccelerationStructureNV;
+pub const PFN_vkGetAccelerationStructureMemoryRequirementsNV = *const vkGetAccelerationStructureMemoryRequirementsNV;
+pub const PFN_vkBindAccelerationStructureMemoryNV = *const vkBindAccelerationStructureMemoryNV;
+pub const PFN_vkCmdCopyAccelerationStructureNV = *const vkCmdCopyAccelerationStructureNV;
+pub const PFN_vkCmdCopyAccelerationStructureKHR = *const vkCmdCopyAccelerationStructureKHR;
+pub const PFN_vkCopyAccelerationStructureKHR = *const vkCopyAccelerationStructureKHR;
+pub const PFN_vkCmdCopyAccelerationStructureToMemoryKHR = *const vkCmdCopyAccelerationStructureToMemoryKHR;
+pub const PFN_vkCopyAccelerationStructureToMemoryKHR = *const vkCopyAccelerationStructureToMemoryKHR;
+pub const PFN_vkCmdCopyMemoryToAccelerationStructureKHR = *const vkCmdCopyMemoryToAccelerationStructureKHR;
+pub const PFN_vkCopyMemoryToAccelerationStructureKHR = *const vkCopyMemoryToAccelerationStructureKHR;
+pub const PFN_vkCmdWriteAccelerationStructuresPropertiesKHR = *const vkCmdWriteAccelerationStructuresPropertiesKHR;
+pub const PFN_vkCmdWriteAccelerationStructuresPropertiesNV = *const vkCmdWriteAccelerationStructuresPropertiesNV;
+pub const PFN_vkCmdBuildAccelerationStructureNV = *const vkCmdBuildAccelerationStructureNV;
+pub const PFN_vkWriteAccelerationStructuresPropertiesKHR = *const vkWriteAccelerationStructuresPropertiesKHR;
+pub const PFN_vkCmdTraceRaysKHR = *const vkCmdTraceRaysKHR;
+pub const PFN_vkCmdTraceRaysNV = *const vkCmdTraceRaysNV;
+pub const PFN_vkGetRayTracingShaderGroupHandlesKHR = *const vkGetRayTracingShaderGroupHandlesKHR;
+pub const vkGetRayTracingShaderGroupHandlesNV = vkGetRayTracingShaderGroupHandlesKHR;
+pub const PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = *const vkGetRayTracingCaptureReplayShaderGroupHandlesKHR;
+pub const PFN_vkGetAccelerationStructureHandleNV = *const vkGetAccelerationStructureHandleNV;
+pub const PFN_vkCreateRayTracingPipelinesNV = *const vkCreateRayTracingPipelinesNV;
+pub const PFN_vkCreateRayTracingPipelinesKHR = *const vkCreateRayTracingPipelinesKHR;
+pub const PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV = *const vkGetPhysicalDeviceCooperativeMatrixPropertiesNV;
+pub const PFN_vkCmdTraceRaysIndirectKHR = *const vkCmdTraceRaysIndirectKHR;
+pub const PFN_vkCmdTraceRaysIndirect2KHR = *const vkCmdTraceRaysIndirect2KHR;
+pub const PFN_vkGetClusterAccelerationStructureBuildSizesNV = *const vkGetClusterAccelerationStructureBuildSizesNV;
+pub const PFN_vkCmdBuildClusterAccelerationStructureIndirectNV = *const vkCmdBuildClusterAccelerationStructureIndirectNV;
+pub const PFN_vkGetDeviceAccelerationStructureCompatibilityKHR = *const vkGetDeviceAccelerationStructureCompatibilityKHR;
+pub const PFN_vkGetRayTracingShaderGroupStackSizeKHR = *const vkGetRayTracingShaderGroupStackSizeKHR;
+pub const PFN_vkCmdSetRayTracingPipelineStackSizeKHR = *const vkCmdSetRayTracingPipelineStackSizeKHR;
+pub const PFN_vkGetImageViewHandleNVX = *const vkGetImageViewHandleNVX;
+pub const PFN_vkGetImageViewHandle64NVX = *const vkGetImageViewHandle64NVX;
+pub const PFN_vkGetImageViewAddressNVX = *const vkGetImageViewAddressNVX;
+pub const PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT = *const vkGetPhysicalDeviceSurfacePresentModes2EXT;
+pub const PFN_vkGetDeviceGroupSurfacePresentModes2EXT = *const vkGetDeviceGroupSurfacePresentModes2EXT;
+pub const PFN_vkAcquireFullScreenExclusiveModeEXT = *const vkAcquireFullScreenExclusiveModeEXT;
+pub const PFN_vkReleaseFullScreenExclusiveModeEXT = *const vkReleaseFullScreenExclusiveModeEXT;
+pub const PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR = *const vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR;
+pub const PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR = *const vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR;
+pub const PFN_vkAcquireProfilingLockKHR = *const vkAcquireProfilingLockKHR;
+pub const PFN_vkReleaseProfilingLockKHR = *const vkReleaseProfilingLockKHR;
+pub const PFN_vkGetImageDrmFormatModifierPropertiesEXT = *const vkGetImageDrmFormatModifierPropertiesEXT;
+pub const PFN_vkGetBufferOpaqueCaptureAddress = *const vkGetBufferOpaqueCaptureAddress;
+pub const vkGetBufferOpaqueCaptureAddressKHR = vkGetBufferOpaqueCaptureAddress;
+pub const PFN_vkGetBufferDeviceAddress = *const vkGetBufferDeviceAddress;
+pub const vkGetBufferDeviceAddressKHR = vkGetBufferDeviceAddress;
+pub const vkGetBufferDeviceAddressEXT = vkGetBufferDeviceAddress;
+pub const PFN_vkCreateHeadlessSurfaceEXT = *const vkCreateHeadlessSurfaceEXT;
+pub const PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV = *const vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV;
+pub const PFN_vkInitializePerformanceApiINTEL = *const vkInitializePerformanceApiINTEL;
+pub const PFN_vkUninitializePerformanceApiINTEL = *const vkUninitializePerformanceApiINTEL;
+pub const PFN_vkCmdSetPerformanceMarkerINTEL = *const vkCmdSetPerformanceMarkerINTEL;
+pub const PFN_vkCmdSetPerformanceStreamMarkerINTEL = *const vkCmdSetPerformanceStreamMarkerINTEL;
+pub const PFN_vkCmdSetPerformanceOverrideINTEL = *const vkCmdSetPerformanceOverrideINTEL;
+pub const PFN_vkAcquirePerformanceConfigurationINTEL = *const vkAcquirePerformanceConfigurationINTEL;
+pub const PFN_vkReleasePerformanceConfigurationINTEL = *const vkReleasePerformanceConfigurationINTEL;
+pub const PFN_vkQueueSetPerformanceConfigurationINTEL = *const vkQueueSetPerformanceConfigurationINTEL;
+pub const PFN_vkGetPerformanceParameterINTEL = *const vkGetPerformanceParameterINTEL;
+pub const PFN_vkGetDeviceMemoryOpaqueCaptureAddress = *const vkGetDeviceMemoryOpaqueCaptureAddress;
+pub const vkGetDeviceMemoryOpaqueCaptureAddressKHR = vkGetDeviceMemoryOpaqueCaptureAddress;
+pub const PFN_vkGetPipelineExecutablePropertiesKHR = *const vkGetPipelineExecutablePropertiesKHR;
+pub const PFN_vkGetPipelineExecutableStatisticsKHR = *const vkGetPipelineExecutableStatisticsKHR;
+pub const PFN_vkGetPipelineExecutableInternalRepresentationsKHR = *const vkGetPipelineExecutableInternalRepresentationsKHR;
+pub const PFN_vkCmdSetLineStipple = *const vkCmdSetLineStipple;
+pub const vkCmdSetLineStippleKHR = vkCmdSetLineStipple;
+pub const vkCmdSetLineStippleEXT = vkCmdSetLineStipple;
+pub const PFN_vkGetFaultData = *const vkGetFaultData;
+pub const PFN_vkGetPhysicalDeviceToolProperties = *const vkGetPhysicalDeviceToolProperties;
+pub const vkGetPhysicalDeviceToolPropertiesEXT = vkGetPhysicalDeviceToolProperties;
+pub const PFN_vkCreateAccelerationStructureKHR = *const vkCreateAccelerationStructureKHR;
+pub const PFN_vkCmdBuildAccelerationStructuresKHR = *const vkCmdBuildAccelerationStructuresKHR;
+pub const PFN_vkCmdBuildAccelerationStructuresIndirectKHR = *const vkCmdBuildAccelerationStructuresIndirectKHR;
+pub const PFN_vkBuildAccelerationStructuresKHR = *const vkBuildAccelerationStructuresKHR;
+pub const PFN_vkGetAccelerationStructureDeviceAddressKHR = *const vkGetAccelerationStructureDeviceAddressKHR;
+pub const PFN_vkCreateDeferredOperationKHR = *const vkCreateDeferredOperationKHR;
+pub const PFN_vkDestroyDeferredOperationKHR = *const vkDestroyDeferredOperationKHR;
+pub const PFN_vkGetDeferredOperationMaxConcurrencyKHR = *const vkGetDeferredOperationMaxConcurrencyKHR;
+pub const PFN_vkGetDeferredOperationResultKHR = *const vkGetDeferredOperationResultKHR;
+pub const PFN_vkDeferredOperationJoinKHR = *const vkDeferredOperationJoinKHR;
+pub const PFN_vkGetPipelineIndirectMemoryRequirementsNV = *const vkGetPipelineIndirectMemoryRequirementsNV;
+pub const PFN_vkGetPipelineIndirectDeviceAddressNV = *const vkGetPipelineIndirectDeviceAddressNV;
+pub const PFN_vkAntiLagUpdateAMD = *const vkAntiLagUpdateAMD;
+pub const PFN_vkCmdSetCullMode = *const vkCmdSetCullMode;
+pub const vkCmdSetCullModeEXT = vkCmdSetCullMode;
+pub const PFN_vkCmdSetFrontFace = *const vkCmdSetFrontFace;
+pub const vkCmdSetFrontFaceEXT = vkCmdSetFrontFace;
+pub const PFN_vkCmdSetPrimitiveTopology = *const vkCmdSetPrimitiveTopology;
+pub const vkCmdSetPrimitiveTopologyEXT = vkCmdSetPrimitiveTopology;
+pub const PFN_vkCmdSetViewportWithCount = *const vkCmdSetViewportWithCount;
+pub const vkCmdSetViewportWithCountEXT = vkCmdSetViewportWithCount;
+pub const PFN_vkCmdSetScissorWithCount = *const vkCmdSetScissorWithCount;
+pub const vkCmdSetScissorWithCountEXT = vkCmdSetScissorWithCount;
+pub const PFN_vkCmdBindIndexBuffer2 = *const vkCmdBindIndexBuffer2;
+pub const vkCmdBindIndexBuffer2KHR = vkCmdBindIndexBuffer2;
+pub const PFN_vkCmdBindVertexBuffers2 = *const vkCmdBindVertexBuffers2;
+pub const vkCmdBindVertexBuffers2EXT = vkCmdBindVertexBuffers2;
+pub const PFN_vkCmdSetDepthTestEnable = *const vkCmdSetDepthTestEnable;
+pub const vkCmdSetDepthTestEnableEXT = vkCmdSetDepthTestEnable;
+pub const PFN_vkCmdSetDepthWriteEnable = *const vkCmdSetDepthWriteEnable;
+pub const vkCmdSetDepthWriteEnableEXT = vkCmdSetDepthWriteEnable;
+pub const PFN_vkCmdSetDepthCompareOp = *const vkCmdSetDepthCompareOp;
+pub const vkCmdSetDepthCompareOpEXT = vkCmdSetDepthCompareOp;
+pub const PFN_vkCmdSetDepthBoundsTestEnable = *const vkCmdSetDepthBoundsTestEnable;
+pub const vkCmdSetDepthBoundsTestEnableEXT = vkCmdSetDepthBoundsTestEnable;
+pub const PFN_vkCmdSetStencilTestEnable = *const vkCmdSetStencilTestEnable;
+pub const vkCmdSetStencilTestEnableEXT = vkCmdSetStencilTestEnable;
+pub const PFN_vkCmdSetStencilOp = *const vkCmdSetStencilOp;
+pub const vkCmdSetStencilOpEXT = vkCmdSetStencilOp;
+pub const PFN_vkCmdSetPatchControlPointsEXT = *const vkCmdSetPatchControlPointsEXT;
+pub const PFN_vkCmdSetRasterizerDiscardEnable = *const vkCmdSetRasterizerDiscardEnable;
+pub const vkCmdSetRasterizerDiscardEnableEXT = vkCmdSetRasterizerDiscardEnable;
+pub const PFN_vkCmdSetDepthBiasEnable = *const vkCmdSetDepthBiasEnable;
+pub const vkCmdSetDepthBiasEnableEXT = vkCmdSetDepthBiasEnable;
+pub const PFN_vkCmdSetLogicOpEXT = *const vkCmdSetLogicOpEXT;
+pub const PFN_vkCmdSetPrimitiveRestartEnable = *const vkCmdSetPrimitiveRestartEnable;
+pub const vkCmdSetPrimitiveRestartEnableEXT = vkCmdSetPrimitiveRestartEnable;
+pub const PFN_vkCmdSetTessellationDomainOriginEXT = *const vkCmdSetTessellationDomainOriginEXT;
+pub const PFN_vkCmdSetDepthClampEnableEXT = *const vkCmdSetDepthClampEnableEXT;
+pub const PFN_vkCmdSetPolygonModeEXT = *const vkCmdSetPolygonModeEXT;
+pub const PFN_vkCmdSetRasterizationSamplesEXT = *const vkCmdSetRasterizationSamplesEXT;
+pub const PFN_vkCmdSetSampleMaskEXT = *const vkCmdSetSampleMaskEXT;
+pub const PFN_vkCmdSetAlphaToCoverageEnableEXT = *const vkCmdSetAlphaToCoverageEnableEXT;
+pub const PFN_vkCmdSetAlphaToOneEnableEXT = *const vkCmdSetAlphaToOneEnableEXT;
+pub const PFN_vkCmdSetLogicOpEnableEXT = *const vkCmdSetLogicOpEnableEXT;
+pub const PFN_vkCmdSetColorBlendEnableEXT = *const vkCmdSetColorBlendEnableEXT;
+pub const PFN_vkCmdSetColorBlendEquationEXT = *const vkCmdSetColorBlendEquationEXT;
+pub const PFN_vkCmdSetColorWriteMaskEXT = *const vkCmdSetColorWriteMaskEXT;
+pub const PFN_vkCmdSetRasterizationStreamEXT = *const vkCmdSetRasterizationStreamEXT;
+pub const PFN_vkCmdSetConservativeRasterizationModeEXT = *const vkCmdSetConservativeRasterizationModeEXT;
+pub const PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT = *const vkCmdSetExtraPrimitiveOverestimationSizeEXT;
+pub const PFN_vkCmdSetDepthClipEnableEXT = *const vkCmdSetDepthClipEnableEXT;
+pub const PFN_vkCmdSetSampleLocationsEnableEXT = *const vkCmdSetSampleLocationsEnableEXT;
+pub const PFN_vkCmdSetColorBlendAdvancedEXT = *const vkCmdSetColorBlendAdvancedEXT;
+pub const PFN_vkCmdSetProvokingVertexModeEXT = *const vkCmdSetProvokingVertexModeEXT;
+pub const PFN_vkCmdSetLineRasterizationModeEXT = *const vkCmdSetLineRasterizationModeEXT;
+pub const PFN_vkCmdSetLineStippleEnableEXT = *const vkCmdSetLineStippleEnableEXT;
+pub const PFN_vkCmdSetDepthClipNegativeOneToOneEXT = *const vkCmdSetDepthClipNegativeOneToOneEXT;
+pub const PFN_vkCmdSetViewportWScalingEnableNV = *const vkCmdSetViewportWScalingEnableNV;
+pub const PFN_vkCmdSetViewportSwizzleNV = *const vkCmdSetViewportSwizzleNV;
+pub const PFN_vkCmdSetCoverageToColorEnableNV = *const vkCmdSetCoverageToColorEnableNV;
+pub const PFN_vkCmdSetCoverageToColorLocationNV = *const vkCmdSetCoverageToColorLocationNV;
+pub const PFN_vkCmdSetCoverageModulationModeNV = *const vkCmdSetCoverageModulationModeNV;
+pub const PFN_vkCmdSetCoverageModulationTableEnableNV = *const vkCmdSetCoverageModulationTableEnableNV;
+pub const PFN_vkCmdSetCoverageModulationTableNV = *const vkCmdSetCoverageModulationTableNV;
+pub const PFN_vkCmdSetShadingRateImageEnableNV = *const vkCmdSetShadingRateImageEnableNV;
+pub const PFN_vkCmdSetCoverageReductionModeNV = *const vkCmdSetCoverageReductionModeNV;
+pub const PFN_vkCmdSetRepresentativeFragmentTestEnableNV = *const vkCmdSetRepresentativeFragmentTestEnableNV;
+pub const PFN_vkCreatePrivateDataSlot = *const vkCreatePrivateDataSlot;
+pub const vkCreatePrivateDataSlotEXT = vkCreatePrivateDataSlot;
+pub const PFN_vkDestroyPrivateDataSlot = *const vkDestroyPrivateDataSlot;
+pub const vkDestroyPrivateDataSlotEXT = vkDestroyPrivateDataSlot;
+pub const PFN_vkSetPrivateData = *const vkSetPrivateData;
+pub const vkSetPrivateDataEXT = vkSetPrivateData;
+pub const PFN_vkGetPrivateData = *const vkGetPrivateData;
+pub const vkGetPrivateDataEXT = vkGetPrivateData;
+pub const PFN_vkCmdCopyBuffer2 = *const vkCmdCopyBuffer2;
+pub const vkCmdCopyBuffer2KHR = vkCmdCopyBuffer2;
+pub const PFN_vkCmdCopyImage2 = *const vkCmdCopyImage2;
+pub const vkCmdCopyImage2KHR = vkCmdCopyImage2;
+pub const PFN_vkCmdBlitImage2 = *const vkCmdBlitImage2;
+pub const vkCmdBlitImage2KHR = vkCmdBlitImage2;
+pub const PFN_vkCmdCopyBufferToImage2 = *const vkCmdCopyBufferToImage2;
+pub const vkCmdCopyBufferToImage2KHR = vkCmdCopyBufferToImage2;
+pub const PFN_vkCmdCopyImageToBuffer2 = *const vkCmdCopyImageToBuffer2;
+pub const vkCmdCopyImageToBuffer2KHR = vkCmdCopyImageToBuffer2;
+pub const PFN_vkCmdResolveImage2 = *const vkCmdResolveImage2;
+pub const vkCmdResolveImage2KHR = vkCmdResolveImage2;
+pub const PFN_vkCmdRefreshObjectsKHR = *const vkCmdRefreshObjectsKHR;
+pub const PFN_vkGetPhysicalDeviceRefreshableObjectTypesKHR = *const vkGetPhysicalDeviceRefreshableObjectTypesKHR;
+pub const PFN_vkCmdSetFragmentShadingRateKHR = *const vkCmdSetFragmentShadingRateKHR;
+pub const PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR = *const vkGetPhysicalDeviceFragmentShadingRatesKHR;
+pub const PFN_vkCmdSetFragmentShadingRateEnumNV = *const vkCmdSetFragmentShadingRateEnumNV;
+pub const PFN_vkGetAccelerationStructureBuildSizesKHR = *const vkGetAccelerationStructureBuildSizesKHR;
+pub const PFN_vkCmdSetVertexInputEXT = *const vkCmdSetVertexInputEXT;
+pub const PFN_vkCmdSetColorWriteEnableEXT = *const vkCmdSetColorWriteEnableEXT;
+pub const PFN_vkCmdSetEvent2 = *const vkCmdSetEvent2;
+pub const vkCmdSetEvent2KHR = vkCmdSetEvent2;
+pub const PFN_vkCmdResetEvent2 = *const vkCmdResetEvent2;
+pub const vkCmdResetEvent2KHR = vkCmdResetEvent2;
+pub const PFN_vkCmdWaitEvents2 = *const vkCmdWaitEvents2;
+pub const vkCmdWaitEvents2KHR = vkCmdWaitEvents2;
+pub const PFN_vkCmdPipelineBarrier2 = *const vkCmdPipelineBarrier2;
+pub const vkCmdPipelineBarrier2KHR = vkCmdPipelineBarrier2;
+pub const PFN_vkQueueSubmit2 = *const vkQueueSubmit2;
+pub const vkQueueSubmit2KHR = vkQueueSubmit2;
+pub const PFN_vkCmdWriteTimestamp2 = *const vkCmdWriteTimestamp2;
+pub const vkCmdWriteTimestamp2KHR = vkCmdWriteTimestamp2;
+pub const PFN_vkCmdWriteBufferMarker2AMD = *const vkCmdWriteBufferMarker2AMD;
+pub const PFN_vkGetQueueCheckpointData2NV = *const vkGetQueueCheckpointData2NV;
+pub const PFN_vkCopyMemoryToImage = *const vkCopyMemoryToImage;
+pub const vkCopyMemoryToImageEXT = vkCopyMemoryToImage;
+pub const PFN_vkCopyImageToMemory = *const vkCopyImageToMemory;
+pub const vkCopyImageToMemoryEXT = vkCopyImageToMemory;
+pub const PFN_vkCopyImageToImage = *const vkCopyImageToImage;
+pub const vkCopyImageToImageEXT = vkCopyImageToImage;
+pub const PFN_vkTransitionImageLayout = *const vkTransitionImageLayout;
+pub const vkTransitionImageLayoutEXT = vkTransitionImageLayout;
+pub const PFN_vkGetCommandPoolMemoryConsumption = *const vkGetCommandPoolMemoryConsumption;
+pub const PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR = *const vkGetPhysicalDeviceVideoCapabilitiesKHR;
+pub const PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR = *const vkGetPhysicalDeviceVideoFormatPropertiesKHR;
+pub const PFN_vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR = *const vkGetPhysicalDeviceVideoEncodeQualityLevelPropertiesKHR;
+pub const PFN_vkCreateVideoSessionKHR = *const vkCreateVideoSessionKHR;
+pub const PFN_vkDestroyVideoSessionKHR = *const vkDestroyVideoSessionKHR;
+pub const PFN_vkCreateVideoSessionParametersKHR = *const vkCreateVideoSessionParametersKHR;
+pub const PFN_vkUpdateVideoSessionParametersKHR = *const vkUpdateVideoSessionParametersKHR;
+pub const PFN_vkGetEncodedVideoSessionParametersKHR = *const vkGetEncodedVideoSessionParametersKHR;
+pub const PFN_vkDestroyVideoSessionParametersKHR = *const vkDestroyVideoSessionParametersKHR;
+pub const PFN_vkGetVideoSessionMemoryRequirementsKHR = *const vkGetVideoSessionMemoryRequirementsKHR;
+pub const PFN_vkBindVideoSessionMemoryKHR = *const vkBindVideoSessionMemoryKHR;
+pub const PFN_vkCmdDecodeVideoKHR = *const vkCmdDecodeVideoKHR;
+pub const PFN_vkCmdBeginVideoCodingKHR = *const vkCmdBeginVideoCodingKHR;
+pub const PFN_vkCmdControlVideoCodingKHR = *const vkCmdControlVideoCodingKHR;
+pub const PFN_vkCmdEndVideoCodingKHR = *const vkCmdEndVideoCodingKHR;
+pub const PFN_vkCmdEncodeVideoKHR = *const vkCmdEncodeVideoKHR;
+pub const PFN_vkCmdDecompressMemoryNV = *const vkCmdDecompressMemoryNV;
+pub const PFN_vkCmdDecompressMemoryIndirectCountNV = *const vkCmdDecompressMemoryIndirectCountNV;
+pub const PFN_vkGetPartitionedAccelerationStructuresBuildSizesNV = *const vkGetPartitionedAccelerationStructuresBuildSizesNV;
+pub const PFN_vkCmdBuildPartitionedAccelerationStructuresNV = *const vkCmdBuildPartitionedAccelerationStructuresNV;
+pub const PFN_vkCmdDecompressMemoryEXT = *const vkCmdDecompressMemoryEXT;
+pub const PFN_vkCmdDecompressMemoryIndirectCountEXT = *const vkCmdDecompressMemoryIndirectCountEXT;
+pub const PFN_vkCreateCuModuleNVX = *const vkCreateCuModuleNVX;
+pub const PFN_vkCreateCuFunctionNVX = *const vkCreateCuFunctionNVX;
+pub const PFN_vkDestroyCuModuleNVX = *const vkDestroyCuModuleNVX;
+pub const PFN_vkDestroyCuFunctionNVX = *const vkDestroyCuFunctionNVX;
+pub const PFN_vkCmdCuLaunchKernelNVX = *const vkCmdCuLaunchKernelNVX;
+pub const PFN_vkGetDescriptorSetLayoutSizeEXT = *const vkGetDescriptorSetLayoutSizeEXT;
+pub const PFN_vkGetDescriptorSetLayoutBindingOffsetEXT = *const vkGetDescriptorSetLayoutBindingOffsetEXT;
+pub const PFN_vkGetDescriptorEXT = *const vkGetDescriptorEXT;
+pub const PFN_vkCmdBindDescriptorBuffersEXT = *const vkCmdBindDescriptorBuffersEXT;
+pub const PFN_vkCmdSetDescriptorBufferOffsetsEXT = *const vkCmdSetDescriptorBufferOffsetsEXT;
+pub const PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT = *const vkCmdBindDescriptorBufferEmbeddedSamplersEXT;
+pub const PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT = *const vkGetBufferOpaqueCaptureDescriptorDataEXT;
+pub const PFN_vkGetImageOpaqueCaptureDescriptorDataEXT = *const vkGetImageOpaqueCaptureDescriptorDataEXT;
+pub const PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT = *const vkGetImageViewOpaqueCaptureDescriptorDataEXT;
+pub const PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT = *const vkGetSamplerOpaqueCaptureDescriptorDataEXT;
+pub const PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT = *const vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT;
+pub const PFN_vkSetDeviceMemoryPriorityEXT = *const vkSetDeviceMemoryPriorityEXT;
+pub const PFN_vkAcquireDrmDisplayEXT = *const vkAcquireDrmDisplayEXT;
+pub const PFN_vkGetDrmDisplayEXT = *const vkGetDrmDisplayEXT;
+pub const PFN_vkWaitForPresent2KHR = *const vkWaitForPresent2KHR;
+pub const PFN_vkWaitForPresentKHR = *const vkWaitForPresentKHR;
+pub const PFN_vkCreateBufferCollectionFUCHSIA = *const vkCreateBufferCollectionFUCHSIA;
+pub const PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA = *const vkSetBufferCollectionBufferConstraintsFUCHSIA;
+pub const PFN_vkSetBufferCollectionImageConstraintsFUCHSIA = *const vkSetBufferCollectionImageConstraintsFUCHSIA;
+pub const PFN_vkDestroyBufferCollectionFUCHSIA = *const vkDestroyBufferCollectionFUCHSIA;
+pub const PFN_vkGetBufferCollectionPropertiesFUCHSIA = *const vkGetBufferCollectionPropertiesFUCHSIA;
+pub const PFN_vkCreateCudaModuleNV = *const vkCreateCudaModuleNV;
+pub const PFN_vkGetCudaModuleCacheNV = *const vkGetCudaModuleCacheNV;
+pub const PFN_vkCreateCudaFunctionNV = *const vkCreateCudaFunctionNV;
+pub const PFN_vkDestroyCudaModuleNV = *const vkDestroyCudaModuleNV;
+pub const PFN_vkDestroyCudaFunctionNV = *const vkDestroyCudaFunctionNV;
+pub const PFN_vkCmdCudaLaunchKernelNV = *const vkCmdCudaLaunchKernelNV;
+pub const PFN_vkCmdBeginRendering = *const vkCmdBeginRendering;
+pub const vkCmdBeginRenderingKHR = vkCmdBeginRendering;
+pub const PFN_vkCmdEndRendering = *const vkCmdEndRendering;
+pub const PFN_vkCmdEndRendering2KHR = *const vkCmdEndRendering2KHR;
+pub const vkCmdEndRendering2EXT = vkCmdEndRendering2KHR;
+pub const vkCmdEndRenderingKHR = vkCmdEndRendering;
+pub const PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE = *const vkGetDescriptorSetLayoutHostMappingInfoVALVE;
+pub const PFN_vkGetDescriptorSetHostMappingVALVE = *const vkGetDescriptorSetHostMappingVALVE;
+pub const PFN_vkCreateMicromapEXT = *const vkCreateMicromapEXT;
+pub const PFN_vkCmdBuildMicromapsEXT = *const vkCmdBuildMicromapsEXT;
+pub const PFN_vkBuildMicromapsEXT = *const vkBuildMicromapsEXT;
+pub const PFN_vkDestroyMicromapEXT = *const vkDestroyMicromapEXT;
+pub const PFN_vkCmdCopyMicromapEXT = *const vkCmdCopyMicromapEXT;
+pub const PFN_vkCopyMicromapEXT = *const vkCopyMicromapEXT;
+pub const PFN_vkCmdCopyMicromapToMemoryEXT = *const vkCmdCopyMicromapToMemoryEXT;
+pub const PFN_vkCopyMicromapToMemoryEXT = *const vkCopyMicromapToMemoryEXT;
+pub const PFN_vkCmdCopyMemoryToMicromapEXT = *const vkCmdCopyMemoryToMicromapEXT;
+pub const PFN_vkCopyMemoryToMicromapEXT = *const vkCopyMemoryToMicromapEXT;
+pub const PFN_vkCmdWriteMicromapsPropertiesEXT = *const vkCmdWriteMicromapsPropertiesEXT;
+pub const PFN_vkWriteMicromapsPropertiesEXT = *const vkWriteMicromapsPropertiesEXT;
+pub const PFN_vkGetDeviceMicromapCompatibilityEXT = *const vkGetDeviceMicromapCompatibilityEXT;
+pub const PFN_vkGetMicromapBuildSizesEXT = *const vkGetMicromapBuildSizesEXT;
+pub const PFN_vkGetShaderModuleIdentifierEXT = *const vkGetShaderModuleIdentifierEXT;
+pub const PFN_vkGetShaderModuleCreateInfoIdentifierEXT = *const vkGetShaderModuleCreateInfoIdentifierEXT;
+pub const PFN_vkGetImageSubresourceLayout2 = *const vkGetImageSubresourceLayout2;
+pub const vkGetImageSubresourceLayout2KHR = vkGetImageSubresourceLayout2;
+pub const vkGetImageSubresourceLayout2EXT = vkGetImageSubresourceLayout2;
+pub const PFN_vkGetPipelinePropertiesEXT = *const vkGetPipelinePropertiesEXT;
+pub const PFN_vkExportMetalObjectsEXT = *const vkExportMetalObjectsEXT;
+pub const PFN_vkCmdBindTileMemoryQCOM = *const vkCmdBindTileMemoryQCOM;
+pub const PFN_vkGetFramebufferTilePropertiesQCOM = *const vkGetFramebufferTilePropertiesQCOM;
+pub const PFN_vkGetDynamicRenderingTilePropertiesQCOM = *const vkGetDynamicRenderingTilePropertiesQCOM;
+pub const PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV = *const vkGetPhysicalDeviceOpticalFlowImageFormatsNV;
+pub const PFN_vkCreateOpticalFlowSessionNV = *const vkCreateOpticalFlowSessionNV;
+pub const PFN_vkDestroyOpticalFlowSessionNV = *const vkDestroyOpticalFlowSessionNV;
+pub const PFN_vkBindOpticalFlowSessionImageNV = *const vkBindOpticalFlowSessionImageNV;
+pub const PFN_vkCmdOpticalFlowExecuteNV = *const vkCmdOpticalFlowExecuteNV;
+pub const PFN_vkGetDeviceFaultInfoEXT = *const vkGetDeviceFaultInfoEXT;
+pub const PFN_vkCmdSetDepthBias2EXT = *const vkCmdSetDepthBias2EXT;
+pub const PFN_vkReleaseSwapchainImagesKHR = *const vkReleaseSwapchainImagesKHR;
+pub const vkReleaseSwapchainImagesEXT = vkReleaseSwapchainImagesKHR;
+pub const PFN_vkGetDeviceImageSubresourceLayout = *const vkGetDeviceImageSubresourceLayout;
+pub const vkGetDeviceImageSubresourceLayoutKHR = vkGetDeviceImageSubresourceLayout;
+pub const PFN_vkMapMemory2 = *const vkMapMemory2;
+pub const vkMapMemory2KHR = vkMapMemory2;
+pub const PFN_vkUnmapMemory2 = *const vkUnmapMemory2;
+pub const vkUnmapMemory2KHR = vkUnmapMemory2;
+pub const PFN_vkCreateShadersEXT = *const vkCreateShadersEXT;
+pub const PFN_vkDestroyShaderEXT = *const vkDestroyShaderEXT;
+pub const PFN_vkGetShaderBinaryDataEXT = *const vkGetShaderBinaryDataEXT;
+pub const PFN_vkCmdBindShadersEXT = *const vkCmdBindShadersEXT;
+pub const PFN_vkSetSwapchainPresentTimingQueueSizeEXT = *const vkSetSwapchainPresentTimingQueueSizeEXT;
+pub const PFN_vkGetSwapchainTimingPropertiesEXT = *const vkGetSwapchainTimingPropertiesEXT;
+pub const PFN_vkGetSwapchainTimeDomainPropertiesEXT = *const vkGetSwapchainTimeDomainPropertiesEXT;
+pub const PFN_vkGetPastPresentationTimingEXT = *const vkGetPastPresentationTimingEXT;
+pub const PFN_vkGetScreenBufferPropertiesQNX = *const vkGetScreenBufferPropertiesQNX;
+pub const PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR = *const vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR;
+pub const PFN_vkGetExecutionGraphPipelineScratchSizeAMDX = *const vkGetExecutionGraphPipelineScratchSizeAMDX;
+pub const PFN_vkGetExecutionGraphPipelineNodeIndexAMDX = *const vkGetExecutionGraphPipelineNodeIndexAMDX;
+pub const PFN_vkCreateExecutionGraphPipelinesAMDX = *const vkCreateExecutionGraphPipelinesAMDX;
+pub const PFN_vkCmdInitializeGraphScratchMemoryAMDX = *const vkCmdInitializeGraphScratchMemoryAMDX;
+pub const PFN_vkCmdDispatchGraphAMDX = *const vkCmdDispatchGraphAMDX;
+pub const PFN_vkCmdDispatchGraphIndirectAMDX = *const vkCmdDispatchGraphIndirectAMDX;
+pub const PFN_vkCmdDispatchGraphIndirectCountAMDX = *const vkCmdDispatchGraphIndirectCountAMDX;
+pub const PFN_vkCmdBindDescriptorSets2 = *const vkCmdBindDescriptorSets2;
+pub const vkCmdBindDescriptorSets2KHR = vkCmdBindDescriptorSets2;
+pub const PFN_vkCmdPushConstants2 = *const vkCmdPushConstants2;
+pub const vkCmdPushConstants2KHR = vkCmdPushConstants2;
+pub const PFN_vkCmdPushDescriptorSet2 = *const vkCmdPushDescriptorSet2;
+pub const vkCmdPushDescriptorSet2KHR = vkCmdPushDescriptorSet2;
+pub const PFN_vkCmdPushDescriptorSetWithTemplate2 = *const vkCmdPushDescriptorSetWithTemplate2;
+pub const vkCmdPushDescriptorSetWithTemplate2KHR = vkCmdPushDescriptorSetWithTemplate2;
+pub const PFN_vkCmdSetDescriptorBufferOffsets2EXT = *const vkCmdSetDescriptorBufferOffsets2EXT;
+pub const PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = *const vkCmdBindDescriptorBufferEmbeddedSamplers2EXT;
+pub const PFN_vkSetLatencySleepModeNV = *const vkSetLatencySleepModeNV;
+pub const PFN_vkLatencySleepNV = *const vkLatencySleepNV;
+pub const PFN_vkSetLatencyMarkerNV = *const vkSetLatencyMarkerNV;
+pub const PFN_vkGetLatencyTimingsNV = *const vkGetLatencyTimingsNV;
+pub const PFN_vkQueueNotifyOutOfBandNV = *const vkQueueNotifyOutOfBandNV;
+pub const PFN_vkCmdSetRenderingAttachmentLocations = *const vkCmdSetRenderingAttachmentLocations;
+pub const vkCmdSetRenderingAttachmentLocationsKHR = vkCmdSetRenderingAttachmentLocations;
+pub const PFN_vkCmdSetRenderingInputAttachmentIndices = *const vkCmdSetRenderingInputAttachmentIndices;
+pub const vkCmdSetRenderingInputAttachmentIndicesKHR = vkCmdSetRenderingInputAttachmentIndices;
+pub const PFN_vkCmdSetDepthClampRangeEXT = *const vkCmdSetDepthClampRangeEXT;
+pub const PFN_vkGetPhysicalDeviceCooperativeMatrixFlexibleDimensionsPropertiesNV = *const vkGetPhysicalDeviceCooperativeMatrixFlexibleDimensionsPropertiesNV;
+pub const PFN_vkGetMemoryMetalHandleEXT = *const vkGetMemoryMetalHandleEXT;
+pub const PFN_vkGetMemoryMetalHandlePropertiesEXT = *const vkGetMemoryMetalHandlePropertiesEXT;
+pub const PFN_vkGetPhysicalDeviceCooperativeVectorPropertiesNV = *const vkGetPhysicalDeviceCooperativeVectorPropertiesNV;
+pub const PFN_vkConvertCooperativeVectorMatrixNV = *const vkConvertCooperativeVectorMatrixNV;
+pub const PFN_vkCmdConvertCooperativeVectorMatrixNV = *const vkCmdConvertCooperativeVectorMatrixNV;
+pub const PFN_vkCmdDispatchTileQCOM = *const vkCmdDispatchTileQCOM;
+pub const PFN_vkCmdBeginPerTileExecutionQCOM = *const vkCmdBeginPerTileExecutionQCOM;
+pub const PFN_vkCmdEndPerTileExecutionQCOM = *const vkCmdEndPerTileExecutionQCOM;
+pub const PFN_vkCreateExternalComputeQueueNV = *const vkCreateExternalComputeQueueNV;
+pub const PFN_vkDestroyExternalComputeQueueNV = *const vkDestroyExternalComputeQueueNV;
+pub const PFN_vkGetExternalComputeQueueDataNV = *const vkGetExternalComputeQueueDataNV;
+pub const PFN_vkCreateTensorARM = *const vkCreateTensorARM;
+pub const PFN_vkDestroyTensorARM = *const vkDestroyTensorARM;
+pub const PFN_vkCreateTensorViewARM = *const vkCreateTensorViewARM;
+pub const PFN_vkDestroyTensorViewARM = *const vkDestroyTensorViewARM;
+pub const PFN_vkGetTensorMemoryRequirementsARM = *const vkGetTensorMemoryRequirementsARM;
+pub const PFN_vkBindTensorMemoryARM = *const vkBindTensorMemoryARM;
+pub const PFN_vkGetDeviceTensorMemoryRequirementsARM = *const vkGetDeviceTensorMemoryRequirementsARM;
+pub const PFN_vkCmdCopyTensorARM = *const vkCmdCopyTensorARM;
+pub const PFN_vkGetTensorOpaqueCaptureDescriptorDataARM = *const vkGetTensorOpaqueCaptureDescriptorDataARM;
+pub const PFN_vkGetTensorViewOpaqueCaptureDescriptorDataARM = *const vkGetTensorViewOpaqueCaptureDescriptorDataARM;
+pub const PFN_vkGetPhysicalDeviceExternalTensorPropertiesARM = *const vkGetPhysicalDeviceExternalTensorPropertiesARM;
+pub const PFN_vkCreateDataGraphPipelinesARM = *const vkCreateDataGraphPipelinesARM;
+pub const PFN_vkCreateDataGraphPipelineSessionARM = *const vkCreateDataGraphPipelineSessionARM;
+pub const PFN_vkGetDataGraphPipelineSessionBindPointRequirementsARM = *const vkGetDataGraphPipelineSessionBindPointRequirementsARM;
+pub const PFN_vkGetDataGraphPipelineSessionMemoryRequirementsARM = *const vkGetDataGraphPipelineSessionMemoryRequirementsARM;
+pub const PFN_vkBindDataGraphPipelineSessionMemoryARM = *const vkBindDataGraphPipelineSessionMemoryARM;
+pub const PFN_vkDestroyDataGraphPipelineSessionARM = *const vkDestroyDataGraphPipelineSessionARM;
+pub const PFN_vkCmdDispatchDataGraphARM = *const vkCmdDispatchDataGraphARM;
+pub const PFN_vkGetDataGraphPipelineAvailablePropertiesARM = *const vkGetDataGraphPipelineAvailablePropertiesARM;
+pub const PFN_vkGetDataGraphPipelinePropertiesARM = *const vkGetDataGraphPipelinePropertiesARM;
+pub const PFN_vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM = *const vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM;
+pub const PFN_vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM = *const vkGetPhysicalDeviceQueueFamilyDataGraphProcessingEnginePropertiesARM;
+pub const PFN_vkGetNativeBufferPropertiesOHOS = *const vkGetNativeBufferPropertiesOHOS;
+pub const PFN_vkGetMemoryNativeBufferOHOS = *const vkGetMemoryNativeBufferOHOS;
+pub const PFN_vkGetSwapchainGrallocUsageOHOS = *const vkGetSwapchainGrallocUsageOHOS;
+pub const PFN_vkAcquireImageOHOS = *const vkAcquireImageOHOS;
+pub const PFN_vkQueueSignalReleaseImageOHOS = *const vkQueueSignalReleaseImageOHOS;
+pub const PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceCountersByRegionARM = *const vkEnumeratePhysicalDeviceQueueFamilyPerformanceCountersByRegionARM;
+pub const PFN_vkCmdSetComputeOccupancyPriorityNV = *const vkCmdSetComputeOccupancyPriorityNV;
+
+// Unknown types
+pub const VkPrivateDataSlotCreateFlagBits = if (@hasDecl(@import("root"), "VkPrivateDataSlotCreateFlagBits")) @import("root").VkPrivateDataSlotCreateFlagBits else @compileError("Unknown type: {VkPrivateDataSlotCreateFlagBits}");
+pub const ANativeWindow = if (@hasDecl(@import("root"), "ANativeWindow")) @import("root").ANativeWindow else @compileError("Unknown type: {ANativeWindow}");
+pub const wl_display = if (@hasDecl(@import("root"), "wl_display")) @import("root").wl_display else @compileError("Unknown type: {wl_display}");
+pub const wl_surface = if (@hasDecl(@import("root"), "wl_surface")) @import("root").wl_surface else @compileError("Unknown type: {wl_surface}");
+pub const HINSTANCE = if (@hasDecl(@import("root"), "HINSTANCE")) @import("root").HINSTANCE else @compileError("Unknown type: {HINSTANCE}");
+pub const HWND = if (@hasDecl(@import("root"), "HWND")) @import("root").HWND else @compileError("Unknown type: {HWND}");
+pub const Display = if (@hasDecl(@import("root"), "Display")) @import("root").Display else @compileError("Unknown type: {Display}");
+pub const Window = if (@hasDecl(@import("root"), "Window")) @import("root").Window else @compileError("Unknown type: {Window}");
+pub const xcb_connection_t = if (@hasDecl(@import("root"), "xcb_connection_t")) @import("root").xcb_connection_t else @compileError("Unknown type: {xcb_connection_t}");
+pub const xcb_window_t = if (@hasDecl(@import("root"), "xcb_window_t")) @import("root").xcb_window_t else @compileError("Unknown type: {xcb_window_t}");
+pub const IDirectFB = if (@hasDecl(@import("root"), "IDirectFB")) @import("root").IDirectFB else @compileError("Unknown type: {IDirectFB}");
+pub const IDirectFBSurface = if (@hasDecl(@import("root"), "IDirectFBSurface")) @import("root").IDirectFBSurface else @compileError("Unknown type: {IDirectFBSurface}");
+pub const zx_handle_t = if (@hasDecl(@import("root"), "zx_handle_t")) @import("root").zx_handle_t else @compileError("Unknown type: {zx_handle_t}");
+pub const GgpStreamDescriptor = if (@hasDecl(@import("root"), "GgpStreamDescriptor")) @import("root").GgpStreamDescriptor else @compileError("Unknown type: {GgpStreamDescriptor}");
+pub const _screen_context = if (@hasDecl(@import("root"), "_screen_context")) @import("root")._screen_context else @compileError("Unknown type: {_screen_context}");
+pub const _screen_window = if (@hasDecl(@import("root"), "_screen_window")) @import("root")._screen_window else @compileError("Unknown type: {_screen_window}");
+pub const HANDLE = if (@hasDecl(@import("root"), "HANDLE")) @import("root").HANDLE else @compileError("Unknown type: {HANDLE}");
+pub const SECURITY_ATTRIBUTES = if (@hasDecl(@import("root"), "SECURITY_ATTRIBUTES")) @import("root").SECURITY_ATTRIBUTES else @compileError("Unknown type: {SECURITY_ATTRIBUTES}");
+pub const DWORD = if (@hasDecl(@import("root"), "DWORD")) @import("root").DWORD else @compileError("Unknown type: {DWORD}");
+pub const NvSciBufAttrList = if (@hasDecl(@import("root"), "NvSciBufAttrList")) @import("root").NvSciBufAttrList else @compileError("Unknown type: {NvSciBufAttrList}");
+pub const NvSciBufObj = if (@hasDecl(@import("root"), "NvSciBufObj")) @import("root").NvSciBufObj else @compileError("Unknown type: {NvSciBufObj}");
+pub const LPCWSTR = if (@hasDecl(@import("root"), "LPCWSTR")) @import("root").LPCWSTR else @compileError("Unknown type: {LPCWSTR}");
+pub const int = if (@hasDecl(@import("root"), "int")) @import("root").int else @compileError("Unknown type: {int}");
+pub const NvSciSyncAttrList = if (@hasDecl(@import("root"), "NvSciSyncAttrList")) @import("root").NvSciSyncAttrList else @compileError("Unknown type: {NvSciSyncAttrList}");
+pub const NvSciSyncObj = if (@hasDecl(@import("root"), "NvSciSyncObj")) @import("root").NvSciSyncObj else @compileError("Unknown type: {NvSciSyncObj}");
+pub const NvSciSyncFence = if (@hasDecl(@import("root"), "NvSciSyncFence")) @import("root").NvSciSyncFence else @compileError("Unknown type: {NvSciSyncFence}");
+pub const CAMetalLayer = if (@hasDecl(@import("root"), "CAMetalLayer")) @import("root").CAMetalLayer else @compileError("Unknown type: {CAMetalLayer}");
+pub const AHardwareBuffer = if (@hasDecl(@import("root"), "AHardwareBuffer")) @import("root").AHardwareBuffer else @compileError("Unknown type: {AHardwareBuffer}");
+pub const VkBuildAccelerationStructureFlagsNV = if (@hasDecl(@import("root"), "VkBuildAccelerationStructureFlagsNV")) @import("root").VkBuildAccelerationStructureFlagsNV else @compileError("Unknown type: {VkBuildAccelerationStructureFlagsNV}");
+pub const GgpFrameToken = if (@hasDecl(@import("root"), "GgpFrameToken")) @import("root").GgpFrameToken else @compileError("Unknown type: {GgpFrameToken}");
+pub const HMONITOR = if (@hasDecl(@import("root"), "HMONITOR")) @import("root").HMONITOR else @compileError("Unknown type: {HMONITOR}");
+pub const StdVideoH264ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH264ProfileIdc")) @import("root").StdVideoH264ProfileIdc else @compileError("Unknown type: {StdVideoH264ProfileIdc}");
+pub const StdVideoH264LevelIdc = if (@hasDecl(@import("root"), "StdVideoH264LevelIdc")) @import("root").StdVideoH264LevelIdc else @compileError("Unknown type: {StdVideoH264LevelIdc}");
+pub const StdVideoH264SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH264SequenceParameterSet")) @import("root").StdVideoH264SequenceParameterSet else @compileError("Unknown type: {StdVideoH264SequenceParameterSet}");
+pub const StdVideoH264PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH264PictureParameterSet")) @import("root").StdVideoH264PictureParameterSet else @compileError("Unknown type: {StdVideoH264PictureParameterSet}");
+pub const StdVideoDecodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264PictureInfo")) @import("root").StdVideoDecodeH264PictureInfo else @compileError("Unknown type: {StdVideoDecodeH264PictureInfo}");
+pub const StdVideoDecodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264ReferenceInfo")) @import("root").StdVideoDecodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH264ReferenceInfo}");
+pub const StdVideoH265ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH265ProfileIdc")) @import("root").StdVideoH265ProfileIdc else @compileError("Unknown type: {StdVideoH265ProfileIdc}");
+pub const StdVideoH265LevelIdc = if (@hasDecl(@import("root"), "StdVideoH265LevelIdc")) @import("root").StdVideoH265LevelIdc else @compileError("Unknown type: {StdVideoH265LevelIdc}");
+pub const StdVideoH265VideoParameterSet = if (@hasDecl(@import("root"), "StdVideoH265VideoParameterSet")) @import("root").StdVideoH265VideoParameterSet else @compileError("Unknown type: {StdVideoH265VideoParameterSet}");
+pub const StdVideoH265SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH265SequenceParameterSet")) @import("root").StdVideoH265SequenceParameterSet else @compileError("Unknown type: {StdVideoH265SequenceParameterSet}");
+pub const StdVideoH265PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH265PictureParameterSet")) @import("root").StdVideoH265PictureParameterSet else @compileError("Unknown type: {StdVideoH265PictureParameterSet}");
+pub const StdVideoDecodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265PictureInfo")) @import("root").StdVideoDecodeH265PictureInfo else @compileError("Unknown type: {StdVideoDecodeH265PictureInfo}");
+pub const StdVideoDecodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265ReferenceInfo")) @import("root").StdVideoDecodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH265ReferenceInfo}");
+pub const StdVideoVP9Profile = if (@hasDecl(@import("root"), "StdVideoVP9Profile")) @import("root").StdVideoVP9Profile else @compileError("Unknown type: {StdVideoVP9Profile}");
+pub const StdVideoVP9Level = if (@hasDecl(@import("root"), "StdVideoVP9Level")) @import("root").StdVideoVP9Level else @compileError("Unknown type: {StdVideoVP9Level}");
+pub const StdVideoDecodeVP9PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeVP9PictureInfo")) @import("root").StdVideoDecodeVP9PictureInfo else @compileError("Unknown type: {StdVideoDecodeVP9PictureInfo}");
+pub const StdVideoAV1Profile = if (@hasDecl(@import("root"), "StdVideoAV1Profile")) @import("root").StdVideoAV1Profile else @compileError("Unknown type: {StdVideoAV1Profile}");
+pub const StdVideoAV1Level = if (@hasDecl(@import("root"), "StdVideoAV1Level")) @import("root").StdVideoAV1Level else @compileError("Unknown type: {StdVideoAV1Level}");
+pub const StdVideoAV1SequenceHeader = if (@hasDecl(@import("root"), "StdVideoAV1SequenceHeader")) @import("root").StdVideoAV1SequenceHeader else @compileError("Unknown type: {StdVideoAV1SequenceHeader}");
+pub const StdVideoDecodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1PictureInfo")) @import("root").StdVideoDecodeAV1PictureInfo else @compileError("Unknown type: {StdVideoDecodeAV1PictureInfo}");
+pub const StdVideoDecodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1ReferenceInfo")) @import("root").StdVideoDecodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeAV1ReferenceInfo}");
+pub const StdVideoEncodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264ReferenceInfo")) @import("root").StdVideoEncodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH264ReferenceInfo}");
+pub const StdVideoEncodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264PictureInfo")) @import("root").StdVideoEncodeH264PictureInfo else @compileError("Unknown type: {StdVideoEncodeH264PictureInfo}");
+pub const StdVideoEncodeH264SliceHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH264SliceHeader")) @import("root").StdVideoEncodeH264SliceHeader else @compileError("Unknown type: {StdVideoEncodeH264SliceHeader}");
+pub const StdVideoEncodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265PictureInfo")) @import("root").StdVideoEncodeH265PictureInfo else @compileError("Unknown type: {StdVideoEncodeH265PictureInfo}");
+pub const StdVideoEncodeH265SliceSegmentHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH265SliceSegmentHeader")) @import("root").StdVideoEncodeH265SliceSegmentHeader else @compileError("Unknown type: {StdVideoEncodeH265SliceSegmentHeader}");
+pub const StdVideoEncodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265ReferenceInfo")) @import("root").StdVideoEncodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH265ReferenceInfo}");
+pub const StdVideoEncodeAV1DecoderModelInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1DecoderModelInfo")) @import("root").StdVideoEncodeAV1DecoderModelInfo else @compileError("Unknown type: {StdVideoEncodeAV1DecoderModelInfo}");
+pub const StdVideoEncodeAV1OperatingPointInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1OperatingPointInfo")) @import("root").StdVideoEncodeAV1OperatingPointInfo else @compileError("Unknown type: {StdVideoEncodeAV1OperatingPointInfo}");
+pub const StdVideoEncodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1ReferenceInfo")) @import("root").StdVideoEncodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeAV1ReferenceInfo}");
+pub const StdVideoEncodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1PictureInfo")) @import("root").StdVideoEncodeAV1PictureInfo else @compileError("Unknown type: {StdVideoEncodeAV1PictureInfo}");
+pub const MTLDevice_id = if (@hasDecl(@import("root"), "MTLDevice_id")) @import("root").MTLDevice_id else @compileError("Unknown type: {MTLDevice_id}");
+pub const MTLCommandQueue_id = if (@hasDecl(@import("root"), "MTLCommandQueue_id")) @import("root").MTLCommandQueue_id else @compileError("Unknown type: {MTLCommandQueue_id}");
+pub const MTLBuffer_id = if (@hasDecl(@import("root"), "MTLBuffer_id")) @import("root").MTLBuffer_id else @compileError("Unknown type: {MTLBuffer_id}");
+pub const MTLTexture_id = if (@hasDecl(@import("root"), "MTLTexture_id")) @import("root").MTLTexture_id else @compileError("Unknown type: {MTLTexture_id}");
+pub const IOSurfaceRef = if (@hasDecl(@import("root"), "IOSurfaceRef")) @import("root").IOSurfaceRef else @compileError("Unknown type: {IOSurfaceRef}");
+pub const MTLSharedEvent_id = if (@hasDecl(@import("root"), "MTLSharedEvent_id")) @import("root").MTLSharedEvent_id else @compileError("Unknown type: {MTLSharedEvent_id}");
+pub const VkMemoryDecompressionMethodFlagsNV = if (@hasDecl(@import("root"), "VkMemoryDecompressionMethodFlagsNV")) @import("root").VkMemoryDecompressionMethodFlagsNV else @compileError("Unknown type: {VkMemoryDecompressionMethodFlagsNV}");
+pub const _screen_buffer = if (@hasDecl(@import("root"), "_screen_buffer")) @import("root")._screen_buffer else @compileError("Unknown type: {_screen_buffer}");
+pub const OHNativeWindow = if (@hasDecl(@import("root"), "OHNativeWindow")) @import("root").OHNativeWindow else @compileError("Unknown type: {OHNativeWindow}");
+pub const VkPipelineCreateFlags2KHR = if (@hasDecl(@import("root"), "VkPipelineCreateFlags2KHR")) @import("root").VkPipelineCreateFlags2KHR else @compileError("Unknown type: {VkPipelineCreateFlags2KHR}");
+pub const OHBufferHandle = if (@hasDecl(@import("root"), "OHBufferHandle")) @import("root").OHBufferHandle else @compileError("Unknown type: {OHBufferHandle}");
+pub const OH_NativeBuffer = if (@hasDecl(@import("root"), "OH_NativeBuffer")) @import("root").OH_NativeBuffer else @compileError("Unknown type: {OH_NativeBuffer}");
+pub const VisualID = if (@hasDecl(@import("root"), "VisualID")) @import("root").VisualID else @compileError("Unknown type: {VisualID}");
+pub const xcb_visualid_t = if (@hasDecl(@import("root"), "xcb_visualid_t")) @import("root").xcb_visualid_t else @compileError("Unknown type: {xcb_visualid_t}");
+pub const RROutput = if (@hasDecl(@import("root"), "RROutput")) @import("root").RROutput else @compileError("Unknown type: {RROutput}");
 
 // Extensions
 // Extension: VK_KHR_surface
@@ -73225,82 +73351,3 @@ pub const vkCmdSetComputeOccupancyPriorityNV = fn (
 //             Name: VK_NV_EXTENSION_668_EXTENSION_NAME
 //             Negative: false
 //             Value: &quot;VK_NV_extension_668&quot;
-
-// Unknown types
-pub const VkPrivateDataSlotCreateFlagBits = if (@hasDecl(@import("root"), "VkPrivateDataSlotCreateFlagBits")) @import("root").VkPrivateDataSlotCreateFlagBits else @compileError("Unknown type: {VkPrivateDataSlotCreateFlagBits}");
-pub const ANativeWindow = if (@hasDecl(@import("root"), "ANativeWindow")) @import("root").ANativeWindow else @compileError("Unknown type: {ANativeWindow}");
-pub const wl_display = if (@hasDecl(@import("root"), "wl_display")) @import("root").wl_display else @compileError("Unknown type: {wl_display}");
-pub const wl_surface = if (@hasDecl(@import("root"), "wl_surface")) @import("root").wl_surface else @compileError("Unknown type: {wl_surface}");
-pub const HINSTANCE = if (@hasDecl(@import("root"), "HINSTANCE")) @import("root").HINSTANCE else @compileError("Unknown type: {HINSTANCE}");
-pub const HWND = if (@hasDecl(@import("root"), "HWND")) @import("root").HWND else @compileError("Unknown type: {HWND}");
-pub const Display = if (@hasDecl(@import("root"), "Display")) @import("root").Display else @compileError("Unknown type: {Display}");
-pub const Window = if (@hasDecl(@import("root"), "Window")) @import("root").Window else @compileError("Unknown type: {Window}");
-pub const xcb_connection_t = if (@hasDecl(@import("root"), "xcb_connection_t")) @import("root").xcb_connection_t else @compileError("Unknown type: {xcb_connection_t}");
-pub const xcb_window_t = if (@hasDecl(@import("root"), "xcb_window_t")) @import("root").xcb_window_t else @compileError("Unknown type: {xcb_window_t}");
-pub const IDirectFB = if (@hasDecl(@import("root"), "IDirectFB")) @import("root").IDirectFB else @compileError("Unknown type: {IDirectFB}");
-pub const IDirectFBSurface = if (@hasDecl(@import("root"), "IDirectFBSurface")) @import("root").IDirectFBSurface else @compileError("Unknown type: {IDirectFBSurface}");
-pub const zx_handle_t = if (@hasDecl(@import("root"), "zx_handle_t")) @import("root").zx_handle_t else @compileError("Unknown type: {zx_handle_t}");
-pub const GgpStreamDescriptor = if (@hasDecl(@import("root"), "GgpStreamDescriptor")) @import("root").GgpStreamDescriptor else @compileError("Unknown type: {GgpStreamDescriptor}");
-pub const _screen_context = if (@hasDecl(@import("root"), "_screen_context")) @import("root")._screen_context else @compileError("Unknown type: {_screen_context}");
-pub const _screen_window = if (@hasDecl(@import("root"), "_screen_window")) @import("root")._screen_window else @compileError("Unknown type: {_screen_window}");
-pub const HANDLE = if (@hasDecl(@import("root"), "HANDLE")) @import("root").HANDLE else @compileError("Unknown type: {HANDLE}");
-pub const SECURITY_ATTRIBUTES = if (@hasDecl(@import("root"), "SECURITY_ATTRIBUTES")) @import("root").SECURITY_ATTRIBUTES else @compileError("Unknown type: {SECURITY_ATTRIBUTES}");
-pub const DWORD = if (@hasDecl(@import("root"), "DWORD")) @import("root").DWORD else @compileError("Unknown type: {DWORD}");
-pub const NvSciBufAttrList = if (@hasDecl(@import("root"), "NvSciBufAttrList")) @import("root").NvSciBufAttrList else @compileError("Unknown type: {NvSciBufAttrList}");
-pub const NvSciBufObj = if (@hasDecl(@import("root"), "NvSciBufObj")) @import("root").NvSciBufObj else @compileError("Unknown type: {NvSciBufObj}");
-pub const LPCWSTR = if (@hasDecl(@import("root"), "LPCWSTR")) @import("root").LPCWSTR else @compileError("Unknown type: {LPCWSTR}");
-pub const int = if (@hasDecl(@import("root"), "int")) @import("root").int else @compileError("Unknown type: {int}");
-pub const NvSciSyncAttrList = if (@hasDecl(@import("root"), "NvSciSyncAttrList")) @import("root").NvSciSyncAttrList else @compileError("Unknown type: {NvSciSyncAttrList}");
-pub const NvSciSyncObj = if (@hasDecl(@import("root"), "NvSciSyncObj")) @import("root").NvSciSyncObj else @compileError("Unknown type: {NvSciSyncObj}");
-pub const NvSciSyncFence = if (@hasDecl(@import("root"), "NvSciSyncFence")) @import("root").NvSciSyncFence else @compileError("Unknown type: {NvSciSyncFence}");
-pub const CAMetalLayer = if (@hasDecl(@import("root"), "CAMetalLayer")) @import("root").CAMetalLayer else @compileError("Unknown type: {CAMetalLayer}");
-pub const AHardwareBuffer = if (@hasDecl(@import("root"), "AHardwareBuffer")) @import("root").AHardwareBuffer else @compileError("Unknown type: {AHardwareBuffer}");
-pub const VkBuildAccelerationStructureFlagsNV = if (@hasDecl(@import("root"), "VkBuildAccelerationStructureFlagsNV")) @import("root").VkBuildAccelerationStructureFlagsNV else @compileError("Unknown type: {VkBuildAccelerationStructureFlagsNV}");
-pub const GgpFrameToken = if (@hasDecl(@import("root"), "GgpFrameToken")) @import("root").GgpFrameToken else @compileError("Unknown type: {GgpFrameToken}");
-pub const HMONITOR = if (@hasDecl(@import("root"), "HMONITOR")) @import("root").HMONITOR else @compileError("Unknown type: {HMONITOR}");
-pub const StdVideoH264ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH264ProfileIdc")) @import("root").StdVideoH264ProfileIdc else @compileError("Unknown type: {StdVideoH264ProfileIdc}");
-pub const StdVideoH264LevelIdc = if (@hasDecl(@import("root"), "StdVideoH264LevelIdc")) @import("root").StdVideoH264LevelIdc else @compileError("Unknown type: {StdVideoH264LevelIdc}");
-pub const StdVideoH264SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH264SequenceParameterSet")) @import("root").StdVideoH264SequenceParameterSet else @compileError("Unknown type: {StdVideoH264SequenceParameterSet}");
-pub const StdVideoH264PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH264PictureParameterSet")) @import("root").StdVideoH264PictureParameterSet else @compileError("Unknown type: {StdVideoH264PictureParameterSet}");
-pub const StdVideoDecodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264PictureInfo")) @import("root").StdVideoDecodeH264PictureInfo else @compileError("Unknown type: {StdVideoDecodeH264PictureInfo}");
-pub const StdVideoDecodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264ReferenceInfo")) @import("root").StdVideoDecodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH264ReferenceInfo}");
-pub const StdVideoH265ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH265ProfileIdc")) @import("root").StdVideoH265ProfileIdc else @compileError("Unknown type: {StdVideoH265ProfileIdc}");
-pub const StdVideoH265LevelIdc = if (@hasDecl(@import("root"), "StdVideoH265LevelIdc")) @import("root").StdVideoH265LevelIdc else @compileError("Unknown type: {StdVideoH265LevelIdc}");
-pub const StdVideoH265VideoParameterSet = if (@hasDecl(@import("root"), "StdVideoH265VideoParameterSet")) @import("root").StdVideoH265VideoParameterSet else @compileError("Unknown type: {StdVideoH265VideoParameterSet}");
-pub const StdVideoH265SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH265SequenceParameterSet")) @import("root").StdVideoH265SequenceParameterSet else @compileError("Unknown type: {StdVideoH265SequenceParameterSet}");
-pub const StdVideoH265PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH265PictureParameterSet")) @import("root").StdVideoH265PictureParameterSet else @compileError("Unknown type: {StdVideoH265PictureParameterSet}");
-pub const StdVideoDecodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265PictureInfo")) @import("root").StdVideoDecodeH265PictureInfo else @compileError("Unknown type: {StdVideoDecodeH265PictureInfo}");
-pub const StdVideoDecodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265ReferenceInfo")) @import("root").StdVideoDecodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH265ReferenceInfo}");
-pub const StdVideoVP9Profile = if (@hasDecl(@import("root"), "StdVideoVP9Profile")) @import("root").StdVideoVP9Profile else @compileError("Unknown type: {StdVideoVP9Profile}");
-pub const StdVideoVP9Level = if (@hasDecl(@import("root"), "StdVideoVP9Level")) @import("root").StdVideoVP9Level else @compileError("Unknown type: {StdVideoVP9Level}");
-pub const StdVideoDecodeVP9PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeVP9PictureInfo")) @import("root").StdVideoDecodeVP9PictureInfo else @compileError("Unknown type: {StdVideoDecodeVP9PictureInfo}");
-pub const StdVideoAV1Profile = if (@hasDecl(@import("root"), "StdVideoAV1Profile")) @import("root").StdVideoAV1Profile else @compileError("Unknown type: {StdVideoAV1Profile}");
-pub const StdVideoAV1Level = if (@hasDecl(@import("root"), "StdVideoAV1Level")) @import("root").StdVideoAV1Level else @compileError("Unknown type: {StdVideoAV1Level}");
-pub const StdVideoAV1SequenceHeader = if (@hasDecl(@import("root"), "StdVideoAV1SequenceHeader")) @import("root").StdVideoAV1SequenceHeader else @compileError("Unknown type: {StdVideoAV1SequenceHeader}");
-pub const StdVideoDecodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1PictureInfo")) @import("root").StdVideoDecodeAV1PictureInfo else @compileError("Unknown type: {StdVideoDecodeAV1PictureInfo}");
-pub const StdVideoDecodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1ReferenceInfo")) @import("root").StdVideoDecodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeAV1ReferenceInfo}");
-pub const StdVideoEncodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264ReferenceInfo")) @import("root").StdVideoEncodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH264ReferenceInfo}");
-pub const StdVideoEncodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264PictureInfo")) @import("root").StdVideoEncodeH264PictureInfo else @compileError("Unknown type: {StdVideoEncodeH264PictureInfo}");
-pub const StdVideoEncodeH264SliceHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH264SliceHeader")) @import("root").StdVideoEncodeH264SliceHeader else @compileError("Unknown type: {StdVideoEncodeH264SliceHeader}");
-pub const StdVideoEncodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265PictureInfo")) @import("root").StdVideoEncodeH265PictureInfo else @compileError("Unknown type: {StdVideoEncodeH265PictureInfo}");
-pub const StdVideoEncodeH265SliceSegmentHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH265SliceSegmentHeader")) @import("root").StdVideoEncodeH265SliceSegmentHeader else @compileError("Unknown type: {StdVideoEncodeH265SliceSegmentHeader}");
-pub const StdVideoEncodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265ReferenceInfo")) @import("root").StdVideoEncodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH265ReferenceInfo}");
-pub const StdVideoEncodeAV1DecoderModelInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1DecoderModelInfo")) @import("root").StdVideoEncodeAV1DecoderModelInfo else @compileError("Unknown type: {StdVideoEncodeAV1DecoderModelInfo}");
-pub const StdVideoEncodeAV1OperatingPointInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1OperatingPointInfo")) @import("root").StdVideoEncodeAV1OperatingPointInfo else @compileError("Unknown type: {StdVideoEncodeAV1OperatingPointInfo}");
-pub const StdVideoEncodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1ReferenceInfo")) @import("root").StdVideoEncodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeAV1ReferenceInfo}");
-pub const StdVideoEncodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1PictureInfo")) @import("root").StdVideoEncodeAV1PictureInfo else @compileError("Unknown type: {StdVideoEncodeAV1PictureInfo}");
-pub const MTLDevice_id = if (@hasDecl(@import("root"), "MTLDevice_id")) @import("root").MTLDevice_id else @compileError("Unknown type: {MTLDevice_id}");
-pub const MTLCommandQueue_id = if (@hasDecl(@import("root"), "MTLCommandQueue_id")) @import("root").MTLCommandQueue_id else @compileError("Unknown type: {MTLCommandQueue_id}");
-pub const MTLBuffer_id = if (@hasDecl(@import("root"), "MTLBuffer_id")) @import("root").MTLBuffer_id else @compileError("Unknown type: {MTLBuffer_id}");
-pub const MTLTexture_id = if (@hasDecl(@import("root"), "MTLTexture_id")) @import("root").MTLTexture_id else @compileError("Unknown type: {MTLTexture_id}");
-pub const IOSurfaceRef = if (@hasDecl(@import("root"), "IOSurfaceRef")) @import("root").IOSurfaceRef else @compileError("Unknown type: {IOSurfaceRef}");
-pub const MTLSharedEvent_id = if (@hasDecl(@import("root"), "MTLSharedEvent_id")) @import("root").MTLSharedEvent_id else @compileError("Unknown type: {MTLSharedEvent_id}");
-pub const VkMemoryDecompressionMethodFlagsNV = if (@hasDecl(@import("root"), "VkMemoryDecompressionMethodFlagsNV")) @import("root").VkMemoryDecompressionMethodFlagsNV else @compileError("Unknown type: {VkMemoryDecompressionMethodFlagsNV}");
-pub const _screen_buffer = if (@hasDecl(@import("root"), "_screen_buffer")) @import("root")._screen_buffer else @compileError("Unknown type: {_screen_buffer}");
-pub const OHNativeWindow = if (@hasDecl(@import("root"), "OHNativeWindow")) @import("root").OHNativeWindow else @compileError("Unknown type: {OHNativeWindow}");
-pub const VkPipelineCreateFlags2KHR = if (@hasDecl(@import("root"), "VkPipelineCreateFlags2KHR")) @import("root").VkPipelineCreateFlags2KHR else @compileError("Unknown type: {VkPipelineCreateFlags2KHR}");
-pub const OHBufferHandle = if (@hasDecl(@import("root"), "OHBufferHandle")) @import("root").OHBufferHandle else @compileError("Unknown type: {OHBufferHandle}");
-pub const OH_NativeBuffer = if (@hasDecl(@import("root"), "OH_NativeBuffer")) @import("root").OH_NativeBuffer else @compileError("Unknown type: {OH_NativeBuffer}");
-pub const VisualID = if (@hasDecl(@import("root"), "VisualID")) @import("root").VisualID else @compileError("Unknown type: {VisualID}");
-pub const xcb_visualid_t = if (@hasDecl(@import("root"), "xcb_visualid_t")) @import("root").xcb_visualid_t else @compileError("Unknown type: {xcb_visualid_t}");
-pub const RROutput = if (@hasDecl(@import("root"), "RROutput")) @import("root").RROutput else @compileError("Unknown type: {RROutput}");

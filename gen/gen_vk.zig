@@ -26,11 +26,9 @@ pub fn main() !void {
     const tmp_alloc = tmp_arena.allocator();
     write_constants(tmp_alloc, file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_basetypes(tmp_alloc, file, &xml_db, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
     write_versions(tmp_alloc, file);
     _ = tmp_arena.reset(.retain_capacity);
-    write_handles(tmp_alloc, file, &xml_db);
+    write_handles(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
     try write_bitfields(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
@@ -38,15 +36,15 @@ pub fn main() !void {
     _ = tmp_arena.reset(.retain_capacity);
     try write_structs(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_unions(tmp_alloc, file, &xml_db, &type_db);
+    try write_unions(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_funtions(tmp_alloc, file, &type_db);
+    try write_functions(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_commands(tmp_alloc, file, &xml_db, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    write_extensions(tmp_alloc, file, &xml_db);
+    try write_aliases(tmp_alloc, file, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
     write_unknown_types(tmp_alloc, file, &type_db);
+    _ = tmp_arena.reset(.retain_capacity);
+    write_extensions(tmp_alloc, file, &xml_db);
 }
 
 const Writer = struct {
@@ -104,25 +102,6 @@ fn write_constants(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDataba
     }
 }
 
-fn write_basetypes(
-    alloc: Allocator,
-    file: std.fs.File,
-    xml_db: *const XmlDatabase,
-    type_db: *TypeDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\
-        \\// Base types
-        \\
-    , .{});
-    for (xml_db.types.basetypes) |*v| {
-        const type_idx = try type_db.resolve_base(v.name);
-        const type_str = try type_db.type_string(alloc, type_idx);
-        w.write("pub const {s} = {s};\n", .{ v.name, type_str });
-    }
-}
-
 fn write_versions(alloc: Allocator, file: std.fs.File) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -172,34 +151,27 @@ fn write_versions(alloc: Allocator, file: std.fs.File) void {
     , .{});
 }
 
-fn write_handles(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase) void {
+fn write_handles(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
         \\// Handles
         \\
     , .{});
-    for (xml_db.types.handles) |*v| {
-        if (v.alias) |s| {
-            w.write(
-                \\pub const {s} = {s};
-                \\
-            , .{ v.name, s });
-        } else {
-            if (v.objtypeenum) |s| w.write(
-                \\// Type enum: {s}
-                \\
-            , .{s});
+    for (type_db.handles.items) |handle| {
+        if (handle.objtypeenum) |s| w.write(
+            \\// Type enum: {s}
+            \\
+        , .{s});
 
-            if (v.parent) |s| w.write(
-                \\// Parent: {s}
-                \\
-            , .{s});
-            w.write(
-                \\pub const {s} = enum(u64) {{ none = 0, _ }};
-                \\
-            , .{v.name});
-        }
+        if (handle.parent) |s| w.write(
+            \\// Parent: {s}
+            \\
+        , .{s});
+        w.write(
+            \\pub const {s} = enum(u64) {{ none = 0, _ }};
+            \\
+        , .{handle.name});
     }
 }
 
@@ -336,168 +308,6 @@ fn write_enums(
     }
 }
 
-const ADDITIONAL_FUNCTIONS = [_]XmlDatabase.Command{
-    .{
-        .name = "vkInternalAllocationNotification",
-        .return_type = "void",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "size", .type_middle = "size_t" },
-            .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
-            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-        },
-    },
-    .{
-        .name = "vkInternalFreeNotification",
-        .return_type = "void",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "size", .type_middle = "size_t" },
-            .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
-            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-        },
-    },
-    .{
-        .name = "vkReallocationFunction",
-        .return_type = "[*]u8",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "pOriginal", .type_middle = "void", .type_back = "*" },
-            .{ .name = "size", .type_middle = "size_t" },
-            .{ .name = "alignment", .type_middle = "size_t" },
-            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-        },
-    },
-    .{
-        .name = "vkAllocationFunction",
-        .return_type = "[*]u8",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "size", .type_middle = "size_t" },
-            .{ .name = "alignment", .type_middle = "size_t" },
-            .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-        },
-    },
-    .{
-        .name = "vkFreeFunction",
-        .return_type = "void",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
-        },
-    },
-    .{
-        .name = "vkVoidFunction",
-        .return_type = "void",
-        .parameters = &.{
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-            .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
-        },
-    },
-    .{
-        .name = "vkDebugReportCallbackEXT",
-        .return_type = "VkBool32",
-        .parameters = &.{
-            .{ .name = "flags", .type_middle = "VkDebugReportFlagsEXT" },
-            .{ .name = "objectType", .type_middle = "VkDebugReportObjectTypeEXT" },
-            .{ .name = "object", .type_middle = "uint64_t" },
-            .{ .name = "location", .type_middle = "size_t" },
-            .{ .name = "messageCode", .type_middle = "int32_t" },
-            .{
-                .name = "pLayerPrefix",
-                .type_front = "const",
-                .type_middle = "char",
-                .type_back = "*",
-            },
-            .{
-                .name = "pMessage",
-                .type_front = "const",
-                .type_middle = "char",
-                .type_back = "*",
-            },
-            .{
-                .name = "pUserData",
-                .type_middle = "void",
-                .type_back = "*",
-            },
-        },
-    },
-    .{
-        .name = "vkDebugUtilsMessengerCallbackEXT",
-        .return_type = "VkBool32",
-        .parameters = &.{
-            .{ .name = "messageSeverity", .type_middle = "VkDebugUtilsMessageSeverityFlagBitsEXT" },
-            .{ .name = "messageTypes", .type_middle = "VkDebugUtilsMessageTypeFlagsEXT" },
-            .{
-                .name = "pCallbackData",
-                .type_front = "const",
-                .type_middle = "VkDebugUtilsMessengerCallbackDataEXT",
-                .type_back = "*",
-            },
-            .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-        },
-    },
-    .{
-        .name = "vkFaultCallbackFunction",
-        .return_type = "void",
-        .parameters = &.{
-            .{ .name = "unrecordedFaults", .type_middle = "VkBool32" },
-            .{ .name = "faultCount", .type_middle = "uint32_t" },
-            .{
-                .name = "pFaults",
-                .type_front = "const",
-                .type_middle = "void",
-                .type_back = "*",
-            },
-        },
-    },
-    .{
-        .name = "vkDeviceMemoryReportCallbackEXT",
-        .return_type = "void",
-        .parameters = &.{
-            .{
-                .name = "pCallbackData",
-                .type_front = "const",
-                .type_middle = "VkDeviceMemoryReportCallbackDataEXT",
-                .type_back = "*",
-            },
-            .{
-                .name = "pUserData",
-                .type_front = "const",
-                .type_middle = "void",
-                .type_back = "*",
-            },
-        },
-    },
-    .{
-        .name = "vkGetInstanceProcAddrLUNARG",
-        .return_type = "PFN_vkVoidFunction",
-        .parameters = &.{
-            .{ .name = "instance", .type_middle = "VkInstance" },
-            .{
-                .name = "pName",
-                .type_front = "const",
-                .type_middle = "char",
-                .type_back = "*",
-            },
-        },
-    },
-};
-
-// TODO: funcpointers are encoded "horribly" in the xml, so save sanity by
-// hardcoding this
-fn write_funtions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\
-        \\// Functions
-        \\
-    , .{});
-
-    for (&ADDITIONAL_FUNCTIONS) |*f|
-        try write_command(alloc, type_db, &w, f);
-}
-
 fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
@@ -512,116 +322,109 @@ fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !v
             \\
         , .{ext});
 
-        if (@"struct".alias) |c| {
-            w.write(
-                \\pub const {s} = {s};
-                \\
-            , .{ @"struct".name, c });
-        } else {
-            if (@"struct".comment) |c| w.write(
-                \\// Comment: {s}
-                \\
-            , .{c});
+        if (@"struct".comment) |c| w.write(
+            \\// Comment: {s}
+            \\
+        , .{c});
 
-            if (@"struct".extends.len != 0) {
+        if (@"struct".extends.len != 0) {
+            w.write(
+                \\// Extends: 
+            , .{});
+            for (@"struct".extends, 0..) |e, i| {
+                const t = type_db.get_type(e);
+                const s = type_db.get_struct(t.struct_idx());
                 w.write(
-                    \\// Extends: 
-                , .{});
-                for (@"struct".extends, 0..) |e, i| {
-                    const t = type_db.get_type(e);
-                    const s = type_db.get_struct(t.struct_idx());
+                    \\{s}
+                , .{s.name});
+                if (i != @"struct".extends.len - 1) {
                     w.write(
-                        \\{s}
-                    , .{s.name});
-                    if (i != @"struct".extends.len - 1) {
-                        w.write(
-                            \\,
-                        , .{});
-                    }
+                        \\,
+                    , .{});
                 }
-                w.write(
-                    \\
-                    \\
-                , .{});
             }
             w.write(
-                \\// Returned only: {}
-                \\// Allow duplicate in pNext chain: {}
-                \\pub const {s} = extern struct {{
                 \\
-            , .{ @"struct".returnedonly, @"struct".allowduplicate, @"struct".name });
-
-            var packed_field_idx: u8 = 0;
-            for (@"struct".fields) |f| {
-                switch (f) {
-                    .single_field => |field| {
-                        if (field.len_expression) |len| w.write(
-                            \\    // Length field: {s}
-                            \\
-                        , .{len});
-                        if (field.stride) |stride| w.write(
-                            \\    // Stride field: {s}
-                            \\
-                        , .{stride});
-                        if (field.deprecated) |deprecated| w.write(
-                            \\    // Deprecated: {s}
-                            \\
-                        , .{deprecated});
-                        w.write(
-                            \\    // Extern sync: {}
-                            \\    // Optional: {}
-                            \\
-                        , .{ field.externsync, field.optional });
-                        if (field.selector) |selector| w.write(
-                            \\    // Selector field: {s} (What union field is valid)
-                            \\
-                        , .{selector});
-                        if (field.objecttype) |objecttype| w.write(
-                            \\    // Object type: {s} (Which object handle is this)
-                            \\
-                        , .{objecttype});
-                        if (field.featurelink) |featurelink| w.write(
-                            \\    // Feature link: {s}
-                            \\
-                        , .{featurelink});
-                        if (field.comment) |comment| w.write(
-                            \\    // Comment: {s}
-                            \\
-                        , .{comment});
-
-                        try write_single_struct_field(
-                            alloc,
-                            type_db,
-                            &w,
-                            @"struct".name,
-                            &field,
-                            field.type_idx,
-                        );
-                    },
-                    .packed_field => |field| {
-                        w.write(
-                            \\    packed_field{d}: packed struct(u{d}) {{
-                            \\
-                        , .{ packed_field_idx, field.backing_integer_width });
-                        for (field.parts) |part| {
-                            w.write(
-                                \\        {s}: u{d} = 0,
-                                \\
-                            , .{ part.name, part.bits });
-                        }
-                        w.write(
-                            \\    }} = .{{}},
-                            \\
-                        , .{});
-                        packed_field_idx += 1;
-                    },
-                }
-            }
-            w.write(
-                \\}};
                 \\
             , .{});
         }
+        w.write(
+            \\// Returned only: {}
+            \\// Allow duplicate in pNext chain: {}
+            \\pub const {s} = extern struct {{
+            \\
+        , .{ @"struct".returnedonly, @"struct".allowduplicate, @"struct".name });
+
+        var packed_field_idx: u8 = 0;
+        for (@"struct".fields) |f| {
+            switch (f) {
+                .single_field => |field| {
+                    if (field.len_expression) |len| w.write(
+                        \\    // Length expression: {s}
+                        \\
+                    , .{len});
+                    if (field.stride) |stride| w.write(
+                        \\    // Stride field: {s}
+                        \\
+                    , .{stride});
+                    if (field.deprecated) |deprecated| w.write(
+                        \\    // Deprecated: {s}
+                        \\
+                    , .{deprecated});
+                    w.write(
+                        \\    // Extern sync: {}
+                        \\    // Optional: {}
+                        \\
+                    , .{ field.externsync, field.optional });
+                    if (field.selector) |selector| w.write(
+                        \\    // Selector field: {s} (What union field is valid)
+                        \\
+                    , .{selector});
+                    if (field.objecttype) |objecttype| w.write(
+                        \\    // Object type: {s} (Which object handle is this)
+                        \\
+                    , .{objecttype});
+                    if (field.featurelink) |featurelink| w.write(
+                        \\    // Feature link: {s}
+                        \\
+                    , .{featurelink});
+                    if (field.comment) |comment| w.write(
+                        \\    // Comment: {s}
+                        \\
+                    , .{comment});
+
+                    try write_single_struct_field(
+                        alloc,
+                        type_db,
+                        &w,
+                        @"struct".name,
+                        &field,
+                        field.type_idx,
+                    );
+                },
+                .packed_field => |field| {
+                    w.write(
+                        \\    packed_field{d}: packed struct(u{d}) {{
+                        \\
+                    , .{ packed_field_idx, field.backing_integer_width });
+                    for (field.parts) |part| {
+                        w.write(
+                            \\        {s}: u{d} = 0,
+                            \\
+                        , .{ part.name, part.bits });
+                    }
+                    w.write(
+                        \\    }} = .{{}},
+                        \\
+                    , .{});
+                    packed_field_idx += 1;
+                },
+            }
+        }
+        w.write(
+            \\}};
+            \\
+        , .{});
     }
 }
 
@@ -735,12 +538,7 @@ fn write_single_struct_field(
     }
 }
 
-fn write_unions(
-    alloc: Allocator,
-    file: std.fs.File,
-    xml_db: *const XmlDatabase,
-    type_db: *TypeDatabase,
-) !void {
+fn write_unions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -748,181 +546,47 @@ fn write_unions(
         \\
     , .{});
 
-    for (xml_db.types.unions) |un| {
-        for (xml_db.features.items) |ext| {
-            if (ext.unlocks_type(un.name)) w.write(
-                \\// Extension: {s}
-                \\
-            , .{ext.name});
-        }
-        for (xml_db.extensions.items) |ext| {
-            if (ext.unlocks_type(un.name)) w.write(
-                \\// Extension: {s}
-                \\
-            , .{ext.name});
-        }
+    for (type_db.unions.items) |@"union"| {
+        if (@"union".enabled_by_extension) |ext| w.write(
+            \\// Extension: {s}
+            \\
+        , .{ext});
 
-        if (un.alias) |c| {
-            w.write(
-                \\pub const {s} = {s};
-                \\
-            , .{ un.name, c });
-        } else {
-            if (un.comment) |c| w.write(
-                \\// Comment: {s}
-                \\
-            , .{c});
-
-            w.write(
-                \\pub const {s} = extern union {{
-                \\
-            , .{un.name});
-
-            for (un.members) |member| {
-                if (member.selection) |selection| w.write(
-                    \\    // Selected with: {s}
-                    \\
-                , .{selection});
-
-                const type_idx = try type_db.c_type_parts_to_type(
-                    member.type_front,
-                    member.type_middle,
-                    member.type_back,
-                    member.dimensions,
-                    member.len,
-                    false,
-                );
-                const type_str = try type_db.type_string(alloc, type_idx);
-                w.write(
-                    \\    {s}: {s},
-                    \\
-                , .{ member.name, type_str });
-            }
-
-            w.write(
-                \\}};
-                \\
-            , .{});
-        }
-    }
-}
-
-fn write_command(
-    alloc: Allocator,
-    type_db: *TypeDatabase,
-    w: *Writer,
-    command: *const XmlDatabase.Command,
-) !void {
-    if (command.alias) |c| {
-        w.write(
-            \\pub const {s} = {s};
-            \\
-        , .{ command.name, c });
-    } else {
-        if (command.queues) |c| w.write(
-            \\// Queues: {s}
-            \\
-        , .{c});
-        if (command.successcodes) |c| w.write(
-            \\// Success codes: {s}
-            \\
-        , .{c});
-        if (command.errorcodes) |c| w.write(
-            \\// Error codes: {s}
-            \\
-        , .{c});
-        if (command.renderpass) |c| w.write(
-            \\// Render pass: {s}
-            \\
-        , .{c});
-        if (command.videocoding) |c| w.write(
-            \\// Video conding: {s}
-            \\
-        , .{c});
-        if (command.cmdbufferlevel) |c| w.write(
-            \\// Command buffer levels: {s}
-            \\
-        , .{c});
-        if (command.conditionalrendering) |c| w.write(
-            \\// Conditional rendering: {}
-            \\
-        , .{c});
-        w.write(
-            \\// Can be used without queues: {}
-            \\
-        , .{command.allownoqueues});
-        if (command.comment) |c| w.write(
+        if (@"union".comment) |c| w.write(
             \\// Comment: {s}
             \\
         , .{c});
 
         w.write(
-            \\pub const {s} = fn (
+            \\pub const {s} = extern union {{
             \\
-        , .{command.name});
-        for (command.parameters) |parameter| {
-            if (parameter.len) |l| w.write(
-                \\    // len: {s}
+        , .{@"union".name});
+
+        for (@"union".members) |member| {
+            if (member.selection) |s| w.write(
+                \\    // Selected with: {s}
+                \\
+            , .{s});
+            if (member.len_expression) |l| w.write(
+                \\    // Length expression: {s}
                 \\
             , .{l});
-            if (parameter.valid_structs) |vs| w.write(
-                \\    // valid structs: {s}
-                \\
-            , .{vs});
 
-            const type_idx = try type_db.c_type_parts_to_type(
-                parameter.type_front,
-                parameter.type_middle,
-                parameter.type_back,
-                parameter.dimensions,
-                parameter.len,
-                true,
-            );
-
-            var is_handle: bool = false;
-            const t = type_db.get_type(type_idx);
-            switch (t.*) {
-                .base => |base| switch (base) {
-                    .handle_idx => |_| is_handle = true,
-                    else => {},
-                },
-                else => {},
-            }
-
-            const type_str = try type_db.type_string(alloc, type_idx);
-            var optional_str: []const u8 = &.{};
-            if (parameter.optional and !is_handle)
-                optional_str = "?";
+            const type_str = try type_db.type_string(alloc, member.type_idx);
             w.write(
-                \\    {s}: {s}{s},
+                \\    {s}: {s},
                 \\
-            , .{ parameter.name, optional_str, type_str });
+            , .{ member.name, type_str });
         }
 
-        const return_type_idx = try type_db.resolve_base(command.return_type);
-        var is_pointer: bool = false;
-        const t = type_db.get_type(return_type_idx);
-        switch (t.*) {
-            .pointer => |_| is_pointer = true,
-            else => {},
-        }
-        const type_str = try type_db.type_string(alloc, return_type_idx);
-        var optional_str: []const u8 = &.{};
-        if (is_pointer)
-            optional_str = "?";
         w.write(
-            \\) callconv(.c) {s}{s};
+            \\}};
             \\
-        , .{ optional_str, type_str });
+        , .{});
     }
 }
 
-fn write_commands(
-    alloc: Allocator,
-    file: std.fs.File,
-    xml_db: *const XmlDatabase,
-    type_db: *TypeDatabase,
-) !void {
+fn write_functions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
     w.write(
         \\
@@ -930,24 +594,79 @@ fn write_commands(
         \\
     , .{});
 
-    var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
-    for (xml_db.commands.items) |*command| {
-        if (visited.get(command.name) != null) continue;
-        try visited.put(alloc, command.name, {});
+    for (type_db.functions.items) |*function| {
+        if (function.queues) |c| w.write(
+            \\// Queues: {s}
+            \\
+        , .{c});
+        if (function.successcodes) |c| w.write(
+            \\// Success codes: {s}
+            \\
+        , .{c});
+        if (function.errorcodes) |c| w.write(
+            \\// Error codes: {s}
+            \\
+        , .{c});
+        if (function.renderpass) |c| w.write(
+            \\// Render pass: {s}
+            \\
+        , .{c});
+        if (function.videocoding) |c| w.write(
+            \\// Video conding: {s}
+            \\
+        , .{c});
+        if (function.cmdbufferlevel) |c| w.write(
+            \\// Command buffer levels: {s}
+            \\
+        , .{c});
+        if (function.conditionalrendering) |c| w.write(
+            \\// Conditional rendering: {}
+            \\
+        , .{c});
+        w.write(
+            \\// Can be used without queues: {}
+            \\
+        , .{function.allownoqueues});
+        if (function.comment) |c| w.write(
+            \\// Comment: {s}
+            \\
+        , .{c});
 
-        for (xml_db.features.items) |ext| {
-            if (ext.unlocks_type(ext.name)) w.write(
-                \\// Extension: {s}
+        w.write(
+            \\pub const {s} = fn (
+            \\
+        , .{function.name});
+        for (function.parameters) |parameter| {
+            if (parameter.len_expression) |l| w.write(
+                \\    // Length expression: {s}
                 \\
-            , .{ext.name});
-        }
-        for (xml_db.extensions.items) |ext| {
-            if (ext.unlocks_command(command.name)) w.write(
-                \\// Extension: {s}
+            , .{l});
+            if (parameter.valid_structs) |vs| w.write(
+                \\    // valid structs: {s}
                 \\
-            , .{ext.name});
+            , .{vs});
+
+            const t = type_db.get_type_follow_alias(parameter.type_idx);
+            const is_pointer = t.* == .pointer;
+            const type_str = try type_db.type_string(alloc, parameter.type_idx);
+            var optional_str: []const u8 = &.{};
+            if (parameter.optional and is_pointer)
+                optional_str = "?";
+            w.write(
+                \\    {s}: {s}{s},
+                \\
+            , .{ parameter.name, optional_str, type_str });
         }
-        try write_command(alloc, type_db, &w, command);
+
+        const type_str = try type_db.type_string(alloc, function.return_type_idx);
+        var optional_str: []const u8 = &.{};
+        const t = type_db.get_type_follow_alias(function.return_type_idx);
+        if (t.* == .pointer)
+            optional_str = "?";
+        w.write(
+            \\) callconv(.c) {s}{s};
+            \\
+        , .{ optional_str, type_str });
     }
 }
 
@@ -1104,6 +823,25 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase)
                     },
                 }
             }
+        }
+    }
+}
+
+fn write_aliases(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) !void {
+    var w: Writer = .{ .alloc = alloc, .file = file };
+    w.write(
+        \\
+        \\// Aliases
+        \\
+    , .{});
+    for (type_db.types.items) |t| {
+        if (t == .alias) {
+            const alias = t.alias;
+            const name = try type_db.type_string(alloc, alias.type_idx);
+            w.write(
+                \\pub const {s} = {s};
+                \\
+            , .{ alias.name, name });
         }
     }
 }

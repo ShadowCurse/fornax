@@ -95,6 +95,16 @@ pub const TypeDatabase = struct {
             }
         };
 
+        pub fn handle_idx(self: Type) Handle.Idx {
+            var result: Handle.Idx = .none;
+            if (self == .base) {
+                if (self.base == .handle_idx) {
+                    result = self.base.handle_idx;
+                }
+            }
+            return result;
+        }
+
         pub fn struct_idx(self: Type) Struct.Idx {
             var result: Struct.Idx = .none;
             if (self == .base) {
@@ -123,7 +133,6 @@ pub const TypeDatabase = struct {
     pub const Handle = struct {
         name: []const u8 = &.{},
         // metadata
-        alias: ?[]const u8 = null,
         parent: ?[]const u8 = null,
         objtypeenum: ?[]const u8 = null,
         pub const Idx = enum(u32) {
@@ -142,7 +151,6 @@ pub const TypeDatabase = struct {
         extends: []const Type.Idx = &.{},
         enabled_by_extension: ?[]const u8 = null,
         // metedata
-        alias: ?[]const u8 = null,
         comment: ?[]const u8 = null,
         returnedonly: bool = false,
         allowduplicate: bool = false,
@@ -252,10 +260,17 @@ pub const TypeDatabase = struct {
     pub const Union = struct {
         name: []const u8 = &.{},
         members: []const Member = &.{},
+        // metadata
+        comment: ?[]const u8 = null,
+        enabled_by_extension: ?[]const u8 = null,
 
         pub const Member = struct {
             name: []const u8 = &.{},
             type_idx: Type.Idx = .none,
+            // metadata
+            len_expression: ?[]const u8 = null,
+            // If member is a union, what field selects the union value
+            selection: ?[]const u8 = null,
         };
 
         pub const Idx = enum(u32) {
@@ -272,10 +287,27 @@ pub const TypeDatabase = struct {
         name: []const u8 = &.{},
         return_type_idx: Type.Idx = .none,
         parameters: []const Parameter = &.{},
+        // metadata
+        queues: ?[]const u8 = null,
+        successcodes: ?[]const u8 = null,
+        errorcodes: ?[]const u8 = null,
+        renderpass: ?[]const u8 = null,
+        videocoding: ?[]const u8 = null,
+        cmdbufferlevel: ?[]const u8 = null,
+        // only valid for `vkCmd..`
+        conditionalrendering: ?bool = null,
+        allownoqueues: bool = false,
+        comment: ?[]const u8 = null,
 
         pub const Parameter = struct {
             name: []const u8 = &.{},
             type_idx: Type.Idx = .none,
+            // metadata
+            len_expression: ?[]const u8 = null,
+            optional: bool = false,
+            // If parameter is a pointer to the base type (VkBaseOutStruct), what types can this
+            // pointer point to
+            valid_structs: ?[]const u8 = null,
         };
 
         pub const Idx = enum(u32) {
@@ -318,7 +350,7 @@ pub const TypeDatabase = struct {
             .is_slice = true,
         };
         const u8_slice_ptr_idx = try db.resolve_pointer(u8_slice_ptr);
-        _ = try db.add_alias(.{ .name = "[*]u8", .type_idx = u8_slice_ptr_idx });
+        _ = try db.add_alias(.{ .name = "u8_slice", .type_idx = u8_slice_ptr_idx });
 
         for (xml_database.constants.items) |*constant| {
             var value: BuiltinValue = .void;
@@ -357,7 +389,6 @@ pub const TypeDatabase = struct {
             } else {
                 const h: Handle = .{
                     .name = handle.name,
-                    .alias = handle.alias,
                     .parent = handle.parent,
                     .objtypeenum = handle.objtypeenum,
                 };
@@ -555,175 +586,231 @@ pub const TypeDatabase = struct {
         }
 
         outer: for (xml_database.types.structs) |@"struct"| {
-            var enabled_by_extension: ?[]const u8 = null;
-            for (xml_database.features.items) |ext| {
-                if (ext.unlocks_type(@"struct".name)) {
-                    enabled_by_extension = ext.name;
-                    break;
-                }
-            }
-            if (enabled_by_extension == null) {
-                for (xml_database.extensions.items) |ext| {
+            if (@"struct".alias) |alias| {
+                const type_idx = try db.resolve_base(alias);
+                const a: Type.Alias = .{
+                    .name = @"struct".name,
+                    .type_idx = type_idx,
+                };
+                _ = try db.add_alias(a);
+            } else {
+                var enabled_by_extension: ?[]const u8 = null;
+                for (xml_database.features.items) |ext| {
                     if (ext.unlocks_type(@"struct".name)) {
-                        if (ext.supported == .disabled) {
-                            continue :outer;
-                        } else {
+                        enabled_by_extension = ext.name;
+                        break;
+                    }
+                }
+                if (enabled_by_extension == null) {
+                    for (xml_database.extensions.items) |ext| {
+                        if (ext.unlocks_type(@"struct".name)) {
+                            if (ext.supported == .disabled) {
+                                continue :outer;
+                            } else {
+                                enabled_by_extension = ext.name;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                var extends: std.ArrayListUnmanaged(Type.Idx) = .empty;
+                if (@"struct".extends) |ext| {
+                    var iter = std.mem.splitScalar(u8, ext, ',');
+                    while (iter.next()) |name| {
+                        const type_idx = try db.resolve_base(name);
+                        try extends.append(alloc, type_idx);
+                    }
+                }
+
+                var fields: std.ArrayListUnmanaged(Struct.Field) = .empty;
+                var field_idx: u32 = 0;
+                while (field_idx < @"struct".members.len) {
+                    var member = @"struct".members[field_idx];
+                    if (member.dimensions != null and member.dimensions.?[0] == ':') {
+                        var parts: std.ArrayListUnmanaged(Struct.PackedField.Part) = .empty;
+                        while (field_idx < @"struct".members.len) : (field_idx += 1) {
+                            member = @"struct".members[field_idx];
+                            if (member.dimensions == null or member.dimensions.?[0] != ':') {
+                                break;
+                            } else {
+                                const bits = try std.fmt.parseInt(u32, member.dimensions.?[1..], 10);
+                                const part: Struct.PackedField.Part = .{
+                                    .name = member.name,
+                                    .bits = bits,
+                                };
+                                try parts.append(alloc, part);
+                            }
+                        }
+                        const packed_field: Struct.PackedField = .{
+                            .parts = parts.items,
+                        };
+                        try fields.append(alloc, .{ .packed_field = packed_field });
+                    } else {
+                        const type_idx = try db.c_type_parts_to_type(
+                            member.type_front,
+                            member.type_middle,
+                            member.type_back,
+                            member.dimensions,
+                            member.len,
+                            false,
+                        );
+                        const single_field: Struct.SingleField = .{
+                            .name = member.name,
+                            .type_idx = type_idx,
+                            .stype_value = member.value,
+                            .len_expression = member.len,
+                            .api = member.api,
+                            .stride = member.stride,
+                            .deprecated = member.deprecated,
+                            .externsync = member.externsync,
+                            .optional = member.optional,
+                            .selector = member.selector,
+                            .objecttype = member.objecttype,
+                            .featurelink = member.featurelink,
+                            .comment = member.comment,
+                        };
+                        try fields.append(alloc, .{ .single_field = single_field });
+                        field_idx += 1;
+                    }
+                }
+
+                const s: Struct = .{
+                    .name = @"struct".name,
+                    .fields = fields.items,
+                    .extends = extends.items,
+                    .enabled_by_extension = enabled_by_extension,
+                    .comment = @"struct".comment,
+                    .returnedonly = @"struct".returnedonly,
+                    .allowduplicate = @"struct".allowduplicate,
+                };
+                _ = try db.add_struct(s);
+            }
+        }
+
+        for (xml_database.types.unions) |@"union"| {
+            if (@"union".alias) |alias| {
+                const type_idx = try db.resolve_base(alias);
+                const a: Type.Alias = .{
+                    .name = @"union".name,
+                    .type_idx = type_idx,
+                };
+                _ = try db.add_alias(a);
+            } else {
+                var enabled_by_extension: ?[]const u8 = null;
+                for (xml_database.features.items) |ext| {
+                    if (ext.unlocks_type(@"union".name))
+                        enabled_by_extension = ext.name;
+                }
+                if (enabled_by_extension == null) {
+                    for (xml_database.extensions.items) |ext| {
+                        if (ext.unlocks_type(@"union".name))
                             enabled_by_extension = ext.name;
-                            break;
-                        }
                     }
                 }
-            }
 
-            var extends: std.ArrayListUnmanaged(Type.Idx) = .empty;
-            if (@"struct".extends) |ext| {
-                var iter = std.mem.splitScalar(u8, ext, ',');
-                while (iter.next()) |name| {
-                    const type_idx = try db.resolve_base(name);
-                    try extends.append(alloc, type_idx);
-                }
-            }
-
-            var fields: std.ArrayListUnmanaged(Struct.Field) = .empty;
-            var field_idx: u32 = 0;
-            while (field_idx < @"struct".members.len) {
-                var member = @"struct".members[field_idx];
-                if (member.dimensions != null and member.dimensions.?[0] == ':') {
-                    var parts: std.ArrayListUnmanaged(Struct.PackedField.Part) = .empty;
-                    while (field_idx < @"struct".members.len) : (field_idx += 1) {
-                        member = @"struct".members[field_idx];
-                        if (member.dimensions == null or member.dimensions.?[0] != ':') {
-                            break;
-                        } else {
-                            const bits = try std.fmt.parseInt(u32, member.dimensions.?[1..], 10);
-                            const part: Struct.PackedField.Part = .{
-                                .name = member.name,
-                                .bits = bits,
-                            };
-                            try parts.append(alloc, part);
-                        }
-                    }
-                    const packed_field: Struct.PackedField = .{
-                        .parts = parts.items,
-                    };
-                    try fields.append(alloc, .{ .packed_field = packed_field });
-                } else {
+                var members: std.ArrayListUnmanaged(Union.Member) = .empty;
+                for (@"union".members) |member| {
                     const type_idx = try db.c_type_parts_to_type(
                         member.type_front,
                         member.type_middle,
                         member.type_back,
                         member.dimensions,
-                        member.len,
+                        null,
                         false,
                     );
-                    const single_field: Struct.SingleField = .{
+                    const m: Union.Member = .{
                         .name = member.name,
                         .type_idx = type_idx,
-                        .stype_value = member.value,
                         .len_expression = member.len,
-                        .api = member.api,
-                        .stride = member.stride,
-                        .deprecated = member.deprecated,
-                        .externsync = member.externsync,
-                        .optional = member.optional,
-                        .selector = member.selector,
-                        .objecttype = member.objecttype,
-                        .featurelink = member.featurelink,
-                        .comment = member.comment,
+                        .selection = member.selection,
                     };
-                    try fields.append(alloc, .{ .single_field = single_field });
-                    field_idx += 1;
+                    try members.append(alloc, m);
+                }
+
+                const s: Union = .{
+                    .name = @"union".name,
+                    .members = members.items,
+                    .comment = @"union".comment,
+                    .enabled_by_extension = enabled_by_extension,
+                };
+                _ = try db.add_union(s);
+            }
+        }
+
+        const Inner = struct {
+            fn add_function(
+                _alloc: Allocator,
+                _db: *TypeDatabase,
+                visited: *std.StringArrayHashMapUnmanaged(void),
+                command: *const XmlDatabase.Command,
+            ) !void {
+                if (visited.get(command.name) != null) return;
+                try visited.put(_alloc, command.name, {});
+
+                if (command.alias) |alias| {
+                    const idx = try _db.resolve_base(alias);
+                    const a: Type.Alias = .{
+                        .name = command.name,
+                        .type_idx = idx,
+                    };
+                    _ = try _db.add_alias(a);
+                } else {
+                    var parameters: std.ArrayListUnmanaged(Function.Parameter) = .empty;
+                    for (command.parameters) |parameter| {
+                        const type_idx = try _db.c_type_parts_to_type(
+                            parameter.type_front,
+                            parameter.type_middle,
+                            parameter.type_back,
+                            parameter.dimensions,
+                            parameter.len,
+                            true,
+                        );
+                        const m: Function.Parameter = .{
+                            .name = parameter.name,
+                            .type_idx = type_idx,
+                            .len_expression = parameter.len,
+                            .optional = parameter.optional,
+                            .valid_structs = parameter.valid_structs,
+                        };
+                        try parameters.append(_alloc, m);
+                    }
+
+                    const return_type_idx = try _db.resolve_base(command.return_type);
+                    const f: Function = .{
+                        .name = command.name,
+                        .return_type_idx = return_type_idx,
+                        .parameters = parameters.items,
+                        .queues = command.queues,
+                        .successcodes = command.successcodes,
+                        .errorcodes = command.errorcodes,
+                        .renderpass = command.renderpass,
+                        .videocoding = command.videocoding,
+                        .cmdbufferlevel = command.cmdbufferlevel,
+                        .conditionalrendering = command.conditionalrendering,
+                        .allownoqueues = command.allownoqueues,
+                        .comment = command.comment,
+                    };
+                    const fn_idx = try _db.add_function(f);
+
+                    const p: Type.Pointer = .{
+                        .base_type_idx = fn_idx,
+                        .is_const = true,
+                    };
+                    const p_idx = try _db.resolve_pointer(p);
+
+                    const a: Type.Alias = .{
+                        .name = try std.fmt.allocPrint(_alloc, "PFN_{s}", .{command.name}),
+                        .type_idx = p_idx,
+                    };
+                    _ = try _db.add_alias(a);
                 }
             }
-
-            const s: Struct = .{
-                .name = @"struct".name,
-                .fields = fields.items,
-                .extends = extends.items,
-                .enabled_by_extension = enabled_by_extension,
-                .alias = @"struct".alias,
-                .comment = @"struct".comment,
-                .returnedonly = @"struct".returnedonly,
-                .allowduplicate = @"struct".allowduplicate,
-            };
-            _ = try db.add_struct(s);
-        }
-
-        for (xml_database.types.unions) |@"union"| {
-            var members: std.ArrayListUnmanaged(Union.Member) = .empty;
-            for (@"union".members) |member| {
-                const type_idx = try db.c_type_parts_to_type(
-                    member.type_front,
-                    member.type_middle,
-                    member.type_back,
-                    member.dimensions,
-                    null,
-                    false,
-                );
-                const m: Union.Member = .{
-                    .name = member.name,
-                    .type_idx = type_idx,
-                };
-                try members.append(alloc, m);
-            }
-
-            const s: Union = .{
-                .name = @"union".name,
-                .members = members.items,
-            };
-            _ = try db.add_union(s);
-        }
+        };
 
         var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
-        for (xml_database.commands.items) |command| {
-            if (visited.get(command.name) != null) continue;
-            try visited.put(alloc, command.name, {});
-
-            if (command.alias) |alias| {
-                const idx = try db.resolve_base(alias);
-                const a: Type.Alias = .{
-                    .name = command.name,
-                    .type_idx = idx,
-                };
-                _ = try db.add_alias(a);
-            } else {
-                var parameters: std.ArrayListUnmanaged(Function.Parameter) = .empty;
-                for (command.parameters) |parameter| {
-                    const type_idx = try db.c_type_parts_to_type(
-                        parameter.type_front,
-                        parameter.type_middle,
-                        parameter.type_back,
-                        parameter.dimensions,
-                        null,
-                        true,
-                    );
-                    const m: Function.Parameter = .{
-                        .name = parameter.name,
-                        .type_idx = type_idx,
-                    };
-                    try parameters.append(alloc, m);
-                }
-
-                const return_type_idx = try db.resolve_base(command.return_type);
-                const f: Function = .{
-                    .name = command.name,
-                    .return_type_idx = return_type_idx,
-                    .parameters = parameters.items,
-                };
-                const fn_idx = try db.add_function(f);
-
-                const p: Type.Pointer = .{
-                    .base_type_idx = fn_idx,
-                    .is_const = true,
-                };
-                const p_idx = try db.resolve_pointer(p);
-
-                const a: Type.Alias = .{
-                    .name = try std.fmt.allocPrint(alloc, "PFN_{s}", .{command.name}),
-                    .type_idx = p_idx,
-                };
-                _ = try db.add_alias(a);
-            }
+        for (xml_database.commands.items) |*command| {
+            try Inner.add_function(alloc, &db, &visited, command);
         }
 
         const ADDITIONAL_FUNCTIONS = [_]XmlDatabase.Command{
@@ -749,7 +836,7 @@ pub const TypeDatabase = struct {
             },
             .{
                 .name = "vkReallocationFunction",
-                .return_type = "[*]u8",
+                .return_type = "u8_slice",
                 .parameters = &.{
                     .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
                     .{ .name = "pOriginal", .type_middle = "void", .type_back = "*" },
@@ -760,7 +847,7 @@ pub const TypeDatabase = struct {
             },
             .{
                 .name = "vkAllocationFunction",
-                .return_type = "[*]u8",
+                .return_type = "u8_slice",
                 .parameters = &.{
                     .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
                     .{ .name = "size", .type_middle = "size_t" },
@@ -873,46 +960,8 @@ pub const TypeDatabase = struct {
                 },
             },
         };
-        for (ADDITIONAL_FUNCTIONS) |command| {
-            if (visited.get(command.name) != null) continue;
-            try visited.put(alloc, command.name, {});
-
-            var parameters: std.ArrayListUnmanaged(Function.Parameter) = .empty;
-            for (command.parameters) |parameter| {
-                const type_idx = try db.c_type_parts_to_type(
-                    parameter.type_front,
-                    parameter.type_middle,
-                    parameter.type_back,
-                    parameter.dimensions,
-                    null,
-                    true,
-                );
-                const m: Function.Parameter = .{
-                    .name = parameter.name,
-                    .type_idx = type_idx,
-                };
-                try parameters.append(alloc, m);
-            }
-
-            const return_type_idx = try db.resolve_base(command.return_type);
-            const f: Function = .{
-                .name = command.name,
-                .return_type_idx = return_type_idx,
-                .parameters = parameters.items,
-            };
-            const fn_idx = try db.add_function(f);
-
-            const p: Type.Pointer = .{
-                .base_type_idx = fn_idx,
-                .is_const = true,
-            };
-            const p_idx = try db.resolve_pointer(p);
-
-            const a: Type.Alias = .{
-                .name = try std.fmt.allocPrint(alloc, "PFN_{s}", .{command.name}),
-                .type_idx = p_idx,
-            };
-            _ = try db.add_alias(a);
+        for (&ADDITIONAL_FUNCTIONS) |*command| {
+            try Inner.add_function(alloc, &db, &visited, command);
         }
 
         return db;
@@ -930,6 +979,24 @@ pub const TypeDatabase = struct {
         } else {
             const idx: u32 = @intFromEnum(type_idx) - 1;
             return &self.types.items[idx];
+        }
+    }
+
+    pub fn get_type_follow_alias(
+        self: *const TypeDatabase,
+        type_idx: TypeDatabase.Type.Idx,
+    ) *TypeDatabase.Type {
+        if (type_idx == .none) {
+            const Dummy = struct {
+                var dummy: TypeDatabase.Type = .invalid;
+            };
+            return &Dummy.dummy;
+        } else {
+            const idx: u32 = @intFromEnum(type_idx) - 1;
+            var result = &self.types.items[idx];
+            if (result.* == .alias)
+                result = self.get_type(result.alias.type_idx);
+            return result;
         }
     }
 
