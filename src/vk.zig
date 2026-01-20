@@ -3692,7 +3692,6 @@ pub const VkImageLayout = enum(i32) {
     VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR = 1000553000,
     // Extension: VK_EXT_zero_initialize_device_memory
     VK_IMAGE_LAYOUT_ZERO_INITIALIZED_EXT = 1000620000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAttachmentLoadOp = enum(i32) {
     VK_ATTACHMENT_LOAD_OP_LOAD = 0,
@@ -3700,27 +3699,23 @@ pub const VkAttachmentLoadOp = enum(i32) {
     VK_ATTACHMENT_LOAD_OP_DONT_CARE = 2,
     // Extension: VK_GRAPHICS_VERSION_1_4
     VK_ATTACHMENT_LOAD_OP_NONE = 1000400000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAttachmentStoreOp = enum(i32) {
     VK_ATTACHMENT_STORE_OP_STORE = 0,
     VK_ATTACHMENT_STORE_OP_DONT_CARE = 1,
     // Extension: VK_GRAPHICS_VERSION_1_3
     VK_ATTACHMENT_STORE_OP_NONE = 1000301000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkImageType = enum(i32) {
     VK_IMAGE_TYPE_1D = 0,
     VK_IMAGE_TYPE_2D = 1,
     VK_IMAGE_TYPE_3D = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkImageTiling = enum(i32) {
     VK_IMAGE_TILING_OPTIMAL = 0,
     VK_IMAGE_TILING_LINEAR = 1,
     // Extension: VK_EXT_image_drm_format_modifier
     VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT = 1000158000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkImageViewType = enum(i32) {
     VK_IMAGE_VIEW_TYPE_1D = 0,
@@ -3730,12 +3725,10 @@ pub const VkImageViewType = enum(i32) {
     VK_IMAGE_VIEW_TYPE_1D_ARRAY = 4,
     VK_IMAGE_VIEW_TYPE_2D_ARRAY = 5,
     VK_IMAGE_VIEW_TYPE_CUBE_ARRAY = 6,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCommandBufferLevel = enum(i32) {
     VK_COMMAND_BUFFER_LEVEL_PRIMARY = 0,
     VK_COMMAND_BUFFER_LEVEL_SECONDARY = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkComponentSwizzle = enum(i32) {
     VK_COMPONENT_SWIZZLE_IDENTITY = 0,
@@ -3745,7 +3738,6 @@ pub const VkComponentSwizzle = enum(i32) {
     VK_COMPONENT_SWIZZLE_G = 4,
     VK_COMPONENT_SWIZZLE_B = 5,
     VK_COMPONENT_SWIZZLE_A = 6,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDescriptorType = enum(i32) {
     VK_DESCRIPTOR_TYPE_SAMPLER = 0,
@@ -3775,7 +3767,6 @@ pub const VkDescriptorType = enum(i32) {
     VK_DESCRIPTOR_TYPE_TENSOR_ARM = 1000460000,
     // Extension: VK_NV_partitioned_acceleration_structure
     VK_DESCRIPTOR_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_NV = 1000570000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkQueryType = enum(i32) {
     VK_QUERY_TYPE_OCCLUSION = 0,
@@ -3810,7 +3801,6 @@ pub const VkQueryType = enum(i32) {
     VK_QUERY_TYPE_MICROMAP_SERIALIZATION_SIZE_EXT = 1000396000,
     // Extension: VK_EXT_opacity_micromap
     VK_QUERY_TYPE_MICROMAP_COMPACTED_SIZE_EXT = 1000396001,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBorderColor = enum(i32) {
     VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = 0,
@@ -3823,7 +3813,6 @@ pub const VkBorderColor = enum(i32) {
     VK_BORDER_COLOR_FLOAT_CUSTOM_EXT = 1000287003,
     // Extension: VK_EXT_custom_border_color
     VK_BORDER_COLOR_INT_CUSTOM_EXT = 1000287004,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineBindPoint = enum(i32) {
     VK_PIPELINE_BIND_POINT_GRAPHICS = 0,
@@ -3836,7 +3825,6 @@ pub const VkPipelineBindPoint = enum(i32) {
     VK_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI = 1000369003,
     // Extension: VK_ARM_data_graph
     VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM = 1000507000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineCacheHeaderVersion = enum(i32) {
     VK_PIPELINE_CACHE_HEADER_VERSION_ONE = 1,
@@ -3844,7 +3832,6 @@ pub const VkPipelineCacheHeaderVersion = enum(i32) {
     VK_PIPELINE_CACHE_HEADER_VERSION_SAFETY_CRITICAL_ONE = 1000298001,
     // Extension: VK_QCOM_data_graph_model
     VK_PIPELINE_CACHE_HEADER_VERSION_DATA_GRAPH_QCOM = 1000629000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPrimitiveTopology = enum(i32) {
     VK_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
@@ -3858,12 +3845,10 @@ pub const VkPrimitiveTopology = enum(i32) {
     VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY = 8,
     VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY = 9,
     VK_PRIMITIVE_TOPOLOGY_PATCH_LIST = 10,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSharingMode = enum(i32) {
     VK_SHARING_MODE_EXCLUSIVE = 0,
     VK_SHARING_MODE_CONCURRENT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkIndexType = enum(i32) {
     VK_INDEX_TYPE_UINT16 = 0,
@@ -3872,21 +3857,18 @@ pub const VkIndexType = enum(i32) {
     VK_INDEX_TYPE_NONE_KHR = 1000165000,
     // Extension: VK_BASE_VERSION_1_4
     VK_INDEX_TYPE_UINT8 = 1000265000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFilter = enum(i32) {
     VK_FILTER_NEAREST = 0,
     VK_FILTER_LINEAR = 1,
     // Extension: VK_EXT_filter_cubic
     VK_FILTER_CUBIC_EXT = 1000015000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSamplerMipmapMode = enum(i32) {
     // Comment: Choose nearest mip level
     VK_SAMPLER_MIPMAP_MODE_NEAREST = 0,
     // Comment: Linear filter between mip levels
     VK_SAMPLER_MIPMAP_MODE_LINEAR = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSamplerAddressMode = enum(i32) {
     VK_SAMPLER_ADDRESS_MODE_REPEAT = 0,
@@ -3896,7 +3878,6 @@ pub const VkSamplerAddressMode = enum(i32) {
     // Extension: VK_BASE_VERSION_1_2
     // Extension: VK_KHR_sampler_mirror_clamp_to_edge
     VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCompareOp = enum(i32) {
     VK_COMPARE_OP_NEVER = 0,
@@ -3907,7 +3888,6 @@ pub const VkCompareOp = enum(i32) {
     VK_COMPARE_OP_NOT_EQUAL = 5,
     VK_COMPARE_OP_GREATER_OR_EQUAL = 6,
     VK_COMPARE_OP_ALWAYS = 7,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPolygonMode = enum(i32) {
     VK_POLYGON_MODE_FILL = 0,
@@ -3915,12 +3895,10 @@ pub const VkPolygonMode = enum(i32) {
     VK_POLYGON_MODE_POINT = 2,
     // Extension: VK_NV_fill_rectangle
     VK_POLYGON_MODE_FILL_RECTANGLE_NV = 1000153000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFrontFace = enum(i32) {
     VK_FRONT_FACE_COUNTER_CLOCKWISE = 0,
     VK_FRONT_FACE_CLOCKWISE = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBlendFactor = enum(i32) {
     VK_BLEND_FACTOR_ZERO = 0,
@@ -3942,7 +3920,6 @@ pub const VkBlendFactor = enum(i32) {
     VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR = 16,
     VK_BLEND_FACTOR_SRC1_ALPHA = 17,
     VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA = 18,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBlendOp = enum(i32) {
     VK_BLEND_OP_ADD = 0,
@@ -4042,7 +4019,6 @@ pub const VkBlendOp = enum(i32) {
     VK_BLEND_OP_GREEN_EXT = 1000148044,
     // Extension: VK_EXT_blend_operation_advanced
     VK_BLEND_OP_BLUE_EXT = 1000148045,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkStencilOp = enum(i32) {
     VK_STENCIL_OP_KEEP = 0,
@@ -4053,7 +4029,6 @@ pub const VkStencilOp = enum(i32) {
     VK_STENCIL_OP_INVERT = 5,
     VK_STENCIL_OP_INCREMENT_AND_WRAP = 6,
     VK_STENCIL_OP_DECREMENT_AND_WRAP = 7,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkLogicOp = enum(i32) {
     VK_LOGIC_OP_CLEAR = 0,
@@ -4072,11 +4047,9 @@ pub const VkLogicOp = enum(i32) {
     VK_LOGIC_OP_OR_INVERTED = 13,
     VK_LOGIC_OP_NAND = 14,
     VK_LOGIC_OP_SET = 15,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkInternalAllocationType = enum(i32) {
     VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSystemAllocationScope = enum(i32) {
     VK_SYSTEM_ALLOCATION_SCOPE_COMMAND = 0,
@@ -4084,7 +4057,6 @@ pub const VkSystemAllocationScope = enum(i32) {
     VK_SYSTEM_ALLOCATION_SCOPE_CACHE = 2,
     VK_SYSTEM_ALLOCATION_SCOPE_DEVICE = 3,
     VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPhysicalDeviceType = enum(i32) {
     VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
@@ -4092,12 +4064,10 @@ pub const VkPhysicalDeviceType = enum(i32) {
     VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
     VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
     VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkVertexInputRate = enum(i32) {
     VK_VERTEX_INPUT_RATE_VERTEX = 0,
     VK_VERTEX_INPUT_RATE_INSTANCE = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFormat = enum(i32) {
     VK_FORMAT_UNDEFINED = 0,
@@ -4445,7 +4415,6 @@ pub const VkFormat = enum(i32) {
     VK_FORMAT_G14X2_B14X2R14X2_2PLANE_420_UNORM_3PACK16_ARM = 1000609012,
     // Extension: VK_ARM_format_pack
     VK_FORMAT_G14X2_B14X2R14X2_2PLANE_422_UNORM_3PACK16_ARM = 1000609013,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_APPLICATION_INFO = 0,
@@ -6759,14 +6728,12 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_OCCUPANCY_PRIORITY_FEATURES_NV = 1000645001,
     // Extension: VK_OHOS_surface
     VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS = 1000685000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSubpassContents = enum(i32) {
     VK_SUBPASS_CONTENTS_INLINE = 0,
     VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,
     // Extension: VK_KHR_maintenance7
     VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR = 1000451000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkResult = enum(i32) {
     // Extension: VK_KHR_pipeline_binary
@@ -6873,7 +6840,6 @@ pub const VkResult = enum(i32) {
     VK_INCOMPATIBLE_SHADER_BINARY_EXT = 1000482000,
     // Extension: VK_KHR_pipeline_binary
     VK_PIPELINE_BINARY_MISSING_KHR = 1000483000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDynamicState = enum(i32) {
     VK_DYNAMIC_STATE_VIEWPORT = 0,
@@ -7013,14 +6979,12 @@ pub const VkDynamicState = enum(i32) {
     VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT = 1000524000,
     // Extension: VK_EXT_depth_clamp_control
     VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT = 1000582000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDescriptorUpdateTemplateType = enum(i32) {
     // Comment: Create descriptor update template for descriptor set updates
     VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET = 0,
     // Extension: VK_COMPUTE_VERSION_1_4
     VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_PUSH_DESCRIPTORS = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkObjectType = enum(i32) {
     VK_OBJECT_TYPE_UNKNOWN = 0,
@@ -7115,43 +7079,35 @@ pub const VkObjectType = enum(i32) {
     VK_OBJECT_TYPE_INDIRECT_COMMANDS_LAYOUT_EXT = 1000572000,
     // Extension: VK_EXT_device_generated_commands
     VK_OBJECT_TYPE_INDIRECT_EXECUTION_SET_EXT = 1000572001,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkRayTracingInvocationReorderModeEXT = enum(i32) {
     VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_EXT = 0,
     VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkRayTracingLssIndexingModeNV = enum(i32) {
     VK_RAY_TRACING_LSS_INDEXING_MODE_LIST_NV = 0,
     VK_RAY_TRACING_LSS_INDEXING_MODE_SUCCESSIVE_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkRayTracingLssPrimitiveEndCapsModeNV = enum(i32) {
     VK_RAY_TRACING_LSS_PRIMITIVE_END_CAPS_MODE_NONE_NV = 0,
     VK_RAY_TRACING_LSS_PRIMITIVE_END_CAPS_MODE_CHAINED_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDirectDriverLoadingModeLUNARG = enum(i32) {
     VK_DIRECT_DRIVER_LOADING_MODE_EXCLUSIVE_LUNARG = 0,
     VK_DIRECT_DRIVER_LOADING_MODE_INCLUSIVE_LUNARG = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAntiLagModeAMD = enum(i32) {
     VK_ANTI_LAG_MODE_DRIVER_CONTROL_AMD = 0,
     VK_ANTI_LAG_MODE_ON_AMD = 1,
     VK_ANTI_LAG_MODE_OFF_AMD = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAntiLagStageAMD = enum(i32) {
     VK_ANTI_LAG_STAGE_INPUT_AMD = 0,
     VK_ANTI_LAG_STAGE_PRESENT_AMD = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSemaphoreType = enum(i32) {
     VK_SEMAPHORE_TYPE_BINARY = 0,
     VK_SEMAPHORE_TYPE_TIMELINE = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPresentModeKHR = enum(i32) {
     VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
@@ -7164,7 +7120,6 @@ pub const VkPresentModeKHR = enum(i32) {
     VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR = 1000111001,
     // Extension: VK_KHR_present_mode_fifo_latest_ready
     VK_PRESENT_MODE_FIFO_LATEST_READY_KHR = 1000361000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkColorSpaceKHR = enum(i32) {
     VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0,
@@ -7198,14 +7153,12 @@ pub const VkColorSpaceKHR = enum(i32) {
     VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT = 1000104014,
     // Extension: VK_AMD_display_native_hdr
     VK_COLOR_SPACE_DISPLAY_NATIVE_AMD = 1000213000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDisplaySurfaceStereoTypeNV = enum(i32) {
     VK_DISPLAY_SURFACE_STEREO_TYPE_NONE_NV = 0,
     VK_DISPLAY_SURFACE_STEREO_TYPE_ONBOARD_DIN_NV = 1,
     VK_DISPLAY_SURFACE_STEREO_TYPE_HDMI_3D_NV = 2,
     VK_DISPLAY_SURFACE_STEREO_TYPE_INBAND_DISPLAYPORT_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkTimeDomainKHR = enum(i32) {
     VK_TIME_DOMAIN_DEVICE_KHR = 0,
@@ -7216,7 +7169,6 @@ pub const VkTimeDomainKHR = enum(i32) {
     VK_TIME_DOMAIN_PRESENT_STAGE_LOCAL_EXT = 1000208000,
     // Extension: VK_EXT_present_timing
     VK_TIME_DOMAIN_SWAPCHAIN_LOCAL_EXT = 1000208001,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDebugReportObjectTypeEXT = enum(i32) {
     VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT = 0,
@@ -7270,7 +7222,6 @@ pub const VkDebugReportObjectTypeEXT = enum(i32) {
     VK_DEBUG_REPORT_OBJECT_TYPE_CUDA_FUNCTION_NV_EXT = 1000307001,
     // Extension: VK_FUCHSIA_buffer_collection
     VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_COLLECTION_FUCHSIA_EXT = 1000366000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDeviceMemoryReportEventTypeEXT = enum(i32) {
     VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT = 0,
@@ -7278,18 +7229,15 @@ pub const VkDeviceMemoryReportEventTypeEXT = enum(i32) {
     VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_IMPORT_EXT = 2,
     VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_UNIMPORT_EXT = 3,
     VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATION_FAILED_EXT = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkRasterizationOrderAMD = enum(i32) {
     VK_RASTERIZATION_ORDER_STRICT_AMD = 0,
     VK_RASTERIZATION_ORDER_RELAXED_AMD = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkClusterAccelerationStructureTypeNV = enum(i32) {
     VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_CLUSTERS_BOTTOM_LEVEL_NV = 0,
     VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_TRIANGLE_CLUSTER_NV = 1,
     VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_TRIANGLE_CLUSTER_TEMPLATE_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkClusterAccelerationStructureOpTypeNV = enum(i32) {
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV = 0,
@@ -7298,18 +7246,15 @@ pub const VkClusterAccelerationStructureOpTypeNV = enum(i32) {
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_BUILD_TRIANGLE_CLUSTER_TEMPLATE_NV = 3,
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_INSTANTIATE_TRIANGLE_CLUSTER_NV = 4,
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_GET_CLUSTER_TEMPLATE_INDICES_NV = 5,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkClusterAccelerationStructureOpModeNV = enum(i32) {
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV = 0,
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_EXPLICIT_DESTINATIONS_NV = 1,
     VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_COMPUTE_SIZES_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkValidationCheckEXT = enum(i32) {
     VK_VALIDATION_CHECK_ALL_EXT = 0,
     VK_VALIDATION_CHECK_SHADERS_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkValidationFeatureEnableEXT = enum(i32) {
     VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT = 0,
@@ -7317,7 +7262,6 @@ pub const VkValidationFeatureEnableEXT = enum(i32) {
     VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT = 2,
     VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT = 3,
     VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkValidationFeatureDisableEXT = enum(i32) {
     VK_VALIDATION_FEATURE_DISABLE_ALL_EXT = 0,
@@ -7328,7 +7272,6 @@ pub const VkValidationFeatureDisableEXT = enum(i32) {
     VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT = 5,
     VK_VALIDATION_FEATURE_DISABLE_UNIQUE_HANDLES_EXT = 6,
     VK_VALIDATION_FEATURE_DISABLE_SHADER_VALIDATION_CACHE_EXT = 7,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkLayerSettingTypeEXT = enum(i32) {
     VK_LAYER_SETTING_TYPE_BOOL32_EXT = 0,
@@ -7339,7 +7282,6 @@ pub const VkLayerSettingTypeEXT = enum(i32) {
     VK_LAYER_SETTING_TYPE_FLOAT32_EXT = 5,
     VK_LAYER_SETTING_TYPE_FLOAT64_EXT = 6,
     VK_LAYER_SETTING_TYPE_STRING_EXT = 7,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkIndirectCommandsTokenTypeNV = enum(i32) {
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_SHADER_GROUP_NV = 0,
@@ -7356,21 +7298,17 @@ pub const VkIndirectCommandsTokenTypeNV = enum(i32) {
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NV = 1000428003,
     // Extension: VK_NV_device_generated_commands_compute
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_DISPATCH_NV = 1000428004,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDisplayPowerStateEXT = enum(i32) {
     VK_DISPLAY_POWER_STATE_OFF_EXT = 0,
     VK_DISPLAY_POWER_STATE_SUSPEND_EXT = 1,
     VK_DISPLAY_POWER_STATE_ON_EXT = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDeviceEventTypeEXT = enum(i32) {
     VK_DEVICE_EVENT_TYPE_DISPLAY_HOTPLUG_EXT = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDisplayEventTypeEXT = enum(i32) {
     VK_DISPLAY_EVENT_TYPE_FIRST_PIXEL_OUT_EXT = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkViewportCoordinateSwizzleNV = enum(i32) {
     VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV = 0,
@@ -7381,17 +7319,14 @@ pub const VkViewportCoordinateSwizzleNV = enum(i32) {
     VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_Z_NV = 5,
     VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_W_NV = 6,
     VK_VIEWPORT_COORDINATE_SWIZZLE_NEGATIVE_W_NV = 7,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDiscardRectangleModeEXT = enum(i32) {
     VK_DISCARD_RECTANGLE_MODE_INCLUSIVE_EXT = 0,
     VK_DISCARD_RECTANGLE_MODE_EXCLUSIVE_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPointClippingBehavior = enum(i32) {
     VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES = 0,
     VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSamplerReductionMode = enum(i32) {
     VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE = 0,
@@ -7399,12 +7334,10 @@ pub const VkSamplerReductionMode = enum(i32) {
     VK_SAMPLER_REDUCTION_MODE_MAX = 2,
     // Extension: VK_QCOM_filter_cubic_clamp
     VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM = 1000521000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkTessellationDomainOrigin = enum(i32) {
     VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT = 0,
     VK_TESSELLATION_DOMAIN_ORIGIN_LOWER_LEFT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSamplerYcbcrModelConversion = enum(i32) {
     VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY = 0,
@@ -7416,60 +7349,50 @@ pub const VkSamplerYcbcrModelConversion = enum(i32) {
     VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601 = 3,
     // Comment: aka UHD YUV
     VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020 = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSamplerYcbcrRange = enum(i32) {
     // Comment: Luma 0..1 maps to 0..255, chroma -0.5..0.5 to 1..255 (clamped)
     VK_SAMPLER_YCBCR_RANGE_ITU_FULL = 0,
     // Comment: Luma 0..1 maps to 16..235, chroma -0.5..0.5 to 16..240
     VK_SAMPLER_YCBCR_RANGE_ITU_NARROW = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkChromaLocation = enum(i32) {
     VK_CHROMA_LOCATION_COSITED_EVEN = 0,
     VK_CHROMA_LOCATION_MIDPOINT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBlendOverlapEXT = enum(i32) {
     VK_BLEND_OVERLAP_UNCORRELATED_EXT = 0,
     VK_BLEND_OVERLAP_DISJOINT_EXT = 1,
     VK_BLEND_OVERLAP_CONJOINT_EXT = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCoverageModulationModeNV = enum(i32) {
     VK_COVERAGE_MODULATION_MODE_NONE_NV = 0,
     VK_COVERAGE_MODULATION_MODE_RGB_NV = 1,
     VK_COVERAGE_MODULATION_MODE_ALPHA_NV = 2,
     VK_COVERAGE_MODULATION_MODE_RGBA_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCoverageReductionModeNV = enum(i32) {
     VK_COVERAGE_REDUCTION_MODE_MERGE_NV = 0,
     VK_COVERAGE_REDUCTION_MODE_TRUNCATE_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkValidationCacheHeaderVersionEXT = enum(i32) {
     VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkShaderInfoTypeAMD = enum(i32) {
     VK_SHADER_INFO_TYPE_STATISTICS_AMD = 0,
     VK_SHADER_INFO_TYPE_BINARY_AMD = 1,
     VK_SHADER_INFO_TYPE_DISASSEMBLY_AMD = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkQueueGlobalPriority = enum(i32) {
     VK_QUEUE_GLOBAL_PRIORITY_LOW = 128,
     VK_QUEUE_GLOBAL_PRIORITY_MEDIUM = 256,
     VK_QUEUE_GLOBAL_PRIORITY_HIGH = 512,
     VK_QUEUE_GLOBAL_PRIORITY_REALTIME = 1024,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkConservativeRasterizationModeEXT = enum(i32) {
     VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT = 0,
     VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT = 1,
     VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkVendorId = enum(i32) {
     // Comment: Khronos vendor ID
@@ -7488,7 +7411,6 @@ pub const VkVendorId = enum(i32) {
     VK_VENDOR_ID_POCL = 65542,
     // Comment: Mobileye vendor ID
     VK_VENDOR_ID_MOBILEYE = 65543,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDriverId = enum(i32) {
     // Comment: Advanced Micro Devices, Inc.
@@ -7547,7 +7469,6 @@ pub const VkDriverId = enum(i32) {
     VK_DRIVER_ID_VULKAN_SC_EMULATION_ON_VULKAN = 27,
     // Comment: Mesa open source project
     VK_DRIVER_ID_MESA_KOSMICKRISP = 28,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkShadingRatePaletteEntryNV = enum(i32) {
     VK_SHADING_RATE_PALETTE_ENTRY_NO_INVOCATIONS_NV = 0,
@@ -7562,14 +7483,12 @@ pub const VkShadingRatePaletteEntryNV = enum(i32) {
     VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_4X2_PIXELS_NV = 9,
     VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_2X4_PIXELS_NV = 10,
     VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_4X4_PIXELS_NV = 11,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCoarseSampleOrderTypeNV = enum(i32) {
     VK_COARSE_SAMPLE_ORDER_TYPE_DEFAULT_NV = 0,
     VK_COARSE_SAMPLE_ORDER_TYPE_CUSTOM_NV = 1,
     VK_COARSE_SAMPLE_ORDER_TYPE_PIXEL_MAJOR_NV = 2,
     VK_COARSE_SAMPLE_ORDER_TYPE_SAMPLE_MAJOR_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCopyAccelerationStructureModeKHR = enum(i32) {
     VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR = 0,
@@ -7578,18 +7497,15 @@ pub const VkCopyAccelerationStructureModeKHR = enum(i32) {
     VK_COPY_ACCELERATION_STRUCTURE_MODE_SERIALIZE_KHR = 2,
     // Extension: VK_KHR_acceleration_structure
     VK_COPY_ACCELERATION_STRUCTURE_MODE_DESERIALIZE_KHR = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBuildAccelerationStructureModeKHR = enum(i32) {
     VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR = 0,
     VK_BUILD_ACCELERATION_STRUCTURE_MODE_UPDATE_KHR = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAccelerationStructureTypeKHR = enum(i32) {
     VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR = 0,
     VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR = 1,
     VK_ACCELERATION_STRUCTURE_TYPE_GENERIC_KHR = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkGeometryTypeKHR = enum(i32) {
     VK_GEOMETRY_TYPE_TRIANGLES_KHR = 0,
@@ -7601,56 +7517,47 @@ pub const VkGeometryTypeKHR = enum(i32) {
     VK_GEOMETRY_TYPE_LINEAR_SWEPT_SPHERES_NV = 1000429005,
     // Extension: VK_AMDX_dense_geometry_format
     VK_GEOMETRY_TYPE_DENSE_GEOMETRY_FORMAT_TRIANGLES_AMDX = 1000478000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAccelerationStructureMemoryRequirementsTypeNV = enum(i32) {
     VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_OBJECT_NV = 0,
     VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_BUILD_SCRATCH_NV = 1,
     VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_UPDATE_SCRATCH_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAccelerationStructureBuildTypeKHR = enum(i32) {
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_HOST_KHR = 0,
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR = 1,
     VK_ACCELERATION_STRUCTURE_BUILD_TYPE_HOST_OR_DEVICE_KHR = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkRayTracingShaderGroupTypeKHR = enum(i32) {
     VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR = 0,
     VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR = 1,
     VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAccelerationStructureCompatibilityKHR = enum(i32) {
     VK_ACCELERATION_STRUCTURE_COMPATIBILITY_COMPATIBLE_KHR = 0,
     VK_ACCELERATION_STRUCTURE_COMPATIBILITY_INCOMPATIBLE_KHR = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkShaderGroupShaderKHR = enum(i32) {
     VK_SHADER_GROUP_SHADER_GENERAL_KHR = 0,
     VK_SHADER_GROUP_SHADER_CLOSEST_HIT_KHR = 1,
     VK_SHADER_GROUP_SHADER_ANY_HIT_KHR = 2,
     VK_SHADER_GROUP_SHADER_INTERSECTION_KHR = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkMemoryOverallocationBehaviorAMD = enum(i32) {
     VK_MEMORY_OVERALLOCATION_BEHAVIOR_DEFAULT_AMD = 0,
     VK_MEMORY_OVERALLOCATION_BEHAVIOR_ALLOWED_AMD = 1,
     VK_MEMORY_OVERALLOCATION_BEHAVIOR_DISALLOWED_AMD = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFullScreenExclusiveEXT = enum(i32) {
     VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT = 0,
     VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT = 1,
     VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT = 2,
     VK_FULL_SCREEN_EXCLUSIVE_APPLICATION_CONTROLLED_EXT = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceCounterScopeKHR = enum(i32) {
     VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_BUFFER_KHR = 0,
     VK_PERFORMANCE_COUNTER_SCOPE_RENDER_PASS_KHR = 1,
     VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_KHR = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceCounterUnitKHR = enum(i32) {
     VK_PERFORMANCE_COUNTER_UNIT_GENERIC_KHR = 0,
@@ -7664,7 +7571,6 @@ pub const VkPerformanceCounterUnitKHR = enum(i32) {
     VK_PERFORMANCE_COUNTER_UNIT_AMPS_KHR = 8,
     VK_PERFORMANCE_COUNTER_UNIT_HERTZ_KHR = 9,
     VK_PERFORMANCE_COUNTER_UNIT_CYCLES_KHR = 10,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceCounterStorageKHR = enum(i32) {
     VK_PERFORMANCE_COUNTER_STORAGE_INT32_KHR = 0,
@@ -7673,25 +7579,20 @@ pub const VkPerformanceCounterStorageKHR = enum(i32) {
     VK_PERFORMANCE_COUNTER_STORAGE_UINT64_KHR = 3,
     VK_PERFORMANCE_COUNTER_STORAGE_FLOAT32_KHR = 4,
     VK_PERFORMANCE_COUNTER_STORAGE_FLOAT64_KHR = 5,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceConfigurationTypeINTEL = enum(i32) {
     VK_PERFORMANCE_CONFIGURATION_TYPE_COMMAND_QUEUE_METRICS_DISCOVERY_ACTIVATED_INTEL = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkQueryPoolSamplingModeINTEL = enum(i32) {
     VK_QUERY_POOL_SAMPLING_MODE_MANUAL_INTEL = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceOverrideTypeINTEL = enum(i32) {
     VK_PERFORMANCE_OVERRIDE_TYPE_NULL_HARDWARE_INTEL = 0,
     VK_PERFORMANCE_OVERRIDE_TYPE_FLUSH_GPU_CACHES_INTEL = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceParameterTypeINTEL = enum(i32) {
     VK_PERFORMANCE_PARAMETER_TYPE_HW_COUNTERS_SUPPORTED_INTEL = 0,
     VK_PERFORMANCE_PARAMETER_TYPE_STREAM_MARKER_VALID_BITS_INTEL = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPerformanceValueTypeINTEL = enum(i32) {
     VK_PERFORMANCE_VALUE_TYPE_UINT32_INTEL = 0,
@@ -7699,34 +7600,29 @@ pub const VkPerformanceValueTypeINTEL = enum(i32) {
     VK_PERFORMANCE_VALUE_TYPE_FLOAT_INTEL = 2,
     VK_PERFORMANCE_VALUE_TYPE_BOOL_INTEL = 3,
     VK_PERFORMANCE_VALUE_TYPE_STRING_INTEL = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkShaderFloatControlsIndependence = enum(i32) {
     VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY = 0,
     VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL = 1,
     VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineExecutableStatisticFormatKHR = enum(i32) {
     VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_BOOL32_KHR = 0,
     VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_INT64_KHR = 1,
     VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_UINT64_KHR = 2,
     VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_FLOAT64_KHR = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkLineRasterizationMode = enum(i32) {
     VK_LINE_RASTERIZATION_MODE_DEFAULT = 0,
     VK_LINE_RASTERIZATION_MODE_RECTANGULAR = 1,
     VK_LINE_RASTERIZATION_MODE_BRESENHAM = 2,
     VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFaultLevel = enum(i32) {
     VK_FAULT_LEVEL_UNASSIGNED = 0,
     VK_FAULT_LEVEL_CRITICAL = 1,
     VK_FAULT_LEVEL_RECOVERABLE = 2,
     VK_FAULT_LEVEL_WARNING = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFaultType = enum(i32) {
     VK_FAULT_TYPE_INVALID = 0,
@@ -7736,15 +7632,12 @@ pub const VkFaultType = enum(i32) {
     VK_FAULT_TYPE_PHYSICAL_DEVICE = 4,
     VK_FAULT_TYPE_COMMAND_BUFFER_FULL = 5,
     VK_FAULT_TYPE_INVALID_API_USAGE = 6,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFaultQueryBehavior = enum(i32) {
     VK_FAULT_QUERY_BEHAVIOR_GET_AND_CLEAR_ALL_FAULTS = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineMatchControl = enum(i32) {
     VK_PIPELINE_MATCH_CONTROL_APPLICATION_UUID_EXACT_MATCH = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFragmentShadingRateCombinerOpKHR = enum(i32) {
     VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR = 0,
@@ -7752,7 +7645,6 @@ pub const VkFragmentShadingRateCombinerOpKHR = enum(i32) {
     VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR = 2,
     VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR = 3,
     VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFragmentShadingRateNV = enum(i32) {
     VK_FRAGMENT_SHADING_RATE_1_INVOCATION_PER_PIXEL_NV = 0,
@@ -7767,12 +7659,10 @@ pub const VkFragmentShadingRateNV = enum(i32) {
     VK_FRAGMENT_SHADING_RATE_8_INVOCATIONS_PER_PIXEL_NV = 13,
     VK_FRAGMENT_SHADING_RATE_16_INVOCATIONS_PER_PIXEL_NV = 14,
     VK_FRAGMENT_SHADING_RATE_NO_INVOCATIONS_NV = 15,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkFragmentShadingRateTypeNV = enum(i32) {
     VK_FRAGMENT_SHADING_RATE_TYPE_FRAGMENT_SIZE_NV = 0,
     VK_FRAGMENT_SHADING_RATE_TYPE_ENUMS_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSubpassMergeStatusEXT = enum(i32) {
     VK_SUBPASS_MERGE_STATUS_MERGED_EXT = 0,
@@ -7789,38 +7679,31 @@ pub const VkSubpassMergeStatusEXT = enum(i32) {
     VK_SUBPASS_MERGE_STATUS_NOT_MERGED_RESOLVE_ATTACHMENT_REUSE_EXT = 11,
     VK_SUBPASS_MERGE_STATUS_NOT_MERGED_SINGLE_SUBPASS_EXT = 12,
     VK_SUBPASS_MERGE_STATUS_NOT_MERGED_UNSPECIFIED_EXT = 13,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSciSyncClientTypeNV = enum(i32) {
     VK_SCI_SYNC_CLIENT_TYPE_SIGNALER_NV = 0,
     VK_SCI_SYNC_CLIENT_TYPE_WAITER_NV = 1,
     VK_SCI_SYNC_CLIENT_TYPE_SIGNALER_WAITER_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkSciSyncPrimitiveTypeNV = enum(i32) {
     VK_SCI_SYNC_PRIMITIVE_TYPE_FENCE_NV = 0,
     VK_SCI_SYNC_PRIMITIVE_TYPE_SEMAPHORE_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkProvokingVertexModeEXT = enum(i32) {
     VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT = 0,
     VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineCacheValidationVersion = enum(i32) {
     VK_PIPELINE_CACHE_VALIDATION_VERSION_SAFETY_CRITICAL_ONE = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkAccelerationStructureMotionInstanceTypeNV = enum(i32) {
     VK_ACCELERATION_STRUCTURE_MOTION_INSTANCE_TYPE_STATIC_NV = 0,
     VK_ACCELERATION_STRUCTURE_MOTION_INSTANCE_TYPE_MATRIX_MOTION_NV = 1,
     VK_ACCELERATION_STRUCTURE_MOTION_INSTANCE_TYPE_SRT_MOTION_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDeviceAddressBindingTypeEXT = enum(i32) {
     VK_DEVICE_ADDRESS_BINDING_TYPE_BIND_EXT = 0,
     VK_DEVICE_ADDRESS_BINDING_TYPE_UNBIND_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkQueryResultStatusKHR = enum(i32) {
     // Extension: VK_KHR_video_encode_queue
@@ -7828,7 +7711,6 @@ pub const VkQueryResultStatusKHR = enum(i32) {
     VK_QUERY_RESULT_STATUS_ERROR_KHR = -1,
     VK_QUERY_RESULT_STATUS_NOT_READY_KHR = 0,
     VK_QUERY_RESULT_STATUS_COMPLETE_KHR = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkVideoEncodeTuningModeKHR = enum(i32) {
     VK_VIDEO_ENCODE_TUNING_MODE_DEFAULT_KHR = 0,
@@ -7836,47 +7718,40 @@ pub const VkVideoEncodeTuningModeKHR = enum(i32) {
     VK_VIDEO_ENCODE_TUNING_MODE_LOW_LATENCY_KHR = 2,
     VK_VIDEO_ENCODE_TUNING_MODE_ULTRA_LOW_LATENCY_KHR = 3,
     VK_VIDEO_ENCODE_TUNING_MODE_LOSSLESS_KHR = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPartitionedAccelerationStructureOpTypeNV = enum(i32) {
     VK_PARTITIONED_ACCELERATION_STRUCTURE_OP_TYPE_WRITE_INSTANCE_NV = 0,
     VK_PARTITIONED_ACCELERATION_STRUCTURE_OP_TYPE_UPDATE_INSTANCE_NV = 1,
     VK_PARTITIONED_ACCELERATION_STRUCTURE_OP_TYPE_WRITE_PARTITION_TRANSLATION_NV = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkVideoEncodeAV1PredictionModeKHR = enum(i32) {
     VK_VIDEO_ENCODE_AV1_PREDICTION_MODE_INTRA_ONLY_KHR = 0,
     VK_VIDEO_ENCODE_AV1_PREDICTION_MODE_SINGLE_REFERENCE_KHR = 1,
     VK_VIDEO_ENCODE_AV1_PREDICTION_MODE_UNIDIRECTIONAL_COMPOUND_KHR = 2,
     VK_VIDEO_ENCODE_AV1_PREDICTION_MODE_BIDIRECTIONAL_COMPOUND_KHR = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkVideoEncodeAV1RateControlGroupKHR = enum(i32) {
     VK_VIDEO_ENCODE_AV1_RATE_CONTROL_GROUP_INTRA_KHR = 0,
     VK_VIDEO_ENCODE_AV1_RATE_CONTROL_GROUP_PREDICTIVE_KHR = 1,
     VK_VIDEO_ENCODE_AV1_RATE_CONTROL_GROUP_BIPREDICTIVE_KHR = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineRobustnessBufferBehavior = enum(i32) {
     VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT = 0,
     VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DISABLED = 1,
     VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS = 2,
     VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2 = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPipelineRobustnessImageBehavior = enum(i32) {
     VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DEVICE_DEFAULT = 0,
     VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DISABLED = 1,
     VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_ROBUST_IMAGE_ACCESS = 2,
     VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_ROBUST_IMAGE_ACCESS_2 = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkOpticalFlowPerformanceLevelNV = enum(i32) {
     VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_UNKNOWN_NV = 0,
     VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_SLOW_NV = 1,
     VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_MEDIUM_NV = 2,
     VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_FAST_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkOpticalFlowSessionBindingPointNV = enum(i32) {
     VK_OPTICAL_FLOW_SESSION_BINDING_POINT_UNKNOWN_NV = 0,
@@ -7888,29 +7763,24 @@ pub const VkOpticalFlowSessionBindingPointNV = enum(i32) {
     VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV = 6,
     VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV = 7,
     VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV = 8,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkMicromapTypeEXT = enum(i32) {
     VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT = 0,
     // Extension: VK_NV_displacement_micromap
     VK_MICROMAP_TYPE_DISPLACEMENT_MICROMAP_NV = 1000397000,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCopyMicromapModeEXT = enum(i32) {
     VK_COPY_MICROMAP_MODE_CLONE_EXT = 0,
     VK_COPY_MICROMAP_MODE_SERIALIZE_EXT = 1,
     VK_COPY_MICROMAP_MODE_DESERIALIZE_EXT = 2,
     VK_COPY_MICROMAP_MODE_COMPACT_EXT = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBuildMicromapModeEXT = enum(i32) {
     VK_BUILD_MICROMAP_MODE_BUILD_EXT = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkOpacityMicromapFormatEXT = enum(i32) {
     VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT = 1,
     VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkOpacityMicromapSpecialIndexEXT = enum(i32) {
     // Extension: VK_NV_cluster_acceleration_structure
@@ -7919,13 +7789,11 @@ pub const VkOpacityMicromapSpecialIndexEXT = enum(i32) {
     VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_UNKNOWN_TRANSPARENT_EXT = -3,
     VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_OPAQUE_EXT = -2,
     VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_TRANSPARENT_EXT = -1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDepthBiasRepresentationEXT = enum(i32) {
     VK_DEPTH_BIAS_REPRESENTATION_LEAST_REPRESENTABLE_VALUE_FORMAT_EXT = 0,
     VK_DEPTH_BIAS_REPRESENTATION_LEAST_REPRESENTABLE_VALUE_FORCE_UNORM_EXT = 1,
     VK_DEPTH_BIAS_REPRESENTATION_FLOAT_EXT = 2,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDeviceFaultAddressTypeEXT = enum(i32) {
     // Comment: Currently unused
@@ -7936,16 +7804,13 @@ pub const VkDeviceFaultAddressTypeEXT = enum(i32) {
     VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_UNKNOWN_EXT = 4,
     VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_INVALID_EXT = 5,
     VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_FAULT_EXT = 6,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDeviceFaultVendorBinaryHeaderVersionEXT = enum(i32) {
     VK_DEVICE_FAULT_VENDOR_BINARY_HEADER_VERSION_ONE_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkIndirectExecutionSetInfoTypeEXT = enum(i32) {
     VK_INDIRECT_EXECUTION_SET_INFO_TYPE_PIPELINES_EXT = 0,
     VK_INDIRECT_EXECUTION_SET_INFO_TYPE_SHADER_OBJECTS_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkIndirectCommandsTokenTypeEXT = enum(i32) {
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_EXECUTION_SET_EXT = 0,
@@ -7968,25 +7833,21 @@ pub const VkIndirectCommandsTokenTypeEXT = enum(i32) {
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_MESH_TASKS_COUNT_EXT = 1000328001,
     // Extension: VK_KHR_ray_tracing_maintenance1
     VK_INDIRECT_COMMANDS_TOKEN_TYPE_TRACE_RAYS2_EXT = 1000386004,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDisplacementMicromapFormatNV = enum(i32) {
     VK_DISPLACEMENT_MICROMAP_FORMAT_64_TRIANGLES_64_BYTES_NV = 1,
     VK_DISPLACEMENT_MICROMAP_FORMAT_256_TRIANGLES_128_BYTES_NV = 2,
     VK_DISPLACEMENT_MICROMAP_FORMAT_1024_TRIANGLES_128_BYTES_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkShaderCodeTypeEXT = enum(i32) {
     VK_SHADER_CODE_TYPE_BINARY_EXT = 0,
     VK_SHADER_CODE_TYPE_SPIRV_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkScopeKHR = enum(i32) {
     VK_SCOPE_DEVICE_KHR = 1,
     VK_SCOPE_WORKGROUP_KHR = 2,
     VK_SCOPE_SUBGROUP_KHR = 3,
     VK_SCOPE_QUEUE_FAMILY_KHR = 5,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkComponentTypeKHR = enum(i32) {
     VK_COMPONENT_TYPE_FLOAT16_KHR = 0,
@@ -8010,19 +7871,16 @@ pub const VkComponentTypeKHR = enum(i32) {
     VK_COMPONENT_TYPE_FLOAT8_E4M3_EXT = 1000491002,
     // Extension: VK_EXT_shader_float8
     VK_COMPONENT_TYPE_FLOAT8_E5M2_EXT = 1000491003,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCubicFilterWeightsQCOM = enum(i32) {
     VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM = 0,
     VK_CUBIC_FILTER_WEIGHTS_ZERO_TANGENT_CARDINAL_QCOM = 1,
     VK_CUBIC_FILTER_WEIGHTS_B_SPLINE_QCOM = 2,
     VK_CUBIC_FILTER_WEIGHTS_MITCHELL_NETRAVALI_QCOM = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkBlockMatchWindowCompareModeQCOM = enum(i32) {
     VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MIN_QCOM = 0,
     VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MAX_QCOM = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPhysicalDeviceLayeredApiKHR = enum(i32) {
     VK_PHYSICAL_DEVICE_LAYERED_API_VULKAN_KHR = 0,
@@ -8030,12 +7888,10 @@ pub const VkPhysicalDeviceLayeredApiKHR = enum(i32) {
     VK_PHYSICAL_DEVICE_LAYERED_API_METAL_KHR = 2,
     VK_PHYSICAL_DEVICE_LAYERED_API_OPENGL_KHR = 3,
     VK_PHYSICAL_DEVICE_LAYERED_API_OPENGLES_KHR = 4,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkLayeredDriverUnderlyingApiMSFT = enum(i32) {
     VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT = 0,
     VK_LAYERED_DRIVER_UNDERLYING_API_D3D12_MSFT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkLatencyMarkerNV = enum(i32) {
     VK_LATENCY_MARKER_SIMULATION_START_NV = 0,
@@ -8050,51 +7906,41 @@ pub const VkLatencyMarkerNV = enum(i32) {
     VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_END_NV = 9,
     VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_START_NV = 10,
     VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_END_NV = 11,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkOutOfBandQueueTypeNV = enum(i32) {
     VK_OUT_OF_BAND_QUEUE_TYPE_RENDER_NV = 0,
     VK_OUT_OF_BAND_QUEUE_TYPE_PRESENT_NV = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCompressedTriangleFormatAMDX = enum(i32) {
     VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_AMDX = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDepthClampModeEXT = enum(i32) {
     VK_DEPTH_CLAMP_MODE_VIEWPORT_RANGE_EXT = 0,
     VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkCooperativeVectorMatrixLayoutNV = enum(i32) {
     VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV = 0,
     VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_COLUMN_MAJOR_NV = 1,
     VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_INFERENCING_OPTIMAL_NV = 2,
     VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_TRAINING_OPTIMAL_NV = 3,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkTensorTilingARM = enum(i32) {
     VK_TENSOR_TILING_OPTIMAL_ARM = 0,
     VK_TENSOR_TILING_LINEAR_ARM = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDefaultVertexAttributeValueKHR = enum(i32) {
     VK_DEFAULT_VERTEX_ATTRIBUTE_VALUE_ZERO_ZERO_ZERO_ZERO_KHR = 0,
     VK_DEFAULT_VERTEX_ATTRIBUTE_VALUE_ZERO_ZERO_ZERO_ONE_KHR = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDataGraphPipelineSessionBindPointARM = enum(i32) {
     VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDataGraphPipelineSessionBindPointTypeARM = enum(i32) {
     VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDataGraphPipelinePropertyARM = enum(i32) {
     VK_DATA_GRAPH_PIPELINE_PROPERTY_CREATION_LOG_ARM = 0,
     VK_DATA_GRAPH_PIPELINE_PROPERTY_IDENTIFIER_ARM = 1,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPhysicalDeviceDataGraphProcessingEngineTypeARM = enum(i32) {
     VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_DEFAULT_ARM = 0,
@@ -8102,7 +7948,6 @@ pub const VkPhysicalDeviceDataGraphProcessingEngineTypeARM = enum(i32) {
     VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_NEURAL_QCOM = 1000629000,
     // Extension: VK_QCOM_data_graph_model
     VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_COMPUTE_QCOM = 1000629001,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkPhysicalDeviceDataGraphOperationTypeARM = enum(i32) {
     VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_SPIRV_EXTENDED_INSTRUCTION_SET_ARM = 0,
@@ -8110,11 +7955,9 @@ pub const VkPhysicalDeviceDataGraphOperationTypeARM = enum(i32) {
     VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_NEURAL_MODEL_QCOM = 1000629000,
     // Extension: VK_QCOM_data_graph_model
     VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_BUILTIN_MODEL_QCOM = 1000629001,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 pub const VkDataGraphModelCacheTypeQCOM = enum(i32) {
     VK_DATA_GRAPH_MODEL_CACHE_TYPE_GENERIC_BINARY_QCOM = 0,
-    pub const zero = @import("std").mem.zeroes(@This());
 };
 
 // Structs
@@ -8124,7 +7967,7 @@ pub const VkDataGraphModelCacheTypeQCOM = enum(i32) {
 pub const VkBaseOutStructure = extern struct {
     // Extern sync: false
     // Optional: false
-    sType: VkStructureType,
+    sType: VkStructureType = .VK_STRUCTURE_TYPE_APPLICATION_INFO,
     // Extern sync: false
     // Optional: true
     pNext: ?*VkBaseOutStructure = null,
@@ -8135,7 +7978,7 @@ pub const VkBaseOutStructure = extern struct {
 pub const VkBaseInStructure = extern struct {
     // Extern sync: false
     // Optional: false
-    sType: VkStructureType,
+    sType: VkStructureType = .VK_STRUCTURE_TYPE_APPLICATION_INFO,
     // Extern sync: false
     // Optional: true
     pNext: ?*const VkBaseInStructure = null,
@@ -8244,16 +8087,16 @@ pub const VkClearRect = extern struct {
 pub const VkComponentMapping = extern struct {
     // Extern sync: false
     // Optional: false
-    r: VkComponentSwizzle,
+    r: VkComponentSwizzle = .VK_COMPONENT_SWIZZLE_IDENTITY,
     // Extern sync: false
     // Optional: false
-    g: VkComponentSwizzle,
+    g: VkComponentSwizzle = .VK_COMPONENT_SWIZZLE_IDENTITY,
     // Extern sync: false
     // Optional: false
-    b: VkComponentSwizzle,
+    b: VkComponentSwizzle = .VK_COMPONENT_SWIZZLE_IDENTITY,
     // Extern sync: false
     // Optional: false
-    a: VkComponentSwizzle,
+    a: VkComponentSwizzle = .VK_COMPONENT_SWIZZLE_IDENTITY,
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: true
@@ -8273,7 +8116,7 @@ pub const VkPhysicalDeviceProperties = extern struct {
     deviceID: u32 = 0,
     // Extern sync: false
     // Optional: false
-    deviceType: VkPhysicalDeviceType,
+    deviceType: VkPhysicalDeviceType = .VK_PHYSICAL_DEVICE_TYPE_OTHER,
     // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
@@ -8500,14 +8343,14 @@ pub const VkPhysicalDeviceMemoryProperties = extern struct {
     // Length expression: memoryTypeCount
     // Extern sync: false
     // Optional: false
-    memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = @import("std").mem.zeroes([VK_MAX_MEMORY_TYPES]VkMemoryType),
+    memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = .{VkMemoryType{}} ** VK_MAX_MEMORY_TYPES,
     // Extern sync: false
     // Optional: false
     memoryHeapCount: u32 = 0,
     // Length expression: memoryHeapCount
     // Extern sync: false
     // Optional: false
-    memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = @import("std").mem.zeroes([VK_MAX_MEMORY_HEAPS]VkMemoryHeap),
+    memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = .{VkMemoryHeap{}} ** VK_MAX_MEMORY_HEAPS,
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
@@ -8705,7 +8548,7 @@ pub const VkDescriptorImageInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Layout the image is expected to be in when accessed using this descriptor (only used if imageView is not VK_NULL_HANDLE).
-    imageLayout: VkImageLayout,
+    imageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_COMPUTE_VERSION_1_0
 // Returned only: false
@@ -8736,7 +8579,7 @@ pub const VkWriteDescriptorSet = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Descriptor type to write (determines which members of the array pointed by pDescriptors are going to be used)
-    descriptorType: VkDescriptorType,
+    descriptorType: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Length expression: descriptorCount
     // Extern sync: false
     // Optional: false
@@ -8831,7 +8674,7 @@ pub const VkBufferCreateInfo = extern struct {
     usage: VkBufferUsageFlags = .{},
     // Extern sync: false
     // Optional: false
-    sharingMode: VkSharingMode,
+    sharingMode: VkSharingMode = .VK_SHARING_MODE_EXCLUSIVE,
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
@@ -8859,7 +8702,7 @@ pub const VkBufferViewCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Optionally specifies format of elements
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: Specified in bytes
@@ -8999,11 +8842,11 @@ pub const VkImageMemoryBarrier = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Current layout of the image
-    oldLayout: VkImageLayout,
+    oldLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: New layout to transition the image to
-    newLayout: VkImageLayout,
+    newLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: Queue family to transition ownership from
@@ -9037,10 +8880,10 @@ pub const VkImageCreateInfo = extern struct {
     flags: VkImageCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    imageType: VkImageType,
+    imageType: VkImageType = .VK_IMAGE_TYPE_1D,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     extent: VkExtent3D = .{},
@@ -9055,7 +8898,7 @@ pub const VkImageCreateInfo = extern struct {
     samples: VkSampleCountFlags = .{},
     // Extern sync: false
     // Optional: false
-    tiling: VkImageTiling,
+    tiling: VkImageTiling = .VK_IMAGE_TILING_OPTIMAL,
     // Extern sync: false
     // Optional: false
     // Comment: Image usage flags
@@ -9063,7 +8906,7 @@ pub const VkImageCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Cross-queue-family sharing mode
-    sharingMode: VkSharingMode,
+    sharingMode: VkSharingMode = .VK_SHARING_MODE_EXCLUSIVE,
     // Extern sync: false
     // Optional: true
     // Comment: Number of queue families to share across
@@ -9076,7 +8919,7 @@ pub const VkImageCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Initial image layout for all subresources
-    initialLayout: VkImageLayout,
+    initialLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
@@ -9121,13 +8964,13 @@ pub const VkImageViewCreateInfo = extern struct {
     image: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    viewType: VkImageViewType,
+    viewType: VkImageViewType = .VK_IMAGE_VIEW_TYPE_1D,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping,
+    components: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
     subresourceRange: VkImageSubresourceRange = .{},
@@ -9320,14 +9163,14 @@ pub const VkImageBlit = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    srcOffsets: [2]VkOffset3D = @import("std").mem.zeroes([2]VkOffset3D),
+    srcOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
     // Extern sync: false
     // Optional: false
     dstSubresource: VkImageSubresourceLayers = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    dstOffsets: [2]VkOffset3D = @import("std").mem.zeroes([2]VkOffset3D),
+    dstOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
@@ -9454,7 +9297,7 @@ pub const VkCopyMemoryToImageIndirectInfoKHR = extern struct {
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Length expression: copyCount
     // Extern sync: false
     // Optional: false
@@ -9516,7 +9359,7 @@ pub const VkDescriptorSetLayoutBinding = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Type of the descriptors in this binding
-    descriptorType: VkDescriptorType,
+    descriptorType: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Extern sync: false
     // Optional: true
     // Comment: Number of descriptors in this binding
@@ -9560,7 +9403,7 @@ pub const VkDescriptorSetLayoutCreateInfo = extern struct {
 pub const VkDescriptorPoolSize = extern struct {
     // Extern sync: false
     // Optional: false
-    type: VkDescriptorType,
+    type: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Extern sync: false
     // Optional: false
     descriptorCount: u32 = 0,
@@ -9696,7 +9539,7 @@ pub const VkComputePipelineCreateInfo = extern struct {
     flags: VkPipelineCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    stage: VkPipelineShaderStageCreateInfo,
+    stage: VkPipelineShaderStageCreateInfo = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Interface layout of the pipeline
@@ -9761,7 +9604,7 @@ pub const VkVertexInputBindingDescription = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: The rate at which the vertex data is consumed
-    inputRate: VkVertexInputRate,
+    inputRate: VkVertexInputRate = .VK_VERTEX_INPUT_RATE_VERTEX,
 };
 // Extension: VK_GRAPHICS_VERSION_1_0
 // Returned only: false
@@ -9778,7 +9621,7 @@ pub const VkVertexInputAttributeDescription = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: format of source data
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: Offset of first element in bytes from base of vertex
@@ -9829,7 +9672,7 @@ pub const VkPipelineInputAssemblyStateCreateInfo = extern struct {
     flags: VkPipelineInputAssemblyStateCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    topology: VkPrimitiveTopology,
+    topology: VkPrimitiveTopology = .VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
     // Extern sync: false
     // Optional: false
     primitiveRestartEnable: u32 = 0,
@@ -9901,13 +9744,13 @@ pub const VkPipelineRasterizationStateCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: optional (GL45)
-    polygonMode: VkPolygonMode,
+    polygonMode: VkPolygonMode = .VK_POLYGON_MODE_FILL,
     // Extern sync: false
     // Optional: true
     cullMode: VkCullModeFlags = .{},
     // Extern sync: false
     // Optional: false
-    frontFace: VkFrontFace,
+    frontFace: VkFrontFace = .VK_FRONT_FACE_COUNTER_CLOCKWISE,
     // Extern sync: false
     // Optional: false
     depthBiasEnable: u32 = 0,
@@ -9970,22 +9813,22 @@ pub const VkPipelineColorBlendAttachmentState = extern struct {
     blendEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    srcColorBlendFactor: VkBlendFactor,
+    srcColorBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    dstColorBlendFactor: VkBlendFactor,
+    dstColorBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    colorBlendOp: VkBlendOp,
+    colorBlendOp: VkBlendOp = .VK_BLEND_OP_ADD,
     // Extern sync: false
     // Optional: false
-    srcAlphaBlendFactor: VkBlendFactor,
+    srcAlphaBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    dstAlphaBlendFactor: VkBlendFactor,
+    dstAlphaBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    alphaBlendOp: VkBlendOp,
+    alphaBlendOp: VkBlendOp = .VK_BLEND_OP_ADD,
     // Extern sync: false
     // Optional: true
     colorWriteMask: VkColorComponentFlags = .{},
@@ -10008,7 +9851,7 @@ pub const VkPipelineColorBlendStateCreateInfo = extern struct {
     logicOpEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    logicOp: VkLogicOp,
+    logicOp: VkLogicOp = .VK_LOGIC_OP_CLEAR,
     // Extern sync: false
     // Optional: true
     // Comment: # of pAttachments
@@ -10048,16 +9891,16 @@ pub const VkPipelineDynamicStateCreateInfo = extern struct {
 pub const VkStencilOpState = extern struct {
     // Extern sync: false
     // Optional: false
-    failOp: VkStencilOp,
+    failOp: VkStencilOp = .VK_STENCIL_OP_KEEP,
     // Extern sync: false
     // Optional: false
-    passOp: VkStencilOp,
+    passOp: VkStencilOp = .VK_STENCIL_OP_KEEP,
     // Extern sync: false
     // Optional: false
-    depthFailOp: VkStencilOp,
+    depthFailOp: VkStencilOp = .VK_STENCIL_OP_KEEP,
     // Extern sync: false
     // Optional: false
-    compareOp: VkCompareOp,
+    compareOp: VkCompareOp = .VK_COMPARE_OP_NEVER,
     // Extern sync: false
     // Optional: false
     compareMask: u32 = 0,
@@ -10089,7 +9932,7 @@ pub const VkPipelineDepthStencilStateCreateInfo = extern struct {
     depthWriteEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    depthCompareOp: VkCompareOp,
+    depthCompareOp: VkCompareOp = .VK_COMPARE_OP_NEVER,
     // Extern sync: false
     // Optional: false
     // Comment: optional (depth_bounds_test)
@@ -10099,10 +9942,10 @@ pub const VkPipelineDepthStencilStateCreateInfo = extern struct {
     stencilTestEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    front: VkStencilOpState,
+    front: VkStencilOpState = .{},
     // Extern sync: false
     // Optional: false
-    back: VkStencilOpState,
+    back: VkStencilOpState = .{},
     // Extern sync: false
     // Optional: false
     minDepthBounds: f32 = 0,
@@ -10210,7 +10053,7 @@ pub const VkPipelineCacheHeaderVersionOne = extern struct {
     headerSize: u32 = 0,
     // Extern sync: false
     // Optional: false
-    headerVersion: VkPipelineCacheHeaderVersion,
+    headerVersion: VkPipelineCacheHeaderVersion = .VK_PIPELINE_CACHE_HEADER_VERSION_ONE,
     // Extern sync: false
     // Optional: false
     vendorID: u32 = 0,
@@ -10264,10 +10107,10 @@ pub const VkPipelineCacheSafetyCriticalIndexEntry = extern struct {
 pub const VkPipelineCacheHeaderVersionSafetyCriticalOne = extern struct {
     // Extern sync: false
     // Optional: false
-    headerVersionOne: VkPipelineCacheHeaderVersionOne,
+    headerVersionOne: VkPipelineCacheHeaderVersionOne = .{},
     // Extern sync: false
     // Optional: false
-    validationVersion: VkPipelineCacheValidationVersion,
+    validationVersion: VkPipelineCacheValidationVersion = .VK_PIPELINE_CACHE_VALIDATION_VERSION_SAFETY_CRITICAL_ONE,
     // Extern sync: false
     // Optional: false
     implementationData: u32 = 0,
@@ -10290,10 +10133,10 @@ pub const VkPipelineCacheHeaderVersionDataGraphQCOM = extern struct {
     headerSize: u32 = 0,
     // Extern sync: false
     // Optional: false
-    headerVersion: VkPipelineCacheHeaderVersion,
+    headerVersion: VkPipelineCacheHeaderVersion = .VK_PIPELINE_CACHE_HEADER_VERSION_ONE,
     // Extern sync: false
     // Optional: false
-    cacheType: VkDataGraphModelCacheTypeQCOM,
+    cacheType: VkDataGraphModelCacheTypeQCOM = .VK_DATA_GRAPH_MODEL_CACHE_TYPE_GENERIC_BINARY_QCOM,
     // Extern sync: false
     // Optional: false
     cacheVersion: u32 = 0,
@@ -10508,24 +10351,24 @@ pub const VkSamplerCreateInfo = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Filter mode for magnification
-    magFilter: VkFilter,
+    magFilter: VkFilter = .VK_FILTER_NEAREST,
     // Extern sync: false
     // Optional: false
     // Comment: Filter mode for minifiation
-    minFilter: VkFilter,
+    minFilter: VkFilter = .VK_FILTER_NEAREST,
     // Extern sync: false
     // Optional: false
     // Comment: Mipmap selection mode
-    mipmapMode: VkSamplerMipmapMode,
+    mipmapMode: VkSamplerMipmapMode = .VK_SAMPLER_MIPMAP_MODE_NEAREST,
     // Extern sync: false
     // Optional: false
-    addressModeU: VkSamplerAddressMode,
+    addressModeU: VkSamplerAddressMode = .VK_SAMPLER_ADDRESS_MODE_REPEAT,
     // Extern sync: false
     // Optional: false
-    addressModeV: VkSamplerAddressMode,
+    addressModeV: VkSamplerAddressMode = .VK_SAMPLER_ADDRESS_MODE_REPEAT,
     // Extern sync: false
     // Optional: false
-    addressModeW: VkSamplerAddressMode,
+    addressModeW: VkSamplerAddressMode = .VK_SAMPLER_ADDRESS_MODE_REPEAT,
     // Extern sync: false
     // Optional: false
     mipLodBias: f32 = 0,
@@ -10540,7 +10383,7 @@ pub const VkSamplerCreateInfo = extern struct {
     compareEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    compareOp: VkCompareOp,
+    compareOp: VkCompareOp = .VK_COMPARE_OP_NEVER,
     // Extern sync: false
     // Optional: false
     minLod: f32 = 0,
@@ -10549,7 +10392,7 @@ pub const VkSamplerCreateInfo = extern struct {
     maxLod: f32 = 0,
     // Extern sync: false
     // Optional: false
-    borderColor: VkBorderColor,
+    borderColor: VkBorderColor = .VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
     // Extern sync: false
     // Optional: false
     unnormalizedCoordinates: u32 = 0,
@@ -10587,7 +10430,7 @@ pub const VkCommandBufferAllocateInfo = extern struct {
     commandPool: VkCommandPool = .none,
     // Extern sync: false
     // Optional: false
-    level: VkCommandBufferLevel,
+    level: VkCommandBufferLevel = .VK_COMMAND_BUFFER_LEVEL_PRIMARY,
     // Extern sync: false
     // Optional: false
     commandBufferCount: u32 = 0,
@@ -10706,32 +10549,32 @@ pub const VkAttachmentDescription = extern struct {
     flags: VkAttachmentDescriptionFlags = .{},
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     samples: VkSampleCountFlags = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Load operation for color or depth data
-    loadOp: VkAttachmentLoadOp,
+    loadOp: VkAttachmentLoadOp = .VK_ATTACHMENT_LOAD_OP_LOAD,
     // Extern sync: false
     // Optional: false
     // Comment: Store operation for color or depth data
-    storeOp: VkAttachmentStoreOp,
+    storeOp: VkAttachmentStoreOp = .VK_ATTACHMENT_STORE_OP_STORE,
     // Extern sync: false
     // Optional: false
     // Comment: Load operation for stencil data
-    stencilLoadOp: VkAttachmentLoadOp,
+    stencilLoadOp: VkAttachmentLoadOp = .VK_ATTACHMENT_LOAD_OP_LOAD,
     // Extern sync: false
     // Optional: false
     // Comment: Store operation for stencil data
-    stencilStoreOp: VkAttachmentStoreOp,
+    stencilStoreOp: VkAttachmentStoreOp = .VK_ATTACHMENT_STORE_OP_STORE,
     // Extern sync: false
     // Optional: false
-    initialLayout: VkImageLayout,
+    initialLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    finalLayout: VkImageLayout,
+    finalLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_GRAPHICS_VERSION_1_0
 // Returned only: false
@@ -10742,7 +10585,7 @@ pub const VkAttachmentReference = extern struct {
     attachment: u32 = 0,
     // Extern sync: false
     // Optional: false
-    layout: VkImageLayout,
+    layout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_GRAPHICS_VERSION_1_0
 // Returned only: false
@@ -10754,7 +10597,7 @@ pub const VkSubpassDescription = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Must be VK_PIPELINE_BIND_POINT_GRAPHICS for now
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: true
     inputAttachmentCount: u32 = 0,
@@ -11586,7 +11429,7 @@ pub const VkQueryPoolCreateInfo = extern struct {
     flags: VkQueryPoolCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    queryType: VkQueryType,
+    queryType: VkQueryType = .VK_QUERY_TYPE_OCCLUSION,
     // Extern sync: false
     // Optional: false
     queryCount: u32 = 0,
@@ -11921,7 +11764,7 @@ pub const VkDisplaySurfaceStereoCreateInfoNV = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: The 3D stereo type to use when presenting this surface.
-    stereoType: VkDisplaySurfaceStereoTypeNV,
+    stereoType: VkDisplaySurfaceStereoTypeNV = .VK_DISPLAY_SURFACE_STEREO_TYPE_NONE_NV,
 };
 // Extension: VK_KHR_display_swapchain
 // Extends: VkPresentInfoKHR
@@ -12181,11 +12024,11 @@ pub const VkSurfaceFormatKHR = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Supported pair of rendering format
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: and color space for the surface
-    colorSpace: VkColorSpaceKHR,
+    colorSpace: VkColorSpaceKHR = .VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
 };
 // Extension: VK_KHR_swapchain
 // Returned only: false
@@ -12211,11 +12054,11 @@ pub const VkSwapchainCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Format of the presentation images
-    imageFormat: VkFormat,
+    imageFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: Colorspace of the presentation images
-    imageColorSpace: VkColorSpaceKHR,
+    imageColorSpace: VkColorSpaceKHR = .VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
     // Extern sync: false
     // Optional: false
     // Comment: Dimensions of the presentation images
@@ -12231,7 +12074,7 @@ pub const VkSwapchainCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Sharing mode used for the presentation images
-    imageSharingMode: VkSharingMode,
+    imageSharingMode: VkSharingMode = .VK_SHARING_MODE_EXCLUSIVE,
     // Extern sync: false
     // Optional: true
     // Comment: Number of queue families having access to the images in case of concurrent sharing mode
@@ -12252,7 +12095,7 @@ pub const VkSwapchainCreateInfoKHR = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Which presentation mode to use for presents on this swap chain
-    presentMode: VkPresentModeKHR,
+    presentMode: VkPresentModeKHR = .VK_PRESENT_MODE_IMMEDIATE_KHR,
     // Extern sync: false
     // Optional: false
     // Comment: Specifies whether presentable images may be affected by window clip regions
@@ -12415,7 +12258,7 @@ pub const VkLayerSettingEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: The type of the object
-    type: VkLayerSettingTypeEXT,
+    type: VkLayerSettingTypeEXT = .VK_LAYER_SETTING_TYPE_BOOL32_EXT,
     // Extern sync: false
     // Optional: true
     // Comment: Number of values of the setting
@@ -12464,7 +12307,7 @@ pub const VkPipelineRasterizationStateRasterizationOrderAMD = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Rasterization order to use for the pipeline
-    rasterizationOrder: VkRasterizationOrderAMD,
+    rasterizationOrder: VkRasterizationOrderAMD = .VK_RASTERIZATION_ORDER_STRICT_AMD,
 };
 // Extension: VK_EXT_debug_marker
 // Returned only: false
@@ -12479,7 +12322,7 @@ pub const VkDebugMarkerObjectNameInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: The type of the object
-    objectType: VkDebugReportObjectTypeEXT,
+    objectType: VkDebugReportObjectTypeEXT = .VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,
     // Extern sync: true
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -12504,7 +12347,7 @@ pub const VkDebugMarkerObjectTagInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: The type of the object
-    objectType: VkDebugReportObjectTypeEXT,
+    objectType: VkDebugReportObjectTypeEXT = .VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT,
     // Extern sync: true
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -13179,7 +13022,7 @@ pub const VkClusterAccelerationStructureTriangleClusterInputNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    vertexFormat: VkFormat,
+    vertexFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     maxGeometryIndexValue: u32 = 0,
@@ -13214,7 +13057,7 @@ pub const VkClusterAccelerationStructureMoveObjectsInputNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkClusterAccelerationStructureTypeNV,
+    type: VkClusterAccelerationStructureTypeNV = .VK_CLUSTER_ACCELERATION_STRUCTURE_TYPE_CLUSTERS_BOTTOM_LEVEL_NV,
     // Extern sync: false
     // Optional: false
     noMoveOverlap: u32 = 0,
@@ -13240,10 +13083,10 @@ pub const VkClusterAccelerationStructureInputInfoNV = extern struct {
     flags: VkBuildAccelerationStructureFlagsKHR = .{},
     // Extern sync: false
     // Optional: false
-    opType: VkClusterAccelerationStructureOpTypeNV,
+    opType: VkClusterAccelerationStructureOpTypeNV = .VK_CLUSTER_ACCELERATION_STRUCTURE_OP_TYPE_MOVE_OBJECTS_NV,
     // Extern sync: false
     // Optional: false
-    opMode: VkClusterAccelerationStructureOpModeNV,
+    opMode: VkClusterAccelerationStructureOpModeNV = .VK_CLUSTER_ACCELERATION_STRUCTURE_OP_MODE_IMPLICIT_DESTINATIONS_NV,
     // Extern sync: false
     // Optional: false
     // Selector field: opType (What union field is valid)
@@ -13369,7 +13212,7 @@ pub const VkBindIndexBufferIndirectCommandNV = extern struct {
     size: u32 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
 };
 // Extension: VK_NV_device_generated_commands
 // Returned only: false
@@ -13416,7 +13259,7 @@ pub const VkIndirectCommandsLayoutTokenNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    tokenType: VkIndirectCommandsTokenTypeNV,
+    tokenType: VkIndirectCommandsTokenTypeNV = .VK_INDIRECT_COMMANDS_TOKEN_TYPE_SHADER_GROUP_NV,
     // Extern sync: false
     // Optional: false
     stream: u32 = 0,
@@ -13471,7 +13314,7 @@ pub const VkIndirectCommandsLayoutCreateInfoNV = extern struct {
     flags: VkIndirectCommandsLayoutUsageFlagsNV = .{},
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: false
     tokenCount: u32 = 0,
@@ -13499,7 +13342,7 @@ pub const VkGeneratedCommandsInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: true
     pipeline: VkPipeline = .none,
@@ -13550,7 +13393,7 @@ pub const VkGeneratedCommandsMemoryRequirementsInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: true
     pipeline: VkPipeline = .none,
@@ -13573,7 +13416,7 @@ pub const VkPipelineIndirectDeviceAddressInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: false
     pipeline: VkPipeline = .none,
@@ -13613,7 +13456,7 @@ pub const VkPhysicalDeviceProperties2 = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    properties: VkPhysicalDeviceProperties,
+    properties: VkPhysicalDeviceProperties = .{},
 };
 // Extension: VK_BASE_VERSION_1_1
 // Returned only: true
@@ -13655,13 +13498,13 @@ pub const VkPhysicalDeviceImageFormatInfo2 = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    type: VkImageType,
+    type: VkImageType = .VK_IMAGE_TYPE_1D,
     // Extern sync: false
     // Optional: false
-    tiling: VkImageTiling,
+    tiling: VkImageTiling = .VK_IMAGE_TILING_OPTIMAL,
     // Extern sync: false
     // Optional: false
     usage: VkImageUsageFlags = .{},
@@ -13723,10 +13566,10 @@ pub const VkPhysicalDeviceSparseImageFormatInfo2 = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    type: VkImageType,
+    type: VkImageType = .VK_IMAGE_TYPE_1D,
     // Extern sync: false
     // Optional: false
     samples: VkSampleCountFlags = .{},
@@ -13735,7 +13578,7 @@ pub const VkPhysicalDeviceSparseImageFormatInfo2 = extern struct {
     usage: VkImageUsageFlags = .{},
     // Extern sync: false
     // Optional: false
-    tiling: VkImageTiling,
+    tiling: VkImageTiling = .VK_IMAGE_TILING_OPTIMAL,
 };
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
@@ -13782,7 +13625,7 @@ pub const VkPhysicalDeviceDriverProperties = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    driverID: VkDriverId,
+    driverID: VkDriverId = .VK_DRIVER_ID_AMD_PROPRIETARY,
     // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
@@ -14742,10 +14585,10 @@ pub const VkSciSyncAttributesInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    clientType: VkSciSyncClientTypeNV,
+    clientType: VkSciSyncClientTypeNV = .VK_SCI_SYNC_CLIENT_TYPE_SIGNALER_NV,
     // Extern sync: false
     // Optional: false
-    primitiveType: VkSciSyncPrimitiveTypeNV,
+    primitiveType: VkSciSyncPrimitiveTypeNV = .VK_SCI_SYNC_PRIMITIVE_TYPE_FENCE_NV,
 };
 // Extension: VK_NV_external_sci_sync
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -14987,7 +14830,7 @@ pub const VkDisplayPowerInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    powerState: VkDisplayPowerStateEXT,
+    powerState: VkDisplayPowerStateEXT = .VK_DISPLAY_POWER_STATE_OFF_EXT,
 };
 // Extension: VK_EXT_display_control
 // Returned only: false
@@ -15001,7 +14844,7 @@ pub const VkDeviceEventInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    deviceEvent: VkDeviceEventTypeEXT,
+    deviceEvent: VkDeviceEventTypeEXT = .VK_DEVICE_EVENT_TYPE_DISPLAY_HOTPLUG_EXT,
 };
 // Extension: VK_EXT_display_control
 // Returned only: false
@@ -15015,7 +14858,7 @@ pub const VkDisplayEventInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    displayEvent: VkDisplayEventTypeEXT,
+    displayEvent: VkDisplayEventTypeEXT = .VK_DISPLAY_EVENT_TYPE_FIRST_PIXEL_OUT_EXT,
 };
 // Extension: VK_EXT_display_control
 // Extends: VkSwapchainCreateInfoKHR
@@ -15048,7 +14891,7 @@ pub const VkPhysicalDeviceGroupProperties = extern struct {
     // Length expression: physicalDeviceCount
     // Extern sync: false
     // Optional: false
-    physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = @import("std").mem.zeroes([VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice),
+    physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = .{VkPhysicalDevice.none} ** VK_MAX_DEVICE_GROUP_SIZE,
     // Extern sync: false
     // Optional: false
     subsetAllocation: u32 = 0,
@@ -15395,7 +15238,7 @@ pub const VkDescriptorUpdateTemplateEntry = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Descriptor type to write
-    descriptorType: VkDescriptorType,
+    descriptorType: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Extern sync: false
     // Optional: false
     // Comment: Offset into pData where the descriptors to update are stored
@@ -15429,13 +15272,13 @@ pub const VkDescriptorUpdateTemplateCreateInfo = extern struct {
     pDescriptorUpdateEntries: ?[*]const VkDescriptorUpdateTemplateEntry = null,
     // Extern sync: false
     // Optional: false
-    templateType: VkDescriptorUpdateTemplateType,
+    templateType: VkDescriptorUpdateTemplateType = .VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET,
     // Extern sync: false
     // Optional: false
     descriptorSetLayout: VkDescriptorSetLayout = .none,
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: false
     // Comment: If used for push descriptors, this is the only allowed layout
@@ -15757,7 +15600,7 @@ pub const VkPastPresentationTimingEXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Time domain of the present stages
-    timeDomain: VkTimeDomainKHR,
+    timeDomain: VkTimeDomainKHR = .VK_TIME_DOMAIN_DEVICE_KHR,
     // Extern sync: false
     // Optional: false
     // Comment: Time domain id of the present stages
@@ -16089,16 +15932,16 @@ pub const VkPipelineViewportWScalingStateCreateInfoNV = extern struct {
 pub const VkViewportSwizzleNV = extern struct {
     // Extern sync: false
     // Optional: false
-    x: VkViewportCoordinateSwizzleNV,
+    x: VkViewportCoordinateSwizzleNV = .VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV,
     // Extern sync: false
     // Optional: false
-    y: VkViewportCoordinateSwizzleNV,
+    y: VkViewportCoordinateSwizzleNV = .VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV,
     // Extern sync: false
     // Optional: false
-    z: VkViewportCoordinateSwizzleNV,
+    z: VkViewportCoordinateSwizzleNV = .VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV,
     // Extern sync: false
     // Optional: false
-    w: VkViewportCoordinateSwizzleNV,
+    w: VkViewportCoordinateSwizzleNV = .VK_VIEWPORT_COORDINATE_SWIZZLE_POSITIVE_X_NV,
 };
 // Extension: VK_NV_viewport_swizzle
 // Extends: VkPipelineViewportStateCreateInfo
@@ -16154,7 +15997,7 @@ pub const VkPipelineDiscardRectangleStateCreateInfoEXT = extern struct {
     flags: VkPipelineDiscardRectangleStateCreateFlagsEXT = .{},
     // Extern sync: false
     // Optional: false
-    discardRectangleMode: VkDiscardRectangleModeEXT,
+    discardRectangleMode: VkDiscardRectangleModeEXT = .VK_DISCARD_RECTANGLE_MODE_INCLUSIVE_EXT,
     // Extern sync: false
     // Optional: true
     discardRectangleCount: u32 = 0,
@@ -16251,7 +16094,7 @@ pub const VkSurfaceFormat2KHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    surfaceFormat: VkSurfaceFormatKHR,
+    surfaceFormat: VkSurfaceFormatKHR = .{},
 };
 // Extension: VK_KHR_get_display_properties2
 // Returned only: true
@@ -16544,7 +16387,7 @@ pub const VkPhysicalDevicePointClippingProperties = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    pointClippingBehavior: VkPointClippingBehavior,
+    pointClippingBehavior: VkPointClippingBehavior = .VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES,
 };
 // Extension: VK_BASE_VERSION_1_1
 // Extends: VkMemoryRequirements2
@@ -16630,7 +16473,7 @@ pub const VkPipelineTessellationDomainOriginStateCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    domainOrigin: VkTessellationDomainOrigin,
+    domainOrigin: VkTessellationDomainOrigin = .VK_TESSELLATION_DOMAIN_ORIGIN_UPPER_LEFT,
 };
 // Extension: VK_COMPUTE_VERSION_1_1
 // Extends: VkSamplerCreateInfo,VkImageViewCreateInfo
@@ -16659,25 +16502,25 @@ pub const VkSamplerYcbcrConversionCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    ycbcrModel: VkSamplerYcbcrModelConversion,
+    ycbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    ycbcrRange: VkSamplerYcbcrRange,
+    ycbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping,
+    components: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    xChromaOffset: VkChromaLocation,
+    xChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    yChromaOffset: VkChromaLocation,
+    yChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    chromaFilter: VkFilter,
+    chromaFilter: VkFilter = .VK_FILTER_NEAREST,
     // Extern sync: false
     // Optional: false
     forceExplicitReconstruction: u32 = 0,
@@ -16928,7 +16771,7 @@ pub const VkAttachmentSampleLocationsEXT = extern struct {
     attachmentIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT,
+    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
 };
 // Extension: VK_EXT_sample_locations
 // Returned only: false
@@ -16939,7 +16782,7 @@ pub const VkSubpassSampleLocationsEXT = extern struct {
     subpassIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT,
+    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
 };
 // Extension: VK_EXT_sample_locations
 // Extends: VkRenderPassBeginInfo
@@ -16983,7 +16826,7 @@ pub const VkPipelineSampleLocationsStateCreateInfoEXT = extern struct {
     sampleLocationsEnable: u32 = 0,
     // Extern sync: false
     // Optional: false
-    sampleLocationsInfo: VkSampleLocationsInfoEXT,
+    sampleLocationsInfo: VkSampleLocationsInfoEXT = .{},
 };
 // Extension: VK_EXT_sample_locations
 // Extends: VkPhysicalDeviceProperties2
@@ -17039,7 +16882,7 @@ pub const VkSamplerReductionModeCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    reductionMode: VkSamplerReductionMode,
+    reductionMode: VkSamplerReductionMode = .VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE,
 };
 // Extension: VK_EXT_blend_operation_advanced
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -17120,7 +16963,7 @@ pub const VkPipelineColorBlendAdvancedStateCreateInfoEXT = extern struct {
     dstPremultiplied: u32 = 0,
     // Extern sync: false
     // Optional: false
-    blendOverlap: VkBlendOverlapEXT,
+    blendOverlap: VkBlendOverlapEXT = .VK_BLEND_OVERLAP_UNCORRELATED_EXT,
 };
 // Extension: VK_COMPUTE_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -17217,7 +17060,7 @@ pub const VkPipelineCoverageModulationStateCreateInfoNV = extern struct {
     flags: VkPipelineCoverageModulationStateCreateFlagsNV = .{},
     // Extern sync: false
     // Optional: false
-    coverageModulationMode: VkCoverageModulationModeNV,
+    coverageModulationMode: VkCoverageModulationModeNV = .VK_COVERAGE_MODULATION_MODE_NONE_NV,
     // Extern sync: false
     // Optional: false
     coverageModulationTableEnable: u32 = 0,
@@ -17502,7 +17345,7 @@ pub const VkPhysicalDeviceLayeredApiPropertiesKHR = extern struct {
     deviceID: u32 = 0,
     // Extern sync: false
     // Optional: false
-    layeredAPI: VkPhysicalDeviceLayeredApiKHR,
+    layeredAPI: VkPhysicalDeviceLayeredApiKHR = .VK_PHYSICAL_DEVICE_LAYERED_API_VULKAN_KHR,
     // Extern sync: false
     // Optional: false
     deviceName: [VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_PHYSICAL_DEVICE_NAME_SIZE]u8),
@@ -17520,7 +17363,7 @@ pub const VkPhysicalDeviceLayeredApiVulkanPropertiesKHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    properties: VkPhysicalDeviceProperties2,
+    properties: VkPhysicalDeviceProperties2 = .{},
 };
 // Extension: VK_KHR_maintenance8
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -17568,7 +17411,7 @@ pub const VkPhysicalDeviceMaintenance9PropertiesKHR = extern struct {
     image2DViewOf3DSparse: u32 = 0,
     // Extern sync: false
     // Optional: false
-    defaultVertexAttributeValue: VkDefaultVertexAttributeValueKHR,
+    defaultVertexAttributeValue: VkDefaultVertexAttributeValueKHR = .VK_DEFAULT_VERTEX_ATTRIBUTE_VALUE_ZERO_ZERO_ZERO_ZERO_KHR,
 };
 // Extension: VK_KHR_maintenance10
 // Extends: VkPhysicalDeviceProperties2
@@ -17643,10 +17486,10 @@ pub const VkRenderingAreaInfo = extern struct {
     pColorAttachmentFormats: ?[*]const VkFormat = null,
     // Extern sync: false
     // Optional: false
-    depthAttachmentFormat: VkFormat,
+    depthAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    stencilAttachmentFormat: VkFormat,
+    stencilAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_COMPUTE_VERSION_1_1
 // Returned only: true
@@ -17710,10 +17553,10 @@ pub const VkPhysicalDeviceFloatControlsProperties = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    denormBehaviorIndependence: VkShaderFloatControlsIndependence,
+    denormBehaviorIndependence: VkShaderFloatControlsIndependence = .VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY,
     // Extern sync: false
     // Optional: false
-    roundingModeIndependence: VkShaderFloatControlsIndependence,
+    roundingModeIndependence: VkShaderFloatControlsIndependence = .VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY,
     // Extern sync: false
     // Optional: false
     // Comment: An implementation can preserve signed zero, nan, inf
@@ -17849,7 +17692,7 @@ pub const VkDeviceQueueGlobalPriorityCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    globalPriority: VkQueueGlobalPriority,
+    globalPriority: VkQueueGlobalPriority = .VK_QUEUE_GLOBAL_PRIORITY_LOW,
 };
 // Extension: VK_BASE_VERSION_1_4
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -17883,7 +17726,7 @@ pub const VkQueueFamilyGlobalPriorityProperties = extern struct {
     // Length expression: priorityCount
     // Extern sync: false
     // Optional: false
-    priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = @import("std").mem.zeroes([VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority),
+    priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = .{VkQueueGlobalPriority.VK_QUEUE_GLOBAL_PRIORITY_LOW} ** VK_MAX_GLOBAL_PRIORITY_SIZE,
 };
 // Extension: VK_EXT_debug_utils
 // Extends: VkPipelineShaderStageCreateInfo
@@ -17898,7 +17741,7 @@ pub const VkDebugUtilsObjectNameInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    objectType: VkObjectType,
+    objectType: VkObjectType = .VK_OBJECT_TYPE_UNKNOWN,
     // Extern sync: false
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -17920,7 +17763,7 @@ pub const VkDebugUtilsObjectTagInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    objectType: VkObjectType,
+    objectType: VkObjectType = .VK_OBJECT_TYPE_UNKNOWN,
     // Extern sync: true
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -18078,7 +17921,7 @@ pub const VkDeviceMemoryReportCallbackDataEXT = extern struct {
     flags: VkDeviceMemoryReportFlagsEXT = .{},
     // Extern sync: false
     // Optional: false
-    type: VkDeviceMemoryReportEventTypeEXT,
+    type: VkDeviceMemoryReportEventTypeEXT = .VK_DEVICE_MEMORY_REPORT_EVENT_TYPE_ALLOCATE_EXT,
     // Extern sync: false
     // Optional: false
     memoryObjectId: u64 = 0,
@@ -18087,7 +17930,7 @@ pub const VkDeviceMemoryReportCallbackDataEXT = extern struct {
     size: u64 = 0,
     // Extern sync: false
     // Optional: false
-    objectType: VkObjectType,
+    objectType: VkObjectType = .VK_OBJECT_TYPE_UNKNOWN,
     // Extern sync: false
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -18203,7 +18046,7 @@ pub const VkCalibratedTimestampInfoKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    timeDomain: VkTimeDomainKHR,
+    timeDomain: VkTimeDomainKHR = .VK_TIME_DOMAIN_DEVICE_KHR,
 };
 // Extension: VK_AMD_shader_core_properties
 // Extends: VkPhysicalDeviceProperties2
@@ -18312,7 +18155,7 @@ pub const VkPipelineRasterizationConservativeStateCreateInfoEXT = extern struct 
     // Extern sync: false
     // Optional: false
     // Comment: Conservative rasterization mode
-    conservativeRasterizationMode: VkConservativeRasterizationModeEXT,
+    conservativeRasterizationMode: VkConservativeRasterizationModeEXT = .VK_CONSERVATIVE_RASTERIZATION_MODE_DISABLED_EXT,
     // Extern sync: false
     // Optional: false
     // Comment: Extra overestimation to add to the primitive
@@ -18539,32 +18382,32 @@ pub const VkAttachmentDescription2 = extern struct {
     flags: VkAttachmentDescriptionFlags = .{},
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     samples: VkSampleCountFlags = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Load operation for color or depth data
-    loadOp: VkAttachmentLoadOp,
+    loadOp: VkAttachmentLoadOp = .VK_ATTACHMENT_LOAD_OP_LOAD,
     // Extern sync: false
     // Optional: false
     // Comment: Store operation for color or depth data
-    storeOp: VkAttachmentStoreOp,
+    storeOp: VkAttachmentStoreOp = .VK_ATTACHMENT_STORE_OP_STORE,
     // Extern sync: false
     // Optional: false
     // Comment: Load operation for stencil data
-    stencilLoadOp: VkAttachmentLoadOp,
+    stencilLoadOp: VkAttachmentLoadOp = .VK_ATTACHMENT_LOAD_OP_LOAD,
     // Extern sync: false
     // Optional: false
     // Comment: Store operation for stencil data
-    stencilStoreOp: VkAttachmentStoreOp,
+    stencilStoreOp: VkAttachmentStoreOp = .VK_ATTACHMENT_STORE_OP_STORE,
     // Extern sync: false
     // Optional: false
-    initialLayout: VkImageLayout,
+    initialLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    finalLayout: VkImageLayout,
+    finalLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
@@ -18581,7 +18424,7 @@ pub const VkAttachmentReference2 = extern struct {
     attachment: u32 = 0,
     // Extern sync: false
     // Optional: false
-    layout: VkImageLayout,
+    layout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     aspectMask: VkImageAspectFlags = .{},
@@ -18601,7 +18444,7 @@ pub const VkSubpassDescription2 = extern struct {
     flags: VkSubpassDescriptionFlags = .{},
     // Extern sync: false
     // Optional: false
-    pipelineBindPoint: VkPipelineBindPoint,
+    pipelineBindPoint: VkPipelineBindPoint = .VK_PIPELINE_BIND_POINT_GRAPHICS,
     // Extern sync: false
     // Optional: false
     viewMask: u32 = 0,
@@ -18723,7 +18566,7 @@ pub const VkSubpassBeginInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    contents: VkSubpassContents,
+    contents: VkSubpassContents = .VK_SUBPASS_CONTENTS_INLINE,
 };
 // Extension: VK_GRAPHICS_VERSION_1_2
 // Returned only: false
@@ -18779,7 +18622,7 @@ pub const VkSemaphoreTypeCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    semaphoreType: VkSemaphoreType,
+    semaphoreType: VkSemaphoreType = .VK_SEMAPHORE_TYPE_BINARY,
     // Extern sync: false
     // Optional: false
     initialValue: u64 = 0,
@@ -19015,7 +18858,7 @@ pub const VkAndroidHardwareBufferFormatPropertiesANDROID = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     externalFormat: u64 = 0,
@@ -19024,19 +18867,19 @@ pub const VkAndroidHardwareBufferFormatPropertiesANDROID = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping,
+    samplerYcbcrConversionComponents: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
+    suggestedYcbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrRange: VkSamplerYcbcrRange,
+    suggestedYcbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    suggestedXChromaOffset: VkChromaLocation,
+    suggestedXChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    suggestedYChromaOffset: VkChromaLocation,
+    suggestedYChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_EXT_conditional_rendering
 // Extends: VkCommandBufferInheritanceInfo
@@ -19361,7 +19204,7 @@ pub const VkImageViewASTCDecodeModeEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    decodeMode: VkFormat,
+    decodeMode: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_EXT_astc_decode_mode
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -19788,7 +19631,7 @@ pub const VkCoarseSampleLocationNV = extern struct {
 pub const VkCoarseSampleOrderCustomNV = extern struct {
     // Extern sync: false
     // Optional: false
-    shadingRate: VkShadingRatePaletteEntryNV,
+    shadingRate: VkShadingRatePaletteEntryNV = .VK_SHADING_RATE_PALETTE_ENTRY_NO_INVOCATIONS_NV,
     // Extern sync: false
     // Optional: false
     sampleCount: u32 = 0,
@@ -19813,7 +19656,7 @@ pub const VkPipelineViewportCoarseSampleOrderStateCreateInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    sampleOrderType: VkCoarseSampleOrderTypeNV,
+    sampleOrderType: VkCoarseSampleOrderTypeNV = .VK_COARSE_SAMPLE_ORDER_TYPE_DEFAULT_NV,
     // Extern sync: false
     // Optional: true
     customSampleOrderCount: u32 = 0,
@@ -20053,7 +19896,7 @@ pub const VkRayTracingShaderGroupCreateInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkRayTracingShaderGroupTypeKHR,
+    type: VkRayTracingShaderGroupTypeKHR = .VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR,
     // Extern sync: false
     // Optional: false
     generalShader: u32 = 0,
@@ -20079,7 +19922,7 @@ pub const VkRayTracingShaderGroupCreateInfoKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkRayTracingShaderGroupTypeKHR,
+    type: VkRayTracingShaderGroupTypeKHR = .VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR,
     // Extern sync: false
     // Optional: false
     generalShader: u32 = 0,
@@ -20219,7 +20062,7 @@ pub const VkGeometryTrianglesNV = extern struct {
     vertexStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    vertexFormat: VkFormat,
+    vertexFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: true
     indexData: VkBuffer = .none,
@@ -20231,7 +20074,7 @@ pub const VkGeometryTrianglesNV = extern struct {
     indexCount: u32 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: true
     // Comment: Optional reference to array of floats representing a 3x4 row major affine transformation matrix.
@@ -20271,10 +20114,10 @@ pub const VkGeometryAABBNV = extern struct {
 pub const VkGeometryDataNV = extern struct {
     // Extern sync: false
     // Optional: false
-    triangles: VkGeometryTrianglesNV,
+    triangles: VkGeometryTrianglesNV = .{},
     // Extern sync: false
     // Optional: false
-    aabbs: VkGeometryAABBNV,
+    aabbs: VkGeometryAABBNV = .{},
 };
 // Extension: VK_NV_ray_tracing
 // Returned only: false
@@ -20288,7 +20131,7 @@ pub const VkGeometryNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    geometryType: VkGeometryTypeKHR,
+    geometryType: VkGeometryTypeKHR = .VK_GEOMETRY_TYPE_TRIANGLES_KHR,
     // Extern sync: false
     // Optional: false
     geometry: VkGeometryDataNV = .{},
@@ -20308,7 +20151,7 @@ pub const VkAccelerationStructureInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkAccelerationStructureTypeKHR,
+    type: VkAccelerationStructureTypeKHR = .VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR,
     // Extern sync: false
     // Optional: true
     // Extern sync: false
@@ -20337,7 +20180,7 @@ pub const VkAccelerationStructureCreateInfoNV = extern struct {
     compactedSize: u64 = 0,
     // Extern sync: false
     // Optional: false
-    info: VkAccelerationStructureInfoNV,
+    info: VkAccelerationStructureInfoNV = .{},
 };
 // Extension: VK_NV_ray_tracing
 // Returned only: false
@@ -20416,7 +20259,7 @@ pub const VkAccelerationStructureMemoryRequirementsInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkAccelerationStructureMemoryRequirementsTypeNV,
+    type: VkAccelerationStructureMemoryRequirementsTypeNV = .VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_OBJECT_NV,
     // Extern sync: false
     // Optional: false
     accelerationStructure: VkAccelerationStructureNV = .none,
@@ -20740,7 +20583,7 @@ pub const VkPhysicalDeviceImageDrmFormatModifierInfoEXT = extern struct {
     drmFormatModifier: u64 = 0,
     // Extern sync: false
     // Optional: false
-    sharingMode: VkSharingMode,
+    sharingMode: VkSharingMode = .VK_SHARING_MODE_EXCLUSIVE,
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
@@ -20832,7 +20675,7 @@ pub const VkDeviceMemoryOverallocationCreateInfoAMD = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    overallocationBehavior: VkMemoryOverallocationBehaviorAMD,
+    overallocationBehavior: VkMemoryOverallocationBehaviorAMD = .VK_MEMORY_OVERALLOCATION_BEHAVIOR_DEFAULT_AMD,
 };
 // Extension: VK_EXT_fragment_density_map
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -20958,7 +20801,7 @@ pub const VkRenderPassFragmentDensityMapCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    fragmentDensityMapAttachment: VkAttachmentReference,
+    fragmentDensityMapAttachment: VkAttachmentReference = .{},
 };
 // Extension: VK_EXT_fragment_density_map_offset
 // Extends: VkSubpassEndInfo,VkRenderingEndInfoKHR
@@ -21224,7 +21067,7 @@ pub const VkPhysicalDeviceImageViewImageFormatInfoEXT = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    imageViewType: VkImageViewType,
+    imageViewType: VkImageViewType = .VK_IMAGE_VIEW_TYPE_1D,
 };
 // Extension: VK_EXT_filter_cubic
 // Extends: VkImageFormatProperties2
@@ -21405,19 +21248,19 @@ pub const VkCooperativeMatrixPropertiesNV = extern struct {
     KSize: u32 = 0,
     // Extern sync: false
     // Optional: false
-    AType: VkComponentTypeKHR,
+    AType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    BType: VkComponentTypeKHR,
+    BType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    CType: VkComponentTypeKHR,
+    CType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    DType: VkComponentTypeKHR,
+    DType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    scope: VkScopeKHR,
+    scope: VkScopeKHR = .VK_SCOPE_DEVICE_KHR,
 };
 // Extension: VK_EXT_ycbcr_image_arrays
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -21449,7 +21292,7 @@ pub const VkImageViewHandleInfoNVX = extern struct {
     imageView: VkImageView = .none,
     // Extern sync: false
     // Optional: false
-    descriptorType: VkDescriptorType,
+    descriptorType: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Extern sync: false
     // Optional: true
     sampler: VkSampler = .none,
@@ -21533,7 +21376,7 @@ pub const VkSurfaceFullScreenExclusiveInfoEXT = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    fullScreenExclusive: VkFullScreenExclusiveEXT,
+    fullScreenExclusive: VkFullScreenExclusiveEXT = .VK_FULL_SCREEN_EXCLUSIVE_DEFAULT_EXT,
 };
 // Extension: VK_EXT_full_screen_exclusive
 // Extends: VkPhysicalDeviceSurfaceInfo2KHR,VkSwapchainCreateInfoKHR
@@ -21657,13 +21500,13 @@ pub const VkPerformanceCounterKHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    unit: VkPerformanceCounterUnitKHR,
+    unit: VkPerformanceCounterUnitKHR = .VK_PERFORMANCE_COUNTER_UNIT_GENERIC_KHR,
     // Extern sync: false
     // Optional: false
-    scope: VkPerformanceCounterScopeKHR,
+    scope: VkPerformanceCounterScopeKHR = .VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_BUFFER_KHR,
     // Extern sync: false
     // Optional: false
-    storage: VkPerformanceCounterStorageKHR,
+    storage: VkPerformanceCounterStorageKHR = .VK_PERFORMANCE_COUNTER_STORAGE_INT32_KHR,
     // Extern sync: false
     // Optional: false
     uuid: [VK_UUID_SIZE]u8 = @import("std").mem.zeroes([VK_UUID_SIZE]u8),
@@ -21811,7 +21654,7 @@ pub const VkPipelineCoverageReductionStateCreateInfoNV = extern struct {
     flags: VkPipelineCoverageReductionStateCreateFlagsNV = .{},
     // Extern sync: false
     // Optional: false
-    coverageReductionMode: VkCoverageReductionModeNV,
+    coverageReductionMode: VkCoverageReductionModeNV = .VK_COVERAGE_REDUCTION_MODE_MERGE_NV,
 };
 // Extension: VK_NV_coverage_reduction_mode
 // Returned only: true
@@ -21825,7 +21668,7 @@ pub const VkFramebufferMixedSamplesCombinationNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    coverageReductionMode: VkCoverageReductionModeNV,
+    coverageReductionMode: VkCoverageReductionModeNV = .VK_COVERAGE_REDUCTION_MODE_MERGE_NV,
     // Extern sync: false
     // Optional: false
     rasterizationSamples: VkSampleCountFlags = .{},
@@ -21857,7 +21700,7 @@ pub const VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = extern struct {
 pub const VkPerformanceValueINTEL = extern struct {
     // Extern sync: false
     // Optional: false
-    type: VkPerformanceValueTypeINTEL,
+    type: VkPerformanceValueTypeINTEL = .VK_PERFORMANCE_VALUE_TYPE_UINT32_INTEL,
     // Extern sync: false
     // Optional: false
     // Selector field: type (What union field is valid)
@@ -21890,7 +21733,7 @@ pub const VkQueryPoolPerformanceQueryCreateInfoINTEL = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    performanceCountersSampling: VkQueryPoolSamplingModeINTEL,
+    performanceCountersSampling: VkQueryPoolSamplingModeINTEL = .VK_QUERY_POOL_SAMPLING_MODE_MANUAL_INTEL,
 };
 // Extension: VK_INTEL_performance_query
 // Returned only: false
@@ -21932,7 +21775,7 @@ pub const VkPerformanceOverrideInfoINTEL = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkPerformanceOverrideTypeINTEL,
+    type: VkPerformanceOverrideTypeINTEL = .VK_PERFORMANCE_OVERRIDE_TYPE_NULL_HARDWARE_INTEL,
     // Extern sync: false
     // Optional: false
     enable: u32 = 0,
@@ -21952,7 +21795,7 @@ pub const VkPerformanceConfigurationAcquireInfoINTEL = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkPerformanceConfigurationTypeINTEL,
+    type: VkPerformanceConfigurationTypeINTEL = .VK_PERFORMANCE_CONFIGURATION_TYPE_COMMAND_QUEUE_METRICS_DISCOVERY_ACTIVATED_INTEL,
 };
 // Extension: VK_KHR_shader_clock
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -22070,7 +21913,7 @@ pub const VkAttachmentReferenceStencilLayout = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    stencilLayout: VkImageLayout,
+    stencilLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_EXT_primitive_topology_list_restart
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -22103,10 +21946,10 @@ pub const VkAttachmentDescriptionStencilLayout = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    stencilInitialLayout: VkImageLayout,
+    stencilInitialLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    stencilFinalLayout: VkImageLayout,
+    stencilFinalLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_KHR_pipeline_executable_properties
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -22199,7 +22042,7 @@ pub const VkPipelineExecutableStatisticKHR = extern struct {
     description: [VK_MAX_DESCRIPTION_SIZE]u8 = @import("std").mem.zeroes([VK_MAX_DESCRIPTION_SIZE]u8),
     // Extern sync: false
     // Optional: false
-    format: VkPipelineExecutableStatisticFormatKHR,
+    format: VkPipelineExecutableStatisticFormatKHR = .VK_PIPELINE_EXECUTABLE_STATISTIC_FORMAT_BOOL32_KHR,
     // Extern sync: false
     // Optional: false
     // Selector field: format (What union field is valid)
@@ -22493,7 +22336,7 @@ pub const VkPipelineRasterizationLineStateCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    lineRasterizationMode: VkLineRasterizationMode,
+    lineRasterizationMode: VkLineRasterizationMode = .VK_LINE_RASTERIZATION_MODE_DEFAULT,
     // Extern sync: false
     // Optional: false
     stippledLineEnable: u32 = 0,
@@ -22619,7 +22462,7 @@ pub const VkPhysicalDeviceVulkan11Properties = extern struct {
     subgroupQuadOperationsInAllStages: u32 = 0,
     // Extern sync: false
     // Optional: false
-    pointClippingBehavior: VkPointClippingBehavior,
+    pointClippingBehavior: VkPointClippingBehavior = .VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES,
     // Extern sync: false
     // Optional: false
     // Comment: max number of views in a subpass
@@ -22809,7 +22652,7 @@ pub const VkPhysicalDeviceVulkan12Properties = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    driverID: VkDriverId,
+    driverID: VkDriverId = .VK_DRIVER_ID_AMD_PROPRIETARY,
     // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
@@ -22823,10 +22666,10 @@ pub const VkPhysicalDeviceVulkan12Properties = extern struct {
     conformanceVersion: VkConformanceVersion = .{},
     // Extern sync: false
     // Optional: false
-    denormBehaviorIndependence: VkShaderFloatControlsIndependence,
+    denormBehaviorIndependence: VkShaderFloatControlsIndependence = .VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY,
     // Extern sync: false
     // Optional: false
-    roundingModeIndependence: VkShaderFloatControlsIndependence,
+    roundingModeIndependence: VkShaderFloatControlsIndependence = .VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY,
     // Extern sync: false
     // Optional: false
     // Comment: An implementation can preserve signed zero, nan, inf
@@ -23327,16 +23170,16 @@ pub const VkPhysicalDeviceVulkan14Properties = extern struct {
     fragmentShadingRateClampCombinerInputs: u32 = 0,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessStorageBuffers: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessStorageBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessUniformBuffers: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessUniformBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessVertexInputs: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessVertexInputs: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessImages: VkPipelineRobustnessImageBehavior,
+    defaultRobustnessImages: VkPipelineRobustnessImageBehavior = .VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: true
     copySrcLayoutCount: u32 = 0,
@@ -23400,10 +23243,10 @@ pub const VkFaultData = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    faultLevel: VkFaultLevel,
+    faultLevel: VkFaultLevel = .VK_FAULT_LEVEL_UNASSIGNED,
     // Extern sync: false
     // Optional: false
-    faultType: VkFaultType,
+    faultType: VkFaultType = .VK_FAULT_TYPE_INVALID,
 };
 // Extension: VKSC_VERSION_1_0
 // Extends: VkDeviceCreateInfo
@@ -23473,7 +23316,7 @@ pub const VkSamplerCustomBorderColorCreateInfoEXT = extern struct {
     customBorderColor: VkClearColorValue,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_EXT_custom_border_color
 // Extends: VkPhysicalDeviceProperties2
@@ -23521,7 +23364,7 @@ pub const VkSamplerBorderColorComponentMappingCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    components: VkComponentMapping,
+    components: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
     srgb: u32 = 0,
@@ -23556,7 +23399,7 @@ pub const VkAccelerationStructureGeometryTrianglesDataKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    vertexFormat: VkFormat,
+    vertexFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     vertexData: VkDeviceOrHostAddressConstKHR,
@@ -23568,7 +23411,7 @@ pub const VkAccelerationStructureGeometryTrianglesDataKHR = extern struct {
     maxVertex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: false
     indexData: VkDeviceOrHostAddressConstKHR,
@@ -23623,7 +23466,7 @@ pub const VkAccelerationStructureGeometryLinearSweptSpheresDataNV = extern struc
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    vertexFormat: VkFormat,
+    vertexFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     vertexData: VkDeviceOrHostAddressConstKHR,
@@ -23632,7 +23475,7 @@ pub const VkAccelerationStructureGeometryLinearSweptSpheresDataNV = extern struc
     vertexStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    radiusFormat: VkFormat,
+    radiusFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     radiusData: VkDeviceOrHostAddressConstKHR,
@@ -23641,7 +23484,7 @@ pub const VkAccelerationStructureGeometryLinearSweptSpheresDataNV = extern struc
     radiusStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: false
     indexData: VkDeviceOrHostAddressConstKHR,
@@ -23650,10 +23493,10 @@ pub const VkAccelerationStructureGeometryLinearSweptSpheresDataNV = extern struc
     indexStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    indexingMode: VkRayTracingLssIndexingModeNV,
+    indexingMode: VkRayTracingLssIndexingModeNV = .VK_RAY_TRACING_LSS_INDEXING_MODE_LIST_NV,
     // Extern sync: false
     // Optional: false
-    endCapsMode: VkRayTracingLssPrimitiveEndCapsModeNV,
+    endCapsMode: VkRayTracingLssPrimitiveEndCapsModeNV = .VK_RAY_TRACING_LSS_PRIMITIVE_END_CAPS_MODE_NONE_NV,
 };
 // Extension: VK_NV_ray_tracing_linear_swept_spheres
 // Extends: VkAccelerationStructureGeometryKHR
@@ -23668,7 +23511,7 @@ pub const VkAccelerationStructureGeometrySpheresDataNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    vertexFormat: VkFormat,
+    vertexFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     vertexData: VkDeviceOrHostAddressConstKHR,
@@ -23677,7 +23520,7 @@ pub const VkAccelerationStructureGeometrySpheresDataNV = extern struct {
     vertexStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    radiusFormat: VkFormat,
+    radiusFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     radiusData: VkDeviceOrHostAddressConstKHR,
@@ -23686,7 +23529,7 @@ pub const VkAccelerationStructureGeometrySpheresDataNV = extern struct {
     radiusStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: false
     indexData: VkDeviceOrHostAddressConstKHR,
@@ -23706,7 +23549,7 @@ pub const VkAccelerationStructureGeometryKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    geometryType: VkGeometryTypeKHR,
+    geometryType: VkGeometryTypeKHR = .VK_GEOMETRY_TYPE_TRIANGLES_KHR,
     // Extern sync: false
     // Optional: false
     // Selector field: geometryType (What union field is valid)
@@ -23727,13 +23570,13 @@ pub const VkAccelerationStructureBuildGeometryInfoKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkAccelerationStructureTypeKHR,
+    type: VkAccelerationStructureTypeKHR = .VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR,
     // Extern sync: false
     // Optional: true
     flags: VkBuildAccelerationStructureFlagsKHR = .{},
     // Extern sync: false
     // Optional: false
-    mode: VkBuildAccelerationStructureModeKHR,
+    mode: VkBuildAccelerationStructureModeKHR = .VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR,
     // Extern sync: false
     // Optional: true
     srcAccelerationStructure: VkAccelerationStructureKHR = .none,
@@ -23797,7 +23640,7 @@ pub const VkAccelerationStructureCreateInfoKHR = extern struct {
     size: u64 = 0,
     // Extern sync: false
     // Optional: false
-    type: VkAccelerationStructureTypeKHR,
+    type: VkAccelerationStructureTypeKHR = .VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR,
     // Extern sync: false
     // Optional: true
     deviceAddress: u64 = 0,
@@ -23897,7 +23740,7 @@ pub const VkCopyAccelerationStructureInfoKHR = extern struct {
     dst: VkAccelerationStructureKHR = .none,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyAccelerationStructureModeKHR,
+    mode: VkCopyAccelerationStructureModeKHR = .VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR,
 };
 // Extension: VK_KHR_acceleration_structure
 // Returned only: false
@@ -23917,7 +23760,7 @@ pub const VkCopyAccelerationStructureToMemoryInfoKHR = extern struct {
     dst: VkDeviceOrHostAddressKHR,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyAccelerationStructureModeKHR,
+    mode: VkCopyAccelerationStructureModeKHR = .VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR,
 };
 // Extension: VK_KHR_acceleration_structure
 // Returned only: false
@@ -23937,7 +23780,7 @@ pub const VkCopyMemoryToAccelerationStructureInfoKHR = extern struct {
     dst: VkAccelerationStructureKHR = .none,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyAccelerationStructureModeKHR,
+    mode: VkCopyAccelerationStructureModeKHR = .VK_COPY_ACCELERATION_STRUCTURE_MODE_CLONE_KHR,
 };
 // Extension: VK_KHR_ray_tracing_pipeline
 // Returned only: false
@@ -23981,7 +23824,7 @@ pub const VkPipelineLibraryCreateInfoKHR = extern struct {
 pub const VkRefreshObjectKHR = extern struct {
     // Extern sync: false
     // Optional: false
-    objectType: VkObjectType,
+    objectType: VkObjectType = .VK_OBJECT_TYPE_UNKNOWN,
     // Extern sync: true
     // Optional: false
     // Object type: objectType (Which object handle is this)
@@ -24170,22 +24013,22 @@ pub const VkPhysicalDeviceExtendedDynamicState3PropertiesEXT = extern struct {
 pub const VkColorBlendEquationEXT = extern struct {
     // Extern sync: false
     // Optional: false
-    srcColorBlendFactor: VkBlendFactor,
+    srcColorBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    dstColorBlendFactor: VkBlendFactor,
+    dstColorBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    colorBlendOp: VkBlendOp,
+    colorBlendOp: VkBlendOp = .VK_BLEND_OP_ADD,
     // Extern sync: false
     // Optional: false
-    srcAlphaBlendFactor: VkBlendFactor,
+    srcAlphaBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    dstAlphaBlendFactor: VkBlendFactor,
+    dstAlphaBlendFactor: VkBlendFactor = .VK_BLEND_FACTOR_ZERO,
     // Extern sync: false
     // Optional: false
-    alphaBlendOp: VkBlendOp,
+    alphaBlendOp: VkBlendOp = .VK_BLEND_OP_ADD,
 };
 // Extension: VK_EXT_extended_dynamic_state3
 // Returned only: false
@@ -24193,7 +24036,7 @@ pub const VkColorBlendEquationEXT = extern struct {
 pub const VkColorBlendAdvancedEXT = extern struct {
     // Extern sync: false
     // Optional: false
-    advancedBlendOp: VkBlendOp,
+    advancedBlendOp: VkBlendOp = .VK_BLEND_OP_ADD,
     // Extern sync: false
     // Optional: false
     srcPremultiplied: u32 = 0,
@@ -24202,7 +24045,7 @@ pub const VkColorBlendAdvancedEXT = extern struct {
     dstPremultiplied: u32 = 0,
     // Extern sync: false
     // Optional: false
-    blendOverlap: VkBlendOverlapEXT,
+    blendOverlap: VkBlendOverlapEXT = .VK_BLEND_OVERLAP_UNCORRELATED_EXT,
     // Extern sync: false
     // Optional: false
     clampResults: u32 = 0,
@@ -24293,7 +24136,7 @@ pub const VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV = extern 
 pub const VkBuildPartitionedAccelerationStructureIndirectCommandNV = extern struct {
     // Extern sync: false
     // Optional: false
-    opType: VkPartitionedAccelerationStructureOpTypeNV,
+    opType: VkPartitionedAccelerationStructureOpTypeNV = .VK_PARTITIONED_ACCELERATION_STRUCTURE_OP_TYPE_WRITE_INSTANCE_NV,
     // Extern sync: false
     // Optional: false
     argCount: u32 = 0,
@@ -24430,7 +24273,7 @@ pub const VkBuildPartitionedAccelerationStructureInfoNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    input: VkPartitionedAccelerationStructureInstancesInputNV,
+    input: VkPartitionedAccelerationStructureInstancesInputNV = .{},
     // Extern sync: false
     // Optional: true
     srcAccelerationStructureData: u64 = 0,
@@ -24493,7 +24336,7 @@ pub const VkPipelineOfflineCreateInfo = extern struct {
     pipelineIdentifier: [VK_UUID_SIZE]u8 = @import("std").mem.zeroes([VK_UUID_SIZE]u8),
     // Extern sync: false
     // Optional: false
-    matchControl: VkPipelineMatchControl,
+    matchControl: VkPipelineMatchControl = .VK_PIPELINE_MATCH_CONTROL_APPLICATION_UUID_EXACT_MATCH,
     // Extern sync: false
     // Optional: false
     poolEntrySize: u64 = 0,
@@ -24812,14 +24655,14 @@ pub const VkImageBlit2 = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    srcOffsets: [2]VkOffset3D = @import("std").mem.zeroes([2]VkOffset3D),
+    srcOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
     // Extern sync: false
     // Optional: false
     dstSubresource: VkImageSubresourceLayers = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    dstOffsets: [2]VkOffset3D = @import("std").mem.zeroes([2]VkOffset3D),
+    dstOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
 };
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
@@ -24919,13 +24762,13 @@ pub const VkCopyImageInfo2 = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -24949,13 +24792,13 @@ pub const VkBlitImageInfo2 = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -24965,7 +24808,7 @@ pub const VkBlitImageInfo2 = extern struct {
     pRegions: ?[*]const VkImageBlit2 = null,
     // Extern sync: false
     // Optional: false
-    filter: VkFilter,
+    filter: VkFilter = .VK_FILTER_NEAREST,
 };
 // Extension: VK_BASE_VERSION_1_3
 // Returned only: false
@@ -24985,7 +24828,7 @@ pub const VkCopyBufferToImageInfo2 = extern struct {
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -25009,7 +24852,7 @@ pub const VkCopyImageToBufferInfo2 = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dstBuffer: VkBuffer = .none,
@@ -25036,13 +24879,13 @@ pub const VkResolveImageInfo2 = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -25103,7 +24946,7 @@ pub const VkPipelineFragmentShadingRateStateCreateInfoKHR = extern struct {
     fragmentSize: VkExtent2D = .{},
     // Extern sync: false
     // Optional: false
-    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = @import("std").mem.zeroes([2]VkFragmentShadingRateCombinerOpKHR),
+    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = .{VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR} ** 2,
 };
 // Extension: VK_KHR_fragment_shading_rate
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -25270,13 +25113,13 @@ pub const VkPipelineFragmentShadingRateEnumStateCreateInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    shadingRateType: VkFragmentShadingRateTypeNV,
+    shadingRateType: VkFragmentShadingRateTypeNV = .VK_FRAGMENT_SHADING_RATE_TYPE_FRAGMENT_SIZE_NV,
     // Extern sync: false
     // Optional: false
-    shadingRate: VkFragmentShadingRateNV,
+    shadingRate: VkFragmentShadingRateNV = .VK_FRAGMENT_SHADING_RATE_1_INVOCATION_PER_PIXEL_NV,
     // Extern sync: false
     // Optional: false
-    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = @import("std").mem.zeroes([2]VkFragmentShadingRateCombinerOpKHR),
+    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = .{VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR} ** 2,
 };
 // Extension: VK_KHR_acceleration_structure
 // Returned only: true
@@ -25501,10 +25344,10 @@ pub const VkCustomResolveCreateInfoEXT = extern struct {
     pColorAttachmentFormats: ?[*]const VkFormat = null,
     // Extern sync: false
     // Optional: false
-    depthAttachmentFormat: VkFormat,
+    depthAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    stencilAttachmentFormat: VkFormat,
+    stencilAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_EXT_device_generated_commands
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -25708,7 +25551,7 @@ pub const VkIndirectExecutionSetCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkIndirectExecutionSetInfoTypeEXT,
+    type: VkIndirectExecutionSetInfoTypeEXT = .VK_INDIRECT_EXECUTION_SET_INFO_TYPE_PIPELINES_EXT,
     // Extern sync: false
     // Optional: false
     // Selector field: type (What union field is valid)
@@ -25831,7 +25674,7 @@ pub const VkIndirectCommandsLayoutTokenEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkIndirectCommandsTokenTypeEXT,
+    type: VkIndirectCommandsTokenTypeEXT = .VK_INDIRECT_COMMANDS_TOKEN_TYPE_EXECUTION_SET_EXT,
     // Extern sync: false
     // Optional: false
     // Selector field: type (What union field is valid)
@@ -25896,7 +25739,7 @@ pub const VkBindIndexBufferIndirectCommandEXT = extern struct {
     size: u32 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
 };
 // Extension: VK_EXT_device_generated_commands
 // Returned only: false
@@ -25912,7 +25755,7 @@ pub const VkIndirectCommandsPushConstantTokenEXT = extern struct {
 pub const VkIndirectCommandsExecutionSetTokenEXT = extern struct {
     // Extern sync: false
     // Optional: false
-    type: VkIndirectExecutionSetInfoTypeEXT,
+    type: VkIndirectExecutionSetInfoTypeEXT = .VK_INDIRECT_EXECUTION_SET_INFO_TYPE_PIPELINES_EXT,
     // Extern sync: false
     // Optional: false
     shaderStages: VkShaderStageFlags = .{},
@@ -25960,7 +25803,7 @@ pub const VkPipelineViewportDepthClampControlCreateInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    depthClampMode: VkDepthClampModeEXT,
+    depthClampMode: VkDepthClampModeEXT = .VK_DEPTH_CLAMP_MODE_VIEWPORT_RANGE_EXT,
     // Extern sync: false
     // Optional: true
     pDepthClampRange: ?*const VkDepthClampRangeEXT = null,
@@ -26028,7 +25871,7 @@ pub const VkVertexInputBindingDescription2EXT = extern struct {
     stride: u32 = 0,
     // Extern sync: false
     // Optional: false
-    inputRate: VkVertexInputRate,
+    inputRate: VkVertexInputRate = .VK_VERTEX_INPUT_RATE_VERTEX,
     // Extern sync: false
     // Optional: false
     divisor: u32 = 0,
@@ -26054,7 +25897,7 @@ pub const VkVertexInputAttributeDescription2EXT = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: format of source data
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     // Comment: Offset of first element in bytes from base of vertex
@@ -26143,10 +25986,10 @@ pub const VkImageMemoryBarrier2 = extern struct {
     dstAccessMask: VkAccessFlags2 = .{},
     // Extern sync: false
     // Optional: false
-    oldLayout: VkImageLayout,
+    oldLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    newLayout: VkImageLayout,
+    newLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     srcQueueFamilyIndex: u32 = 0,
@@ -26516,7 +26359,7 @@ pub const VkCopyMemoryToImageInfo = extern struct {
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -26543,7 +26386,7 @@ pub const VkCopyImageToMemoryInfo = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -26570,13 +26413,13 @@ pub const VkCopyImageToImageInfo = extern struct {
     srcImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    srcImageLayout: VkImageLayout,
+    srcImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dstImage: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    dstImageLayout: VkImageLayout,
+    dstImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     regionCount: u32 = 0,
@@ -26600,10 +26443,10 @@ pub const VkHostImageLayoutTransitionInfo = extern struct {
     image: VkImage = .none,
     // Extern sync: false
     // Optional: false
-    oldLayout: VkImageLayout,
+    oldLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    newLayout: VkImageLayout,
+    newLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     subresourceRange: VkImageSubresourceRange = .{},
@@ -27121,19 +26964,19 @@ pub const VkVideoFormatPropertiesKHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    componentMapping: VkComponentMapping,
+    componentMapping: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
     imageCreateFlags: VkImageCreateFlags = .{},
     // Extern sync: false
     // Optional: false
-    imageType: VkImageType,
+    imageType: VkImageType = .VK_IMAGE_TYPE_1D,
     // Extern sync: false
     // Optional: false
-    imageTiling: VkImageTiling,
+    imageTiling: VkImageTiling = .VK_IMAGE_TILING_OPTIMAL,
     // Extern sync: false
     // Optional: false
     imageUsageFlags: VkImageUsageFlags = .{},
@@ -27454,7 +27297,7 @@ pub const VkVideoDecodeInfoKHR = extern struct {
     srcBufferRange: u64 = 0,
     // Extern sync: false
     // Optional: false
-    dstPictureResource: VkVideoPictureResourceInfoKHR,
+    dstPictureResource: VkVideoPictureResourceInfoKHR = .{},
     // Extern sync: false
     // Optional: true
     pSetupReferenceSlot: ?*const VkVideoReferenceSlotInfoKHR = null,
@@ -27997,13 +27840,13 @@ pub const VkVideoSessionCreateInfoKHR = extern struct {
     pVideoProfile: ?*const VkVideoProfileInfoKHR = null,
     // Extern sync: false
     // Optional: false
-    pictureFormat: VkFormat,
+    pictureFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     maxCodedExtent: VkExtent2D = .{},
     // Extern sync: false
     // Optional: false
-    referencePictureFormat: VkFormat,
+    referencePictureFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     maxDpbSlots: u32 = 0,
@@ -28150,7 +27993,7 @@ pub const VkVideoEncodeUsageInfoKHR = extern struct {
     videoContentHints: VkVideoEncodeContentFlagsKHR = .{},
     // Extern sync: false
     // Optional: true
-    tuningMode: VkVideoEncodeTuningModeKHR,
+    tuningMode: VkVideoEncodeTuningModeKHR = .VK_VIDEO_ENCODE_TUNING_MODE_DEFAULT_KHR,
 };
 // Extension: VK_KHR_video_encode_queue
 // Returned only: false
@@ -28176,7 +28019,7 @@ pub const VkVideoEncodeInfoKHR = extern struct {
     dstBufferRange: u64 = 0,
     // Extern sync: false
     // Optional: false
-    srcPictureResource: VkVideoPictureResourceInfoKHR,
+    srcPictureResource: VkVideoPictureResourceInfoKHR = .{},
     // Extern sync: false
     // Optional: true
     pSetupReferenceSlot: ?*const VkVideoReferenceSlotInfoKHR = null,
@@ -29389,10 +29232,10 @@ pub const VkVideoEncodeAV1PictureInfoKHR = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    predictionMode: VkVideoEncodeAV1PredictionModeKHR,
+    predictionMode: VkVideoEncodeAV1PredictionModeKHR = .VK_VIDEO_ENCODE_AV1_PREDICTION_MODE_INTRA_ONLY_KHR,
     // Extern sync: false
     // Optional: false
-    rateControlGroup: VkVideoEncodeAV1RateControlGroupKHR,
+    rateControlGroup: VkVideoEncodeAV1RateControlGroupKHR = .VK_VIDEO_ENCODE_AV1_RATE_CONTROL_GROUP_INTRA_KHR,
     // Extern sync: false
     // Optional: false
     constantQIndex: u32 = 0,
@@ -29632,7 +29475,7 @@ pub const VkPipelineRasterizationProvokingVertexStateCreateInfoEXT = extern stru
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    provokingVertexMode: VkProvokingVertexModeEXT,
+    provokingVertexMode: VkProvokingVertexModeEXT = .VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT,
 };
 // Extension: VK_KHR_video_encode_intra_refresh
 // Extends: VkVideoCapabilitiesKHR
@@ -29992,7 +29835,7 @@ pub const VkDescriptorAddressInfoEXT = extern struct {
     range: u64 = 0,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_EXT_descriptor_buffer
 // Returned only: false
@@ -30038,7 +29881,7 @@ pub const VkDescriptorGetInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkDescriptorType,
+    type: VkDescriptorType = .VK_DESCRIPTOR_TYPE_SAMPLER,
     // Extern sync: false
     // Optional: false
     // Selector field: type (What union field is valid)
@@ -30513,7 +30356,7 @@ pub const VkAccelerationStructureMatrixMotionInstanceNV = extern struct {
 pub const VkAccelerationStructureMotionInstanceNV = extern struct {
     // Extern sync: false
     // Optional: false
-    type: VkAccelerationStructureMotionInstanceTypeNV,
+    type: VkAccelerationStructureMotionInstanceTypeNV = .VK_ACCELERATION_STRUCTURE_MOTION_INSTANCE_TYPE_STATIC_NV,
     // Extern sync: false
     // Optional: true
     flags: VkAccelerationStructureMotionInstanceFlagsNV = .{},
@@ -30633,22 +30476,22 @@ pub const VkBufferCollectionPropertiesFUCHSIA = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    sysmemColorSpaceIndex: VkSysmemColorSpaceFUCHSIA,
+    sysmemColorSpaceIndex: VkSysmemColorSpaceFUCHSIA = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping,
+    samplerYcbcrConversionComponents: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
+    suggestedYcbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrRange: VkSamplerYcbcrRange,
+    suggestedYcbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    suggestedXChromaOffset: VkChromaLocation,
+    suggestedXChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    suggestedYChromaOffset: VkChromaLocation,
+    suggestedYChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_FUCHSIA_buffer_collection
 // Returned only: false
@@ -30662,13 +30505,13 @@ pub const VkBufferConstraintsInfoFUCHSIA = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    createInfo: VkBufferCreateInfo,
+    createInfo: VkBufferCreateInfo = .{},
     // Extern sync: false
     // Optional: true
     requiredFormatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA,
+    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA = .{},
 };
 // Extension: VK_FUCHSIA_buffer_collection
 // Returned only: false
@@ -30696,7 +30539,7 @@ pub const VkImageFormatConstraintsInfoFUCHSIA = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    imageCreateInfo: VkImageCreateInfo,
+    imageCreateInfo: VkImageCreateInfo = .{},
     // Extern sync: false
     // Optional: false
     requiredFormatFeatures: VkFormatFeatureFlags = .{},
@@ -30733,7 +30576,7 @@ pub const VkImageConstraintsInfoFUCHSIA = extern struct {
     pFormatConstraints: ?[*]const VkImageFormatConstraintsInfoFUCHSIA = null,
     // Extern sync: false
     // Optional: false
-    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA,
+    bufferCollectionConstraints: VkBufferCollectionConstraintsInfoFUCHSIA = .{},
     // Extern sync: false
     // Optional: true
     flags: VkImageConstraintsInfoFlagsFUCHSIA = .{},
@@ -30931,7 +30774,7 @@ pub const VkAndroidHardwareBufferFormatProperties2ANDROID = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     externalFormat: u64 = 0,
@@ -30940,19 +30783,19 @@ pub const VkAndroidHardwareBufferFormatProperties2ANDROID = extern struct {
     formatFeatures: VkFormatFeatureFlags2 = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping,
+    samplerYcbcrConversionComponents: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
+    suggestedYcbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrRange: VkSamplerYcbcrRange,
+    suggestedYcbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    suggestedXChromaOffset: VkChromaLocation,
+    suggestedXChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    suggestedYChromaOffset: VkChromaLocation,
+    suggestedYChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Extends: VkGraphicsPipelineCreateInfo
@@ -30977,10 +30820,10 @@ pub const VkPipelineRenderingCreateInfo = extern struct {
     pColorAttachmentFormats: ?[*]const VkFormat = null,
     // Extern sync: false
     // Optional: false
-    depthAttachmentFormat: VkFormat,
+    depthAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    stencilAttachmentFormat: VkFormat,
+    stencilAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Returned only: false
@@ -31044,7 +30887,7 @@ pub const VkRenderingAttachmentInfo = extern struct {
     imageView: VkImageView = .none,
     // Extern sync: false
     // Optional: false
-    imageLayout: VkImageLayout,
+    imageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: true
     resolveMode: VkResolveModeFlags = .{},
@@ -31053,13 +30896,13 @@ pub const VkRenderingAttachmentInfo = extern struct {
     resolveImageView: VkImageView = .none,
     // Extern sync: false
     // Optional: false
-    resolveImageLayout: VkImageLayout,
+    resolveImageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    loadOp: VkAttachmentLoadOp,
+    loadOp: VkAttachmentLoadOp = .VK_ATTACHMENT_LOAD_OP_LOAD,
     // Extern sync: false
     // Optional: false
-    storeOp: VkAttachmentStoreOp,
+    storeOp: VkAttachmentStoreOp = .VK_ATTACHMENT_STORE_OP_STORE,
     // Extern sync: false
     // Optional: false
     clearValue: VkClearValue,
@@ -31080,7 +30923,7 @@ pub const VkRenderingFragmentShadingRateAttachmentInfoKHR = extern struct {
     imageView: VkImageView = .none,
     // Extern sync: false
     // Optional: false
-    imageLayout: VkImageLayout,
+    imageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     shadingRateAttachmentTexelSize: VkExtent2D = .{},
@@ -31101,7 +30944,7 @@ pub const VkRenderingFragmentDensityMapAttachmentInfoEXT = extern struct {
     imageView: VkImageView = .none,
     // Extern sync: false
     // Optional: false
-    imageLayout: VkImageLayout,
+    imageLayout: VkImageLayout = .VK_IMAGE_LAYOUT_UNDEFINED,
 };
 // Extension: VK_GRAPHICS_VERSION_1_3
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -31144,10 +30987,10 @@ pub const VkCommandBufferInheritanceRenderingInfo = extern struct {
     pColorAttachmentFormats: ?[*]const VkFormat = null,
     // Extern sync: false
     // Optional: false
-    depthAttachmentFormat: VkFormat,
+    depthAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    stencilAttachmentFormat: VkFormat,
+    stencilAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: true
     rasterizationSamples: VkSampleCountFlags = .{},
@@ -31657,7 +31500,7 @@ pub const VkRenderPassCreationFeedbackCreateInfoEXT = extern struct {
 pub const VkRenderPassSubpassFeedbackInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
-    subpassMergeStatus: VkSubpassMergeStatusEXT,
+    subpassMergeStatus: VkSubpassMergeStatusEXT = .VK_SUBPASS_MERGE_STATUS_MERGED_EXT,
     // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
@@ -31708,13 +31551,13 @@ pub const VkMicromapBuildInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    type: VkMicromapTypeEXT,
+    type: VkMicromapTypeEXT = .VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT,
     // Extern sync: false
     // Optional: true
     flags: VkBuildMicromapFlagsEXT = .{},
     // Extern sync: false
     // Optional: false
-    mode: VkBuildMicromapModeEXT,
+    mode: VkBuildMicromapModeEXT = .VK_BUILD_MICROMAP_MODE_BUILD_EXT,
     // Extern sync: false
     // Optional: true
     dstMicromap: VkMicromapEXT = .none,
@@ -31767,7 +31610,7 @@ pub const VkMicromapCreateInfoEXT = extern struct {
     size: u64 = 0,
     // Extern sync: false
     // Optional: false
-    type: VkMicromapTypeEXT,
+    type: VkMicromapTypeEXT = .VK_MICROMAP_TYPE_OPACITY_MICROMAP_EXT,
     // Extern sync: false
     // Optional: true
     deviceAddress: u64 = 0,
@@ -31805,7 +31648,7 @@ pub const VkCopyMicromapInfoEXT = extern struct {
     dst: VkMicromapEXT = .none,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyMicromapModeEXT,
+    mode: VkCopyMicromapModeEXT = .VK_COPY_MICROMAP_MODE_CLONE_EXT,
 };
 // Extension: VK_EXT_opacity_micromap
 // Returned only: false
@@ -31825,7 +31668,7 @@ pub const VkCopyMicromapToMemoryInfoEXT = extern struct {
     dst: VkDeviceOrHostAddressKHR,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyMicromapModeEXT,
+    mode: VkCopyMicromapModeEXT = .VK_COPY_MICROMAP_MODE_CLONE_EXT,
 };
 // Extension: VK_EXT_opacity_micromap
 // Returned only: false
@@ -31845,7 +31688,7 @@ pub const VkCopyMemoryToMicromapInfoEXT = extern struct {
     dst: VkMicromapEXT = .none,
     // Extern sync: false
     // Optional: false
-    mode: VkCopyMicromapModeEXT,
+    mode: VkCopyMicromapModeEXT = .VK_COPY_MICROMAP_MODE_CLONE_EXT,
 };
 // Extension: VK_EXT_opacity_micromap
 // Returned only: false
@@ -31949,7 +31792,7 @@ pub const VkAccelerationStructureTrianglesOpacityMicromapEXT = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: false
     indexBuffer: VkDeviceOrHostAddressConstKHR,
@@ -32017,10 +31860,10 @@ pub const VkAccelerationStructureTrianglesDisplacementMicromapNV = extern struct
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    displacementBiasAndScaleFormat: VkFormat,
+    displacementBiasAndScaleFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    displacementVectorFormat: VkFormat,
+    displacementVectorFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     displacementBiasAndScaleBuffer: VkDeviceOrHostAddressConstKHR,
@@ -32041,7 +31884,7 @@ pub const VkAccelerationStructureTrianglesDisplacementMicromapNV = extern struct
     displacedMicromapPrimitiveFlagsStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    indexType: VkIndexType,
+    indexType: VkIndexType = .VK_INDEX_TYPE_UINT16,
     // Extern sync: false
     // Optional: false
     indexBuffer: VkDeviceOrHostAddressConstKHR,
@@ -32364,16 +32207,16 @@ pub const VkPipelineRobustnessCreateInfo = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    storageBuffers: VkPipelineRobustnessBufferBehavior,
+    storageBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    uniformBuffers: VkPipelineRobustnessBufferBehavior,
+    uniformBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    vertexInputs: VkPipelineRobustnessBufferBehavior,
+    vertexInputs: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    images: VkPipelineRobustnessImageBehavior,
+    images: VkPipelineRobustnessImageBehavior = .VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DEVICE_DEFAULT,
 };
 // Extension: VK_COMPUTE_VERSION_1_4
 // Extends: VkPhysicalDeviceProperties2
@@ -32388,16 +32231,16 @@ pub const VkPhysicalDevicePipelineRobustnessProperties = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessStorageBuffers: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessStorageBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessUniformBuffers: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessUniformBuffers: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessVertexInputs: VkPipelineRobustnessBufferBehavior,
+    defaultRobustnessVertexInputs: VkPipelineRobustnessBufferBehavior = .VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_DEVICE_DEFAULT,
     // Extern sync: false
     // Optional: false
-    defaultRobustnessImages: VkPipelineRobustnessImageBehavior,
+    defaultRobustnessImages: VkPipelineRobustnessImageBehavior = .VK_PIPELINE_ROBUSTNESS_IMAGE_BEHAVIOR_DEVICE_DEFAULT,
 };
 // Extension: VK_QCOM_image_processing
 // Extends: VkImageViewCreateInfo
@@ -32651,7 +32494,7 @@ pub const VkDeviceAddressBindingCallbackDataEXT = extern struct {
     size: u64 = 0,
     // Extern sync: false
     // Optional: false
-    bindingType: VkDeviceAddressBindingTypeEXT,
+    bindingType: VkDeviceAddressBindingTypeEXT = .VK_DEVICE_ADDRESS_BINDING_TYPE_BIND_EXT,
 };
 // Extension: VK_NV_optical_flow
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -32740,7 +32583,7 @@ pub const VkOpticalFlowImageFormatPropertiesNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_NV_optical_flow
 // Returned only: false
@@ -32760,13 +32603,13 @@ pub const VkOpticalFlowSessionCreateInfoNV = extern struct {
     height: u32 = 0,
     // Extern sync: false
     // Optional: false
-    imageFormat: VkFormat,
+    imageFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
-    flowVectorFormat: VkFormat,
+    flowVectorFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: true
-    costFormat: VkFormat,
+    costFormat: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     outputGridSize: VkOpticalFlowGridSizeFlagsNV = .{},
@@ -32775,7 +32618,7 @@ pub const VkOpticalFlowSessionCreateInfoNV = extern struct {
     hintGridSize: VkOpticalFlowGridSizeFlagsNV = .{},
     // Extern sync: false
     // Optional: true
-    performanceLevel: VkOpticalFlowPerformanceLevelNV,
+    performanceLevel: VkOpticalFlowPerformanceLevelNV = .VK_OPTICAL_FLOW_PERFORMANCE_LEVEL_UNKNOWN_NV,
     // Extern sync: false
     // Optional: true
     flags: VkOpticalFlowSessionCreateFlagsNV = .{},
@@ -32846,7 +32689,7 @@ pub const VkPhysicalDeviceFaultFeaturesEXT = extern struct {
 pub const VkDeviceFaultAddressInfoEXT = extern struct {
     // Extern sync: false
     // Optional: false
-    addressType: VkDeviceFaultAddressTypeEXT,
+    addressType: VkDeviceFaultAddressTypeEXT = .VK_DEVICE_FAULT_ADDRESS_TYPE_NONE_EXT,
     // Extern sync: false
     // Optional: false
     reportedAddress: u64 = 0,
@@ -32923,7 +32766,7 @@ pub const VkDeviceFaultVendorBinaryHeaderVersionOneEXT = extern struct {
     headerSize: u32 = 0,
     // Extern sync: false
     // Optional: false
-    headerVersion: VkDeviceFaultVendorBinaryHeaderVersionEXT,
+    headerVersion: VkDeviceFaultVendorBinaryHeaderVersionEXT = .VK_DEVICE_FAULT_VENDOR_BINARY_HEADER_VERSION_ONE_EXT,
     // Extern sync: false
     // Optional: false
     vendorID: u32 = 0,
@@ -33000,7 +32843,7 @@ pub const VkDepthBiasRepresentationInfoEXT = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    depthBiasRepresentation: VkDepthBiasRepresentationEXT,
+    depthBiasRepresentation: VkDepthBiasRepresentationEXT = .VK_DEPTH_BIAS_REPRESENTATION_LEAST_REPRESENTABLE_VALUE_FORMAT_EXT,
     // Extern sync: false
     // Optional: false
     depthBiasExact: u32 = 0,
@@ -33187,7 +33030,7 @@ pub const VkSurfacePresentModeKHR = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    presentMode: VkPresentModeKHR,
+    presentMode: VkPresentModeKHR = .VK_PRESENT_MODE_IMMEDIATE_KHR,
 };
 // Extension: VK_KHR_surface_maintenance1
 // Extends: VkSurfaceCapabilities2KHR
@@ -33427,7 +33270,7 @@ pub const VkPhysicalDeviceRayTracingInvocationReorderPropertiesEXT = extern stru
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    rayTracingInvocationReorderReorderingHint: VkRayTracingInvocationReorderModeEXT,
+    rayTracingInvocationReorderReorderingHint: VkRayTracingInvocationReorderModeEXT = .VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_EXT,
     // Extern sync: false
     // Optional: false
     maxShaderBindingTableRecordIndex: u32 = 0,
@@ -33445,7 +33288,7 @@ pub const VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV = extern struc
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    rayTracingInvocationReorderReorderingHint: VkRayTracingInvocationReorderModeEXT,
+    rayTracingInvocationReorderReorderingHint: VkRayTracingInvocationReorderModeEXT = .VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_EXT,
 };
 // Extension: VK_NV_extended_sparse_address_space
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -33516,7 +33359,7 @@ pub const VkDirectDriverLoadingListLUNARG = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    mode: VkDirectDriverLoadingModeLUNARG,
+    mode: VkDirectDriverLoadingModeLUNARG = .VK_DIRECT_DRIVER_LOADING_MODE_EXCLUSIVE_LUNARG,
     // Extern sync: false
     // Optional: false
     driverCount: u32 = 0,
@@ -33736,7 +33579,7 @@ pub const VkShaderCreateInfoEXT = extern struct {
     nextStage: VkShaderStageFlags = .{},
     // Extern sync: false
     // Optional: false
-    codeType: VkShaderCodeTypeEXT,
+    codeType: VkShaderCodeTypeEXT = .VK_SHADER_CODE_TYPE_BINARY_EXT,
     // Extern sync: false
     // Optional: false
     codeSize: u64 = 0,
@@ -33853,7 +33696,7 @@ pub const VkScreenBufferFormatPropertiesQNX = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     externalFormat: u64 = 0,
@@ -33865,19 +33708,19 @@ pub const VkScreenBufferFormatPropertiesQNX = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping,
+    samplerYcbcrConversionComponents: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
+    suggestedYcbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrRange: VkSamplerYcbcrRange,
+    suggestedYcbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    suggestedXChromaOffset: VkChromaLocation,
+    suggestedXChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    suggestedYChromaOffset: VkChromaLocation,
+    suggestedYChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_QNX_external_memory_screen_buffer
 // Extends: VkImageCreateInfo,VkSamplerYcbcrConversionCreateInfo
@@ -33948,22 +33791,22 @@ pub const VkCooperativeMatrixPropertiesKHR = extern struct {
     KSize: u32 = 0,
     // Extern sync: false
     // Optional: false
-    AType: VkComponentTypeKHR,
+    AType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    BType: VkComponentTypeKHR,
+    BType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    CType: VkComponentTypeKHR,
+    CType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    ResultType: VkComponentTypeKHR,
+    ResultType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
     saturatingAccumulation: u32 = 0,
     // Extern sync: false
     // Optional: false
-    scope: VkScopeKHR,
+    scope: VkScopeKHR = .VK_SCOPE_DEVICE_KHR,
 };
 // Extension: VK_KHR_cooperative_matrix
 // Extends: VkPhysicalDeviceProperties2
@@ -34161,7 +34004,7 @@ pub const VkAntiLagDataAMD = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    mode: VkAntiLagModeAMD,
+    mode: VkAntiLagModeAMD = .VK_ANTI_LAG_MODE_DRIVER_CONTROL_AMD,
     // Extern sync: false
     // Optional: false
     maxFPS: u32 = 0,
@@ -34181,7 +34024,7 @@ pub const VkAntiLagPresentationInfoAMD = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    stage: VkAntiLagStageAMD,
+    stage: VkAntiLagStageAMD = .VK_ANTI_LAG_STAGE_INPUT_AMD,
     // Extern sync: false
     // Optional: false
     frameIndex: u64 = 0,
@@ -34505,7 +34348,7 @@ pub const VkSamplerCubicWeightsCreateInfoQCOM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    cubicWeights: VkCubicFilterWeightsQCOM,
+    cubicWeights: VkCubicFilterWeightsQCOM = .VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM,
 };
 // Extension: VK_QCOM_filter_cubic_weights
 // Extends: VkBlitImageInfo2
@@ -34520,7 +34363,7 @@ pub const VkBlitImageCubicWeightsInfoQCOM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    cubicWeights: VkCubicFilterWeightsQCOM,
+    cubicWeights: VkCubicFilterWeightsQCOM = .VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM,
 };
 // Extension: VK_QCOM_image_processing2
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -34568,7 +34411,7 @@ pub const VkSamplerBlockMatchWindowCreateInfoQCOM = extern struct {
     windowExtent: VkExtent2D = .{},
     // Extern sync: false
     // Optional: false
-    windowCompareMode: VkBlockMatchWindowCompareModeQCOM,
+    windowCompareMode: VkBlockMatchWindowCompareModeQCOM = .VK_BLOCK_MATCH_WINDOW_COMPARE_MODE_MIN_QCOM,
 };
 // Extension: VK_NV_descriptor_pool_overallocation
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -34598,7 +34441,7 @@ pub const VkPhysicalDeviceLayeredDriverPropertiesMSFT = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    underlyingAPI: VkLayeredDriverUnderlyingApiMSFT,
+    underlyingAPI: VkLayeredDriverUnderlyingApiMSFT = .VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT,
 };
 // Extension: VK_NV_per_stage_descriptor_set
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -34649,10 +34492,10 @@ pub const VkPhysicalDeviceExternalFormatResolvePropertiesANDROID = extern struct
     nullColorAttachmentWithExternalFormatResolve: u32 = 0,
     // Extern sync: false
     // Optional: false
-    externalFormatResolveChromaOffsetX: VkChromaLocation,
+    externalFormatResolveChromaOffsetX: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    externalFormatResolveChromaOffsetY: VkChromaLocation,
+    externalFormatResolveChromaOffsetY: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_ANDROID_external_format_resolve
 // Extends: VkAndroidHardwareBufferPropertiesANDROID
@@ -34667,7 +34510,7 @@ pub const VkAndroidHardwareBufferFormatResolvePropertiesANDROID = extern struct 
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    colorAttachmentFormat: VkFormat,
+    colorAttachmentFormat: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_NV_low_latency2
 // Returned only: false
@@ -34721,7 +34564,7 @@ pub const VkSetLatencyMarkerInfoNV = extern struct {
     presentID: u64 = 0,
     // Extern sync: false
     // Optional: false
-    marker: VkLatencyMarkerNV,
+    marker: VkLatencyMarkerNV = .VK_LATENCY_MARKER_SIMULATION_START_NV,
 };
 // Extension: VK_NV_low_latency2
 // Returned only: false
@@ -34806,7 +34649,7 @@ pub const VkOutOfBandQueueTypeInfoNV = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    queueType: VkOutOfBandQueueTypeNV,
+    queueType: VkOutOfBandQueueTypeNV = .VK_OUT_OF_BAND_QUEUE_TYPE_RENDER_NV,
 };
 // Extension: VK_NV_low_latency2
 // Extends: VkSubmitInfo,VkSubmitInfo2
@@ -35465,22 +35308,22 @@ pub const VkCooperativeMatrixFlexibleDimensionsPropertiesNV = extern struct {
     KGranularity: u32 = 0,
     // Extern sync: false
     // Optional: false
-    AType: VkComponentTypeKHR,
+    AType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    BType: VkComponentTypeKHR,
+    BType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    CType: VkComponentTypeKHR,
+    CType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    ResultType: VkComponentTypeKHR,
+    ResultType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
     saturatingAccumulation: u32 = 0,
     // Extern sync: false
     // Optional: false
-    scope: VkScopeKHR,
+    scope: VkScopeKHR = .VK_SCOPE_DEVICE_KHR,
     // Extern sync: false
     // Optional: false
     workgroupInvocations: u32 = 0,
@@ -35561,7 +35404,7 @@ pub const VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX = extern s
     maxGeometryIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    format: VkCompressedTriangleFormatAMDX,
+    format: VkCompressedTriangleFormatAMDX = .VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_AMDX,
 };
 // Extension: VK_KHR_depth_clamp_zero_one
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -35608,19 +35451,19 @@ pub const VkCooperativeVectorPropertiesNV = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    inputType: VkComponentTypeKHR,
+    inputType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    inputInterpretation: VkComponentTypeKHR,
+    inputInterpretation: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    matrixInterpretation: VkComponentTypeKHR,
+    matrixInterpretation: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    biasInterpretation: VkComponentTypeKHR,
+    biasInterpretation: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    resultType: VkComponentTypeKHR,
+    resultType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
     transpose: u32 = 0,
@@ -35673,10 +35516,10 @@ pub const VkConvertCooperativeVectorMatrixInfoNV = extern struct {
     dstData: VkDeviceOrHostAddressKHR,
     // Extern sync: false
     // Optional: false
-    srcComponentType: VkComponentTypeKHR,
+    srcComponentType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
-    dstComponentType: VkComponentTypeKHR,
+    dstComponentType: VkComponentTypeKHR = .VK_COMPONENT_TYPE_FLOAT16_KHR,
     // Extern sync: false
     // Optional: false
     numRows: u32 = 0,
@@ -35685,13 +35528,13 @@ pub const VkConvertCooperativeVectorMatrixInfoNV = extern struct {
     numColumns: u32 = 0,
     // Extern sync: false
     // Optional: false
-    srcLayout: VkCooperativeVectorMatrixLayoutNV,
+    srcLayout: VkCooperativeVectorMatrixLayoutNV = .VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV,
     // Extern sync: false
     // Optional: false
     srcStride: u64 = 0,
     // Extern sync: false
     // Optional: false
-    dstLayout: VkCooperativeVectorMatrixLayoutNV,
+    dstLayout: VkCooperativeVectorMatrixLayoutNV = .VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV,
     // Extern sync: false
     // Optional: false
     dstStride: u64 = 0,
@@ -36007,10 +35850,10 @@ pub const VkTensorDescriptionARM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    tiling: VkTensorTilingARM,
+    tiling: VkTensorTilingARM = .VK_TENSOR_TILING_OPTIMAL_ARM,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     dimensionCount: u32 = 0,
@@ -36044,7 +35887,7 @@ pub const VkTensorCreateInfoARM = extern struct {
     pDescription: ?*const VkTensorDescriptionARM = null,
     // Extern sync: false
     // Optional: false
-    sharingMode: VkSharingMode,
+    sharingMode: VkSharingMode = .VK_SHARING_MODE_EXCLUSIVE,
     // Extern sync: false
     // Optional: true
     queueFamilyIndexCount: u32 = 0,
@@ -36071,7 +35914,7 @@ pub const VkTensorViewCreateInfoARM = extern struct {
     tensor: VkTensorARM = .none,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
 };
 // Extension: VK_ARM_tensors
 // Returned only: false
@@ -36734,10 +36577,10 @@ pub const VkDataGraphPipelineSessionBindPointRequirementARM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    bindPoint: VkDataGraphPipelineSessionBindPointARM,
+    bindPoint: VkDataGraphPipelineSessionBindPointARM = .VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM,
     // Extern sync: false
     // Optional: false
-    bindPointType: VkDataGraphPipelineSessionBindPointTypeARM,
+    bindPointType: VkDataGraphPipelineSessionBindPointTypeARM = .VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM,
     // Extern sync: false
     // Optional: false
     numObjects: u32 = 0,
@@ -36757,7 +36600,7 @@ pub const VkDataGraphPipelineSessionMemoryRequirementsInfoARM = extern struct {
     session: VkDataGraphPipelineSessionARM = .none,
     // Extern sync: false
     // Optional: false
-    bindPoint: VkDataGraphPipelineSessionBindPointARM,
+    bindPoint: VkDataGraphPipelineSessionBindPointARM = .VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM,
     // Extern sync: false
     // Optional: false
     objectIndex: u32 = 0,
@@ -36777,7 +36620,7 @@ pub const VkBindDataGraphPipelineSessionMemoryInfoARM = extern struct {
     session: VkDataGraphPipelineSessionARM = .none,
     // Extern sync: false
     // Optional: false
-    bindPoint: VkDataGraphPipelineSessionBindPointARM,
+    bindPoint: VkDataGraphPipelineSessionBindPointARM = .VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM,
     // Extern sync: false
     // Optional: false
     objectIndex: u32 = 0,
@@ -36814,7 +36657,7 @@ pub const VkDataGraphPipelinePropertyQueryResultARM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    property: VkDataGraphPipelinePropertyARM,
+    property: VkDataGraphPipelinePropertyARM = .VK_DATA_GRAPH_PIPELINE_PROPERTY_CREATION_LOG_ARM,
     // Extern sync: false
     // Optional: false
     isText: u32 = 0,
@@ -36865,7 +36708,7 @@ pub const VkDataGraphPipelineDispatchInfoARM = extern struct {
 pub const VkPhysicalDeviceDataGraphProcessingEngineARM = extern struct {
     // Extern sync: false
     // Optional: false
-    type: VkPhysicalDeviceDataGraphProcessingEngineTypeARM,
+    type: VkPhysicalDeviceDataGraphProcessingEngineTypeARM = .VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_DEFAULT_ARM,
     // Extern sync: false
     // Optional: false
     isForeign: u32 = 0,
@@ -36876,7 +36719,7 @@ pub const VkPhysicalDeviceDataGraphProcessingEngineARM = extern struct {
 pub const VkPhysicalDeviceDataGraphOperationSupportARM = extern struct {
     // Extern sync: false
     // Optional: false
-    operationType: VkPhysicalDeviceDataGraphOperationTypeARM,
+    operationType: VkPhysicalDeviceDataGraphOperationTypeARM = .VK_PHYSICAL_DEVICE_DATA_GRAPH_OPERATION_TYPE_SPIRV_EXTENDED_INSTRUCTION_SET_ARM,
     // Length expression: null-terminated
     // Extern sync: false
     // Optional: false
@@ -36897,10 +36740,10 @@ pub const VkQueueFamilyDataGraphPropertiesARM = extern struct {
     pNext: ?*const anyopaque = null,
     // Extern sync: false
     // Optional: false
-    engine: VkPhysicalDeviceDataGraphProcessingEngineARM,
+    engine: VkPhysicalDeviceDataGraphProcessingEngineARM = .{},
     // Extern sync: false
     // Optional: false
-    operation: VkPhysicalDeviceDataGraphOperationSupportARM,
+    operation: VkPhysicalDeviceDataGraphOperationSupportARM = .{},
 };
 // Extension: VK_ARM_data_graph
 // Returned only: false
@@ -36917,7 +36760,7 @@ pub const VkPhysicalDeviceQueueFamilyDataGraphProcessingEngineInfoARM = extern s
     queueFamilyIndex: u32 = 0,
     // Extern sync: false
     // Optional: false
-    engineType: VkPhysicalDeviceDataGraphProcessingEngineTypeARM,
+    engineType: VkPhysicalDeviceDataGraphProcessingEngineTypeARM = .VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_DEFAULT_ARM,
 };
 // Extension: VK_ARM_data_graph
 // Returned only: false
@@ -37199,7 +37042,7 @@ pub const VkNativeBufferFormatPropertiesOHOS = extern struct {
     pNext: ?*anyopaque = null,
     // Extern sync: false
     // Optional: false
-    format: VkFormat,
+    format: VkFormat = .VK_FORMAT_UNDEFINED,
     // Extern sync: false
     // Optional: false
     externalFormat: u64 = 0,
@@ -37208,19 +37051,19 @@ pub const VkNativeBufferFormatPropertiesOHOS = extern struct {
     formatFeatures: VkFormatFeatureFlags = .{},
     // Extern sync: false
     // Optional: false
-    samplerYcbcrConversionComponents: VkComponentMapping,
+    samplerYcbcrConversionComponents: VkComponentMapping = .{},
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrModel: VkSamplerYcbcrModelConversion,
+    suggestedYcbcrModel: VkSamplerYcbcrModelConversion = .VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
     // Extern sync: false
     // Optional: false
-    suggestedYcbcrRange: VkSamplerYcbcrRange,
+    suggestedYcbcrRange: VkSamplerYcbcrRange = .VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
     // Extern sync: false
     // Optional: false
-    suggestedXChromaOffset: VkChromaLocation,
+    suggestedXChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
     // Extern sync: false
     // Optional: false
-    suggestedYChromaOffset: VkChromaLocation,
+    suggestedYChromaOffset: VkChromaLocation = .VK_CHROMA_LOCATION_COSITED_EVEN,
 };
 // Extension: VK_OHOS_external_memory
 // Extends: VkMemoryAllocateInfo
@@ -45127,83 +44970,237 @@ pub const PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceCountersByRegionARM
 pub const PFN_vkCmdSetComputeOccupancyPriorityNV = *const vkCmdSetComputeOccupancyPriorityNV;
 
 // Unknown types
-pub const VkPrivateDataSlotCreateFlagBits = if (@hasDecl(@import("root"), "VkPrivateDataSlotCreateFlagBits")) @import("root").VkPrivateDataSlotCreateFlagBits else @compileError("Unknown type: {VkPrivateDataSlotCreateFlagBits}");
-pub const ANativeWindow = if (@hasDecl(@import("root"), "ANativeWindow")) @import("root").ANativeWindow else @compileError("Unknown type: {ANativeWindow}");
-pub const wl_display = if (@hasDecl(@import("root"), "wl_display")) @import("root").wl_display else @compileError("Unknown type: {wl_display}");
-pub const wl_surface = if (@hasDecl(@import("root"), "wl_surface")) @import("root").wl_surface else @compileError("Unknown type: {wl_surface}");
-pub const HINSTANCE = if (@hasDecl(@import("root"), "HINSTANCE")) @import("root").HINSTANCE else @compileError("Unknown type: {HINSTANCE}");
-pub const HWND = if (@hasDecl(@import("root"), "HWND")) @import("root").HWND else @compileError("Unknown type: {HWND}");
-pub const Display = if (@hasDecl(@import("root"), "Display")) @import("root").Display else @compileError("Unknown type: {Display}");
-pub const Window = if (@hasDecl(@import("root"), "Window")) @import("root").Window else @compileError("Unknown type: {Window}");
-pub const xcb_connection_t = if (@hasDecl(@import("root"), "xcb_connection_t")) @import("root").xcb_connection_t else @compileError("Unknown type: {xcb_connection_t}");
-pub const xcb_window_t = if (@hasDecl(@import("root"), "xcb_window_t")) @import("root").xcb_window_t else @compileError("Unknown type: {xcb_window_t}");
-pub const IDirectFB = if (@hasDecl(@import("root"), "IDirectFB")) @import("root").IDirectFB else @compileError("Unknown type: {IDirectFB}");
-pub const IDirectFBSurface = if (@hasDecl(@import("root"), "IDirectFBSurface")) @import("root").IDirectFBSurface else @compileError("Unknown type: {IDirectFBSurface}");
-pub const zx_handle_t = if (@hasDecl(@import("root"), "zx_handle_t")) @import("root").zx_handle_t else @compileError("Unknown type: {zx_handle_t}");
-pub const GgpStreamDescriptor = if (@hasDecl(@import("root"), "GgpStreamDescriptor")) @import("root").GgpStreamDescriptor else @compileError("Unknown type: {GgpStreamDescriptor}");
-pub const _screen_context = if (@hasDecl(@import("root"), "_screen_context")) @import("root")._screen_context else @compileError("Unknown type: {_screen_context}");
-pub const _screen_window = if (@hasDecl(@import("root"), "_screen_window")) @import("root")._screen_window else @compileError("Unknown type: {_screen_window}");
-pub const HANDLE = if (@hasDecl(@import("root"), "HANDLE")) @import("root").HANDLE else @compileError("Unknown type: {HANDLE}");
-pub const SECURITY_ATTRIBUTES = if (@hasDecl(@import("root"), "SECURITY_ATTRIBUTES")) @import("root").SECURITY_ATTRIBUTES else @compileError("Unknown type: {SECURITY_ATTRIBUTES}");
-pub const DWORD = if (@hasDecl(@import("root"), "DWORD")) @import("root").DWORD else @compileError("Unknown type: {DWORD}");
-pub const NvSciBufAttrList = if (@hasDecl(@import("root"), "NvSciBufAttrList")) @import("root").NvSciBufAttrList else @compileError("Unknown type: {NvSciBufAttrList}");
-pub const NvSciBufObj = if (@hasDecl(@import("root"), "NvSciBufObj")) @import("root").NvSciBufObj else @compileError("Unknown type: {NvSciBufObj}");
-pub const LPCWSTR = if (@hasDecl(@import("root"), "LPCWSTR")) @import("root").LPCWSTR else @compileError("Unknown type: {LPCWSTR}");
-pub const int = if (@hasDecl(@import("root"), "int")) @import("root").int else @compileError("Unknown type: {int}");
-pub const NvSciSyncAttrList = if (@hasDecl(@import("root"), "NvSciSyncAttrList")) @import("root").NvSciSyncAttrList else @compileError("Unknown type: {NvSciSyncAttrList}");
-pub const NvSciSyncObj = if (@hasDecl(@import("root"), "NvSciSyncObj")) @import("root").NvSciSyncObj else @compileError("Unknown type: {NvSciSyncObj}");
-pub const NvSciSyncFence = if (@hasDecl(@import("root"), "NvSciSyncFence")) @import("root").NvSciSyncFence else @compileError("Unknown type: {NvSciSyncFence}");
-pub const CAMetalLayer = if (@hasDecl(@import("root"), "CAMetalLayer")) @import("root").CAMetalLayer else @compileError("Unknown type: {CAMetalLayer}");
-pub const AHardwareBuffer = if (@hasDecl(@import("root"), "AHardwareBuffer")) @import("root").AHardwareBuffer else @compileError("Unknown type: {AHardwareBuffer}");
-pub const VkBuildAccelerationStructureFlagsNV = if (@hasDecl(@import("root"), "VkBuildAccelerationStructureFlagsNV")) @import("root").VkBuildAccelerationStructureFlagsNV else @compileError("Unknown type: {VkBuildAccelerationStructureFlagsNV}");
-pub const GgpFrameToken = if (@hasDecl(@import("root"), "GgpFrameToken")) @import("root").GgpFrameToken else @compileError("Unknown type: {GgpFrameToken}");
-pub const HMONITOR = if (@hasDecl(@import("root"), "HMONITOR")) @import("root").HMONITOR else @compileError("Unknown type: {HMONITOR}");
-pub const StdVideoH264ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH264ProfileIdc")) @import("root").StdVideoH264ProfileIdc else @compileError("Unknown type: {StdVideoH264ProfileIdc}");
-pub const StdVideoH264LevelIdc = if (@hasDecl(@import("root"), "StdVideoH264LevelIdc")) @import("root").StdVideoH264LevelIdc else @compileError("Unknown type: {StdVideoH264LevelIdc}");
-pub const StdVideoH264SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH264SequenceParameterSet")) @import("root").StdVideoH264SequenceParameterSet else @compileError("Unknown type: {StdVideoH264SequenceParameterSet}");
-pub const StdVideoH264PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH264PictureParameterSet")) @import("root").StdVideoH264PictureParameterSet else @compileError("Unknown type: {StdVideoH264PictureParameterSet}");
-pub const StdVideoDecodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264PictureInfo")) @import("root").StdVideoDecodeH264PictureInfo else @compileError("Unknown type: {StdVideoDecodeH264PictureInfo}");
-pub const StdVideoDecodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264ReferenceInfo")) @import("root").StdVideoDecodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH264ReferenceInfo}");
-pub const StdVideoH265ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH265ProfileIdc")) @import("root").StdVideoH265ProfileIdc else @compileError("Unknown type: {StdVideoH265ProfileIdc}");
-pub const StdVideoH265LevelIdc = if (@hasDecl(@import("root"), "StdVideoH265LevelIdc")) @import("root").StdVideoH265LevelIdc else @compileError("Unknown type: {StdVideoH265LevelIdc}");
-pub const StdVideoH265VideoParameterSet = if (@hasDecl(@import("root"), "StdVideoH265VideoParameterSet")) @import("root").StdVideoH265VideoParameterSet else @compileError("Unknown type: {StdVideoH265VideoParameterSet}");
-pub const StdVideoH265SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH265SequenceParameterSet")) @import("root").StdVideoH265SequenceParameterSet else @compileError("Unknown type: {StdVideoH265SequenceParameterSet}");
-pub const StdVideoH265PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH265PictureParameterSet")) @import("root").StdVideoH265PictureParameterSet else @compileError("Unknown type: {StdVideoH265PictureParameterSet}");
-pub const StdVideoDecodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265PictureInfo")) @import("root").StdVideoDecodeH265PictureInfo else @compileError("Unknown type: {StdVideoDecodeH265PictureInfo}");
-pub const StdVideoDecodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265ReferenceInfo")) @import("root").StdVideoDecodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeH265ReferenceInfo}");
-pub const StdVideoVP9Profile = if (@hasDecl(@import("root"), "StdVideoVP9Profile")) @import("root").StdVideoVP9Profile else @compileError("Unknown type: {StdVideoVP9Profile}");
-pub const StdVideoVP9Level = if (@hasDecl(@import("root"), "StdVideoVP9Level")) @import("root").StdVideoVP9Level else @compileError("Unknown type: {StdVideoVP9Level}");
-pub const StdVideoDecodeVP9PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeVP9PictureInfo")) @import("root").StdVideoDecodeVP9PictureInfo else @compileError("Unknown type: {StdVideoDecodeVP9PictureInfo}");
-pub const StdVideoAV1Profile = if (@hasDecl(@import("root"), "StdVideoAV1Profile")) @import("root").StdVideoAV1Profile else @compileError("Unknown type: {StdVideoAV1Profile}");
-pub const StdVideoAV1Level = if (@hasDecl(@import("root"), "StdVideoAV1Level")) @import("root").StdVideoAV1Level else @compileError("Unknown type: {StdVideoAV1Level}");
-pub const StdVideoAV1SequenceHeader = if (@hasDecl(@import("root"), "StdVideoAV1SequenceHeader")) @import("root").StdVideoAV1SequenceHeader else @compileError("Unknown type: {StdVideoAV1SequenceHeader}");
-pub const StdVideoDecodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1PictureInfo")) @import("root").StdVideoDecodeAV1PictureInfo else @compileError("Unknown type: {StdVideoDecodeAV1PictureInfo}");
-pub const StdVideoDecodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1ReferenceInfo")) @import("root").StdVideoDecodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoDecodeAV1ReferenceInfo}");
-pub const StdVideoEncodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264ReferenceInfo")) @import("root").StdVideoEncodeH264ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH264ReferenceInfo}");
-pub const StdVideoEncodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264PictureInfo")) @import("root").StdVideoEncodeH264PictureInfo else @compileError("Unknown type: {StdVideoEncodeH264PictureInfo}");
-pub const StdVideoEncodeH264SliceHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH264SliceHeader")) @import("root").StdVideoEncodeH264SliceHeader else @compileError("Unknown type: {StdVideoEncodeH264SliceHeader}");
-pub const StdVideoEncodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265PictureInfo")) @import("root").StdVideoEncodeH265PictureInfo else @compileError("Unknown type: {StdVideoEncodeH265PictureInfo}");
-pub const StdVideoEncodeH265SliceSegmentHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH265SliceSegmentHeader")) @import("root").StdVideoEncodeH265SliceSegmentHeader else @compileError("Unknown type: {StdVideoEncodeH265SliceSegmentHeader}");
-pub const StdVideoEncodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265ReferenceInfo")) @import("root").StdVideoEncodeH265ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeH265ReferenceInfo}");
-pub const StdVideoEncodeAV1DecoderModelInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1DecoderModelInfo")) @import("root").StdVideoEncodeAV1DecoderModelInfo else @compileError("Unknown type: {StdVideoEncodeAV1DecoderModelInfo}");
-pub const StdVideoEncodeAV1OperatingPointInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1OperatingPointInfo")) @import("root").StdVideoEncodeAV1OperatingPointInfo else @compileError("Unknown type: {StdVideoEncodeAV1OperatingPointInfo}");
-pub const StdVideoEncodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1ReferenceInfo")) @import("root").StdVideoEncodeAV1ReferenceInfo else @compileError("Unknown type: {StdVideoEncodeAV1ReferenceInfo}");
-pub const StdVideoEncodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1PictureInfo")) @import("root").StdVideoEncodeAV1PictureInfo else @compileError("Unknown type: {StdVideoEncodeAV1PictureInfo}");
-pub const MTLDevice_id = if (@hasDecl(@import("root"), "MTLDevice_id")) @import("root").MTLDevice_id else @compileError("Unknown type: {MTLDevice_id}");
-pub const MTLCommandQueue_id = if (@hasDecl(@import("root"), "MTLCommandQueue_id")) @import("root").MTLCommandQueue_id else @compileError("Unknown type: {MTLCommandQueue_id}");
-pub const MTLBuffer_id = if (@hasDecl(@import("root"), "MTLBuffer_id")) @import("root").MTLBuffer_id else @compileError("Unknown type: {MTLBuffer_id}");
-pub const MTLTexture_id = if (@hasDecl(@import("root"), "MTLTexture_id")) @import("root").MTLTexture_id else @compileError("Unknown type: {MTLTexture_id}");
-pub const IOSurfaceRef = if (@hasDecl(@import("root"), "IOSurfaceRef")) @import("root").IOSurfaceRef else @compileError("Unknown type: {IOSurfaceRef}");
-pub const MTLSharedEvent_id = if (@hasDecl(@import("root"), "MTLSharedEvent_id")) @import("root").MTLSharedEvent_id else @compileError("Unknown type: {MTLSharedEvent_id}");
-pub const VkMemoryDecompressionMethodFlagsNV = if (@hasDecl(@import("root"), "VkMemoryDecompressionMethodFlagsNV")) @import("root").VkMemoryDecompressionMethodFlagsNV else @compileError("Unknown type: {VkMemoryDecompressionMethodFlagsNV}");
-pub const _screen_buffer = if (@hasDecl(@import("root"), "_screen_buffer")) @import("root")._screen_buffer else @compileError("Unknown type: {_screen_buffer}");
-pub const OHNativeWindow = if (@hasDecl(@import("root"), "OHNativeWindow")) @import("root").OHNativeWindow else @compileError("Unknown type: {OHNativeWindow}");
-pub const VkPipelineCreateFlags2KHR = if (@hasDecl(@import("root"), "VkPipelineCreateFlags2KHR")) @import("root").VkPipelineCreateFlags2KHR else @compileError("Unknown type: {VkPipelineCreateFlags2KHR}");
-pub const OHBufferHandle = if (@hasDecl(@import("root"), "OHBufferHandle")) @import("root").OHBufferHandle else @compileError("Unknown type: {OHBufferHandle}");
-pub const OH_NativeBuffer = if (@hasDecl(@import("root"), "OH_NativeBuffer")) @import("root").OH_NativeBuffer else @compileError("Unknown type: {OH_NativeBuffer}");
-pub const VisualID = if (@hasDecl(@import("root"), "VisualID")) @import("root").VisualID else @compileError("Unknown type: {VisualID}");
-pub const xcb_visualid_t = if (@hasDecl(@import("root"), "xcb_visualid_t")) @import("root").xcb_visualid_t else @compileError("Unknown type: {xcb_visualid_t}");
-pub const RROutput = if (@hasDecl(@import("root"), "RROutput")) @import("root").RROutput else @compileError("Unknown type: {RROutput}");
+pub const VkPrivateDataSlotCreateFlagBits = if (@hasDecl(@import("root"), "VkPrivateDataSlotCreateFlagBits")) @import("root").VkPrivateDataSlotCreateFlagBits else blk: {
+    break :blk struct {};
+};
+pub const ANativeWindow = if (@hasDecl(@import("root"), "ANativeWindow")) @import("root").ANativeWindow else blk: {
+    break :blk struct {};
+};
+pub const wl_display = if (@hasDecl(@import("root"), "wl_display")) @import("root").wl_display else blk: {
+    break :blk struct {};
+};
+pub const wl_surface = if (@hasDecl(@import("root"), "wl_surface")) @import("root").wl_surface else blk: {
+    break :blk struct {};
+};
+pub const HINSTANCE = if (@hasDecl(@import("root"), "HINSTANCE")) @import("root").HINSTANCE else blk: {
+    break :blk struct {};
+};
+pub const HWND = if (@hasDecl(@import("root"), "HWND")) @import("root").HWND else blk: {
+    break :blk struct {};
+};
+pub const Display = if (@hasDecl(@import("root"), "Display")) @import("root").Display else blk: {
+    break :blk struct {};
+};
+pub const Window = if (@hasDecl(@import("root"), "Window")) @import("root").Window else blk: {
+    break :blk struct {};
+};
+pub const xcb_connection_t = if (@hasDecl(@import("root"), "xcb_connection_t")) @import("root").xcb_connection_t else blk: {
+    break :blk struct {};
+};
+pub const xcb_window_t = if (@hasDecl(@import("root"), "xcb_window_t")) @import("root").xcb_window_t else blk: {
+    break :blk struct {};
+};
+pub const IDirectFB = if (@hasDecl(@import("root"), "IDirectFB")) @import("root").IDirectFB else blk: {
+    break :blk struct {};
+};
+pub const IDirectFBSurface = if (@hasDecl(@import("root"), "IDirectFBSurface")) @import("root").IDirectFBSurface else blk: {
+    break :blk struct {};
+};
+pub const zx_handle_t = if (@hasDecl(@import("root"), "zx_handle_t")) @import("root").zx_handle_t else blk: {
+    break :blk struct {};
+};
+pub const GgpStreamDescriptor = if (@hasDecl(@import("root"), "GgpStreamDescriptor")) @import("root").GgpStreamDescriptor else blk: {
+    break :blk struct {};
+};
+pub const _screen_context = if (@hasDecl(@import("root"), "_screen_context")) @import("root")._screen_context else blk: {
+    break :blk struct {};
+};
+pub const _screen_window = if (@hasDecl(@import("root"), "_screen_window")) @import("root")._screen_window else blk: {
+    break :blk struct {};
+};
+pub const HANDLE = if (@hasDecl(@import("root"), "HANDLE")) @import("root").HANDLE else blk: {
+    break :blk struct {};
+};
+pub const SECURITY_ATTRIBUTES = if (@hasDecl(@import("root"), "SECURITY_ATTRIBUTES")) @import("root").SECURITY_ATTRIBUTES else blk: {
+    break :blk struct {};
+};
+pub const DWORD = if (@hasDecl(@import("root"), "DWORD")) @import("root").DWORD else blk: {
+    break :blk struct {};
+};
+pub const NvSciBufAttrList = if (@hasDecl(@import("root"), "NvSciBufAttrList")) @import("root").NvSciBufAttrList else blk: {
+    break :blk struct {};
+};
+pub const NvSciBufObj = if (@hasDecl(@import("root"), "NvSciBufObj")) @import("root").NvSciBufObj else blk: {
+    break :blk struct {};
+};
+pub const LPCWSTR = if (@hasDecl(@import("root"), "LPCWSTR")) @import("root").LPCWSTR else blk: {
+    break :blk struct {};
+};
+pub const int = if (@hasDecl(@import("root"), "int")) @import("root").int else blk: {
+    break :blk struct {};
+};
+pub const NvSciSyncAttrList = if (@hasDecl(@import("root"), "NvSciSyncAttrList")) @import("root").NvSciSyncAttrList else blk: {
+    break :blk struct {};
+};
+pub const NvSciSyncObj = if (@hasDecl(@import("root"), "NvSciSyncObj")) @import("root").NvSciSyncObj else blk: {
+    break :blk struct {};
+};
+pub const NvSciSyncFence = if (@hasDecl(@import("root"), "NvSciSyncFence")) @import("root").NvSciSyncFence else blk: {
+    break :blk struct {};
+};
+pub const CAMetalLayer = if (@hasDecl(@import("root"), "CAMetalLayer")) @import("root").CAMetalLayer else blk: {
+    break :blk struct {};
+};
+pub const AHardwareBuffer = if (@hasDecl(@import("root"), "AHardwareBuffer")) @import("root").AHardwareBuffer else blk: {
+    break :blk struct {};
+};
+pub const VkBuildAccelerationStructureFlagsNV = if (@hasDecl(@import("root"), "VkBuildAccelerationStructureFlagsNV")) @import("root").VkBuildAccelerationStructureFlagsNV else blk: {
+    break :blk struct {};
+};
+pub const GgpFrameToken = if (@hasDecl(@import("root"), "GgpFrameToken")) @import("root").GgpFrameToken else blk: {
+    break :blk struct {};
+};
+pub const HMONITOR = if (@hasDecl(@import("root"), "HMONITOR")) @import("root").HMONITOR else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH264ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH264ProfileIdc")) @import("root").StdVideoH264ProfileIdc else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH264LevelIdc = if (@hasDecl(@import("root"), "StdVideoH264LevelIdc")) @import("root").StdVideoH264LevelIdc else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH264SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH264SequenceParameterSet")) @import("root").StdVideoH264SequenceParameterSet else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH264PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH264PictureParameterSet")) @import("root").StdVideoH264PictureParameterSet else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264PictureInfo")) @import("root").StdVideoDecodeH264PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH264ReferenceInfo")) @import("root").StdVideoDecodeH264ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH265ProfileIdc = if (@hasDecl(@import("root"), "StdVideoH265ProfileIdc")) @import("root").StdVideoH265ProfileIdc else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH265LevelIdc = if (@hasDecl(@import("root"), "StdVideoH265LevelIdc")) @import("root").StdVideoH265LevelIdc else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH265VideoParameterSet = if (@hasDecl(@import("root"), "StdVideoH265VideoParameterSet")) @import("root").StdVideoH265VideoParameterSet else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH265SequenceParameterSet = if (@hasDecl(@import("root"), "StdVideoH265SequenceParameterSet")) @import("root").StdVideoH265SequenceParameterSet else blk: {
+    break :blk struct {};
+};
+pub const StdVideoH265PictureParameterSet = if (@hasDecl(@import("root"), "StdVideoH265PictureParameterSet")) @import("root").StdVideoH265PictureParameterSet else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265PictureInfo")) @import("root").StdVideoDecodeH265PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeH265ReferenceInfo")) @import("root").StdVideoDecodeH265ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoVP9Profile = if (@hasDecl(@import("root"), "StdVideoVP9Profile")) @import("root").StdVideoVP9Profile else blk: {
+    break :blk struct {};
+};
+pub const StdVideoVP9Level = if (@hasDecl(@import("root"), "StdVideoVP9Level")) @import("root").StdVideoVP9Level else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeVP9PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeVP9PictureInfo")) @import("root").StdVideoDecodeVP9PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoAV1Profile = if (@hasDecl(@import("root"), "StdVideoAV1Profile")) @import("root").StdVideoAV1Profile else blk: {
+    break :blk struct {};
+};
+pub const StdVideoAV1Level = if (@hasDecl(@import("root"), "StdVideoAV1Level")) @import("root").StdVideoAV1Level else blk: {
+    break :blk struct {};
+};
+pub const StdVideoAV1SequenceHeader = if (@hasDecl(@import("root"), "StdVideoAV1SequenceHeader")) @import("root").StdVideoAV1SequenceHeader else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1PictureInfo")) @import("root").StdVideoDecodeAV1PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoDecodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoDecodeAV1ReferenceInfo")) @import("root").StdVideoDecodeAV1ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH264ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264ReferenceInfo")) @import("root").StdVideoEncodeH264ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH264PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH264PictureInfo")) @import("root").StdVideoEncodeH264PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH264SliceHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH264SliceHeader")) @import("root").StdVideoEncodeH264SliceHeader else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH265PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265PictureInfo")) @import("root").StdVideoEncodeH265PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH265SliceSegmentHeader = if (@hasDecl(@import("root"), "StdVideoEncodeH265SliceSegmentHeader")) @import("root").StdVideoEncodeH265SliceSegmentHeader else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeH265ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeH265ReferenceInfo")) @import("root").StdVideoEncodeH265ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeAV1DecoderModelInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1DecoderModelInfo")) @import("root").StdVideoEncodeAV1DecoderModelInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeAV1OperatingPointInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1OperatingPointInfo")) @import("root").StdVideoEncodeAV1OperatingPointInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeAV1ReferenceInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1ReferenceInfo")) @import("root").StdVideoEncodeAV1ReferenceInfo else blk: {
+    break :blk struct {};
+};
+pub const StdVideoEncodeAV1PictureInfo = if (@hasDecl(@import("root"), "StdVideoEncodeAV1PictureInfo")) @import("root").StdVideoEncodeAV1PictureInfo else blk: {
+    break :blk struct {};
+};
+pub const MTLDevice_id = if (@hasDecl(@import("root"), "MTLDevice_id")) @import("root").MTLDevice_id else blk: {
+    break :blk struct {};
+};
+pub const MTLCommandQueue_id = if (@hasDecl(@import("root"), "MTLCommandQueue_id")) @import("root").MTLCommandQueue_id else blk: {
+    break :blk struct {};
+};
+pub const MTLBuffer_id = if (@hasDecl(@import("root"), "MTLBuffer_id")) @import("root").MTLBuffer_id else blk: {
+    break :blk struct {};
+};
+pub const MTLTexture_id = if (@hasDecl(@import("root"), "MTLTexture_id")) @import("root").MTLTexture_id else blk: {
+    break :blk struct {};
+};
+pub const IOSurfaceRef = if (@hasDecl(@import("root"), "IOSurfaceRef")) @import("root").IOSurfaceRef else blk: {
+    break :blk struct {};
+};
+pub const MTLSharedEvent_id = if (@hasDecl(@import("root"), "MTLSharedEvent_id")) @import("root").MTLSharedEvent_id else blk: {
+    break :blk struct {};
+};
+pub const VkMemoryDecompressionMethodFlagsNV = if (@hasDecl(@import("root"), "VkMemoryDecompressionMethodFlagsNV")) @import("root").VkMemoryDecompressionMethodFlagsNV else blk: {
+    break :blk struct {};
+};
+pub const _screen_buffer = if (@hasDecl(@import("root"), "_screen_buffer")) @import("root")._screen_buffer else blk: {
+    break :blk struct {};
+};
+pub const OHNativeWindow = if (@hasDecl(@import("root"), "OHNativeWindow")) @import("root").OHNativeWindow else blk: {
+    break :blk struct {};
+};
+pub const VkPipelineCreateFlags2KHR = if (@hasDecl(@import("root"), "VkPipelineCreateFlags2KHR")) @import("root").VkPipelineCreateFlags2KHR else blk: {
+    break :blk struct {};
+};
+pub const OHBufferHandle = if (@hasDecl(@import("root"), "OHBufferHandle")) @import("root").OHBufferHandle else blk: {
+    break :blk struct {};
+};
+pub const OH_NativeBuffer = if (@hasDecl(@import("root"), "OH_NativeBuffer")) @import("root").OH_NativeBuffer else blk: {
+    break :blk struct {};
+};
+pub const VisualID = if (@hasDecl(@import("root"), "VisualID")) @import("root").VisualID else blk: {
+    break :blk struct {};
+};
+pub const xcb_visualid_t = if (@hasDecl(@import("root"), "xcb_visualid_t")) @import("root").xcb_visualid_t else blk: {
+    break :blk struct {};
+};
+pub const RROutput = if (@hasDecl(@import("root"), "RROutput")) @import("root").RROutput else blk: {
+    break :blk struct {};
+};
 
 // Extensions
 // Extension: VK_KHR_surface

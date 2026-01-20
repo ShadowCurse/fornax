@@ -301,7 +301,6 @@ fn write_enums(
         }
 
         w.write(
-            \\    pub const zero = @import("std").mem.zeroes(@This());
             \\}};
             \\
         , .{});
@@ -459,15 +458,8 @@ fn write_single_struct_field(
                     for (s.fields) |f| {
                         if (f == .single_field) {
                             const tt = type_db.get_type(f.single_field.type_idx);
-                            switch (tt.*) {
-                                .base => |b| {
-                                    switch (b) {
-                                        .enum_idx, .union_idx => should_have_default = false,
-                                        else => {},
-                                    }
-                                },
-                                else => {},
-                            }
+                            if (tt.union_idx() != .none)
+                                should_have_default = false;
                         }
                     }
                     var default_str: []const u8 = &.{};
@@ -485,7 +477,7 @@ fn write_single_struct_field(
                         \\
                     , .{ field.name, type_str });
                 },
-                .enum_idx => |_| {
+                .enum_idx => |enum_idx| {
                     // Should only be valid for sType: VkStructureType
                     if (field.stype_value) |v| {
                         w.write(
@@ -493,10 +485,11 @@ fn write_single_struct_field(
                             \\
                         , .{ field.name, type_str, v });
                     } else {
+                        const e = type_db.get_enum(enum_idx);
                         w.write(
-                            \\    {s}: {s},
+                            \\    {s}: {s} = .{s},
                             \\
-                        , .{ field.name, type_str });
+                        , .{ field.name, type_str, e.values[0].name });
                     }
                 },
                 .union_idx => |_| {
@@ -519,11 +512,62 @@ fn write_single_struct_field(
                 \\
             , .{ field.name, type_str });
         },
-        .array => |_| {
-            w.write(
-                \\    {[name]s}: {[type]s} = @import("std").mem.zeroes({[type]s}),
-                \\
-            , .{ .name = field.name, .type = type_str });
+        .array => |array| {
+            const array_base_type = type_db.get_type(array.base_type_idx);
+            if (array_base_type.is_builtin()) {
+                w.write(
+                    \\    {[name]s}: {[type]s} = @import("std").mem.zeroes({[type]s}),
+                    \\
+                , .{ .name = field.name, .type = type_str });
+            } else {
+                const base_type_str = try type_db.type_string(alloc, array.base_type_idx);
+                var s: []const u8 = &.{};
+                const enum_idx = array_base_type.enum_idx();
+                if (enum_idx != .none) {
+                    const e = type_db.get_enum(enum_idx);
+                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}.{[default]s}}}", .{
+                        .base_type = base_type_str,
+                        .default = e.values[0].name,
+                    });
+                }
+                const struct_idx = array_base_type.struct_idx();
+                if (struct_idx != .none) {
+                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}{{}}}}", .{
+                        .base_type = base_type_str,
+                    });
+                }
+                const handle_idx = array_base_type.handle_idx();
+                if (handle_idx != .none) {
+                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}.none}}", .{
+                        .base_type = base_type_str,
+                    });
+                }
+                switch (array.len) {
+                    .string => |string| {
+                        w.write(
+                            \\    {[name]s}: {[type]s} = {[s]s} ** {[len]s},
+                            \\
+                        , .{
+                            .name = field.name,
+                            .type = type_str,
+                            .s = s,
+                            .len = string[1 .. string.len - 1],
+                        });
+                    },
+                    .type_idx => |tidx| {
+                        const ts = try type_db.type_string(alloc, tidx);
+                        w.write(
+                            \\    {[name]s}: {[type]s} = {[s]s} ** {[len]s},
+                            \\
+                        , .{
+                            .name = field.name,
+                            .type = type_str,
+                            .s = s,
+                            .len = ts,
+                        });
+                    },
+                }
+            }
         },
         .alias => |alias| {
             try write_single_struct_field(alloc, type_db, w, struct_name, field, alias.type_idx);
@@ -857,7 +901,9 @@ fn write_unknown_types(alloc: Allocator, file: std.fs.File, type_db: *const Type
         switch (t) {
             .placeholder => |name| {
                 w.write(
-                    \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else @compileError("Unknown type: {{{[name]s}}}");
+                    \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else blk: {{
+                    \\    break :blk struct {{}};
+                    \\}};
                     \\
                 , .{ .name = name });
             },
