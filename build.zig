@@ -43,6 +43,24 @@ pub fn build(b: *std.Build) !void {
         "gen/gen_vk.zig",
         &.{.{ .name = "volk", .module = volk_mod }},
     );
+    create_exe(
+        b,
+        target,
+        optimize,
+        &args,
+        "gen_vk_utils",
+        "gen/gen_vk_utils.zig",
+        &.{},
+    );
+    create_exe(
+        b,
+        target,
+        optimize,
+        &args,
+        "gen_vk_validation",
+        "gen/gen_vk_validation.zig",
+        &.{},
+    );
 }
 
 const Args = struct {
