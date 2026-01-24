@@ -95,6 +95,20 @@ pub const TypeDatabase = struct {
             }
         };
 
+        pub fn is_builtin(self: Type) bool {
+            var result: bool = false;
+            if (self == .base and self.base == .builtin)
+                result = true;
+            return result;
+        }
+
+        pub fn builtin(self: Type) ?BuiltinType {
+            var result: ?BuiltinType = null;
+            if (self == .base and self.base == .builtin)
+                result = self.base.builtin;
+            return result;
+        }
+
         pub fn handle_idx(self: Type) Handle.Idx {
             var result: Handle.Idx = .none;
             if (self == .base) {
@@ -110,6 +124,46 @@ pub const TypeDatabase = struct {
             if (self == .base) {
                 if (self.base == .struct_idx) {
                     result = self.base.struct_idx;
+                }
+            }
+            return result;
+        }
+
+        pub fn bitfield_idx(self: Type) Bitfield.Idx {
+            var result: Bitfield.Idx = .none;
+            if (self == .base) {
+                if (self.base == .bitfield_idx) {
+                    result = self.base.bitfield_idx;
+                }
+            }
+            return result;
+        }
+
+        pub fn enum_idx(self: Type) Enum.Idx {
+            var result: Enum.Idx = .none;
+            if (self == .base) {
+                if (self.base == .enum_idx) {
+                    result = self.base.enum_idx;
+                }
+            }
+            return result;
+        }
+
+        pub fn union_idx(self: Type) Union.Idx {
+            var result: Union.Idx = .none;
+            if (self == .base) {
+                if (self.base == .union_idx) {
+                    result = self.base.union_idx;
+                }
+            }
+            return result;
+        }
+
+        pub fn function_idx(self: Type) Function.Idx {
+            var result: Function.Idx = .none;
+            if (self == .base) {
+                if (self.base == .function_idx) {
+                    result = self.base.function_idx;
                 }
             }
             return result;
@@ -197,6 +251,33 @@ pub const TypeDatabase = struct {
                 return result;
             }
         };
+
+        pub fn stype(self: *const Struct) ?[]const u8 {
+            var result: ?[]const u8 = null;
+            for (self.fields) |field| {
+                if (field == .single_field and
+                    field.single_field.stype_value != null)
+                {
+                    result = field.single_field.stype_value;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        pub fn single_field_by_name(self: *const Struct, name: []const u8) ?*const SingleField {
+            var result: ?*const SingleField = null;
+            for (self.fields) |field| {
+                if (field == .single_field) {
+                    const f = field.single_field;
+                    if (std.mem.eql(u8, f.name, name)) {
+                        result = &f;
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
     };
 
     pub const Bitfield = struct {
@@ -281,6 +362,19 @@ pub const TypeDatabase = struct {
                 return result;
             }
         };
+
+        pub fn member_by_selection(self: *const Union, selection: []const u8) ?*const Member {
+            var result: ?*const Member = null;
+            for (self.members) |*member| {
+                if (member.selection) |s| {
+                    if (std.mem.eql(u8, s, selection)) {
+                        result = member;
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
     };
 
     pub const Function = struct {
@@ -1073,6 +1167,20 @@ pub const TypeDatabase = struct {
             const idx: u32 = @intFromEnum(enum_idx) - 1;
             return &self.enums.items[idx];
         }
+    }
+
+    pub fn get_enum_by_name(
+        self: *const TypeDatabase,
+        name: []const u8,
+    ) ?*Enum {
+        var result: ?*Enum = null;
+        for (self.enums.items) |*e| {
+            if (std.mem.eql(u8, e.name, name)) {
+                result = e;
+                break;
+            }
+        }
+        return result;
     }
 
     pub fn get_union(
@@ -2030,69 +2138,16 @@ pub const XmlDatabase = struct {
         };
     }
 
-    pub const AllExtensionsIterator = struct {
-        db: *const Self,
-        instance_index: u32 = 0,
-        device_index: u32 = 0,
-
-        pub fn next(self: *AllExtensionsIterator) ?struct { *const Extension, Extension.Type } {
-            while (self.instance_index < self.db.extensions.instance.len) {
-                const ext = &self.db.extensions.instance[self.instance_index];
-                self.instance_index += 1;
-                return .{ ext, .instance };
-            }
-            while (self.device_index < self.db.extensions.device.len) {
-                const ext = &self.db.extensions.device[self.device_index];
-                self.device_index += 1;
-                return .{ ext, .device };
-            }
-            return null;
-        }
-    };
-
-    /// Iterator over all extensions
-    pub fn all_extensions(self: *const Self) AllExtensionsIterator {
-        return .{ .db = self };
-    }
-
     /// Find extension with the `extension_name`
-    pub fn extension_by_name(self: *const Self, extension_name: []const u8) ?struct {
-        *const Extension,
-        Extension.Type,
-    } {
-        var iter = self.all_extensions();
-        while (iter.next()) |tuple| {
-            const ext, _ = tuple;
-            if (std.mem.eql(u8, ext.name, extension_name))
-                return tuple;
-        }
-        return null;
-    }
-
-    /// Find extension which has the struct in the list of types that the
-    /// extension adds
-    pub fn extension_which_adds_struct(
-        self: *const Self,
-        struct_name: []const u8,
-    ) ?*const Extension {
-        var search_name = struct_name;
-        if (self.struct_alias_of(struct_name)) |alias_of| search_name = alias_of.name;
-
-        var iter = self.all_extensions();
-        while (iter.next()) |tuple| {
-            const ext, _ = tuple;
-            for (ext.require) |*require| {
-                for (require.items) |item| {
-                    switch (item) {
-                        .type => |name| {
-                            if (std.mem.eql(u8, name, search_name)) return ext;
-                        },
-                        else => {},
-                    }
-                }
+    pub fn extension_by_name(self: *const Self, extension_name: []const u8) ?*const Extension {
+        var result: ?*const Extension = null;
+        for (self.extensions.items) |*ext| {
+            if (std.mem.eql(u8, ext.name, extension_name)) {
+                result = ext;
+                break;
             }
         }
-        return null;
+        return result;
     }
 
     /// Find bitmask with `bitmask_name`
