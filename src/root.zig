@@ -1,8 +1,9 @@
 const std = @import("std");
 const log = @import("log.zig");
-const volk = @import("volk");
-const vv = @import("vulkan_validation.zig");
 const control_block = @import("control_block.zig");
+
+const vk = @import("vk.zig");
+const vv = @import("vk_validation.zig");
 
 const Allocator = std.mem.Allocator;
 const Validation = vv.Validation;
@@ -89,7 +90,7 @@ pub const Context = struct {
     work_queue: *WorkQueue,
     thread_count: u32,
     validation: *const Validation,
-    vk_device: volk.VkDevice,
+    vk_device: vk.VkDevice,
 };
 
 pub fn init_contexts(
@@ -101,7 +102,7 @@ pub fn init_contexts(
     work_queue: *WorkQueue,
     thread_count: u32,
     validation: *const Validation,
-    vk_device: volk.VkDevice,
+    vk_device: vk.VkDevice,
 ) ![]align(64) Context {
     const contexts = try alloc.alignedAlloc(Context, .@"64", thread_count);
     for (contexts) |*c| {
@@ -313,7 +314,6 @@ pub fn create(
 }
 
 test "parse/create" {
-    const vk = @import("volk");
     const parsing = @import("parsing.zig");
 
     const Dummy = struct {

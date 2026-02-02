@@ -3,11 +3,13 @@
 
 const std = @import("std");
 const root = @import("root.zig");
-const vk = @import("volk");
+// const vk = @import("volk");
+const vk = @import("vk.zig");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
-const vv = @import("vulkan_validation.zig");
+// const vv = @import("vulkan_validation.zig");
+const vv = @import("vk_validation.zig");
 const vulkan = @import("vulkan.zig");
 const profiler = @import("profiler.zig");
 

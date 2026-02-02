@@ -6,14 +6,15 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const vk = @import("volk");
 const miniz = @import("miniz");
 const log = @import("log.zig");
 const parsing = @import("parsing.zig");
-const vulkan = @import("vulkan.zig");
-const vv = @import("vulkan_validation.zig");
 const profiler = @import("profiler.zig");
 const crc32 = @import("crc32.zig");
+
+const vk = @import("vk.zig");
+const vv = @import("vk_validation.zig");
+const vulkan = @import("vulkan.zig");
 
 const Validation = vv.Validation;
 const Allocator = std.mem.Allocator;
@@ -66,7 +67,7 @@ pub const Entry = struct {
 
     create_info: ?*align(8) const anyopaque = null,
     dependencies: []const Dependency = &.{},
-    handle: ?*anyopaque = null,
+    handle: vulkan.AnyHandle = 0,
 
     // atomicly updated
     dependent_by: std.atomic.Value(u32) = .init(0),
@@ -102,7 +103,7 @@ pub const Entry = struct {
 
     pub const Dependency = struct {
         entry: *Entry,
-        ptr_to_handle: ?*?*anyopaque,
+        ptr_to_handle: ?*vulkan.AnyHandle,
     };
 
     pub fn print_graph(self: *const Entry, db: *const Database) !void {
@@ -282,7 +283,7 @@ pub const Entry = struct {
             const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
             dependencies[i] = .{
                 .entry = dep_entry,
-                .ptr_to_handle = dep.ptr_to_handle,
+                .ptr_to_handle = @ptrCast(dep.ptr_to_handle),
             };
             _ = dep_entry.dependent_by.fetchAdd(1, .release);
         }
@@ -479,25 +480,16 @@ pub const Entry = struct {
         for (self.dependencies) |dep| {
             log.assert(
                 @src(),
-                dep.entry.handle != null,
+                dep.entry.handle != 0,
                 "Entry: {t} 0x{x:0>16} has null handle for dependency {t} 0x{x:0>16}",
                 .{ self.tag, self.hash, dep.entry.tag, dep.entry.hash },
             );
             dep.ptr_to_handle.?.* = dep.entry.handle;
         }
         switch (self.tag) {
-            .sampler => self.handle = try CREATE.create_vk_sampler(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
-            .descriptor_set_layout => self.handle = try CREATE.create_descriptor_set_layout(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
-            .pipeline_layout => self.handle = try CREATE.create_pipeline_layout(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
+            .sampler => self.handle = try CREATE.create_vk_sampler(vk_device, @ptrCast(self.create_info)),
+            .descriptor_set_layout => self.handle = @bitCast(try CREATE.create_descriptor_set_layout(vk_device, @ptrCast(self.create_info))),
+            .pipeline_layout => self.handle = @bitCast(try CREATE.create_pipeline_layout(vk_device, @ptrCast(self.create_info))),
             .shader_module => {
                 const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
                 const result = try PARSE.parse_shader_module(
@@ -510,27 +502,12 @@ pub const Entry = struct {
                 if (!vv.validate_shader_code(validation, @ptrCast(result.create_info)))
                     return error.InvalidShaderCode;
 
-                self.handle = try CREATE.create_shader_module(
-                    vk_device,
-                    @ptrCast(result.create_info),
-                );
+                self.handle = @bitCast(try CREATE.create_shader_module(vk_device, @ptrCast(result.create_info)));
             },
-            .render_pass => self.handle = try CREATE.create_render_pass(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
-            .graphics_pipeline => self.handle = try CREATE.create_graphics_pipeline(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
-            .compute_pipeline => self.handle = try CREATE.create_compute_pipeline(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
-            .raytracing_pipeline => self.handle = try CREATE.create_raytracing_pipeline(
-                vk_device,
-                @ptrCast(self.create_info),
-            ),
+            .render_pass => self.handle = @bitCast(try CREATE.create_render_pass(vk_device, @ptrCast(self.create_info))),
+            .graphics_pipeline => self.handle = @bitCast(try CREATE.create_graphics_pipeline(vk_device, @ptrCast(self.create_info))),
+            .compute_pipeline => self.handle = @bitCast(try CREATE.create_compute_pipeline(vk_device, @ptrCast(self.create_info))),
+            .raytracing_pipeline => self.handle = @bitCast(try CREATE.create_raytracing_pipeline(vk_device, @ptrCast(self.create_info))),
             else => {},
         }
     }
@@ -573,23 +550,17 @@ pub const Entry = struct {
         if (self.dependencies_destroyed.cmpxchgStrong(false, true, .acq_rel, .acquire) == null) {
             switch (self.tag) {
                 .application_info => {},
-                .sampler => DESTROY.destroy_vk_sampler(vk_device, @ptrCast(self.handle)),
-                .descriptor_set_layout => DESTROY.destroy_descriptor_set_layout(
-                    vk_device,
-                    @ptrCast(self.handle),
-                ),
-                .pipeline_layout => DESTROY.destroy_pipeline_layout(
-                    vk_device,
-                    @ptrCast(self.handle),
-                ),
+                .sampler => DESTROY.destroy_vk_sampler(vk_device, self.handle),
+                .descriptor_set_layout => DESTROY.destroy_descriptor_set_layout(vk_device, self.handle),
+                .pipeline_layout => DESTROY.destroy_pipeline_layout(vk_device, self.handle),
                 .shader_module,
-                => DESTROY.destroy_shader_module(vk_device, @ptrCast(self.handle)),
+                => DESTROY.destroy_shader_module(vk_device, self.handle),
                 .render_pass,
-                => DESTROY.destroy_render_pass(vk_device, @ptrCast(self.handle)),
+                => DESTROY.destroy_render_pass(vk_device, self.handle),
                 .graphics_pipeline,
                 .compute_pipeline,
                 .raytracing_pipeline,
-                => DESTROY.destroy_pipeline(vk_device, @ptrCast(self.handle)),
+                => DESTROY.destroy_pipeline(vk_device, self.handle),
                 .application_blob_link => {},
             }
             for (self.dependencies) |dep| {

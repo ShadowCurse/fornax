@@ -4,14 +4,15 @@
 const std = @import("std");
 const build_options = @import("build_options");
 const root = @import("root.zig");
-const vk = @import("volk");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
-const vv = @import("vulkan_validation.zig");
-const vulkan = @import("vulkan.zig");
 const profiler = @import("profiler.zig");
 const control_block = @import("control_block.zig");
+
+const vk = @import("vk.zig");
+const vv = @import("vk_validation.zig");
+const vulkan = @import("vulkan.zig");
 
 const Allocator = std.mem.Allocator;
 const Barrier = @import("barrier.zig");

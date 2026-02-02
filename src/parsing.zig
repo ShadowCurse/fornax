@@ -6,10 +6,12 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
-const vk = @import("volk");
 const log = @import("log.zig");
-const vu = @import("vulkan_utils.zig");
 const profiler = @import("profiler.zig");
+
+const vk = @import("vk.zig");
+const vu = @import("vk_utils.zig");
+const vulkan = @import("vulkan.zig");
 
 const Database = @import("database.zig");
 
@@ -110,7 +112,7 @@ test "parse_application_info" {
 pub const Dependency = struct {
     tag: Database.Entry.Tag,
     hash: u64,
-    ptr_to_handle: ?*?*anyopaque = null,
+    ptr_to_handle: ?*vulkan.AnyHandle = null,
 };
 
 pub const Result = struct {
@@ -136,7 +138,7 @@ pub fn parse_sampler(
 
     var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkSamplerCreateInfo);
-    create_info.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+    create_info.* = .{};
 
     var result: Result = .{
         .version = 0,
@@ -757,6 +759,37 @@ pub fn print_unexpected_token(token: std.json.Token) void {
     }
 }
 
+pub fn scanner_parse_enum(comptime T: type, scanner: *std.json.Scanner) Error!T {
+    comptime var integer_type = u32;
+    if (@bitSizeOf(T) == 64) integer_type = u64;
+
+    const n = try scanner_next_number(scanner);
+    const s = try std.fmt.parseInt(integer_type, n, 10);
+    const t: T = @enumFromInt(s);
+    return t;
+}
+
+pub fn scanner_parse_bitfield(comptime T: type, scanner: *std.json.Scanner) Error!T {
+    comptime var integer_type = u32;
+    if (@bitSizeOf(T) == 64) integer_type = u64;
+
+    const n = try scanner_next_number(scanner);
+    const s = try std.fmt.parseInt(integer_type, n, 10);
+    const t: T = @bitCast(s);
+    return t;
+}
+
+pub fn scanner_parse_number(comptime T: type, scanner: *std.json.Scanner) Error!T {
+    const n = try scanner_next_number(scanner);
+    if (T == f32) {
+        const t = try std.fmt.parseFloat(T, n);
+        return t;
+    } else {
+        const t = try std.fmt.parseInt(T, n, 10);
+        return t;
+    }
+}
+
 pub fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
@@ -917,13 +950,11 @@ pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
                 parsed_field |= 1 << i;
                 switch (field.type) {
                     i16, u16, i32, u32, u64, usize, c_uint => {
-                        const v = try scanner_next_number(context.scanner);
-                        @field(output, field.name) = try std.fmt.parseInt(field.type, v, 10);
+                        @field(output, field.name) = try scanner_parse_number(field.type, context.scanner);
                         consumed = true;
                     },
                     f32 => {
-                        const v = try scanner_next_number(context.scanner);
-                        @field(output, field.name) = try std.fmt.parseFloat(field.type, v);
+                        @field(output, field.name) = try scanner_parse_number(field.type, context.scanner);
                         consumed = true;
                     },
                     ?*anyopaque,
@@ -934,7 +965,16 @@ pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
                             consumed = true;
                         }
                     },
-                    else => {},
+                    else => {
+                        const field_type_info = @typeInfo(field.type);
+                        if (field_type_info == .@"enum") {
+                            @field(output, field.name) = try scanner_parse_enum(field.type, context.scanner);
+                            consumed = true;
+                        } else if (field_type_info == .@"struct" and field_type_info.@"struct".layout == .@"packed") {
+                            @field(output, field.name) = try scanner_parse_bitfield(field.type, context.scanner);
+                            consumed = true;
+                        }
+                    },
                 }
             }
         }
@@ -962,14 +1002,14 @@ pub fn parse_number_array(comptime T: type, context: *Context) Error![]T {
     return try context.alloc.dupe(T, tmp.items);
 }
 
-pub fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *?*anyopaque) Error!void {
+pub fn parse_single_handle(context: *Context, tag: Database.Entry.Tag, location: *vulkan.AnyHandle) Error!void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     const v = try scanner_next_string(context.scanner);
     const hash = try std.fmt.parseInt(u64, v, 16);
     if (hash == 0)
-        location.* = null
+        location.* = 0
     else {
         if (context.db.entries.getPtrConst(tag).getPtr(hash) == null) return error.NoHandle;
         const dep: Dependency = .{
@@ -996,7 +1036,7 @@ pub fn parse_handle_array(
         const hash = try std.fmt.parseInt(u64, hash_str, 16);
         // Must preserve the index in the array for non 0 hashes
         if (hash == 0) {
-            try tmp.append(context.tmp_alloc, null);
+            try tmp.append(context.tmp_alloc, .none);
         } else {
             if (context.db.entries.getPtrConst(tag).getPtr(hash) == null) return error.NoHandle;
             denpendencies_found += 1;
@@ -1009,7 +1049,7 @@ pub fn parse_handle_array(
             // number to be stored in the "8 byte" aligned pointer
             const ptr_as_number: *usize = @ptrCast(&dep.ptr_to_handle);
             ptr_as_number.* = tmp.items.len;
-            try tmp.append(context.tmp_alloc, null);
+            try tmp.append(context.tmp_alloc, .none);
             try context.dependencies.append(context.tmp_alloc, dep);
         }
     }
@@ -1133,7 +1173,7 @@ pub fn parse_vk_physical_device_mesh_shader_features_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT };
+    obj.* = .{};
     return parse_simple_type(context, obj);
 }
 
@@ -1144,7 +1184,7 @@ pub fn parse_vk_physical_device_fragment_shading_rate_features_khr(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR };
+    obj.* = .{};
     return parse_simple_type(context, obj);
 }
 
@@ -1155,9 +1195,7 @@ pub fn parse_vk_descriptor_set_layout_binding_flags_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
-    };
+    obj.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "bindingFlags")) {
             const flags = try parse_number_array(u32, context);
@@ -1177,7 +1215,7 @@ pub fn parse_vk_physical_device_robustness_2_features_khr(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1188,7 +1226,7 @@ pub fn parse_vk_physical_device_descriptor_buffer_features_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1199,9 +1237,7 @@ pub fn parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1212,7 +1248,7 @@ pub fn parse_vk_pipeline_create_flags_2_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1223,17 +1259,20 @@ pub fn parse_vk_pipeline_discard_rectangle_state_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(
+                vk.VkPipelineDiscardRectangleStateCreateFlagsEXT,
+                context.scanner,
+            );
         } else if (std.mem.eql(u8, s, "discardRectangleMode")) {
-            const v = try scanner_next_number(context.scanner);
-            item.discardRectangleMode = try std.fmt.parseInt(u32, v, 10);
+            item.discardRectangleMode = try scanner_parse_enum(
+                vk.VkDiscardRectangleModeEXT,
+                context.scanner,
+            );
         } else if (std.mem.eql(u8, s, "discardRectangleCount")) {
-            const v = try scanner_next_number(context.scanner);
-            item.discardRectangleCount = try std.fmt.parseInt(u32, v, 10);
+            item.discardRectangleCount = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "discardRectangles")) {
             const rectangles = try parse_object_array(
                 vk.VkRect2D,
@@ -1255,9 +1294,7 @@ pub fn parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
-    };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "fragmentSize")) {
             try parse_simple_type(context, &item.fragmentSize);
@@ -1267,7 +1304,7 @@ pub fn parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(
             while (try scanner_array_next_number(context.scanner)) |v| : (i += 1) {
                 if (1 < i) return error.InvalidJson;
                 const number = try std.fmt.parseInt(u32, v, 10);
-                item.combinerOps[i] = number;
+                item.combinerOps[i] = @enumFromInt(number);
             }
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
@@ -1283,23 +1320,18 @@ pub fn parse_vk_pipeline_rendering_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
-    };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "viewMask")) {
-            const v = try scanner_next_number(context.scanner);
-            item.viewMask = try std.fmt.parseInt(u32, v, 10);
+            item.viewMask = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "colorAttachmentFormats")) {
             const formats = try parse_number_array(u32, context);
             item.pColorAttachmentFormats = @ptrCast(formats.ptr);
             item.colorAttachmentCount = @intCast(formats.len);
         } else if (std.mem.eql(u8, s, "depthAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            item.depthAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+            item.depthAttachmentFormat = try scanner_parse_enum(vk.VkFormat, context.scanner);
         } else if (std.mem.eql(u8, s, "stencilAttachmentFormat")) {
-            const v = try scanner_next_number(context.scanner);
-            item.stencilAttachmentFormat = try std.fmt.parseInt(u32, v, 10);
+            item.depthAttachmentFormat = try scanner_parse_enum(vk.VkFormat, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -1314,7 +1346,7 @@ pub fn parse_vk_rendering_attachment_location_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "colorAttachmentLocations")) {
             const attachments = try parse_number_array(u32, context);
@@ -1334,7 +1366,7 @@ pub fn parse_vk_rendering_input_attachment_index_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "colorAttachmentInputIndices")) {
             const attachments = try parse_number_array(u32, context);
@@ -1342,13 +1374,11 @@ pub fn parse_vk_rendering_input_attachment_index_info(
             item.colorAttachmentCount = @intCast(attachments.len);
         } else if (std.mem.eql(u8, s, "depthInputAttachmentIndex")) {
             const index = try context.alloc.create(u32);
-            const v = try scanner_next_number(context.scanner);
-            index.* = try std.fmt.parseInt(u32, v, 10);
+            index.* = try scanner_parse_number(u32, context.scanner);
             item.pDepthInputAttachmentIndex = index;
         } else if (std.mem.eql(u8, s, "stencilInputAttachmentIndex")) {
             const index = try context.alloc.create(u32);
-            const v = try scanner_next_number(context.scanner);
-            index.* = try std.fmt.parseInt(u32, v, 10);
+            index.* = try scanner_parse_number(u32, context.scanner);
             item.pStencilInputAttachmentIndex = index;
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
@@ -1364,9 +1394,7 @@ pub fn parse_vk_pipeline_fragment_density_map_layered_create_info_valve(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1377,9 +1405,7 @@ pub fn parse_vk_structure_type_depth_bias_representation_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1390,7 +1416,7 @@ pub fn parse_vk_graphics_pipeline_library_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1401,7 +1427,7 @@ pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO };
+    obj.* = .{};
     const Inner = struct {
         fn parse_vk_vertex_input_binding_divisor_description(
             c: *Context,
@@ -1413,8 +1439,7 @@ pub fn parse_vk_pipeline_vertex_input_divisor_state_create_info(
 
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "vertexBindingDivisorCount")) {
-            const v = try scanner_next_number(context.scanner);
-            obj.vertexBindingDivisorCount = try std.fmt.parseInt(u32, v, 10);
+            obj.vertexBindingDivisorCount = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "vertexBindingDivisors")) {
             const divisors = try parse_object_array(
                 vk.VkVertexInputBindingDivisorDescription,
@@ -1437,9 +1462,7 @@ pub fn parse_vk_pipeline_shader_stage_required_subgroup_size_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1450,9 +1473,7 @@ pub fn parse_vk_pipeline_rasterization_line_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1463,9 +1484,7 @@ pub fn parse_vk_pipeline_robustness_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1476,9 +1495,7 @@ pub fn parse_vk_pipeline_rasterization_provoking_vertex_state_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1489,9 +1506,7 @@ pub fn parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
-    };
+    obj.* = .{};
     try parse_simple_type(context, obj);
 }
 
@@ -1515,9 +1530,7 @@ pub fn parse_vk_mutable_descriptor_type_create_info_ext(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    obj.* = .{
-        .sType = vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
-    };
+    obj.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "sType")) {
             _ = try scanner_next_number(context.scanner);
@@ -1620,63 +1633,63 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
             first_in_chain: *?*anyopaque,
             last_pnext_in_chain: *?**anyopaque,
         ) Error!void {
-            const v = try scanner_next_number(c.scanner);
-            const stype = try std.fmt.parseInt(u32, v, 10);
+            const stype = try scanner_parse_enum(vk.VkStructureType, c.scanner);
             const chain: Chain = .{
                 .c = c,
                 .first_in_chain = first_in_chain,
                 .last_pnext_in_chain = last_pnext_in_chain,
             };
             switch (stype) {
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
+                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_EXT,
                 => {
                     const item = try chain.chain(vk.VkPhysicalDeviceMeshShaderFeaturesEXT);
                     try parse_vk_physical_device_mesh_shader_features_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
                 => {
                     const item =
                         try chain.chain(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
                     try parse_vk_physical_device_fragment_shading_rate_features_khr(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
-                => {
-                    const item =
-                        try chain.chain(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
-                    try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, item);
-                },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+                // TODO check bindings
+                // .VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
+                // => {
+                //     const item =
+                //         try chain.chain(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
+                //     try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, item);
+                // },
+                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
                 => {
                     const item = try chain.chain(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
                     try parse_vk_physical_device_robustness_2_features_khr(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
+                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT,
                 => {
                     const item = try chain.chain(vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
                     try parse_vk_physical_device_descriptor_buffer_features_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT,
                 => {
                     const item =
                         try chain.chain(vk.VkPipelineRasterizationDepthClipStateCreateInfoEXT);
                     try parse_vk_pipeline_rasterization_depth_clip_state_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
+                .VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO,
                 => {
                     const item = try chain.chain(vk.VkPipelineCreateFlags2CreateInfo);
                     try parse_vk_pipeline_create_flags_2_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT,
                 => {
                     const item = try chain.chain(vk.VkGraphicsPipelineLibraryCreateInfoEXT);
                     try parse_vk_graphics_pipeline_library_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO,
+                .VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO,
                 => {
                     const item = try chain.chain(vk.VkPipelineVertexInputDivisorStateCreateInfo);
                     try parse_vk_pipeline_vertex_input_divisor_state_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
+                .VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO,
                 => {
                     const item =
                         try chain.chain(vk.VkPipelineShaderStageRequiredSubgroupSizeCreateInfo);
@@ -1685,17 +1698,17 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                         item,
                     );
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
-                => {
-                    const item = try chain.chain(vk.VkPipelineRasterizationLineStateCreateInfo);
-                    try parse_vk_pipeline_rasterization_line_state_create_info(c, item);
-                },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
+                // .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
+                // => {
+                //     const item = try chain.chain(vk.VkPipelineRasterizationLineStateCreateInfo);
+                //     try parse_vk_pipeline_rasterization_line_state_create_info(c, item);
+                // },
+                .VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
                 => {
                     const item = try chain.chain(vk.VkPipelineRobustnessCreateInfo);
                     try parse_vk_pipeline_robustness_create_info(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
                 => {
                     const item = try chain.chain(
                         vk.VkPipelineRasterizationProvokingVertexStateCreateInfoEXT,
@@ -1705,59 +1718,55 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                         item,
                     );
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLIP_CONTROL_CREATE_INFO_EXT,
                 => {
                     const item =
                         try chain.chain(vk.VkPipelineViewportDepthClipControlCreateInfoEXT);
                     try parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
                 => {
                     const item = try chain.chain(vk.VkMutableDescriptorTypeCreateInfoEXT);
                     try parse_vk_mutable_descriptor_type_create_info_ext(c, item);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
+                .VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
                 => {
                     const obj = try chain.chain(vk.VkPipelineDiscardRectangleStateCreateInfoEXT);
                     try parse_vk_pipeline_discard_rectangle_state_create_info_ext(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
+                .VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_SHADING_RATE_STATE_CREATE_INFO_KHR,
                 => {
                     const obj =
                         try chain.chain(vk.VkPipelineFragmentShadingRateStateCreateInfoKHR);
                     try parse_vk_pipeline_fragment_shading_rate_state_create_info_khr(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+                .VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
                 => {
                     const obj = try chain.chain(vk.VkPipelineRenderingCreateInfo);
                     try parse_vk_pipeline_rendering_create_info(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
+                .VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO,
                 => {
                     const obj = try chain.chain(vk.VkRenderingAttachmentLocationInfo);
                     try parse_vk_rendering_attachment_location_info(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
+                .VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO,
                 => {
                     const obj = try chain.chain(vk.VkRenderingInputAttachmentIndexInfo);
                     try parse_vk_rendering_input_attachment_index_info(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
+                .VK_STRUCTURE_TYPE_PIPELINE_FRAGMENT_DENSITY_MAP_LAYERED_CREATE_INFO_VALVE,
                 => {
                     const obj = try chain.chain(vk.VkPipelineFragmentDensityMapLayeredCreateInfoVALVE);
                     try parse_vk_pipeline_fragment_density_map_layered_create_info_valve(c, obj);
                 },
-                vk.VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
+                .VK_STRUCTURE_TYPE_DEPTH_BIAS_REPRESENTATION_INFO_EXT,
                 => {
                     const obj = try chain.chain(vk.VkDepthBiasRepresentationInfoEXT);
                     try parse_vk_structure_type_depth_bias_representation_info_ext(c, obj);
                 },
                 else => {
-                    log.err(
-                        @src(),
-                        "Unknown pnext chain type: {s}({d})",
-                        .{ vu.stype_to_name(@enumFromInt(stype)), stype },
-                    );
+                    log.err(@src(), "Unknown pnext chain type: {t}", .{stype});
                     return error.UnknownPnextChain;
                 },
             }
@@ -1769,7 +1778,7 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
             last_pnext_in_chain: *?**anyopaque,
         ) Error!void {
             const obj = try c.alloc.create(vk.VkPipelineLibraryCreateInfoKHR);
-            obj.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
+            obj.* = .{};
             if (first_in_chain.* == null)
                 first_in_chain.* = obj;
             if (last_pnext_in_chain.*) |lpic| {
@@ -1786,15 +1795,13 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
 
             while (try scanner_object_next_field(c.scanner)) |ss| {
                 if (std.mem.eql(u8, ss, "sType")) {
-                    const v = try scanner_next_number(c.scanner);
-                    const stype = try std.fmt.parseInt(u32, v, 10);
-                    if (stype != vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR) {
+                    const stype = try scanner_parse_enum(vk.VkStructureType, c.scanner);
+                    if (stype != .VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR) {
                         log.err(
                             @src(),
-                            "Expected VkPipelineLibraryCreateInfoKHR({d}) found {s}({d})",
+                            "Expected VkPipelineLibraryCreateInfoKHR({t}) found {t}",
                             .{
-                                vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
-                                vu.stype_to_name(@enumFromInt(stype)),
+                                vk.VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR,
                                 stype,
                             },
                         );
@@ -1831,7 +1838,7 @@ pub fn parse_vk_application_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_APPLICATION_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "applicationName")) {
             const name_str = try scanner_next_string(context.scanner);
@@ -1842,14 +1849,11 @@ pub fn parse_vk_application_info(
             const name = try context.alloc.dupeZ(u8, name_str);
             item.pEngineName = @ptrCast(name.ptr);
         } else if (std.mem.eql(u8, s, "applicationVersion")) {
-            const v = try scanner_next_number(context.scanner);
-            item.applicationVersion = try std.fmt.parseInt(u32, v, 10);
+            item.applicationVersion = try scanner_parse_bitfield(vk.ApiVersion, context.scanner);
         } else if (std.mem.eql(u8, s, "engineVersion")) {
-            const v = try scanner_next_number(context.scanner);
-            item.engineVersion = try std.fmt.parseInt(u32, v, 10);
+            item.engineVersion = try scanner_parse_bitfield(vk.ApiVersion, context.scanner);
         } else if (std.mem.eql(u8, s, "apiVersion")) {
-            const v = try scanner_next_number(context.scanner);
-            item.apiVersion = try std.fmt.parseInt(u32, v, 10);
+            item.apiVersion = try scanner_parse_bitfield(vk.ApiVersion, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -1882,10 +1886,6 @@ test "test_parse_vk_application_info" {
     var item: vk.VkApplicationInfo = undefined;
     try parse_vk_application_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_APPLICATION_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqualSlices(u8, "APP_NAME", std.mem.span(item.pApplicationName));
     try std.testing.expectEqual(69, item.applicationVersion);
@@ -1901,11 +1901,10 @@ pub fn parse_vk_physical_device_features2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "robustBufferAccess")) {
-            const v = try scanner_next_number(context.scanner);
-            item.features.robustBufferAccess = try std.fmt.parseInt(u32, v, 10);
+            item.features.robustBufferAccess = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else {
@@ -1936,10 +1935,6 @@ test "test_parse_vk_physical_device_features2" {
     var item: vk.VkPhysicalDeviceFeatures2 = undefined;
     try parse_vk_physical_device_features2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(item.features, vk.VkPhysicalDeviceFeatures{
         .robustBufferAccess = 69,
@@ -1953,7 +1948,7 @@ pub fn parse_vk_sampler_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -1993,10 +1988,6 @@ test "test_parse_vk_sampler_create_info" {
     var item: vk.VkSamplerCreateInfo = undefined;
     try parse_vk_sampler_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.magFilter);
@@ -2023,11 +2014,10 @@ pub fn parse_vk_descriptor_set_layout_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkDescriptorSetLayoutCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "bindings")) {
             const bindings = try parse_object_array(
                 vk.VkDescriptorSetLayoutBinding,
@@ -2067,10 +2057,6 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
     var item: vk.VkDescriptorSetLayoutCreateInfo = undefined;
     try parse_vk_descriptor_set_layout_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.bindingCount);
@@ -2087,17 +2073,13 @@ pub fn parse_vk_descriptor_set_layout_binding(
     item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "descriptorType")) {
-            const v = try scanner_next_number(context.scanner);
-            item.descriptorType = try std.fmt.parseInt(u32, v, 10);
+            item.descriptorType = try scanner_parse_enum(vk.VkDescriptorType, context.scanner);
         } else if (std.mem.eql(u8, s, "descriptorCount")) {
-            const v = try scanner_next_number(context.scanner);
-            item.descriptorCount = try std.fmt.parseInt(u32, v, 10);
+            item.descriptorCount = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "stageFlags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.stageFlags = try std.fmt.parseInt(u32, v, 10);
+            item.stageFlags = try scanner_parse_bitfield(vk.VkShaderStageFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "binding")) {
-            const v = try scanner_next_number(context.scanner);
-            item.binding = try std.fmt.parseInt(u32, v, 10);
+            item.binding = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "immutableSamplers")) {
             const samplers = try parse_handle_array(
                 vk.VkSampler,
@@ -2171,11 +2153,10 @@ pub fn parse_vk_pipeline_layout_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineLayoutCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "pushConstantRanges")) {
             const constant_ranges = try parse_object_array(
                 vk.VkPushConstantRange,
@@ -2235,10 +2216,6 @@ test "test_parse_vk_pipeline_layout_create_info" {
     var item: vk.VkPipelineLayoutCreateInfo = undefined;
     try parse_vk_pipeline_layout_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.setLayoutCount);
@@ -2254,10 +2231,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
     try std.testing.expectEqual(0x69, @intFromPtr(item.pSetLayouts[0]));
 }
 
-pub fn parse_vk_push_constant_range(
-    context: *Context,
-    item: *vk.VkPushConstantRange,
-) Error!void {
+pub fn parse_vk_push_constant_range(context: *Context, item: *vk.VkPushConstantRange) Error!void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
@@ -2323,7 +2297,7 @@ pub fn parse_vk_shader_module_create_info(
         }
     };
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+    item.* = .{};
     // NOTE: there is a possibility that the json object does not have
     // `varintOffset` and `variantSize` fields. In such case the shader code
     // is inlined in the `code` string. Skip this case for now.
@@ -2331,17 +2305,13 @@ pub fn parse_vk_shader_module_create_info(
     var variant_size: u64 = 0;
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "varintOffset")) {
-            const v = try scanner_next_number(context.scanner);
-            variant_offset = try std.fmt.parseInt(u64, v, 10);
+            variant_offset = try scanner_parse_number(u64, context.scanner);
         } else if (std.mem.eql(u8, s, "varintSize")) {
-            const v = try scanner_next_number(context.scanner);
-            variant_size = try std.fmt.parseInt(u64, v, 10);
+            variant_size = try scanner_parse_number(u64, context.scanner);
         } else if (std.mem.eql(u8, s, "codeSize")) {
-            const v = try scanner_next_number(context.scanner);
-            item.codeSize = try std.fmt.parseInt(u64, v, 10);
+            item.codeSize = try scanner_parse_number(u64, context.scanner);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkShaderModuleCreateFlags, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -2386,10 +2356,6 @@ test "test_parse_vk_shader_module_create_info" {
     var item: vk.VkShaderModuleCreateInfo = undefined;
     try parse_vk_shader_module_create_info(&context, &item, code);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(4, item.codeSize);
@@ -2403,11 +2369,10 @@ pub fn parse_vk_render_pass_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkRenderPassCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "dependencies")) {
             const dependencies = try parse_object_array(
                 vk.VkSubpassDependency,
@@ -2463,10 +2428,6 @@ test "test_parse_vk_render_pass_create_info" {
     var item: vk.VkRenderPassCreateInfo = undefined;
     try parse_vk_render_pass_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.attachmentCount);
@@ -2484,11 +2445,10 @@ pub fn parse_vk_render_pass_create_info2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkRenderPassCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "attachments")) {
             const attachments = try parse_object_array(
                 vk.VkAttachmentDescription2,
@@ -2549,10 +2509,6 @@ test "test_parse_vk_render_pass_create_info2" {
     var item: vk.VkRenderPassCreateInfo2 = undefined;
     try parse_vk_render_pass_create_info2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.attachmentCount);
@@ -2620,7 +2576,7 @@ pub fn parse_vk_subpass_dependency2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -2652,10 +2608,6 @@ test "test_parse_vk_subpass_dependency2" {
     var item: vk.VkSubpassDependency2 = undefined;
     try parse_vk_subpass_dependency2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.srcSubpass);
     try std.testing.expectEqual(69, item.dstSubpass);
@@ -2725,7 +2677,7 @@ pub fn parse_vk_attachment_description2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -2758,10 +2710,6 @@ test "test_parse_vk_attachment_description2" {
     var item: vk.VkAttachmentDescription2 = undefined;
     try parse_vk_attachment_description2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.format);
@@ -2784,11 +2732,9 @@ pub fn parse_vk_subpass_description(
     item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkSubpassDescriptionFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "pipelineBindPoint")) {
-            const v = try scanner_next_number(context.scanner);
-            item.pipelineBindPoint = try std.fmt.parseInt(u32, v, 10);
+            item.pipelineBindPoint = try scanner_parse_enum(vk.VkPipelineBindPoint, context.scanner);
         } else if (std.mem.eql(u8, s, "inputAttachments")) {
             const attachments = try parse_object_array(
                 vk.VkAttachmentReference,
@@ -2874,17 +2820,14 @@ pub fn parse_vk_subpass_description2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkSubpassDescriptionFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "pipelineBindPoint")) {
-            const v = try scanner_next_number(context.scanner);
-            item.pipelineBindPoint = try std.fmt.parseInt(u32, v, 10);
+            item.pipelineBindPoint = try scanner_parse_enum(vk.VkPipelineBindPoint, context.scanner);
         } else if (std.mem.eql(u8, s, "viewMask")) {
-            const v = try scanner_next_number(context.scanner);
-            item.viewMask = try std.fmt.parseInt(u32, v, 10);
+            item.viewMask = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "inputAttachments")) {
             const attachments = try parse_object_array(
                 vk.VkAttachmentReference2,
@@ -2951,10 +2894,6 @@ test "test_parse_vk_subpass_description2" {
     var item: vk.VkSubpassDescription2 = undefined;
     try parse_vk_subpass_description2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.viewMask);
@@ -3014,7 +2953,7 @@ pub fn parse_vk_attachment_reference2(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3041,10 +2980,6 @@ test "test_parse_vk_attachment_reference2" {
     var item: vk.VkAttachmentReference2 = undefined;
     try parse_vk_attachment_reference2(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, vk.VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2),
-        item.sType,
-    );
     try std.testing.expectEqual(69, item.attachment);
     try std.testing.expectEqual(69, item.layout);
     try std.testing.expectEqual(69, item.aspectMask);
@@ -3057,13 +2992,12 @@ pub fn parse_vk_graphics_pipeline_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "stages")) {
             const stages = try parse_object_array(
                 vk.VkPipelineShaderStageCreateInfo,
@@ -3120,20 +3054,18 @@ pub fn parse_vk_graphics_pipeline_create_info(
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .pipeline_layout, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, @ptrCast(&item.layout));
         } else if (std.mem.eql(u8, s, "renderPass")) {
-            try parse_single_handle(context, .render_pass, &item.renderPass);
+            try parse_single_handle(context, .render_pass, @ptrCast(&item.renderPass));
         } else if (std.mem.eql(u8, s, "subpass")) {
-            const v = try scanner_next_number(context.scanner);
-            item.subpass = try std.fmt.parseInt(u32, v, 10);
+            item.subpass = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
             if (base_pipeline_hash != 0)
                 return error.BasePipelinesNotSupported;
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            const v = try scanner_next_number(context.scanner);
-            item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
+            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -3197,10 +3129,6 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     var item: vk.VkGraphicsPipelineCreateInfo = undefined;
     try parse_vk_graphics_pipeline_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.stageCount);
@@ -3238,18 +3166,16 @@ pub fn parse_vk_pipeline_shader_stage_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineShaderStageCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "stage")) {
-            const v = try scanner_next_number(context.scanner);
-            item.stage = try std.fmt.parseInt(u32, v, 10);
+            item.stage = try scanner_parse_bitfield(vk.VkShaderStageFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "module")) {
-            try parse_single_handle(context, .shader_module, &item.module);
+            try parse_single_handle(context, .shader_module, @ptrCast(&item.module));
         } else if (std.mem.eql(u8, s, "name")) {
             const name_str = try scanner_next_string(context.scanner);
             const name = try context.alloc.dupeZ(u8, name_str);
@@ -3300,10 +3226,6 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
     var item: vk.VkPipelineShaderStageCreateInfo = undefined;
     try parse_vk_pipeline_shader_stage_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.stage);
@@ -3325,13 +3247,12 @@ pub fn parse_vk_pipeline_vertex_input_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineVertexInputStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "bindings")) {
             const bindings = try parse_object_array(
                 vk.VkVertexInputBindingDescription,
@@ -3378,10 +3299,6 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
     var item: vk.VkPipelineVertexInputStateCreateInfo = undefined;
     try parse_vk_pipeline_vertex_input_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.vertexBindingDescriptionCount);
@@ -3397,7 +3314,7 @@ pub fn parse_vk_pipeline_input_assembly_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3424,10 +3341,6 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
     var item: vk.VkPipelineInputAssemblyStateCreateInfo = undefined;
     try parse_vk_pipeline_input_assembly_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.topology);
@@ -3441,7 +3354,7 @@ pub fn parse_vk_pipeline_tessellation_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3467,10 +3380,6 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
     var item: vk.VkPipelineTessellationStateCreateInfo = undefined;
     try parse_vk_pipeline_tessellation_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.patchControlPoints);
@@ -3483,16 +3392,14 @@ pub fn parse_vk_pipeline_viewport_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineViewportStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "viewportCount")) {
-            const v = try scanner_next_number(context.scanner);
-            item.viewportCount = try std.fmt.parseInt(u32, v, 10);
+            item.viewportCount = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "viewports")) {
             const viewports = try parse_object_array(
                 vk.VkViewport,
@@ -3502,8 +3409,7 @@ pub fn parse_vk_pipeline_viewport_state_create_info(
             item.pViewports = @ptrCast(viewports.ptr);
             item.viewportCount = @intCast(viewports.len);
         } else if (std.mem.eql(u8, s, "scissorCount")) {
-            const v = try scanner_next_number(context.scanner);
-            item.scissorCount = try std.fmt.parseInt(u32, v, 10);
+            item.scissorCount = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "scissors")) {
             const scissors = try parse_object_array(
                 vk.VkRect2D,
@@ -3544,10 +3450,6 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
     var item: vk.VkPipelineViewportStateCreateInfo = undefined;
     try parse_vk_pipeline_viewport_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.viewportCount);
@@ -3563,7 +3465,7 @@ pub fn parse_vk_pipeline_rasterization_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -3598,10 +3500,6 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
     var item: vk.VkPipelineRasterizationStateCreateInfo = undefined;
     try parse_vk_pipeline_rasterization_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.depthClampEnable);
@@ -3623,31 +3521,25 @@ pub fn parse_vk_pipeline_multisample_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineMultisampleStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "rasterizationSamples")) {
-            const v = try scanner_next_number(context.scanner);
-            item.rasterizationSamples = try std.fmt.parseInt(u32, v, 10);
+            item.rasterizationSamples = try scanner_parse_bitfield(vk.VkSampleCountFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "sampleShadingEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.sampleShadingEnable = try std.fmt.parseInt(u32, v, 10);
+            item.sampleShadingEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "minSampleShading")) {
-            const v = try scanner_next_number(context.scanner);
-            item.minSampleShading = try std.fmt.parseFloat(f32, v);
+            item.minSampleShading = try scanner_parse_number(f32, context.scanner);
         } else if (std.mem.eql(u8, s, "sampleMask")) {
             const mask = try parse_number_array(u32, context);
             item.pSampleMask = @ptrCast(mask.ptr);
         } else if (std.mem.eql(u8, s, "alphaToCoverageEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.alphaToCoverageEnable = try std.fmt.parseInt(u32, v, 10);
+            item.alphaToCoverageEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "alphaToOneEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.alphaToOneEnable = try std.fmt.parseInt(u32, v, 10);
+            item.alphaToOneEnable = try scanner_parse_number(u32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -3684,10 +3576,6 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
     var item: vk.VkPipelineMultisampleStateCreateInfo = undefined;
     try parse_vk_pipeline_multisample_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.rasterizationSamples);
@@ -3752,38 +3640,30 @@ pub fn parse_vk_pipeline_depth_stencil_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineDepthStencilStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "depthTestEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.depthTestEnable = try std.fmt.parseInt(u32, v, 10);
+            item.depthTestEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "depthWriteEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.depthWriteEnable = try std.fmt.parseInt(u32, v, 10);
+            item.depthWriteEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "depthCompareOp")) {
-            const v = try scanner_next_number(context.scanner);
-            item.depthCompareOp = try std.fmt.parseInt(u32, v, 10);
+            item.depthCompareOp = try scanner_parse_enum(vk.VkCompareOp, context.scanner);
         } else if (std.mem.eql(u8, s, "depthBoundsTestEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.depthBoundsTestEnable = try std.fmt.parseInt(u32, v, 10);
+            item.depthBoundsTestEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "stencilTestEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.stencilTestEnable = try std.fmt.parseInt(u32, v, 10);
+            item.stencilTestEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "front")) {
             try parse_vk_stencil_op_state(context, &item.front);
         } else if (std.mem.eql(u8, s, "back")) {
             try parse_vk_stencil_op_state(context, &item.back);
         } else if (std.mem.eql(u8, s, "minDepthBounds")) {
-            const v = try scanner_next_number(context.scanner);
-            item.minDepthBounds = try std.fmt.parseFloat(f32, v);
+            item.minDepthBounds = try scanner_parse_number(f32, context.scanner);
         } else if (std.mem.eql(u8, s, "maxDepthBounds")) {
-            const v = try scanner_next_number(context.scanner);
-            item.maxDepthBounds = try std.fmt.parseFloat(f32, v);
+            item.maxDepthBounds = try scanner_parse_number(f32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -3821,10 +3701,6 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
     var item: vk.VkPipelineDepthStencilStateCreateInfo = undefined;
     try parse_vk_pipeline_depth_stencil_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.depthTestEnable);
@@ -3845,19 +3721,16 @@ pub fn parse_vk_pipeline_color_blend_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineColorBlendStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "logicOpEnable")) {
-            const v = try scanner_next_number(context.scanner);
-            item.logicOpEnable = try std.fmt.parseInt(u32, v, 10);
+            item.logicOpEnable = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "logicOp")) {
-            const v = try scanner_next_number(context.scanner);
-            item.logicOp = try std.fmt.parseInt(u32, v, 10);
+            item.logicOp = try scanner_parse_enum(vk.VkLogicOp, context.scanner);
         } else if (std.mem.eql(u8, s, "attachments")) {
             const attachments = try parse_object_array(
                 vk.VkPipelineColorBlendAttachmentState,
@@ -3910,10 +3783,6 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
     var item: vk.VkPipelineColorBlendStateCreateInfo = undefined;
     try parse_vk_pipeline_color_blend_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(69, item.logicOpEnable);
@@ -3930,13 +3799,12 @@ pub fn parse_vk_pipeline_dynamic_state_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineDynamicStateCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "dynamicState")) {
             const states = try parse_number_array(u32, context);
             item.pDynamicStates = @ptrCast(states.ptr);
@@ -3972,10 +3840,6 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
     var item: vk.VkPipelineDynamicStateCreateInfo = undefined;
     try parse_vk_pipeline_dynamic_state_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.dynamicStateCount);
@@ -4165,17 +4029,13 @@ pub fn parse_vk_rect_2d(
 
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "x")) {
-            const v = try scanner_next_number(context.scanner);
-            item.offset.x = try std.fmt.parseInt(i32, v, 10);
+            item.offset.x = try scanner_parse_number(i32, context.scanner);
         } else if (std.mem.eql(u8, s, "y")) {
-            const v = try scanner_next_number(context.scanner);
-            item.offset.y = try std.fmt.parseInt(i32, v, 10);
+            item.offset.y = try scanner_parse_number(i32, context.scanner);
         } else if (std.mem.eql(u8, s, "width")) {
-            const v = try scanner_next_number(context.scanner);
-            item.extent.width = try std.fmt.parseInt(u32, v, 10);
+            item.extent.width = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "height")) {
-            const v = try scanner_next_number(context.scanner);
-            item.extent.height = try std.fmt.parseInt(u32, v, 10);
+            item.extent.height = try scanner_parse_number(u32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -4261,8 +4121,7 @@ pub fn parse_vk_specialization_info(
 
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "dataSize")) {
-            const v = try scanner_next_number(context.scanner);
-            item.dataSize = try std.fmt.parseInt(u32, v, 10);
+            item.dataSize = try scanner_parse_number(u64, context.scanner);
         } else if (std.mem.eql(u8, s, "data")) {
             const data_str = try scanner_next_string(context.scanner);
             var decoder = std.base64.standard.Decoder;
@@ -4321,28 +4180,26 @@ pub fn parse_vk_compute_pipeline_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "stage")) {
             try parse_vk_pipeline_shader_stage_create_info(
                 context,
                 &item.stage,
             );
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .pipeline_layout, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, @ptrCast(&item.layout));
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
             if (base_pipeline_hash != 0)
                 return error.BasePipelinesNotSupported;
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            const v = try scanner_next_number(context.scanner);
-            item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
+            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -4386,10 +4243,6 @@ test "test_parse_vk_compute_pipeline_create_info" {
     var item: vk.VkComputePipelineCreateInfo = undefined;
     try parse_vk_compute_pipeline_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(vk.VkPipelineShaderStageCreateInfo{
@@ -4413,13 +4266,12 @@ pub fn parse_vk_raytracing_pipeline_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
         } else if (std.mem.eql(u8, s, "flags")) {
-            const v = try scanner_next_number(context.scanner);
-            item.flags = try std.fmt.parseInt(u32, v, 10);
+            item.flags = try scanner_parse_bitfield(vk.VkPipelineCreateFlags, context.scanner);
         } else if (std.mem.eql(u8, s, "stages")) {
             const stages = try parse_object_array(
                 vk.VkPipelineShaderStageCreateInfo,
@@ -4447,22 +4299,20 @@ pub fn parse_vk_raytracing_pipeline_create_info(
             try parse_vk_ray_tracing_pipeline_interface_create_info(context, interface);
             item.pLibraryInterface = interface;
         } else if (std.mem.eql(u8, s, "maxPipelineRayRecursionDepth")) {
-            const v = try scanner_next_number(context.scanner);
-            item.maxPipelineRayRecursionDepth = try std.fmt.parseInt(u32, v, 10);
+            item.maxPipelineRayRecursionDepth = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "dynamicState")) {
             const dynamic_state = try context.alloc.create(vk.VkPipelineDynamicStateCreateInfo);
             try parse_vk_pipeline_dynamic_state_create_info(context, dynamic_state);
             item.pDynamicState = dynamic_state;
         } else if (std.mem.eql(u8, s, "layout")) {
-            try parse_single_handle(context, .pipeline_layout, &item.layout);
+            try parse_single_handle(context, .pipeline_layout, @ptrCast(&item.layout));
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
             const v = try scanner_next_string(context.scanner);
             const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
             if (base_pipeline_hash != 0)
                 return error.BasePipelinesNotSupported;
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            const v = try scanner_next_number(context.scanner);
-            item.basePipelineIndex = try std.fmt.parseInt(i32, v, 10);
+            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
@@ -4510,10 +4360,6 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     var item: vk.VkRayTracingPipelineCreateInfoKHR = undefined;
     try parse_vk_raytracing_pipeline_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.flags);
     try std.testing.expectEqual(1, item.stageCount);
@@ -4542,7 +4388,7 @@ pub fn parse_vk_ray_tracing_shader_group_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -4571,10 +4417,6 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
     var item: vk.VkRayTracingShaderGroupCreateInfoKHR = undefined;
     try parse_vk_ray_tracing_shader_group_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.type);
     try std.testing.expectEqual(69, item.generalShader);
@@ -4591,7 +4433,7 @@ pub fn parse_vk_pipeline_library_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR };
+    item.* = .{};
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "pNext")) {
             item.pNext = try parse_pnext_chain(context);
@@ -4641,10 +4483,6 @@ test "test_parse_vk_pipeline_library_create_info" {
     var item: vk.VkPipelineLibraryCreateInfoKHR = undefined;
     try parse_vk_pipeline_library_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        @as(u32, @intCast(vk.VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR)),
-        item.sType,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(1, item.libraryCount);
     try std.testing.expect(item.pLibraries != null);
@@ -4664,7 +4502,7 @@ pub fn parse_vk_ray_tracing_pipeline_interface_create_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    item.* = .{ .sType = vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR };
+    item.* = .{};
     try parse_simple_type(context, item);
 }
 
@@ -4690,10 +4528,6 @@ test "test_parse_vk_ray_tracing_pipeline_interface_create_info" {
     var item: vk.VkRayTracingPipelineInterfaceCreateInfoKHR = undefined;
     try parse_vk_ray_tracing_pipeline_interface_create_info(&context, &item);
 
-    try std.testing.expectEqual(
-        item.sType,
-        vk.VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_INTERFACE_CREATE_INFO_KHR,
-    );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.maxPipelineRayPayloadSize);
     try std.testing.expectEqual(69, item.maxPipelineRayHitAttributeSize);
