@@ -203,7 +203,7 @@ pub const TypeDatabase = struct {
         name: []const u8 = &.{},
         fields: []const Field = &.{},
         extends: []const Type.Idx = &.{},
-        enabled_by_extension: ?[]const u8 = null,
+        enabled_by_extensions: []const []const u8 = &.{},
         // metedata
         comment: ?[]const u8 = null,
         returnedonly: bool = false,
@@ -343,7 +343,7 @@ pub const TypeDatabase = struct {
         members: []const Member = &.{},
         // metadata
         comment: ?[]const u8 = null,
-        enabled_by_extension: ?[]const u8 = null,
+        enabled_by_extensions: []const []const u8 = &.{},
 
         pub const Member = struct {
             name: []const u8 = &.{},
@@ -688,22 +688,44 @@ pub const TypeDatabase = struct {
                 };
                 _ = try db.add_alias(a);
             } else {
-                var enabled_by_extension: ?[]const u8 = null;
+                var enabled_by_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
+
+                for (xml_database.types.structs) |s2| {
+                    if (s2.alias) |alias| {
+                        if (std.mem.eql(u8, @"struct".name, alias)) {
+                            for (xml_database.features.items) |ext| {
+                                if (ext.unlocks_type(s2.name)) {
+                                    try enabled_by_extensions.append(alloc, ext.name);
+                                    break;
+                                }
+                            }
+                            for (xml_database.extensions.items) |ext| {
+                                if (ext.unlocks_type(s2.name)) {
+                                    if (ext.supported == .disabled) {
+                                        continue :outer;
+                                    } else {
+                                        try enabled_by_extensions.append(alloc, ext.name);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 for (xml_database.features.items) |ext| {
                     if (ext.unlocks_type(@"struct".name)) {
-                        enabled_by_extension = ext.name;
+                        try enabled_by_extensions.append(alloc, ext.name);
                         break;
                     }
                 }
-                if (enabled_by_extension == null) {
-                    for (xml_database.extensions.items) |ext| {
-                        if (ext.unlocks_type(@"struct".name)) {
-                            if (ext.supported == .disabled) {
-                                continue :outer;
-                            } else {
-                                enabled_by_extension = ext.name;
-                                break;
-                            }
+                for (xml_database.extensions.items) |ext| {
+                    if (ext.unlocks_type(@"struct".name)) {
+                        if (ext.supported == .disabled) {
+                            continue :outer;
+                        } else {
+                            try enabled_by_extensions.append(alloc, ext.name);
+                            break;
                         }
                     }
                 }
@@ -773,7 +795,7 @@ pub const TypeDatabase = struct {
                     .name = @"struct".name,
                     .fields = fields.items,
                     .extends = extends.items,
-                    .enabled_by_extension = enabled_by_extension,
+                    .enabled_by_extensions = enabled_by_extensions.items,
                     .comment = @"struct".comment,
                     .returnedonly = @"struct".returnedonly,
                     .allowduplicate = @"struct".allowduplicate,
@@ -782,7 +804,7 @@ pub const TypeDatabase = struct {
             }
         }
 
-        for (xml_database.types.unions) |@"union"| {
+        outer: for (xml_database.types.unions) |@"union"| {
             if (@"union".alias) |alias| {
                 const type_idx = try db.resolve_base(alias);
                 const a: Type.Alias = .{
@@ -791,15 +813,42 @@ pub const TypeDatabase = struct {
                 };
                 _ = try db.add_alias(a);
             } else {
-                var enabled_by_extension: ?[]const u8 = null;
+                var enabled_by_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
+
+                for (xml_database.types.unions) |un2| {
+                    if (un2.alias) |alias| {
+                        if (std.mem.eql(u8, @"union".name, alias)) {
+                            for (xml_database.features.items) |ext| {
+                                if (ext.unlocks_type(un2.name)) {
+                                    try enabled_by_extensions.append(alloc, ext.name);
+                                    break;
+                                }
+                            }
+                            for (xml_database.extensions.items) |ext| {
+                                if (ext.unlocks_type(un2.name)) {
+                                    if (ext.supported == .disabled) {
+                                        continue :outer;
+                                    } else {
+                                        try enabled_by_extensions.append(alloc, ext.name);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 for (xml_database.features.items) |ext| {
                     if (ext.unlocks_type(@"union".name))
-                        enabled_by_extension = ext.name;
+                        try enabled_by_extensions.append(alloc, ext.name);
                 }
-                if (enabled_by_extension == null) {
-                    for (xml_database.extensions.items) |ext| {
-                        if (ext.unlocks_type(@"union".name))
-                            enabled_by_extension = ext.name;
+                for (xml_database.extensions.items) |ext| {
+                    if (ext.unlocks_type(@"union".name)) {
+                        if (ext.supported == .disabled) {
+                            continue :outer;
+                        } else {
+                            try enabled_by_extensions.append(alloc, ext.name);
+                        }
                     }
                 }
 
@@ -826,7 +875,7 @@ pub const TypeDatabase = struct {
                     .name = @"union".name,
                     .members = members.items,
                     .comment = @"union".comment,
-                    .enabled_by_extension = enabled_by_extension,
+                    .enabled_by_extensions = enabled_by_extensions.items,
                 };
                 _ = try db.add_union(s);
             }
@@ -1387,7 +1436,7 @@ pub const TypeDatabase = struct {
         return type_idx;
     }
 
-    pub fn resolve_base(self: *TypeDatabase, name: []const u8) !Type.Idx {
+    pub fn find_base(self: *const TypeDatabase, name: []const u8) Type.Idx {
         var result: Type.Idx = .none;
         for (self.types.items, 1..) |t, i| {
             switch (t) {
@@ -1499,6 +1548,12 @@ pub const TypeDatabase = struct {
                 else => {},
             }
         }
+        return result;
+    }
+
+    pub fn resolve_base(self: *TypeDatabase, name: []const u8) !Type.Idx {
+        var result: Type.Idx = .none;
+        result = self.find_base(name);
         if (result == .none)
             result = try self.add_placeholder(name);
         return result;
