@@ -30,15 +30,6 @@ pub fn build(b: *std.Build) !void {
         target,
         optimize,
         &args,
-        "gen",
-        "gen/main.zig",
-        &.{.{ .name = "volk", .module = volk_mod }},
-    );
-    create_exe(
-        b,
-        target,
-        optimize,
-        &args,
         "gen_vk",
         "gen/gen_vk.zig",
         &.{.{ .name = "volk", .module = volk_mod }},
