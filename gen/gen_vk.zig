@@ -111,11 +111,13 @@ fn write_versions(alloc: Allocator, file: std.fs.File) void {
         \\    minor: u10 = 0,
         \\    major: u7 = 0,
         \\    variant: u3 = 0,
-        \\}};
-        \\pub const Version = packed struct(u32) {{
-        \\    patch: u12 = 0,
-        \\    minor: u10 = 0,
-        \\    major: u10 = 0,
+        \\
+        \\    pub fn less(v1: ApiVersion, v2: ApiVersion) bool {{
+        \\        const v1_u32: u32 = @bitCast(v1);
+        \\        const v2_u32: u32 = @bitCast(v2);
+        \\        const result = v1_u32 < v2_u32;
+        \\        return result;
+        \\    }}
         \\}};
         \\pub const VK_API_VERSION_1_0: ApiVersion = .{{
         \\    .variant = 0,
@@ -301,6 +303,7 @@ fn write_enums(
         }
 
         w.write(
+            \\    _,
             \\}};
             \\
         , .{});
@@ -316,7 +319,7 @@ fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !v
     , .{});
 
     for (type_db.structs.items) |@"struct"| {
-        if (@"struct".enabled_by_extension) |ext| w.write(
+        for (@"struct".enabled_by_extensions) |ext| w.write(
             \\// Extension: {s}
             \\
         , .{ext});
@@ -441,10 +444,17 @@ fn write_single_struct_field(
         .base => |base| {
             switch (base) {
                 .builtin => |_| {
-                    w.write(
-                        \\    {s}: {s} = 0,
-                        \\
-                    , .{ field.name, type_str });
+                    if (std.mem.endsWith(u8, field.name, "Version")) {
+                        w.write(
+                            \\    {s}: ApiVersion = .{{}},
+                            \\
+                        , .{field.name});
+                    } else {
+                        w.write(
+                            \\    {s}: {s} = 0,
+                            \\
+                        , .{ field.name, type_str });
+                    }
                 },
                 .handle_idx => |_| {
                     w.write(
@@ -481,9 +491,10 @@ fn write_single_struct_field(
                     // Should only be valid for sType: VkStructureType
                     if (field.stype_value) |v| {
                         w.write(
-                            \\    {s}: {s} = VkStructureType.{s},
+                            \\    pub const STYPE = VkStructureType.{s};
+                            \\    {s}: {s} = @This().STYPE,
                             \\
-                        , .{ field.name, type_str, v });
+                        , .{ v, field.name, type_str });
                     } else {
                         const e = type_db.get_enum(enum_idx);
                         w.write(
@@ -591,7 +602,7 @@ fn write_unions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !vo
     , .{});
 
     for (type_db.unions.items) |@"union"| {
-        if (@"union".enabled_by_extension) |ext| w.write(
+        for (@"union".enabled_by_extensions) |ext| w.write(
             \\// Extension: {s}
             \\
         , .{ext});
@@ -723,14 +734,15 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase)
     , .{});
     for (db.extensions.items) |ext| {
         w.write(
-            \\// Extension: {s}
-            \\// Number: {s}
-            \\// Type: {t}
+            \\pub const {[name]s}_name = "{[name]s}";
+            \\// Extension: {[name]s}
+            \\// Number: {[number]s}
+            \\// Type: {[type]t}
             \\
         , .{
-            ext.name,
-            ext.number,
-            ext.type,
+            .name = ext.name,
+            .number = ext.number,
+            .type = ext.type,
         });
         if (ext.author) |v| w.write(
             \\// Author: {s}
