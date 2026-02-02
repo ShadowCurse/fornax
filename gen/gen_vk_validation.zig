@@ -44,11 +44,11 @@ pub fn main() !void {
 
     try write_extension_type(tmp_alloc, &file, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_types_validation(tmp_alloc, &file, &type_db);
+    try write_types_validation(tmp_alloc, &file, &type_db, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_physical_device_type(tmp_alloc, &file, &type_db);
+    try write_additional_types(tmp_alloc, &file, &type_db, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_spirv_validation(tmp_alloc, &file, &xml_db);
+    try write_spirv_validation(tmp_alloc, &file, &type_db, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
     _ = try file.write(VALIDATE_SHADER_CODE);
     _ = try file.write(VALIDATION_STRUCT);
@@ -65,6 +65,7 @@ const Writer = struct {
             std.log.err("Err: {t}", .{e});
             unreachable;
         };
+        defer self.alloc.free(line);
         _ = self.file.write(line) catch |e| {
             std.log.err("Err: {t}", .{e});
             unreachable;
@@ -82,7 +83,7 @@ const VALIDATE_SHADER_CODE =
     \\    create_info: *const vk.VkShaderModuleCreateInfo,
     \\) bool {
     \\    var code: []const u32 = undefined;
-    \\    code.ptr = create_info.pCode;
+    \\    code.ptr = create_info.pCode.?;
     \\    code.len = create_info.codeSize / @sizeOf(u32);
     \\
     \\    // Impossibly small shader
@@ -91,13 +92,13 @@ const VALIDATE_SHADER_CODE =
     \\
     \\    const version = code[1];
     \\    if (spirv.SPV_VERSION < version) return false;
-    \\    if (version == 0x10600 and validation.api_version < vk.VK_API_VERSION_1_3) return false;
-    \\    if (version == 0x10500 and validation.api_version < vk.VK_API_VERSION_1_2) return false;
+    \\    if (version == 0x10600 and validation.api_version.less(vk.VK_API_VERSION_1_3)) return false;
+    \\    if (version == 0x10500 and validation.api_version.less(vk.VK_API_VERSION_1_2)) return false;
     \\    if (0x10400 <= version and
-    \\        (validation.api_version < vk.VK_API_VERSION_1_2 and
+    \\        (validation.api_version.less(vk.VK_API_VERSION_1_2) and
     \\            !validation.extensions.device.VK_KHR_spirv_1_4)) return false;
-    \\    if (0x10300 <= version and validation.api_version < vk.VK_API_VERSION_1_1) return false;
-    \\    if (0x10000 < version and validation.api_version < vk.VK_API_VERSION_1_1) return false;
+    \\    if (0x10300 <= version and validation.api_version.less(vk.VK_API_VERSION_1_1)) return false;
+    \\    if (0x10000 < version and validation.api_version.less(vk.VK_API_VERSION_1_1)) return false;
     \\
     \\    var offset: usize = 5;
     \\    while (offset < code.len) {
@@ -137,10 +138,11 @@ const VALIDATE_SHADER_CODE =
 
 const VALIDATION_STRUCT =
     \\pub const Validation = struct {
-    \\    api_version: u32 = 0,
+    \\    api_version: vk.ApiVersion = .{},
     \\    extensions: Extensions = .{},
     \\    pdf: vk.VkPhysicalDeviceFeatures2 = .{},
     \\    additional_pdf: AdditionalPDF = .{},
+    \\    additional_properties: AdditionalProperties = .{},
     \\};
     \\
 ;
@@ -177,7 +179,7 @@ fn write_depends(
             '+' => _ = try writer.write(" and "),
             else => {
                 if (vk_version_to_api_version(depends[i..])) |version| {
-                    try writer.print("vk.{s} <= api_version", .{version});
+                    try writer.print("!api_version.less(vk.{s})", .{version});
                     i += "VK_VERSION_1_1".len - 1;
                 } else {
                     if (std.mem.indexOfAny(u8, depends[i..], ",+)")) |index| {
@@ -259,7 +261,7 @@ fn write_extension_type(
         \\
         \\    pub fn init(
         \\        tmp_alloc: Allocator,
-        \\        api_version: u32,
+        \\        api_version: vk.ApiVersion,
         \\        instance_extensions: []const [*c]const u8,
         \\        device_extensions: []const [*c]const u8,
         \\    ) !Self {{
@@ -279,7 +281,7 @@ fn write_extension_type(
         }) |tuple| {
             const api_version, const promotedto = tuple;
             w.write(
-                \\        if (vk.{s} <= api_version) {{
+                \\        if (!api_version.less(vk.{s})) {{
                 \\
             , .{api_version});
             for (instance_extensions.items) |ext| {
@@ -371,6 +373,7 @@ fn write_types_validation(
     alloc: Allocator,
     file: *const std.fs.File,
     type_db: *const TypeDatabase,
+    xml_db: *const XmlDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
 
@@ -401,17 +404,18 @@ fn write_types_validation(
                         base == .enum_idx)
                     {
                         const name = try type_db.type_string(alloc, sf.type_idx);
+                        const last_arg = if (base == .struct_idx) ", false" else &.{};
                         w.write(
-                            \\    if (!validate_{s}(extensions, &item.{s}))
+                            \\    if (!validate_{s}(extensions, &item.{s}{s}))
                             \\        return false;
                             \\
-                        , .{ name, sf.name });
+                        , .{ name, sf.name, last_arg });
                         used_extensions = true;
                         used_item = true;
                     }
                 },
                 .pointer => |pointer| {
-                    const pointer_type = type_db.get_type(pointer.base_type_idx);
+                    const pointer_type = type_db.get_type_follow_alias(pointer.base_type_idx);
                     if (!(pointer_type.struct_idx() != .none) and
                         !(pointer_type.enum_idx() != .none) and
                         !(pointer_type.bitfield_idx() != .none))
@@ -427,6 +431,7 @@ fn write_types_validation(
                         alloc,
                         pointer.base_type_idx,
                     );
+                    const base_type = type_db.get_type_follow_alias(pointer.base_type_idx);
 
                     if (pointer.is_slice) {
                         if (pointer.is_zero_terminated) {
@@ -451,7 +456,7 @@ fn write_types_validation(
                                             unreachable;
                                         const f = result[1..][0..space];
                                         const ff = ss.single_field_by_name(f).?;
-                                        const fft = td.get_type(ff.type_idx);
+                                        const fft = td.get_type_follow_alias(ff.type_idx);
                                         if (fft.is_builtin()) {
                                             result = std.fmt.allocPrint(
                                                 a,
@@ -483,22 +488,24 @@ fn write_types_validation(
                                 \\
                             , .{ .len = l });
                         }
+                        const last_arg = if (base_type.struct_idx() != .none) ", false" else &.{};
                         w.write(
-                            \\            if (!validate_{s}(extensions, vv))
+                            \\            if (!validate_{s}(extensions, vv{s}))
                             \\                return false;
                             \\
-                        , .{base_type_str});
+                        , .{ base_type_str, last_arg });
                         used_extensions = true;
                         w.write(
                             \\        }}
                             \\
                         , .{});
                     } else {
+                        const last_arg = if (base_type.struct_idx() != .none) ", false" else &.{};
                         w.write(
-                            \\        if (!validate_{s}(extensions, v))
+                            \\        if (!validate_{s}(extensions, v{s}))
                             \\            return false;
                             \\
-                        , .{base_type_str});
+                        , .{ base_type_str, last_arg });
                     }
                     w.write(
                         \\    }}
@@ -506,7 +513,7 @@ fn write_types_validation(
                     , .{});
                 },
                 .array => |array| {
-                    const array_type = type_db.get_type(array.base_type_idx);
+                    const array_type = type_db.get_type_follow_alias(array.base_type_idx);
                     if (!(array_type.struct_idx() != .none) and
                         !(array_type.enum_idx() != .none) and
                         !(array_type.bitfield_idx() != .none))
@@ -541,11 +548,11 @@ fn write_types_validation(
             used_validate_pnext = true;
 
             for (@"struct".extends) |type_idx| {
-                const struct_idx = type_db.get_type(type_idx).base.struct_idx;
+                const struct_idx = type_db.get_type_follow_alias(type_idx).base.struct_idx;
                 const s = type_db.get_struct(struct_idx);
                 const stype = s.stype().?;
                 w.write(
-                    \\            vk.VkStructType.{[stype]s},
+                    \\            vk.VkStructureType.{[stype]s},
                     \\            => if (!validate_{[type]s}(extensions, @ptrCast(next), false))
                     \\                return false,
                     \\
@@ -603,7 +610,7 @@ fn write_types_validation(
         w.write(
             \\    const min = {d};
             \\    const max = {d};
-            \\    const v: i{d} = @bitCast(*item);
+            \\    const v: i{d} = @intFromEnum(item.*);
             \\    if (v < min or max < v)
             \\        return false;
             \\
@@ -620,11 +627,12 @@ fn write_types_validation(
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
+                    const e = xml_db.extension_by_name(ext).?;
                     w.write(
-                        \\    if (extensions.device.{s} and item == .{s})
+                        \\    if (extensions.{t}.{s} and item.* == .{s})
                         \\        return true;
                         \\
-                    , .{ ext, value.name });
+                    , .{ e.type, ext, value.name });
                     used_extensions = true;
                 }
             }
@@ -665,10 +673,11 @@ fn write_types_validation(
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
+                    const e = xml_db.extension_by_name(ext).?;
                     w.write(
-                        \\extensions.device.{s},
+                        \\extensions.{t}.{s},
                         \\
-                    , .{ext});
+                    , .{ e.type, ext });
                     used_extensions = true;
                 } else {
                     w.write(
@@ -701,72 +710,538 @@ fn write_types_validation(
     }
 }
 
-fn write_physical_device_type(
+// taken from SPIRV-Headers/include/spirv/unified1/spirv.h
+const spirv_capabilities = [_]struct { []const u8, u32 }{
+    .{ "Matrix", 0 },
+    .{ "Shader", 1 },
+    .{ "Geometry", 2 },
+    .{ "Tessellation", 3 },
+    .{ "Addresses", 4 },
+    .{ "Linkage", 5 },
+    .{ "Kernel", 6 },
+    .{ "Vector16", 7 },
+    .{ "Float16Buffer", 8 },
+    .{ "Float16", 9 },
+    .{ "Float64", 10 },
+    .{ "Int64", 11 },
+    .{ "Int64Atomics", 12 },
+    .{ "ImageBasic", 13 },
+    .{ "ImageReadWrite", 14 },
+    .{ "ImageMipmap", 15 },
+    .{ "Pipes", 17 },
+    .{ "Groups", 18 },
+    .{ "DeviceEnqueue", 19 },
+    .{ "LiteralSampler", 20 },
+    .{ "AtomicStorage", 21 },
+    .{ "Int16", 22 },
+    .{ "TessellationPointSize", 23 },
+    .{ "GeometryPointSize", 24 },
+    .{ "ImageGatherExtended", 25 },
+    .{ "StorageImageMultisample", 27 },
+    .{ "UniformBufferArrayDynamicIndexing", 28 },
+    .{ "SampledImageArrayDynamicIndexing", 29 },
+    .{ "StorageBufferArrayDynamicIndexing", 30 },
+    .{ "StorageImageArrayDynamicIndexing", 31 },
+    .{ "ClipDistance", 32 },
+    .{ "CullDistance", 33 },
+    .{ "ImageCubeArray", 34 },
+    .{ "SampleRateShading", 35 },
+    .{ "ImageRect", 36 },
+    .{ "SampledRect", 37 },
+    .{ "GenericPointer", 38 },
+    .{ "Int8", 39 },
+    .{ "InputAttachment", 40 },
+    .{ "SparseResidency", 41 },
+    .{ "MinLod", 42 },
+    .{ "Sampled1D", 43 },
+    .{ "Image1D", 44 },
+    .{ "SampledCubeArray", 45 },
+    .{ "SampledBuffer", 46 },
+    .{ "ImageBuffer", 47 },
+    .{ "ImageMSArray", 48 },
+    .{ "StorageImageExtendedFormats", 49 },
+    .{ "ImageQuery", 50 },
+    .{ "DerivativeControl", 51 },
+    .{ "InterpolationFunction", 52 },
+    .{ "TransformFeedback", 53 },
+    .{ "GeometryStreams", 54 },
+    .{ "StorageImageReadWithoutFormat", 55 },
+    .{ "StorageImageWriteWithoutFormat", 56 },
+    .{ "MultiViewport", 57 },
+    .{ "SubgroupDispatch", 58 },
+    .{ "NamedBarrier", 59 },
+    .{ "PipeStorage", 60 },
+    .{ "GroupNonUniform", 61 },
+    .{ "GroupNonUniformVote", 62 },
+    .{ "GroupNonUniformArithmetic", 63 },
+    .{ "GroupNonUniformBallot", 64 },
+    .{ "GroupNonUniformShuffle", 65 },
+    .{ "GroupNonUniformShuffleRelative", 66 },
+    .{ "GroupNonUniformClustered", 67 },
+    .{ "GroupNonUniformQuad", 68 },
+    .{ "ShaderLayer", 69 },
+    .{ "ShaderViewportIndex", 70 },
+    .{ "UniformDecoration", 71 },
+    .{ "CoreBuiltinsARM", 4165 },
+    .{ "TileImageColorReadAccessEXT", 4166 },
+    .{ "TileImageDepthReadAccessEXT", 4167 },
+    .{ "TileImageStencilReadAccessEXT", 4168 },
+    .{ "TensorsARM", 4174 },
+    .{ "StorageTensorArrayDynamicIndexingARM", 4175 },
+    .{ "StorageTensorArrayNonUniformIndexingARM", 4176 },
+    .{ "GraphARM", 4191 },
+    .{ "CooperativeMatrixLayoutsARM", 4201 },
+    .{ "Float8EXT", 4212 },
+    .{ "Float8CooperativeMatrixEXT", 4213 },
+    .{ "FragmentShadingRateKHR", 4422 },
+    .{ "SubgroupBallotKHR", 4423 },
+    .{ "DrawParameters", 4427 },
+    .{ "WorkgroupMemoryExplicitLayoutKHR", 4428 },
+    .{ "WorkgroupMemoryExplicitLayout8BitAccessKHR", 4429 },
+    .{ "WorkgroupMemoryExplicitLayout16BitAccessKHR", 4430 },
+    .{ "SubgroupVoteKHR", 4431 },
+    .{ "StorageBuffer16BitAccess", 4433 },
+    .{ "StorageUniformBufferBlock16", 4433 },
+    .{ "StorageUniform16", 4434 },
+    .{ "UniformAndStorageBuffer16BitAccess", 4434 },
+    .{ "StoragePushConstant16", 4435 },
+    .{ "StorageInputOutput16", 4436 },
+    .{ "DeviceGroup", 4437 },
+    .{ "MultiView", 4439 },
+    .{ "VariablePointersStorageBuffer", 4441 },
+    .{ "VariablePointers", 4442 },
+    .{ "AtomicStorageOps", 4445 },
+    .{ "SampleMaskPostDepthCoverage", 4447 },
+    .{ "StorageBuffer8BitAccess", 4448 },
+    .{ "UniformAndStorageBuffer8BitAccess", 4449 },
+    .{ "StoragePushConstant8", 4450 },
+    .{ "DenormPreserve", 4464 },
+    .{ "DenormFlushToZero", 4465 },
+    .{ "SignedZeroInfNanPreserve", 4466 },
+    .{ "RoundingModeRTE", 4467 },
+    .{ "RoundingModeRTZ", 4468 },
+    .{ "RayQueryProvisionalKHR", 4471 },
+    .{ "RayQueryKHR", 4472 },
+    .{ "UntypedPointersKHR", 4473 },
+    .{ "RayTraversalPrimitiveCullingKHR", 4478 },
+    .{ "RayTracingKHR", 4479 },
+    .{ "TextureSampleWeightedQCOM", 4484 },
+    .{ "TextureBoxFilterQCOM", 4485 },
+    .{ "TextureBlockMatchQCOM", 4486 },
+    .{ "TileShadingQCOM", 4495 },
+    .{ "CooperativeMatrixConversionQCOM", 4496 },
+    .{ "TextureBlockMatch2QCOM", 4498 },
+    .{ "Float16ImageAMD", 5008 },
+    .{ "ImageGatherBiasLodAMD", 5009 },
+    .{ "FragmentMaskAMD", 5010 },
+    .{ "StencilExportEXT", 5013 },
+    .{ "ImageReadWriteLodAMD", 5015 },
+    .{ "Int64ImageEXT", 5016 },
+    .{ "ShaderClockKHR", 5055 },
+    .{ "ShaderEnqueueAMDX", 5067 },
+    .{ "QuadControlKHR", 5087 },
+    .{ "Int4TypeINTEL", 5112 },
+    .{ "Int4CooperativeMatrixINTEL", 5114 },
+    .{ "BFloat16TypeKHR", 5116 },
+    .{ "BFloat16DotProductKHR", 5117 },
+    .{ "BFloat16CooperativeMatrixKHR", 5118 },
+    .{ "SampleMaskOverrideCoverageNV", 5249 },
+    .{ "GeometryShaderPassthroughNV", 5251 },
+    .{ "ShaderViewportIndexLayerEXT", 5254 },
+    .{ "ShaderViewportIndexLayerNV", 5254 },
+    .{ "ShaderViewportMaskNV", 5255 },
+    .{ "ShaderStereoViewNV", 5259 },
+    .{ "PerViewAttributesNV", 5260 },
+    .{ "FragmentFullyCoveredEXT", 5265 },
+    .{ "MeshShadingNV", 5266 },
+    .{ "ImageFootprintNV", 5282 },
+    .{ "MeshShadingEXT", 5283 },
+    .{ "FragmentBarycentricKHR", 5284 },
+    .{ "FragmentBarycentricNV", 5284 },
+    .{ "ComputeDerivativeGroupQuadsKHR", 5288 },
+    .{ "ComputeDerivativeGroupQuadsNV", 5288 },
+    .{ "FragmentDensityEXT", 5291 },
+    .{ "ShadingRateNV", 5291 },
+    .{ "GroupNonUniformPartitionedNV", 5297 },
+    .{ "ShaderNonUniform", 5301 },
+    .{ "ShaderNonUniformEXT", 5301 },
+    .{ "RuntimeDescriptorArray", 5302 },
+    .{ "RuntimeDescriptorArrayEXT", 5302 },
+    .{ "InputAttachmentArrayDynamicIndexing", 5303 },
+    .{ "InputAttachmentArrayDynamicIndexingEXT", 5303 },
+    .{ "UniformTexelBufferArrayDynamicIndexing", 5304 },
+    .{ "UniformTexelBufferArrayDynamicIndexingEXT", 5304 },
+    .{ "StorageTexelBufferArrayDynamicIndexing", 5305 },
+    .{ "StorageTexelBufferArrayDynamicIndexingEXT", 5305 },
+    .{ "UniformBufferArrayNonUniformIndexing", 5306 },
+    .{ "UniformBufferArrayNonUniformIndexingEXT", 5306 },
+    .{ "SampledImageArrayNonUniformIndexing", 5307 },
+    .{ "SampledImageArrayNonUniformIndexingEXT", 5307 },
+    .{ "StorageBufferArrayNonUniformIndexing", 5308 },
+    .{ "StorageBufferArrayNonUniformIndexingEXT", 5308 },
+    .{ "StorageImageArrayNonUniformIndexing", 5309 },
+    .{ "StorageImageArrayNonUniformIndexingEXT", 5309 },
+    .{ "InputAttachmentArrayNonUniformIndexing", 5310 },
+    .{ "InputAttachmentArrayNonUniformIndexingEXT", 5310 },
+    .{ "UniformTexelBufferArrayNonUniformIndexing", 5311 },
+    .{ "UniformTexelBufferArrayNonUniformIndexingEXT", 5311 },
+    .{ "StorageTexelBufferArrayNonUniformIndexing", 5312 },
+    .{ "StorageTexelBufferArrayNonUniformIndexingEXT", 5312 },
+    .{ "RayTracingPositionFetchKHR", 5336 },
+    .{ "RayTracingNV", 5340 },
+    .{ "RayTracingMotionBlurNV", 5341 },
+    .{ "VulkanMemoryModel", 5345 },
+    .{ "VulkanMemoryModelKHR", 5345 },
+    .{ "VulkanMemoryModelDeviceScope", 5346 },
+    .{ "VulkanMemoryModelDeviceScopeKHR", 5346 },
+    .{ "PhysicalStorageBufferAddresses", 5347 },
+    .{ "PhysicalStorageBufferAddressesEXT", 5347 },
+    .{ "ComputeDerivativeGroupLinearKHR", 5350 },
+    .{ "ComputeDerivativeGroupLinearNV", 5350 },
+    .{ "RayTracingProvisionalKHR", 5353 },
+    .{ "CooperativeMatrixNV", 5357 },
+    .{ "FragmentShaderSampleInterlockEXT", 5363 },
+    .{ "FragmentShaderShadingRateInterlockEXT", 5372 },
+    .{ "ShaderSMBuiltinsNV", 5373 },
+    .{ "FragmentShaderPixelInterlockEXT", 5378 },
+    .{ "DemoteToHelperInvocation", 5379 },
+    .{ "DemoteToHelperInvocationEXT", 5379 },
+    .{ "DisplacementMicromapNV", 5380 },
+    .{ "RayTracingOpacityMicromapEXT", 5381 },
+    .{ "ShaderInvocationReorderNV", 5383 },
+    .{ "BindlessTextureNV", 5390 },
+    .{ "RayQueryPositionFetchKHR", 5391 },
+    .{ "CooperativeVectorNV", 5394 },
+    .{ "AtomicFloat16VectorNV", 5404 },
+    .{ "RayTracingDisplacementMicromapNV", 5409 },
+    .{ "RawAccessChainsNV", 5414 },
+    .{ "RayTracingSpheresGeometryNV", 5418 },
+    .{ "RayTracingLinearSweptSpheresGeometryNV", 5419 },
+    .{ "CooperativeMatrixReductionsNV", 5430 },
+    .{ "CooperativeMatrixConversionsNV", 5431 },
+    .{ "CooperativeMatrixPerElementOperationsNV", 5432 },
+    .{ "CooperativeMatrixTensorAddressingNV", 5433 },
+    .{ "CooperativeMatrixBlockLoadsNV", 5434 },
+    .{ "CooperativeVectorTrainingNV", 5435 },
+    .{ "RayTracingClusterAccelerationStructureNV", 5437 },
+    .{ "TensorAddressingNV", 5439 },
+    .{ "SubgroupShuffleINTEL", 5568 },
+    .{ "SubgroupBufferBlockIOINTEL", 5569 },
+    .{ "SubgroupImageBlockIOINTEL", 5570 },
+    .{ "SubgroupImageMediaBlockIOINTEL", 5579 },
+    .{ "RoundToInfinityINTEL", 5582 },
+    .{ "FloatingPointModeINTEL", 5583 },
+    .{ "IntegerFunctions2INTEL", 5584 },
+    .{ "FunctionPointersINTEL", 5603 },
+    .{ "IndirectReferencesINTEL", 5604 },
+    .{ "AsmINTEL", 5606 },
+    .{ "AtomicFloat32MinMaxEXT", 5612 },
+    .{ "AtomicFloat64MinMaxEXT", 5613 },
+    .{ "AtomicFloat16MinMaxEXT", 5616 },
+    .{ "VectorComputeINTEL", 5617 },
+    .{ "VectorAnyINTEL", 5619 },
+    .{ "ExpectAssumeKHR", 5629 },
+    .{ "SubgroupAvcMotionEstimationINTEL", 5696 },
+    .{ "SubgroupAvcMotionEstimationIntraINTEL", 5697 },
+    .{ "SubgroupAvcMotionEstimationChromaINTEL", 5698 },
+    .{ "VariableLengthArrayINTEL", 5817 },
+    .{ "FunctionFloatControlINTEL", 5821 },
+    .{ "FPGAMemoryAttributesINTEL", 5824 },
+    .{ "FPFastMathModeINTEL", 5837 },
+    .{ "ArbitraryPrecisionIntegersINTEL", 5844 },
+    .{ "ArbitraryPrecisionFloatingPointINTEL", 5845 },
+    .{ "UnstructuredLoopControlsINTEL", 5886 },
+    .{ "FPGALoopControlsINTEL", 5888 },
+    .{ "KernelAttributesINTEL", 5892 },
+    .{ "FPGAKernelAttributesINTEL", 5897 },
+    .{ "FPGAMemoryAccessesINTEL", 5898 },
+    .{ "FPGAClusterAttributesINTEL", 5904 },
+    .{ "LoopFuseINTEL", 5906 },
+    .{ "FPGADSPControlINTEL", 5908 },
+    .{ "MemoryAccessAliasingINTEL", 5910 },
+    .{ "FPGAInvocationPipeliningAttributesINTEL", 5916 },
+    .{ "FPGABufferLocationINTEL", 5920 },
+    .{ "ArbitraryPrecisionFixedPointINTEL", 5922 },
+    .{ "USMStorageClassesINTEL", 5935 },
+    .{ "RuntimeAlignedAttributeINTEL", 5939 },
+    .{ "IOPipesINTEL", 5943 },
+    .{ "BlockingPipesINTEL", 5945 },
+    .{ "FPGARegINTEL", 5948 },
+    .{ "DotProductInputAll", 6016 },
+    .{ "DotProductInputAllKHR", 6016 },
+    .{ "DotProductInput4x8Bit", 6017 },
+    .{ "DotProductInput4x8BitKHR", 6017 },
+    .{ "DotProductInput4x8BitPacked", 6018 },
+    .{ "DotProductInput4x8BitPackedKHR", 6018 },
+    .{ "DotProduct", 6019 },
+    .{ "DotProductKHR", 6019 },
+    .{ "RayCullMaskKHR", 6020 },
+    .{ "CooperativeMatrixKHR", 6022 },
+    .{ "ReplicatedCompositesEXT", 6024 },
+    .{ "BitInstructions", 6025 },
+    .{ "GroupNonUniformRotateKHR", 6026 },
+    .{ "FloatControls2", 6029 },
+    .{ "FMAKHR", 6030 },
+    .{ "AtomicFloat32AddEXT", 6033 },
+    .{ "AtomicFloat64AddEXT", 6034 },
+    .{ "LongCompositesINTEL", 6089 },
+    .{ "OptNoneEXT", 6094 },
+    .{ "OptNoneINTEL", 6094 },
+    .{ "AtomicFloat16AddEXT", 6095 },
+    .{ "DebugInfoModuleINTEL", 6114 },
+    .{ "BFloat16ConversionINTEL", 6115 },
+    .{ "SplitBarrierINTEL", 6141 },
+    .{ "ArithmeticFenceEXT", 6144 },
+    .{ "FPGAClusterAttributesV2INTEL", 6150 },
+    .{ "FPGAKernelAttributesv2INTEL", 6161 },
+    .{ "TaskSequenceINTEL", 6162 },
+    .{ "FPMaxErrorINTEL", 6169 },
+    .{ "FPGALatencyControlINTEL", 6171 },
+    .{ "FPGAArgumentInterfacesINTEL", 6174 },
+    .{ "GlobalVariableHostAccessINTEL", 6187 },
+    .{ "GlobalVariableFPGADecorationsINTEL", 6189 },
+    .{ "SubgroupBufferPrefetchINTEL", 6220 },
+    .{ "Subgroup2DBlockIOINTEL", 6228 },
+    .{ "Subgroup2DBlockTransformINTEL", 6229 },
+    .{ "Subgroup2DBlockTransposeINTEL", 6230 },
+    .{ "SubgroupMatrixMultiplyAccumulateINTEL", 6236 },
+    .{ "TernaryBitwiseFunctionINTEL", 6241 },
+    .{ "UntypedVariableLengthArrayINTEL", 6243 },
+    .{ "SpecConditionalINTEL", 6245 },
+    .{ "FunctionVariantsINTEL", 6246 },
+    .{ "GroupUniformArithmeticKHR", 6400 },
+    .{ "TensorFloat32RoundingINTEL", 6425 },
+    .{ "MaskedGatherScatterINTEL", 6427 },
+    .{ "CacheControlsINTEL", 6441 },
+    .{ "RegisterLimitsINTEL", 6460 },
+    .{ "BindlessImagesINTEL", 6528 },
+};
+
+fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !struct {
+    []const []const u8,
+    []const []const u8,
+} {
+    var features: std.StringArrayHashMapUnmanaged(void) = .empty;
+    var props: std.StringArrayHashMapUnmanaged(void) = .empty;
+    for (spirv_capabilities) |tuple| {
+        const cap_name, const val = tuple;
+        _ = val;
+        for (xml_db.spirv.capabilities) |cap| {
+            if (std.mem.eql(u8, cap.name, cap_name)) {
+                for (cap.enable) |enable| {
+                    switch (enable) {
+                        .sfr => |sfr| {
+                            if (std.mem.eql(u8, sfr.@"struct", "VkPhysicalDeviceFeatures"))
+                                continue;
+                            const st = type_db.find_base(sfr.@"struct");
+                            const t = type_db.get_type_follow_alias(st);
+                            const s = type_db.get_struct(t.struct_idx());
+                            try features.put(alloc, s.name, {});
+                        },
+                        .property => |prop| {
+                            const st = type_db.find_base(prop.property);
+                            const t = type_db.get_type_follow_alias(st);
+                            const s = type_db.get_struct(t.struct_idx());
+                            try props.put(alloc, s.name, {});
+                        },
+                        else => {},
+                    }
+                }
+            }
+        }
+    }
+    return .{ features.keys(), props.keys() };
+}
+
+fn write_additional_types(
     alloc: Allocator,
     file: *const std.fs.File,
     type_db: *const TypeDatabase,
+    xml_db: *const XmlDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\pub const AdditionalPDF = struct {{
-        \\
-    , .{});
-    for (type_db.structs.items) |@"struct"| {
-        if (std.mem.startsWith(u8, @"struct".name, "VkPhysicalDevice")) {
-            if (@"struct".enabled_by_extension) |ext| {
+
+    const features, const props = try gather_features_and_props_struct_names(alloc, type_db, xml_db);
+
+    {
+        w.write(
+            \\pub const AdditionalPDF = struct {{
+            \\
+        , .{});
+        for (features) |f| {
+            const sti = type_db.find_base(f);
+            const t = type_db.get_type_follow_alias(sti);
+            const s = type_db.get_struct(t.struct_idx());
+            w.write(
+                \\    {[type]s}: vk.{[type]s} = .{{}},
+                \\
+            , .{ .type = s.name });
+        }
+        w.write(
+            \\
+            \\    pub fn chain_supported(pdf: *AdditionalPDF, extensions: [][*c]const u8) ?*anyopaque {{
+            \\        var pnext: ?*anyopaque = null;
+            \\        for (extensions) |ext| {{
+            \\            const e = std.mem.span(ext);
+            \\
+        , .{});
+        var added: std.StringArrayHashMapUnmanaged(void) = .empty;
+        for (features) |f| {
+            const sti = type_db.find_base(f);
+            const t = type_db.get_type_follow_alias(sti);
+            const s = type_db.get_struct(t.struct_idx());
+
+            var valid_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
+            for (s.enabled_by_extensions) |ext| {
                 if (!std.mem.startsWith(u8, ext, "VK_BASE") and
                     !std.mem.startsWith(u8, ext, "VK_GRAPHICS") and
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
-                    w.write(
-                        \\    {[type]s}: vk.{[type]s} = .{{}},
-                        \\
-                    , .{ .type = @"struct".name });
+                    try added.put(alloc, f, {});
+                    try valid_extensions.append(alloc, ext);
                 }
             }
+
+            if (valid_extensions.items.len != 0) {
+                w.write(
+                    \\            if ((
+                , .{});
+                for (valid_extensions.items, 0..) |ext, i| {
+                    w.write(
+                        \\std.mem.eql(u8, e, "{[ext]s}")
+                    , .{ .ext = ext });
+                    if (i != valid_extensions.items.len - 1) w.write(
+                        \\ or
+                        \\                
+                    , .{});
+                }
+                w.write(
+                    \\) and pdf.{[type]s}.pNext == null)
+                    \\            {{
+                    \\                pdf.{[type]s}.pNext = pnext;
+                    \\                pnext = &pdf.{[type]s};
+                    \\                continue;
+                    \\            }}
+                    \\
+                , .{ .type = s.name });
+            }
         }
+        w.write(
+            \\        }}
+            \\
+        , .{});
+        for (features) |f| {
+            if (added.get(f) == null) {
+                w.write(
+                    \\        pdf.{[type]s}.pNext = pnext;
+                    \\        pnext = &pdf.{[type]s};
+                    \\
+                , .{ .type = f });
+            }
+        }
+        w.write(
+            \\        return pnext;
+            \\    }}
+            \\}};
+            \\
+        , .{});
     }
-    w.write(
-        \\
-        \\    pub fn chain_supported(pdf: *AdditionalPDF, extensions: [][*c]const u8) ?*anyopaque {{
-        \\        var pnext: ?*anyopaque = null;
-        \\        for (extensions) |ext| {{
-        \\            const e = std.mem.span(ext);
-        \\
-    , .{});
-    for (type_db.structs.items) |@"struct"| {
-        if (std.mem.startsWith(u8, @"struct".name, "VkPhysicalDevice")) {
-            if (@"struct".enabled_by_extension) |ext| {
+
+    {
+        w.write(
+            \\pub const AdditionalProperties = struct {{
+            \\
+        , .{});
+        for (props) |p| {
+            w.write(
+                \\    {[type]s}: vk.{[type]s} = .{{}},
+                \\
+            , .{ .type = p });
+        }
+        w.write(
+            \\
+            \\    pub fn chain_supported(pdf: *AdditionalProperties, extensions: [][*c]const u8) ?*anyopaque {{
+            \\        var pnext: ?*anyopaque = null;
+            \\        for (extensions) |ext| {{
+            \\            const e = std.mem.span(ext);
+            \\
+        , .{});
+        var used_e: bool = false;
+        var added: std.StringArrayHashMapUnmanaged(void) = .empty;
+        for (props) |p| {
+            const sti = type_db.find_base(p);
+            const t = type_db.get_type_follow_alias(sti);
+            const s = type_db.get_struct(t.struct_idx());
+
+            var valid_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
+            for (s.enabled_by_extensions) |ext| {
                 if (!std.mem.startsWith(u8, ext, "VK_BASE") and
                     !std.mem.startsWith(u8, ext, "VK_GRAPHICS") and
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
-                    w.write(
-                        \\            if (std.mem.eql(u8, e, "{[ext]s}")) {{
-                        \\                pdf.{[type]s}.pNext = pnext;
-                        \\                pnext = &pdf.{[type]s};
-                        \\                continue;
-                        \\            }}
-                        \\
-                    , .{ .type = @"struct".name, .ext = ext });
+                    try added.put(alloc, p, {});
+                    try valid_extensions.append(alloc, ext);
+                    used_e = true;
                 }
             }
+
+            if (valid_extensions.items.len != 0) {
+                w.write(
+                    \\            if ((
+                , .{});
+                for (valid_extensions.items, 0..) |ext, i| {
+                    w.write(
+                        \\std.mem.eql(u8, e, "{[ext]s}")
+                    , .{ .ext = ext });
+                    if (i != valid_extensions.items.len - 1) w.write(
+                        \\ or
+                        \\                
+                    , .{});
+                }
+                w.write(
+                    \\) and pdf.{[type]s}.pNext == null)
+                    \\            {{
+                    \\                pdf.{[type]s}.pNext = pnext;
+                    \\                pnext = &pdf.{[type]s};
+                    \\                continue;
+                    \\            }}
+                    \\
+                , .{ .type = s.name });
+            }
+            // }
         }
+        if (!used_e) w.write(
+            \\            _ = e;
+            \\
+        , .{});
+        w.write(
+            \\        }}
+            \\
+        , .{});
+        for (props) |p| {
+            if (added.get(p) == null) {
+                w.write(
+                    \\        pdf.{[type]s}.pNext = pnext;
+                    \\        pnext = &pdf.{[type]s};
+                    \\
+                , .{ .type = p });
+            }
+        }
+        w.write(
+            \\        return pnext;
+            \\    }}
+            \\}};
+            \\
+        , .{});
     }
-    w.write(
-        \\        }}
-        \\        return pnext;
-        \\    }}
-        \\}};
-        \\
-    , .{});
 }
 
 fn write_spirv_validation(
     alloc: Allocator,
     file: *const std.fs.File,
+    type_db: *const TypeDatabase,
     xml_db: *const XmlDatabase,
 ) !void {
     var w: Writer = .{ .alloc = alloc, .file = file };
@@ -780,7 +1255,7 @@ fn write_spirv_validation(
             if (sext.version) |v| {
                 w.write(
                     \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
-                    \\        return validation.extensions.{[type]t}.{[name]s} or vk.{[version]s} <= validation.api_version;
+                    \\        return validation.extensions.{[type]t}.{[name]s} or !validation.api_version.less(vk.{[version]s});
                     \\
                 , .{
                     .sname = sext.name,
@@ -809,56 +1284,83 @@ fn write_spirv_validation(
         \\    switch (capability) {{
         \\
     , .{});
-    for (xml_db.spirv.capabilities) |cap| {
-        w.write(
-            \\        spirv.SpvCapability{[name]s} => {{
-            \\
-        , .{ .name = cap.name });
-        if (cap.enable.len == 0) {
-            w.write(
-                \\            return true;
-                \\
-            , .{});
-        } else {
-            for (cap.enable) |enable| {
-                switch (enable) {
-                    .sfr => |sfr| {
-                        if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
-                            w.write(
-                                \\            if (validation.pdf.features.{[feature]s} == vk.VK_TRUE) return true;
-                                \\
-                            , .{ .feature = sfr.feature });
-                        } else {
-                            w.write(
-                                \\            if (validation.additional_pdf.{[str]s}.{[feature]s} == vk.VK_TRUE) return true;
-                                \\
-                            , .{ .str = sfr.@"struct", .feature = sfr.feature });
+    for (spirv_capabilities) |tuple| {
+        const cap_name, const val = tuple;
+        for (xml_db.spirv.capabilities) |cap| {
+            if (std.mem.eql(u8, cap.name, cap_name)) {
+                w.write(
+                    \\        // {s}
+                    \\        {d} => {{
+                    \\
+                , .{ cap_name, val });
+                if (cap.enable.len == 0) {
+                    w.write(
+                        \\            return true;
+                        \\
+                    , .{});
+                } else {
+                    for (cap.enable) |enable| {
+                        switch (enable) {
+                            .sfr => |sfr| {
+                                if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
+                                    w.write(
+                                        \\            if (validation.pdf.features.{[feature]s} == vk.VK_TRUE) return true;
+                                        \\
+                                    , .{ .feature = sfr.feature });
+                                } else {
+                                    const sti = type_db.find_base(sfr.@"struct");
+                                    const t = type_db.get_type_follow_alias(sti);
+                                    const s = type_db.get_struct(t.struct_idx());
+                                    w.write(
+                                        \\            if (validation.additional_pdf.{[str]s}.{[feature]s} == vk.VK_TRUE) return true;
+                                        \\
+                                    , .{ .str = s.name, .feature = sfr.feature });
+                                }
+                            },
+                            .property => |prop| {
+                                const b = type_db.find_base(prop.property);
+                                const t = type_db.get_type_follow_alias(b);
+                                const s = type_db.get_struct(t.struct_idx());
+                                const f = s.single_field_by_name(prop.member).?;
+                                const ft = type_db.get_type_follow_alias(f.type_idx);
+                                if (ft.bitfield_idx() != .none) {
+                                    w.write(
+                                        \\            if (validation.additional_properties.{[str]s}.{[field]s}.{[value]s}) return true;
+                                        \\
+                                    , .{ .str = prop.property, .field = prop.member, .value = prop.value });
+                                } else {
+                                    w.write(
+                                        \\            if (validation.additional_properties.{[str]s}.{[field]s} == vk.{[value]s}) return true;
+                                        \\
+                                    , .{ .str = prop.property, .field = prop.member, .value = prop.value });
+                                }
+                                // TODO: add `requires` checks as well
+                            },
+                            .version => |v| {
+                                w.write(
+                                    \\            if (!validation.api_version.less(vk.{[version]s})) return true;
+                                    \\
+                                , .{ .version = vk_version_to_api_version(v).? });
+                            },
+                            .extension => |e| {
+                                if (xml_db.extension_by_name(e)) |ext| {
+                                    w.write(
+                                        \\            if (validation.extensions.{[type]t}.{[extension]s}) return true;
+                                        \\
+                                    , .{ .type = ext.type, .extension = ext.name });
+                                } else {
+                                    std.log.info("cannot find extension: {s}", .{e});
+                                }
+                            },
                         }
-                    },
-                    .property => |_| {},
-                    .version => |v| {
-                        w.write(
-                            \\            if (vk.{[version]s} <= validation.api_version) return true;
-                            \\
-                        , .{ .version = vk_version_to_api_version(v).? });
-                    },
-                    .extension => |e| {
-                        if (xml_db.extension_by_name(e)) |ext| {
-                            w.write(
-                                \\            if (validation.extensions.{[type]t}.{[extension]s}) return true;
-                                \\
-                            , .{ .type = ext.type, .extension = ext.name });
-                        } else {
-                            std.log.info("cannot find extension: {s}", .{e});
-                        }
-                    },
+                    }
                 }
+                w.write(
+                    \\        }},
+                    \\
+                , .{});
             }
         }
-        w.write(
-            \\        }},
-            \\
-        , .{});
     }
     w.write(
         \\        else => |other| {{
