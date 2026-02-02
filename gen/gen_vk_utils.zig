@@ -86,11 +86,19 @@ fn write_print_struct(
                         switch (base) {
                             .builtin => |builtin| {
                                 if (builtin != .void and builtin != .anyopaque) {
-                                    w.write(
-                                        \\    for (0..offset + 1) |_| log.output("    ", .{{}});
-                                        \\    log.output("    {[field_name]s}: {[field_type]s} = {{d}},\n", .{{value.{[field_name]s}}});
-                                        \\
-                                    , .{ .field_name = sf.name, .field_type = type_str });
+                                    if (std.mem.endsWith(u8, sf.name, "Version")) {
+                                        w.write(
+                                            \\    for (0..offset + 1) |_| log.output("    ", .{{}});
+                                            \\    log.output("    {[field_name]s}: {[field_type]s} = {{any}},\n", .{{value.{[field_name]s}}});
+                                            \\
+                                        , .{ .field_name = sf.name, .field_type = type_str });
+                                    } else {
+                                        w.write(
+                                            \\    for (0..offset + 1) |_| log.output("    ", .{{}});
+                                            \\    log.output("    {[field_name]s}: {[field_type]s} = {{d}},\n", .{{value.{[field_name]s}}});
+                                            \\
+                                        , .{ .field_name = sf.name, .field_type = type_str });
+                                    }
                                 }
                             },
                             .constant_idx => |_| {},
@@ -133,10 +141,8 @@ fn write_print_struct(
                                     const selector_type = type_db.get_type(selector_field.type_idx);
                                     const selector_enum_idx = selector_type.enum_idx();
                                     const selector_enum = type_db.get_enum(selector_enum_idx);
-                                    var used_values: u64 = 0;
                                     for (selector_enum.values) |sv| {
                                         if (union_type.member_by_selection(sv.name)) |m| {
-                                            used_values += 1;
                                             w.write(
                                                 \\        .{[enum_value_name]s} => log.output("    {[field_name]s}: {[field_type]s} = {{any}},\n", .{{value.{[field_name]s}.{[union_member_name]s}}}),
                                                 \\
@@ -148,12 +154,10 @@ fn write_print_struct(
                                             });
                                         }
                                     }
-                                    if (used_values != selector_enum.values.len) {
-                                        w.write(
-                                            \\        else => log.output("    {[field_name]s}: {[field_type]s} = ???,\n", .{{}}),
-                                            \\
-                                        , .{ .field_name = sf.name, .field_type = type_str });
-                                    }
+                                    w.write(
+                                        \\        else => log.output("    {[field_name]s}: {[field_type]s} = ???,\n", .{{}}),
+                                        \\
+                                    , .{ .field_name = sf.name, .field_type = type_str });
                                     w.write(
                                         \\    }}
                                         \\
