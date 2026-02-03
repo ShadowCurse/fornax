@@ -3,7 +3,7 @@
 const std = @import("std");
 const vk = @import("vk.zig");
 const log = @import("log.zig");
-const Allocator = std.mem.Allocator;
+
 pub fn print_VkBaseOutStructure(name: []const u8, value: *const vk.VkBaseOutStructure, offset: u32) void {
     for (0..offset) |_| log.output("    ", .{});
     log.output("{s}: VkBaseOutStructure = .{{\n", .{ name });

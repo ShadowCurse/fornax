@@ -13,7 +13,7 @@ const HEADER =
     \\const std = @import("std");
     \\const vk = @import("vk.zig");
     \\const log = @import("log.zig");
-    \\const Allocator = std.mem.Allocator;
+    \\
     \\
 ;
 

@@ -2,8 +2,8 @@
 
 const std = @import("std");
 const vk = @import("vk.zig");
-const spirv = @import("spirv");
 const log = @import("log.zig");
+const spirv = @import("spirv");
 const Allocator = std.mem.Allocator;
 
 pub const Extensions = struct {
