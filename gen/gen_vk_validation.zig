@@ -5,7 +5,7 @@ const root = @import("root");
 const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 
-const vk = @import("volk");
+// const vk = @import("volk");
 
 const IN_PATH = "thirdparty/vulkan-object/src/vulkan_object/vk.xml";
 const OUT_PATH = "src/vk_validation.zig";
@@ -35,47 +35,46 @@ pub fn main() !void {
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
     defer file.close();
-
-    const header = std.fmt.comptimePrint(HEADER, .{@src().file});
-    _ = try file.write(header);
+    var writer: Writer = try .init(alloc, file);
+    defer writer.flush();
 
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
 
-    try write_extension_type(tmp_alloc, &file, &xml_db);
+    writer.write(HEADER, .{@src().file});
+    try write_extension_type(tmp_alloc, &writer, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_types_validation(tmp_alloc, &file, &type_db, &xml_db);
+    try write_types_validation(tmp_alloc, &writer, &type_db, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_additional_types(tmp_alloc, &file, &type_db, &xml_db);
+    try write_additional_types(tmp_alloc, &writer, &type_db, &xml_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_spirv_validation(tmp_alloc, &file, &type_db, &xml_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    _ = try file.write(VALIDATE_SHADER_CODE);
-    _ = try file.write(VALIDATION_STRUCT);
+    try write_spirv_validation(&writer, &type_db, &xml_db);
+    _ = writer.writer.interface.write(VALIDATE_SHADER_CODE) catch unreachable;
+    _ = writer.writer.interface.write(VALIDATION_STRUCT) catch unreachable;
 }
 
 const Writer = struct {
+    writer: std.fs.File.Writer,
     alloc: Allocator,
-    file: *const std.fs.File,
 
     const Self = @This();
+    pub fn init(alloc: Allocator, file: std.fs.File) !Self {
+        const buffer = try alloc.alloc(u8, 4096 * 12);
+        const writer = file.writer(buffer);
+        const result: Self = .{ .writer = writer, .alloc = alloc };
+        return result;
+    }
+
+    fn flush(self: *Self) void {
+        _ = self.writer.interface.flush() catch unreachable;
+    }
 
     fn write(self: *Self, comptime fmt: []const u8, args: anytype) void {
-        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
+        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch unreachable;
         defer self.alloc.free(line);
-        _ = self.file.write(line) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
+        _ = self.writer.interface.write(line) catch unreachable;
     }
 };
-
-fn eql(s1: []const u8, s2: []const u8) bool {
-    return std.mem.eql(u8, s1, s2);
-}
 
 const VALIDATE_SHADER_CODE =
     \\pub fn validate_shader_code(
@@ -160,13 +159,8 @@ fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
 // ((VK_KHR_get_physical_device_properties2,VK_VERSION_1_1)+VK_KHR_dynamic_rendering),VK_VERSION_1_3
 // into:
 // ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version
-fn write_depends(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    instance_extensions: []*const XmlDatabase.Extension,
-    depends: []const u8,
-) !void {
-    _ = try file.write(" and (");
+fn write_depends(alloc: Allocator, w: *Writer, instance_extensions: []*const XmlDatabase.Extension, depends: []const u8) !void {
+    w.write(" and (", .{});
     var output: std.ArrayListUnmanaged(u8) = .empty;
     var writer = output.writer(alloc);
     var i: usize = 0;
@@ -186,7 +180,7 @@ fn write_depends(
                         const name = depends[i .. i + index];
                         var t: []const u8 = "device";
                         for (instance_extensions) |ext| {
-                            if (eql(name, ext.name)) {
+                            if (std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -197,7 +191,7 @@ fn write_depends(
                         const name = depends[i..];
                         var t: []const u8 = "device";
                         for (instance_extensions) |ext| {
-                            if (eql(name, ext.name)) {
+                            if (std.mem.eql(u8, name, ext.name)) {
                                 t = "instance";
                                 break;
                             }
@@ -209,16 +203,10 @@ fn write_depends(
             },
         }
     }
-    _ = try file.write(output.items);
-    _ = try file.write(")");
+    w.write("{s})", .{output.items});
 }
 
-fn write_extension_type(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    xml_db: *const XmlDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_extension_type(alloc: Allocator, w: *Writer, xml_db: *const XmlDatabase) !void {
     var instance_extensions: std.ArrayListUnmanaged(*const XmlDatabase.Extension) = .empty;
     var device_extensions: std.ArrayListUnmanaged(*const XmlDatabase.Extension) = .empty;
     for (xml_db.extensions.items) |*ext| {
@@ -286,7 +274,7 @@ fn write_extension_type(
             , .{api_version});
             for (instance_extensions.items) |ext| {
                 if (ext.promotedto) |pt| {
-                    if (!eql(pt, promotedto)) continue;
+                    if (!std.mem.eql(u8, pt, promotedto)) continue;
                     w.write(
                         \\            self.instance.{s} = true;
                         \\
@@ -295,7 +283,7 @@ fn write_extension_type(
             }
             for (device_extensions.items) |ext| {
                 if (ext.promotedto) |pt| {
-                    if (!eql(pt, promotedto)) continue;
+                    if (!std.mem.eql(u8, pt, promotedto)) continue;
                     w.write(
                         \\            self.device.{s} = true;
                         \\
@@ -318,12 +306,7 @@ fn write_extension_type(
                 \\        for (ie) |ext| {{
                 \\            if (std.mem.eql(u8, ext, "{s}")
             , .{ext.name});
-            if (ext.depends) |depends| try write_depends(
-                alloc,
-                file,
-                instance_extensions.items,
-                depends,
-            );
+            if (ext.depends) |depends| try write_depends(alloc, w, instance_extensions.items, depends);
             w.write(
                 \\) {{
                 \\                self.instance.{s} = true;
@@ -344,12 +327,7 @@ fn write_extension_type(
                 \\        for (de) |ext| {{
                 \\            if (std.mem.eql(u8, ext, "{s}")
             , .{ext.name});
-            if (ext.depends) |depends| try write_depends(
-                alloc,
-                file,
-                instance_extensions.items,
-                depends,
-            );
+            if (ext.depends) |depends| try write_depends(alloc, w, instance_extensions.items, depends);
             w.write(
                 \\) {{
                 \\                self.device.{s} = true;
@@ -369,14 +347,7 @@ fn write_extension_type(
     , .{});
 }
 
-fn write_types_validation(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    type_db: *const TypeDatabase,
-    xml_db: *const XmlDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-
+fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
     // Structs
     for (type_db.structs.items) |*@"struct"| {
         w.write(
@@ -392,7 +363,7 @@ fn write_types_validation(
         for (@"struct".fields) |field| {
             if (field != .single_field) continue;
             const sf = field.single_field;
-            if (eql(sf.name, "pNext")) {
+            if (std.mem.eql(u8, sf.name, "pNext")) {
                 has_pnext = true;
                 continue;
             }
@@ -427,10 +398,7 @@ fn write_types_validation(
                     , .{ .field_name = sf.name });
                     used_item = true;
 
-                    const base_type_str = try type_db.type_string(
-                        alloc,
-                        pointer.base_type_idx,
-                    );
+                    const base_type_str = try type_db.type_string(alloc, pointer.base_type_idx);
                     const base_type = type_db.get_type_follow_alias(pointer.base_type_idx);
 
                     if (pointer.is_slice) {
@@ -446,43 +414,28 @@ fn write_types_validation(
                                     td: *const TypeDatabase,
                                     ss: *const TypeDatabase.Struct,
                                     l: []const u8,
-                                ) []const u8 {
-                                    const first_comma =
-                                        std.mem.indexOfScalar(u8, l, ',') orelse l.len;
+                                ) ![]const u8 {
+                                    const first_comma = std.mem.indexOfScalar(u8, l, ',') orelse l.len;
                                     var result = l[0..first_comma];
                                     if (result[0] == '(') {
-                                        const space =
-                                            std.mem.indexOfScalar(u8, result[1..], ' ') orelse
-                                            unreachable;
+                                        const space = std.mem.indexOfScalar(u8, result[1..], ' ') orelse unreachable;
                                         const f = result[1..][0..space];
                                         const ff = ss.single_field_by_name(f).?;
                                         const fft = td.get_type_follow_alias(ff.type_idx);
                                         if (fft.is_builtin()) {
-                                            result = std.fmt.allocPrint(
-                                                a,
-                                                "(@as(u64, @intCast(item.{s})){s}",
-                                                .{ f, result[1 + space ..] },
-                                            ) catch unreachable;
+                                            result = try std.fmt.allocPrint(a, "(@as(u64, @intCast(item.{s})){s}", .{ f, result[1 + space ..] });
                                         } else {
-                                            result = std.fmt.allocPrint(
-                                                a,
-                                                "(@as(u32, @bitCast(item.{s})){s}",
-                                                .{ f, result[1 + space ..] },
-                                            ) catch unreachable;
+                                            result = try std.fmt.allocPrint(a, "(@as(u32, @bitCast(item.{s})){s}", .{ f, result[1 + space ..] });
                                         }
                                     } else if (std.mem.eql(u8, result, "2*VK_UUID_SIZE")) {
                                         result = "2 * vk.VK_UUID_SIZE";
                                     } else {
-                                        result = std.fmt.allocPrint(
-                                            a,
-                                            "item.{s}",
-                                            .{result},
-                                        ) catch unreachable;
+                                        result = try std.fmt.allocPrint(a, "item.{s}", .{result});
                                     }
                                     return result;
                                 }
                             };
-                            const l = Inner.format_len(alloc, type_db, @"struct", len);
+                            const l = try Inner.format_len(alloc, type_db, @"struct", len);
                             w.write(
                                 \\        for (v[0..{[len]s}]) |*vv| {{
                                 \\
@@ -518,10 +471,7 @@ fn write_types_validation(
                         !(array_type.enum_idx() != .none) and
                         !(array_type.bitfield_idx() != .none))
                         continue;
-                    const base_type_str = try type_db.type_string(
-                        alloc,
-                        array.base_type_idx,
-                    );
+                    const base_type_str = try type_db.type_string(alloc, array.base_type_idx);
                     w.write(
                         \\        for (item.{s}) |v| {{
                         \\            if (!validate_{s}(extensions, v))
@@ -1053,16 +1003,8 @@ fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const Type
     return .{ features.keys(), props.keys() };
 }
 
-fn write_additional_types(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    type_db: *const TypeDatabase,
-    xml_db: *const XmlDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-
+fn write_additional_types(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
     const features, const props = try gather_features_and_props_struct_names(alloc, type_db, xml_db);
-
     {
         w.write(
             \\pub const AdditionalPDF = struct {{
@@ -1238,13 +1180,7 @@ fn write_additional_types(
     }
 }
 
-fn write_spirv_validation(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    type_db: *const TypeDatabase,
-    xml_db: *const XmlDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_spirv_validation(w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
     w.write(
         \\
         \\pub fn validate_spirv_extension(validation: *const Validation, extension_name: []const u8) bool {{
@@ -1302,7 +1238,7 @@ fn write_spirv_validation(
                     for (cap.enable) |enable| {
                         switch (enable) {
                             .sfr => |sfr| {
-                                if (eql(sfr.@"struct", "VkPhysicalDeviceFeatures")) {
+                                if (std.mem.eql(u8, sfr.@"struct", "VkPhysicalDeviceFeatures")) {
                                     w.write(
                                         \\            if (validation.pdf.features.{[feature]s} == vk.VK_TRUE) return true;
                                         \\

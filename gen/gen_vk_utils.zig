@@ -31,41 +31,41 @@ pub fn main() !void {
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
     defer file.close();
-
-    const header = std.fmt.comptimePrint(HEADER, .{@src().file});
-    _ = try file.write(header);
+    var writer: Writer = try .init(alloc, file);
+    defer writer.flush();
 
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
 
-    try write_print_struct(tmp_alloc, &file, &type_db);
+    writer.write(HEADER, .{@src().file});
+    try write_print_struct(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
 }
 
 const Writer = struct {
+    writer: std.fs.File.Writer,
     alloc: Allocator,
-    file: *const std.fs.File,
 
     const Self = @This();
+    pub fn init(alloc: Allocator, file: std.fs.File) !Self {
+        const buffer = try alloc.alloc(u8, 4096 * 12);
+        const writer = file.writer(buffer);
+        const result: Self = .{ .writer = writer, .alloc = alloc };
+        return result;
+    }
+
+    fn flush(self: *Self) void {
+        _ = self.writer.interface.flush() catch unreachable;
+    }
 
     fn write(self: *Self, comptime fmt: []const u8, args: anytype) void {
-        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
-        _ = self.file.write(line) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
+        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch unreachable;
+        defer self.alloc.free(line);
+        _ = self.writer.interface.write(line) catch unreachable;
     }
 };
 
-fn write_print_struct(
-    alloc: Allocator,
-    file: *const std.fs.File,
-    type_db: *const TypeDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
     for (type_db.structs.items) |*s| {
         w.write(
             \\pub fn print_{[name]s}(name: []const u8, value: *const vk.{[name]s}, offset: u32) void {{

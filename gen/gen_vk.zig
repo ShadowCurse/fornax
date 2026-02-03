@@ -26,50 +26,50 @@ pub fn main() !void {
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
     defer file.close();
-
-    const header = std.fmt.comptimePrint(HEADER, .{@src().file});
-    _ = try file.write(header);
+    var writer: Writer = try .init(alloc, file);
+    defer writer.flush();
 
     var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
-    write_constants(tmp_alloc, file, &xml_db);
+
+    writer.write(HEADER, .{@src().file});
+    write_constants(&writer, &xml_db);
+    write_versions(&writer);
+    write_handles(&writer, &type_db);
+    try write_bitfields(&writer, &type_db);
+    try write_enums(&writer, &type_db);
+    try write_structs(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_versions(tmp_alloc, file);
+    try write_unions(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    write_handles(tmp_alloc, file, &type_db);
+    try write_functions(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_bitfields(tmp_alloc, file, &type_db);
+    try write_aliases(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_enums(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    try write_structs(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    try write_unions(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    try write_functions(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    try write_aliases(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    write_unknown_types(tmp_alloc, file, &type_db);
-    _ = tmp_arena.reset(.retain_capacity);
-    write_extensions(tmp_alloc, file, &xml_db);
+    write_unknown_types(&writer, &type_db);
+    write_extensions(&writer, &xml_db);
 }
 
 const Writer = struct {
+    writer: std.fs.File.Writer,
     alloc: Allocator,
-    file: std.fs.File,
 
     const Self = @This();
+    pub fn init(alloc: Allocator, file: std.fs.File) !Self {
+        const buffer = try alloc.alloc(u8, 4096 * 12);
+        const writer = file.writer(buffer);
+        const result: Self = .{ .writer = writer, .alloc = alloc };
+        return result;
+    }
+
+    fn flush(self: *Self) void {
+        _ = self.writer.interface.flush() catch unreachable;
+    }
 
     fn write(self: *Self, comptime fmt: []const u8, args: anytype) void {
-        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
-        _ = self.file.write(line) catch |e| {
-            std.log.err("Err: {t}", .{e});
-            unreachable;
-        };
+        const line = std.fmt.allocPrint(self.alloc, fmt, args) catch unreachable;
+        defer self.alloc.free(line);
+        _ = self.writer.interface.write(line) catch unreachable;
     }
 
     fn write_comment(self: *Self, comment: []const u8, line_start: []const u8) void {
@@ -78,24 +78,14 @@ const Writer = struct {
             const trimmed_line = std.mem.trimStart(u8, line, " ");
             if (trimmed_line.len == 0) break;
 
-            _ = self.file.write(line_start) catch |e| {
-                std.log.err("Err: {t}", .{e});
-                unreachable;
-            };
-            _ = self.file.write(trimmed_line) catch |e| {
-                std.log.err("Err: {t}", .{e});
-                unreachable;
-            };
-            _ = self.file.write("\n") catch |e| {
-                std.log.err("Err: {t}", .{e});
-                unreachable;
-            };
+            _ = self.writer.interface.write(line_start) catch unreachable;
+            _ = self.writer.interface.write(trimmed_line) catch unreachable;
+            _ = self.writer.interface.write("\n") catch unreachable;
         }
     }
 };
 
-fn write_constants(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDatabase) void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_constants(w: *Writer, xml_db: *const XmlDatabase) void {
     w.write(
         \\// Constants
         \\
@@ -110,8 +100,7 @@ fn write_constants(alloc: Allocator, file: std.fs.File, xml_db: *const XmlDataba
     }
 }
 
-fn write_versions(alloc: Allocator, file: std.fs.File) void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_versions(w: *Writer) void {
     w.write(
         \\// Versions
         \\pub const ApiVersion = packed struct(u32) {{
@@ -161,8 +150,7 @@ fn write_versions(alloc: Allocator, file: std.fs.File) void {
     , .{});
 }
 
-fn write_handles(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_handles(w: *Writer, type_db: *const TypeDatabase) void {
     w.write(
         \\
         \\// Handles
@@ -185,8 +173,7 @@ fn write_handles(alloc: Allocator, file: std.fs.File, type_db: *const TypeDataba
     }
 }
 
-fn write_bitfields(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_bitfields(w: *Writer, type_db: *const TypeDatabase) !void {
     w.write(
         \\
         \\// Empty bitmasks
@@ -272,12 +259,7 @@ fn write_bitfields(alloc: Allocator, file: std.fs.File, type_db: *const TypeData
     }
 }
 
-fn write_enums(
-    alloc: Allocator,
-    file: std.fs.File,
-    type_db: *const TypeDatabase,
-) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_enums(w: *Writer, type_db: *const TypeDatabase) !void {
     w.write(
         \\
         \\// Enums
@@ -318,8 +300,7 @@ fn write_enums(
     }
 }
 
-fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_structs(alloc: Allocator, w: *Writer, type_db: *TypeDatabase) !void {
     w.write(
         \\
         \\// Structs
@@ -406,7 +387,7 @@ fn write_structs(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !v
                     try write_single_struct_field(
                         alloc,
                         type_db,
-                        &w,
+                        w,
                         @"struct".name,
                         &field,
                         field.type_idx,
@@ -601,8 +582,7 @@ fn write_single_struct_field(
     }
 }
 
-fn write_unions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_unions(alloc: Allocator, w: *Writer, type_db: *TypeDatabase) !void {
     w.write(
         \\
         \\// Unions
@@ -649,8 +629,7 @@ fn write_unions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !vo
     }
 }
 
-fn write_functions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_functions(alloc: Allocator, w: *Writer, type_db: *TypeDatabase) !void {
     w.write(
         \\
         \\// Commands
@@ -733,8 +712,46 @@ fn write_functions(alloc: Allocator, file: std.fs.File, type_db: *TypeDatabase) 
     }
 }
 
-fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase) void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
+fn write_aliases(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
+    w.write(
+        \\
+        \\// Aliases
+        \\
+    , .{});
+    for (type_db.types.items) |t| {
+        if (t == .alias) {
+            const alias = t.alias;
+            const name = try type_db.type_string(alloc, alias.type_idx);
+            w.write(
+                \\pub const {s} = {s};
+                \\
+            , .{ alias.name, name });
+        }
+    }
+}
+
+fn write_unknown_types(w: *Writer, type_db: *const TypeDatabase) void {
+    w.write(
+        \\
+        \\// Unknown types
+        \\
+    , .{});
+    for (type_db.types.items) |t| {
+        switch (t) {
+            .placeholder => |name| {
+                w.write(
+                    \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else blk: {{
+                    \\    break :blk struct {{}};
+                    \\}};
+                    \\
+                , .{ .name = name });
+            },
+            else => {},
+        }
+    }
+}
+
+fn write_extensions(w: *Writer, db: *const XmlDatabase) void {
     w.write(
         \\
         \\// Extensions
@@ -891,55 +908,9 @@ fn write_extensions(alloc: Allocator, file: std.fs.File, db: *const XmlDatabase)
     }
 }
 
-fn write_aliases(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) !void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\
-        \\// Aliases
-        \\
-    , .{});
-    for (type_db.types.items) |t| {
-        if (t == .alias) {
-            const alias = t.alias;
-            const name = try type_db.type_string(alloc, alias.type_idx);
-            w.write(
-                \\pub const {s} = {s};
-                \\
-            , .{ alias.name, name });
-        }
-    }
-}
-
-fn write_unknown_types(alloc: Allocator, file: std.fs.File, type_db: *const TypeDatabase) void {
-    var w: Writer = .{ .alloc = alloc, .file = file };
-    w.write(
-        \\
-        \\// Unknown types
-        \\
-    , .{});
-    for (type_db.types.items) |t| {
-        switch (t) {
-            .placeholder => |name| {
-                w.write(
-                    \\pub const {[name]s} = if (@hasDecl(@import("root"), "{[name]s}")) @import("root").{[name]s} else blk: {{
-                    \\    break :blk struct {{}};
-                    \\}};
-                    \\
-                , .{ .name = name });
-            },
-            else => {},
-        }
-    }
-}
-
 pub fn enum_offset(extension_number: i32, offset: i32) i32 {
     const BASE = 1000000000;
     const RANGE = 1000;
     const result = BASE + (extension_number - 1) * RANGE + offset;
     return result;
-}
-
-comptime {
-    _ = @import("vk_database.zig");
-    _ = @import("vk_database.zig").XmlDatabase;
 }
