@@ -9,10 +9,9 @@ pub fn build(b: *std.Build) !void {
     const args: Args = .init(b);
 
     const miniz_mod = create_miniz_module(b, target, optimize);
-    const volk_mod = create_volk_module(b, target, optimize);
     const spirv_mod = create_spirv_module(b, target, optimize);
 
-    create_replay_exe(b, target, optimize, &args, miniz_mod, volk_mod, spirv_mod);
+    create_replay_exe(b, target, optimize, &args, miniz_mod, spirv_mod);
     create_exe(
         b,
         target,
@@ -22,7 +21,6 @@ pub fn build(b: *std.Build) !void {
         "src/print_entries.zig",
         &.{
             .{ .name = "miniz", .module = miniz_mod },
-            .{ .name = "volk", .module = volk_mod },
         },
     );
     create_exe(
@@ -32,7 +30,7 @@ pub fn build(b: *std.Build) !void {
         &args,
         "gen_vk",
         "gen/gen_vk.zig",
-        &.{.{ .name = "volk", .module = volk_mod }},
+        &.{},
     );
     create_exe(
         b,
@@ -87,7 +85,6 @@ fn create_replay_exe(
     optimize: std.builtin.OptimizeMode,
     args: *const Args,
     miniz_mod: *std.Build.Module,
-    volk_mod: *std.Build.Module,
     spirv_mod: *std.Build.Module,
 ) void {
     const build_options = b.addOptions();
@@ -100,7 +97,6 @@ fn create_replay_exe(
         .optimize = optimize,
         .imports = &.{
             .{ .name = "miniz", .module = miniz_mod },
-            .{ .name = "volk", .module = volk_mod },
             .{ .name = "spirv", .module = spirv_mod },
         },
     });
@@ -226,33 +222,6 @@ pub fn create_miniz_module(
         },
     });
     return miniz_mod;
-}
-
-pub fn create_volk_module(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Module {
-    const volk_c = b.addWriteFiles().add("translate_volk.h",
-        \\#include "volk.h"
-    );
-    const volk_translate = b.addTranslateC(.{
-        .target = target,
-        .optimize = optimize,
-        .root_source_file = volk_c,
-    });
-    volk_translate.addIncludePath(b.path("thirdparty/volk"));
-    volk_translate.addIncludePath(b.path("thirdparty/Vulkan-Headers/include"));
-    const volk_mod = b.createModule(.{
-        .root_source_file = volk_translate.getOutput(),
-        .target = target,
-        .optimize = optimize,
-        .link_libc = true,
-    });
-    volk_mod.addIncludePath(b.path("thirdparty/volk"));
-    volk_mod.addIncludePath(b.path("thirdparty/Vulkan-Headers/include"));
-    volk_mod.addCSourceFile(.{ .file = b.path("thirdparty/volk/volk.c") });
-    return volk_mod;
 }
 
 pub fn create_spirv_module(

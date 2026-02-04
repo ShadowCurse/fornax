@@ -3,7 +3,6 @@
 
 const std = @import("std");
 const root = @import("root.zig");
-// const vk = @import("volk");
 const vk = @import("vk.zig");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");

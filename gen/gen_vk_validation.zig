@@ -5,8 +5,6 @@ const root = @import("root");
 const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 
-// const vk = @import("volk");
-
 const IN_PATH = "thirdparty/vulkan-object/src/vulkan_object/vk.xml";
 const OUT_PATH = "src/vk_validation.zig";
 const HEADER =
