@@ -9,9 +9,8 @@ pub fn build(b: *std.Build) !void {
     const args: Args = .init(b);
 
     const miniz_mod = create_miniz_module(b, target, optimize);
-    const spirv_mod = create_spirv_module(b, target, optimize);
 
-    create_replay_exe(b, target, optimize, &args, miniz_mod, spirv_mod);
+    create_replay_exe(b, target, optimize, &args, miniz_mod);
     create_exe(
         b,
         target,
@@ -85,7 +84,6 @@ fn create_replay_exe(
     optimize: std.builtin.OptimizeMode,
     args: *const Args,
     miniz_mod: *std.Build.Module,
-    spirv_mod: *std.Build.Module,
 ) void {
     const build_options = b.addOptions();
     build_options.addOption(bool, "profile", args.profile);
@@ -97,7 +95,6 @@ fn create_replay_exe(
         .optimize = optimize,
         .imports = &.{
             .{ .name = "miniz", .module = miniz_mod },
-            .{ .name = "spirv", .module = spirv_mod },
         },
     });
     root_mudule.addOptions("build_options", build_options);
@@ -222,26 +219,4 @@ pub fn create_miniz_module(
         },
     });
     return miniz_mod;
-}
-
-pub fn create_spirv_module(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Module {
-    const spirv_c = b.addWriteFiles().add("translate_spirv.h",
-        \\#include "spirv.h"
-    );
-    const spirv_translate = b.addTranslateC(.{
-        .target = target,
-        .optimize = optimize,
-        .root_source_file = spirv_c,
-    });
-    spirv_translate.addIncludePath(b.path("thirdparty/SPIRV-Headers/include/spirv/unified1"));
-    const spirv_mod = b.createModule(.{
-        .root_source_file = spirv_translate.getOutput(),
-        .target = target,
-        .optimize = optimize,
-    });
-    return spirv_mod;
 }

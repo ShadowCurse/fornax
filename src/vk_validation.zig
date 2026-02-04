@@ -3,7 +3,6 @@
 const std = @import("std");
 const vk = @import("vk.zig");
 const log = @import("log.zig");
-const spirv = @import("spirv");
 const Allocator = std.mem.Allocator;
 
 pub const Extensions = struct {
@@ -39466,7 +39465,7 @@ pub fn validate_spirv_extension(validation: *const Validation, extension_name: [
     return false;
 }
 
-pub fn validate_spirv_capability(validation: *const Validation, capability: spirv.SpvCapability) bool {
+pub fn validate_spirv_capability(validation: *const Validation, capability: u32) bool {
     switch (capability) {
         // Matrix
         0 => {
@@ -40235,6 +40234,13 @@ pub fn validate_spirv_capability(validation: *const Validation, capability: spir
     }
     return false;
 }
+// From SPIRV-Headers/include/spirv/unified1/spirv.h
+const SPIRV_MAX_VERSION = 0x10600;
+const SPIRV_MAGIC_NUMBER = 0x07230203;
+const SPIRV_OP_EXTENSION = 10;
+const SPIRV_OP_CAPABILITY = 17;
+const SPIRV_OP_FUNCTION = 54;
+
 pub fn validate_shader_code(
     validation: *const Validation,
     create_info: *const vk.VkShaderModuleCreateInfo,
@@ -40245,10 +40251,10 @@ pub fn validate_shader_code(
 
     // Impossibly small shader
     if (code.len < 5) return false;
-    if (code[0] != spirv.SpvMagicNumber) return false;
+    if (code[0] != SPIRV_MAGIC_NUMBER) return false;
 
     const version = code[1];
-    if (spirv.SPV_VERSION < version) return false;
+    if (SPIRV_MAX_VERSION < version) return false;
     if (version == 0x10600 and validation.api_version.less(vk.VK_API_VERSION_1_3)) return false;
     if (version == 0x10500 and validation.api_version.less(vk.VK_API_VERSION_1_2)) return false;
     if (0x10400 <= version and
@@ -40259,13 +40265,13 @@ pub fn validate_shader_code(
 
     var offset: usize = 5;
     while (offset < code.len) {
-        const op: spirv.SpvCapability = code[offset] & 0xffff;
+        const op: u32 = code[offset] & 0xffff;
         const count = (code[offset] >> 16) & 0xffff;
 
         if (count == 0) return false;
         if (code.len < offset + count) return false;
 
-        if (op == spirv.SpvOpCapability) {
+        if (op == SPIRV_OP_CAPABILITY) {
             if (count != 2) return false;
 
             const capability = code[offset + 1];
@@ -40273,7 +40279,7 @@ pub fn validate_shader_code(
                 log.debug(@src(), "Invalid SPIR-V capability: {d}", .{capability});
                 return false;
             }
-        } else if (op == spirv.SpvOpExtension) {
+        } else if (op == SPIRV_OP_EXTENSION ) {
             if (count < 2) return false;
             const byte_slice: [*c]const u8 = @ptrCast(code[offset + 1 ..].ptr);
             const name = std.mem.span(byte_slice);
@@ -40281,7 +40287,7 @@ pub fn validate_shader_code(
                 log.debug(@src(), "Invalid SPIR-V extension: {s}", .{name});
                 return false;
             }
-        } else if (op == spirv.SpvOpFunction) {
+        } else if (op == SPIRV_OP_FUNCTION) {
             // Code starts here, stop validation
             break;
         }
