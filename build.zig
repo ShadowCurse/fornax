@@ -10,45 +10,13 @@ pub fn build(b: *std.Build) !void {
 
     const miniz_mod = create_miniz_module(b, target, optimize);
 
-    create_replay_exe(b, target, optimize, &args, miniz_mod);
-    create_exe(
-        b,
-        target,
-        optimize,
-        &args,
-        "print_entries",
-        "src/print_entries.zig",
-        &.{
-            .{ .name = "miniz", .module = miniz_mod },
-        },
-    );
-    create_exe(
-        b,
-        target,
-        optimize,
-        &args,
-        "gen_vk",
-        "gen/gen_vk.zig",
-        &.{},
-    );
-    create_exe(
-        b,
-        target,
-        optimize,
-        &args,
-        "gen_vk_utils",
-        "gen/gen_vk_utils.zig",
-        &.{},
-    );
-    create_exe(
-        b,
-        target,
-        optimize,
-        &args,
-        "gen_vk_validation",
-        "gen/gen_vk_validation.zig",
-        &.{},
-    );
+    const imports: []const std.Build.Module.Import = &.{.{ .name = "miniz", .module = miniz_mod }};
+    create_exe(b, target, optimize, &args, "replay", "src/replay.zig", imports);
+    create_exe(b, target, optimize, &args, "print_entries", "src/print_entries.zig", imports);
+
+    create_exe(b, target, optimize, &args, "gen_vk", "gen/gen_vk.zig", &.{});
+    create_exe(b, target, optimize, &args, "gen_vk_utils", "gen/gen_vk_utils.zig", &.{});
+    create_exe(b, target, optimize, &args, "gen_vk_validation", "gen/gen_vk_validation.zig", &.{});
 }
 
 const Args = struct {
@@ -78,60 +46,6 @@ const Args = struct {
     }
 };
 
-fn create_replay_exe(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-    args: *const Args,
-    miniz_mod: *std.Build.Module,
-) void {
-    const build_options = b.addOptions();
-    build_options.addOption(bool, "profile", args.profile);
-    build_options.addOption(bool, "no_driver", args.no_driver);
-
-    const root_mudule = b.createModule(.{
-        .root_source_file = b.path("src/replay.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "miniz", .module = miniz_mod },
-        },
-    });
-    root_mudule.addOptions("build_options", build_options);
-
-    const exe = b.addExecutable(.{
-        .name = "replay",
-        .root_module = root_mudule,
-        .use_llvm = args.use_llvm,
-    });
-    const install_step = b.addInstallArtifact(exe, .{});
-
-    const unit_tests = b.addTest(.{
-        .name = "replay_unit_test",
-        .root_module = root_mudule,
-        .filters = b.args orelse &.{},
-    });
-    const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
-
-    const build_step = b.step("replay_build", "Build the `replay` binary");
-    build_step.dependOn(&install_step.step);
-
-    const run_cmd = b.addRunArtifact(exe);
-    if (args.disable_shader_cache)
-        run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DISABLE", "1");
-    if (args.shader_cache_dir) |scd|
-        run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DIR", scd);
-    if (b.args) |a| run_cmd.addArgs(a);
-    run_cmd.step.dependOn(&install_step.step);
-    const run_step = b.step("replay_run", "Run the `replay` binary");
-    run_step.dependOn(&run_cmd.step);
-
-    const unit_tests_run_cmd = b.addRunArtifact(unit_tests);
-    unit_tests_run_cmd.step.dependOn(&unit_tests_install_step.step);
-    const test_step = b.step("replay_test", "Run `repaly` unit tests");
-    test_step.dependOn(&unit_tests_run_cmd.step);
-}
-
 fn create_exe(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
@@ -141,12 +55,17 @@ fn create_exe(
     source_file: []const u8,
     imports: []const std.Build.Module.Import,
 ) void {
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "profile", args.profile);
+    build_options.addOption(bool, "no_driver", args.no_driver);
+
     const root_mudule = b.createModule(.{
         .root_source_file = b.path(source_file),
         .target = target,
         .optimize = optimize,
         .imports = imports,
     });
+    root_mudule.addOptions("build_options", build_options);
 
     const exe = b.addExecutable(.{
         .name = name,
@@ -166,6 +85,8 @@ fn create_exe(
     build_step.dependOn(&install_step.step);
 
     const run_cmd = b.addRunArtifact(exe);
+    if (args.disable_shader_cache) run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DISABLE", "1");
+    if (args.shader_cache_dir) |scd| run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DIR", scd);
     if (b.args) |a| run_cmd.addArgs(a);
     run_cmd.step.dependOn(&install_step.step);
     const run_step = b.step(name ++ "_run", "Run the `" ++ name ++ "` binary");

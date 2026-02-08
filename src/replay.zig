@@ -93,7 +93,7 @@ pub fn main() !void {
 
     const args = try args_parser.parse(Args, arena_alloc);
 
-    if (std.posix.getenv("GLACIER_LOG_PATH")) |log_path| {
+    if (std.posix.getenv("FORNAX_LOG_PATH")) |log_path| {
         const log_file = try std.fs.createFileAbsolute(log_path, .{});
         log.output_fd = log_file.handle;
         args_parser.print_args(args);

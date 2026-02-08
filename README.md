@@ -1,4 +1,4 @@
-# Glacier
+# Fornax
 
 # IN DEVELOPMENT
 
@@ -7,16 +7,16 @@ Some parts are based on the original [Fossilize](https://github.com/ValveSoftwar
 ## Build
 
 ```bash
-$ zig build
+$ zig build replay_build
 ```
 or in `ReleaseFast` mode
 ```bash
-$ zig build -Doptimize=ReleaseFast -Duse_llvm
+$ zig build -Doptimize=ReleaseFast -Duse_llvm replay_build
 ```
 
 ## Run
 
 ```bash
-$ ./zig-out/bin/glacier ./database.foz
+$ ./zig-out/bin/replay ./database.foz
 ```
 
