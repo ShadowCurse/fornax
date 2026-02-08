@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 const log = @import("log.zig");
 const control_block = @import("control_block.zig");

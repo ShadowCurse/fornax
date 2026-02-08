@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Egor Lazarchuk
+// Copyright (c) 2026 Egor Lazarchuk
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");

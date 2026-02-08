@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Egor Lazarchuk
+// Copyright (c) 2026 Egor Lazarchuk
 //
 // Based in part on Fossilize project which is:
-// Copyright (c) 2025 Hans-Kristian Arntzen
+// Copyright (c) 2026 Hans-Kristian Arntzen
 //
 // SPDX-License-Identifier: MIT
 

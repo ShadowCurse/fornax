@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Egor Lazarchuk
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 
 total_threads: u32 = 0,
