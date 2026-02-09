@@ -764,50 +764,48 @@ pub fn filter_features(
 
     // Only enable robustness if requested since it affects compilation on most implementations.
     if (wanted_pdf) |wf| {
-        current_pdf.features.robustBufferAccess =
-            current_pdf.features.robustBufferAccess & wf.features.robustBufferAccess;
-
+        current_pdf.features.robustBufferAccess = current_pdf.features.robustBufferAccess & wf.features.robustBufferAccess;
         const PATCH_TYPES: []const struct { type, []const u8 } = &.{
-            // .{
-            //     vk.VkPhysicalDeviceRobustness2FeaturesKHR,
-            //     "VkPhysicalDeviceRobustness2FeaturesKHR",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceImageRobustnessFeatures,
-            //     "VkPhysicalDeviceImageRobustnessFeatures",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
-            //     "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
-            // },
+            .{
+                vk.VkPhysicalDeviceRobustness2FeaturesKHR,
+                "VkPhysicalDeviceRobustness2FeaturesKHR",
+            },
+            .{
+                vk.VkPhysicalDeviceImageRobustnessFeatures,
+                "VkPhysicalDeviceImageRobustnessFeatures",
+            },
+            .{
+                vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV,
+                "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
+            },
             .{
                 vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR,
                 "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
             },
-            // .{
-            //     vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
-            //     "VkPhysicalDeviceMeshShaderFeaturesEXT",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceMeshShaderFeaturesNV,
-            //     "VkPhysicalDeviceMeshShaderFeaturesNV",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
-            //     "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceShaderObjectFeaturesEXT,
-            //     "VkPhysicalDeviceShaderObjectFeaturesEXT",
-            // },
-            // .{
-            //     vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
-            //     "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
-            // },
-            // .{
-            //     vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
-            //     "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
-            // },
+            .{
+                vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
+                "VkPhysicalDeviceMeshShaderFeaturesEXT",
+            },
+            .{
+                vk.VkPhysicalDeviceMeshShaderFeaturesNV,
+                "VkPhysicalDeviceMeshShaderFeaturesNV",
+            },
+            .{
+                vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT,
+                "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
+            },
+            .{
+                vk.VkPhysicalDeviceShaderObjectFeaturesEXT,
+                "VkPhysicalDeviceShaderObjectFeaturesEXT",
+            },
+            .{
+                vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT,
+                "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
+            },
+            .{
+                vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT,
+                "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
+            },
         };
         inline for (PATCH_TYPES) |pt| {
             const T, const field = pt;
