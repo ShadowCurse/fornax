@@ -974,11 +974,30 @@ const spirv_capabilities = [_]struct { []const u8, u32 }{
     .{ "BindlessImagesINTEL", 6528 },
 };
 
+const additional_pdfs = [_][]const u8{
+    "VkPhysicalDeviceRobustness2FeaturesKHR",
+    "VkPhysicalDeviceImageRobustnessFeatures",
+    "VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV",
+    // "VkPhysicalDeviceFragmentShadingRateFeaturesKHR",
+    "VkPhysicalDeviceMeshShaderFeaturesEXT",
+    "VkPhysicalDeviceMeshShaderFeaturesNV",
+    "VkPhysicalDeviceDescriptorBufferFeaturesEXT",
+    "VkPhysicalDeviceShaderObjectFeaturesEXT",
+    "VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT",
+    "VkPhysicalDeviceImage2DViewOf3DFeaturesEXT",
+};
+
 fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !struct {
     []const []const u8,
     []const []const u8,
 } {
     var features: std.StringArrayHashMapUnmanaged(void) = .empty;
+    for (additional_pdfs) |pdf| {
+        const st = type_db.find_base(pdf);
+        const t = type_db.get_type_follow_alias(st);
+        const s = type_db.get_struct(t.struct_idx());
+        try features.put(alloc, s.name, {});
+    }
     var props: std.StringArrayHashMapUnmanaged(void) = .empty;
     for (spirv_capabilities) |tuple| {
         const cap_name, const val = tuple;
