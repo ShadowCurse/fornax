@@ -949,17 +949,9 @@ pub fn create_vk_device(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    const queue_priority: f32 = 1.0;
-    const queue_create_info = vk.VkDeviceQueueCreateInfo{
-        .queueFamilyIndex = physical_device.graphics_queue_family,
-        .queueCount = 1,
-        .pQueuePriorities = @ptrCast(&queue_priority),
-    };
-
     // All extensions will be activated for the device. If it
     // supports validation caching, enable it's extension as well.
-    const extensions =
-        try get_physical_device_exensions(arena_alloc, physical_device.device, null);
+    const extensions = try get_physical_device_exensions(arena_alloc, physical_device.device, null);
     var all_extensions_len = extensions.len;
     if (physical_device.has_validation_cache)
         all_extensions_len += 1;
@@ -1000,8 +992,7 @@ pub fn create_vk_device(
     var wpdf2: ?*const vk.VkPhysicalDeviceFeatures2 = wanted_physical_device_features2;
     var updf2: vk.VkPhysicalDeviceFeatures2 = undefined;
     var spare_robustness2: vk.VkPhysicalDeviceRobustness2FeaturesEXT = undefined;
-    var replacement_fragment_shading_rate: vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR =
-        undefined;
+    var replacement_fragment_shading_rate: vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR = undefined;
     if (wanted_physical_device_features2) |df2| {
         const engine_name: []const u8 = std.mem.span(application_create_info.pEngineName.?);
 
@@ -1009,25 +1000,19 @@ pub fn create_vk_device(
         wpdf2 = &updf2;
 
         if ((std.mem.eql(u8, engine_name, "DXVK") or std.mem.eql(u8, engine_name, "vkd3d")) and
-            find_pnext(
-                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
-                @ptrCast(df2.pNext),
-            ) == null)
+            find_pnext(.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR, @ptrCast(df2.pNext)) == null)
         {
             spare_robustness2 = .{
                 .pNext = updf2.pNext,
                 .robustBufferAccess2 = df2.features.robustBufferAccess,
                 .robustImageAccess2 = df2.features.robustBufferAccess,
-                .nullDescriptor = vk.VK_FALSE,
+                .nullDescriptor = vk.VK_TRUE,
             };
             updf2.pNext = &spare_robustness2;
         }
 
         if (std.mem.eql(u8, engine_name, "vkd3d") and
-            find_pnext(
-                .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
-                @ptrCast(df2.pNext),
-            ) == null)
+            find_pnext(.VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR, @ptrCast(df2.pNext)) == null)
         {
             replacement_fragment_shading_rate = .{
                 .pNext = updf2.pNext,
@@ -1040,17 +1025,19 @@ pub fn create_vk_device(
     }
 
     filter_features(pdf, additional_pdf, wpdf2);
-    all_extension_names = filter_active_extensions(
-        pdf,
-        all_extension_names,
-    );
+    all_extension_names = filter_active_extensions(pdf, all_extension_names);
+
+    const queue_priority: f32 = 1.0;
+    const queue_create_info = vk.VkDeviceQueueCreateInfo{
+        .queueFamilyIndex = physical_device.graphics_queue_family,
+        .queueCount = 1,
+        .pQueuePriorities = @ptrCast(&queue_priority),
+    };
 
     const enabled_layers = if (enable_validation) &VK_VALIDATION_LAYERS_NAMES else &.{};
 
-    for (all_extension_names) |name|
-        log.debug(@src(), "(Device) Enabled extension: {s}", .{name});
-    for (enabled_layers) |name|
-        log.debug(@src(), "(Device) Enabled layer: {s}", .{name});
+    for (all_extension_names) |name| log.debug(@src(), "(Device) Enabled extension: {s}", .{name});
+    for (enabled_layers) |name| log.debug(@src(), "(Device) Enabled layer: {s}", .{name});
 
     const create_info = vk.VkDeviceCreateInfo{
         .pQueueCreateInfos = @ptrCast(&queue_create_info),
@@ -1059,20 +1046,12 @@ pub fn create_vk_device(
         .enabledLayerCount = @as(u32, @intCast(enabled_layers.len)),
         .ppEnabledExtensionNames = @ptrCast(all_extension_names.ptr),
         .enabledExtensionCount = @as(u32, @intCast(all_extension_names.len)),
-        .pEnabledFeatures = if (instance.has_properties_2)
-            null
-        else
-            &pdf.features,
+        .pEnabledFeatures = if (instance.has_properties_2) null else &pdf.features,
         .pNext = if (instance.has_properties_2) pdf else null,
     };
 
     var vk_device: vk.VkDevice = undefined;
-    try check_result(vkCreateDevice(
-        physical_device.device,
-        &create_info,
-        null,
-        &vk_device,
-    ));
+    try check_result(vkCreateDevice(physical_device.device, &create_info, null, &vk_device));
     return .{
         .device = vk_device,
         .all_extension_names = all_extension_names,
