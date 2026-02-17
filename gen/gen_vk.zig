@@ -209,25 +209,22 @@ fn write_bitfields(w: *Writer, type_db: *const TypeDatabase) !void {
                 \\    // Extension: {s}
                 \\
             , .{e});
-
             // Some extensions add same bits, so check consecutive bits
-            if (i < bitfield.bits.len - 1) {
-                if (bit.bit == bitfield.bits[i + 1].bit) {
-                    continue;
-                }
+            if (i < bitfield.bits.len - 1 and bit.bit == bitfield.bits[i + 1].bit) {
+                //
+            } else {
+                if (bit.comment) |c| w.write(
+                    \\    // Comment: {s}
+                    \\
+                , .{c});
+
+                // TODO: lowercase names without prefix
+                w.write(
+                    \\    // bit: {d}
+                    \\    {s}: bool = false,
+                    \\
+                , .{ bit.bit, bit.name });
             }
-
-            if (bit.comment) |c| w.write(
-                \\    // Comment: {s}
-                \\
-            , .{c});
-
-            // TODO: lowercase names without prefix
-            w.write(
-                \\    // bit: {d}
-                \\    {s}: bool = false,
-                \\
-            , .{ bit.bit, bit.name });
         }
         if (last_bitpos) |lb| {
             const last_element_width = bitfield.backing_integer_width - lb - 1;
@@ -280,19 +277,19 @@ fn write_enums(w: *Writer, type_db: *const TypeDatabase) !void {
             , .{e});
 
             // Some extensions add same enum values, so check consecutive bits
-            if (i < @"enum".values.len - 1) {
-                if (value.value == @"enum".values[i + 1].value) continue;
+            if (i < @"enum".values.len - 1 and value.value == @"enum".values[i + 1].value) {
+                //
+            } else {
+                if (value.comment) |c| w.write(
+                    \\    // Comment: {s}
+                    \\
+                , .{c});
+
+                w.write(
+                    \\    {s} = {d},
+                    \\
+                , .{ value.name, value.value });
             }
-
-            if (value.comment) |c| w.write(
-                \\    // Comment: {s}
-                \\
-            , .{c});
-
-            w.write(
-                \\    {s} = {d},
-                \\
-            , .{ value.name, value.value });
         }
 
         w.write(

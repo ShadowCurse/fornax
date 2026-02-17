@@ -554,13 +554,22 @@ pub const TypeDatabase = struct {
                         for (additions.items) |addition| {
                             for (addition.items.items) |add| {
                                 if (add.value == .bitpos) {
-                                    const bitpos = add.value.bitpos;
                                     const bit: Bitfield.Bit = .{
                                         .name = add.name,
-                                        .bit = bitpos,
+                                        .bit = add.value.bitpos,
                                         .enabled_by_extension = addition.ext_name,
                                     };
                                     try bits.append(alloc, bit);
+                                } else if (add.value == .alias) {
+                                    const alias = add.value.alias;
+                                    for (bits.items) |*bit| {
+                                        if (std.mem.eql(u8, bit.name, alias)) {
+                                            var b = bit.*;
+                                            b.enabled_by_extension = addition.ext_name;
+                                            try bits.append(alloc, b);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -660,6 +669,16 @@ pub const TypeDatabase = struct {
                                 .enabled_by_extension = addition.ext_name,
                             };
                             try values.append(alloc, enum_value);
+                        } else if (add.value == .alias) {
+                            const alias = add.value.alias;
+                            for (values.items) |*value| {
+                                if (std.mem.eql(u8, value.name, alias)) {
+                                    var v = value.*;
+                                    v.enabled_by_extension = addition.ext_name;
+                                    try values.append(alloc, v);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
