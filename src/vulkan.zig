@@ -821,16 +821,16 @@ pub fn filter_features(
         }
     } else {
         current_pdf.features.robustBufferAccess = vk.VK_FALSE;
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceImageRobustnessFeatures);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceRobustness2FeaturesKHR);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceImageRobustnessFeatures);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV);
         Inner.reset(&additional_pdf.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesEXT);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesNV);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceShaderObjectFeaturesEXT);
-        // Inner.reset(&additional_pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT);
-        // Inner.reset(&additional_pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesEXT);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceMeshShaderFeaturesNV);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceShaderObjectFeaturesEXT);
+        Inner.reset(&additional_pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT);
+        Inner.reset(&additional_pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT);
     }
 }
 
