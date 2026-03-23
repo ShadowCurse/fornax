@@ -394,10 +394,11 @@ pub fn create_vk_instance(
     {
         log.info(
             @src(),
-            "Creating instance with application name: {s} engine name: {s} api version: {d}.{d}.{d}",
+            "Creating instance with application name: {s} engine name: {s} engine version: {d} api version: {d}.{d}.{d}",
             .{
                 app_info.pApplicationName.?,
                 app_info.pEngineName.?,
+                @as(u32, @bitCast(app_info.engineVersion)),
                 app_info.apiVersion.major,
                 app_info.apiVersion.minor,
                 app_info.apiVersion.patch,
@@ -887,6 +888,10 @@ pub fn filter_active_extensions(
             .{
                 vk.VkPhysicalDeviceImageRobustnessFeaturesEXT,
                 vk.VK_EXT_image_robustness_name,
+            },
+            .{
+                vk.VkPhysicalDeviceMeshShaderFeaturesEXT,
+                vk.VK_EXT_mesh_shader_name,
             },
             .{
                 vk.VkPhysicalDeviceMeshShaderFeaturesNV,
