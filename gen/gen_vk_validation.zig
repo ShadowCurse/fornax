@@ -616,14 +616,20 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
         var used_extensions: bool = false;
         for (bitfield.bits, 0..) |bit, i| {
             // Some extensions add same bits, so check consecutive bits
-            if (i < bitfield.bits.len - 1) {
-                if (bit.bit == bitfield.bits[i + 1].bit) {
-                    continue;
-                }
+            if (0 < i and bit.bit == bitfield.bits[i - 1].bit) {
+                w.write(
+                    \\ or 
+                , .{});
+            } else {
+                if (0 < i) w.write(
+                    \\,
+                    \\
+                , .{});
+                w.write(
+                    \\        .{s} = 
+                , .{bit.name});
             }
-            w.write(
-                \\        .{s} = 
-            , .{bit.name});
+
             if (bit.enabled_by_extension) |ext| {
                 if (!std.mem.startsWith(u8, ext, "VK_BASE") and
                     !std.mem.startsWith(u8, ext, "VK_GRAPHICS") and
@@ -632,20 +638,17 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                 {
                     const e = xml_db.extension_by_name(ext).?;
                     w.write(
-                        \\extensions.{t}.{s},
-                        \\
+                        \\extensions.{t}.{s}
                     , .{ e.type, ext });
                     used_extensions = true;
                 } else {
                     w.write(
-                        \\true,
-                        \\
+                        \\true
                     , .{});
                 }
             } else {
                 w.write(
-                    \\true,
-                    \\
+                    \\true
                 , .{});
             }
         }
