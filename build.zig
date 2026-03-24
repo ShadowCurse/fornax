@@ -17,6 +17,8 @@ pub fn build(b: *std.Build) !void {
     create_exe(b, target, optimize, &args, "gen_vk", "gen/gen_vk.zig", &.{});
     create_exe(b, target, optimize, &args, "gen_vk_utils", "gen/gen_vk_utils.zig", &.{});
     create_exe(b, target, optimize, &args, "gen_vk_validation", "gen/gen_vk_validation.zig", &.{});
+
+    create_lib(b, target, optimize, &args, "vk_device_capture_layer", "src/vk_device_capture_layer.zig");
 }
 
 const Args = struct {
@@ -96,6 +98,38 @@ fn create_exe(
     unit_tests_run_cmd.step.dependOn(&unit_tests_install_step.step);
     const test_step = b.step(name ++ "_test", "Run `" ++ name ++ "` unit tests");
     test_step.dependOn(&unit_tests_run_cmd.step);
+}
+
+fn create_lib(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    args: *const Args,
+    comptime name: []const u8,
+    source_file: []const u8,
+) void {
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "profile", args.profile);
+    build_options.addOption(bool, "no_driver", args.no_driver);
+
+    const root_mudule = b.createModule(.{
+        .root_source_file = b.path(source_file),
+        .target = target,
+        .optimize = optimize,
+    });
+    root_mudule.addOptions("build_options", build_options);
+
+    const exe = b.addLibrary(.{
+        .linkage = .dynamic,
+        .name = name,
+        .root_module = root_mudule,
+        // Broken without llvm
+        .use_llvm = true,
+    });
+    const install_step = b.addInstallArtifact(exe, .{});
+
+    const build_step = b.step(name ++ "_build", "Build the `" ++ name ++ "` binary");
+    build_step.dependOn(&install_step.step);
 }
 
 pub fn create_miniz_module(
