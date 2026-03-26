@@ -39122,15 +39122,85 @@ pub fn validate_VkAccessFlags3KHR(extensions: *const Extensions, item: *const vk
     return (current_bits & ~valid_bits) == 0;
 }
 pub const AdditionalPDF = struct {
-    VkPhysicalDeviceRobustness2FeaturesKHR: vk.VkPhysicalDeviceRobustness2FeaturesKHR = .{},
-    VkPhysicalDeviceImageRobustnessFeatures: vk.VkPhysicalDeviceImageRobustnessFeatures = .{},
+    VkPhysicalDevice8BitStorageFeatures: vk.VkPhysicalDevice8BitStorageFeatures = .{},
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR: vk.VkPhysicalDeviceAccelerationStructureFeaturesKHR = .{},
+    VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT: vk.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT = .{},
+    VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT: vk.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT = .{},
+    VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT: vk.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT = .{},
+    VkPhysicalDeviceBorderColorSwizzleFeaturesEXT: vk.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT = .{},
+    VkPhysicalDeviceBufferDeviceAddressFeatures: vk.VkPhysicalDeviceBufferDeviceAddressFeatures = .{},
+    VkPhysicalDeviceColorWriteEnableFeaturesEXT: vk.VkPhysicalDeviceColorWriteEnableFeaturesEXT = .{},
+    VkPhysicalDeviceConditionalRenderingFeaturesEXT: vk.VkPhysicalDeviceConditionalRenderingFeaturesEXT = .{},
+    VkPhysicalDeviceCustomBorderColorFeaturesEXT: vk.VkPhysicalDeviceCustomBorderColorFeaturesEXT = .{},
+    VkPhysicalDeviceCustomResolveFeaturesEXT: vk.VkPhysicalDeviceCustomResolveFeaturesEXT = .{},
+    VkPhysicalDeviceDepthBiasControlFeaturesEXT: vk.VkPhysicalDeviceDepthBiasControlFeaturesEXT = .{},
+    VkPhysicalDeviceDepthClampControlFeaturesEXT: vk.VkPhysicalDeviceDepthClampControlFeaturesEXT = .{},
+    VkPhysicalDeviceDepthClipControlFeaturesEXT: vk.VkPhysicalDeviceDepthClipControlFeaturesEXT = .{},
+    VkPhysicalDeviceDepthClipEnableFeaturesEXT: vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT = .{},
+    VkPhysicalDeviceDescriptorBufferFeaturesEXT: vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = .{},
+    dummy: vk.dummy = .{},
+    VkPhysicalDeviceDescriptorIndexingFeatures: vk.VkPhysicalDeviceDescriptorIndexingFeatures = .{},
+    VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV: vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV = .{},
+    VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT: vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT = .{},
+    VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV: vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV = .{},
+    VkPhysicalDeviceDynamicRenderingFeatures: vk.VkPhysicalDeviceDynamicRenderingFeatures = .{},
+    VkPhysicalDeviceDynamicRenderingLocalReadFeatures: vk.VkPhysicalDeviceDynamicRenderingLocalReadFeatures = .{},
+    VkPhysicalDeviceExtendedDynamicState2FeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT = .{},
+    VkPhysicalDeviceExtendedDynamicState3FeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT = .{},
+    VkPhysicalDeviceExtendedDynamicStateFeaturesEXT: vk.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT = .{},
+    VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE: vk.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE = .{},
     VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV: vk.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV = .{},
+    VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT: vk.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT = .{},
+    VkPhysicalDeviceImage2DViewOf3DFeaturesEXT: vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT = .{},
+    VkPhysicalDeviceImageRobustnessFeatures: vk.VkPhysicalDeviceImageRobustnessFeatures = .{},
+    VkPhysicalDeviceInlineUniformBlockFeatures: vk.VkPhysicalDeviceInlineUniformBlockFeatures = .{},
+    VkPhysicalDeviceLegacyDitheringFeaturesEXT: vk.VkPhysicalDeviceLegacyDitheringFeaturesEXT = .{},
+    VkPhysicalDeviceLineRasterizationFeatures: vk.VkPhysicalDeviceLineRasterizationFeatures = .{},
+    VkPhysicalDeviceMaintenance10FeaturesKHR: vk.VkPhysicalDeviceMaintenance10FeaturesKHR = .{},
+    VkPhysicalDeviceMaintenance4Features: vk.VkPhysicalDeviceMaintenance4Features = .{},
+    VkPhysicalDeviceMaintenance5Features: vk.VkPhysicalDeviceMaintenance5Features = .{},
+    VkPhysicalDeviceMaintenance7FeaturesKHR: vk.VkPhysicalDeviceMaintenance7FeaturesKHR = .{},
     VkPhysicalDeviceMeshShaderFeaturesEXT: vk.VkPhysicalDeviceMeshShaderFeaturesEXT = .{},
     VkPhysicalDeviceMeshShaderFeaturesNV: vk.VkPhysicalDeviceMeshShaderFeaturesNV = .{},
-    VkPhysicalDeviceDescriptorBufferFeaturesEXT: vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = .{},
-    VkPhysicalDeviceShaderObjectFeaturesEXT: vk.VkPhysicalDeviceShaderObjectFeaturesEXT = .{},
+    VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT: vk.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT = .{},
+    VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT: vk.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT = .{},
+    VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT: vk.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT = .{},
+    VkPhysicalDeviceOpacityMicromapFeaturesEXT: vk.VkPhysicalDeviceOpacityMicromapFeaturesEXT = .{},
+    VkPhysicalDeviceOpticalFlowFeaturesNV: vk.VkPhysicalDeviceOpticalFlowFeaturesNV = .{},
+    VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV: vk.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV = .{},
+    VkPhysicalDevicePerStageDescriptorSetFeaturesNV: vk.VkPhysicalDevicePerStageDescriptorSetFeaturesNV = .{},
+    VkPhysicalDevicePipelineCreationCacheControlFeatures: vk.VkPhysicalDevicePipelineCreationCacheControlFeatures = .{},
+    VkPhysicalDevicePipelineOpacityMicromapFeaturesARM: vk.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM = .{},
+    VkPhysicalDevicePipelineProtectedAccessFeatures: vk.VkPhysicalDevicePipelineProtectedAccessFeatures = .{},
+    VkPhysicalDevicePipelineRobustnessFeatures: vk.VkPhysicalDevicePipelineRobustnessFeatures = .{},
     VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT: vk.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT = .{},
-    VkPhysicalDeviceImage2DViewOf3DFeaturesEXT: vk.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT = .{},
+    VkPhysicalDeviceProvokingVertexFeaturesEXT: vk.VkPhysicalDeviceProvokingVertexFeaturesEXT = .{},
+    VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT: vk.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT = .{},
+    VkPhysicalDeviceRobustness2FeaturesKHR: vk.VkPhysicalDeviceRobustness2FeaturesKHR = .{},
+    VkPhysicalDeviceSamplerYcbcrConversionFeatures: vk.VkPhysicalDeviceSamplerYcbcrConversionFeatures = .{},
+    VkPhysicalDeviceScalarBlockLayoutFeatures: vk.VkPhysicalDeviceScalarBlockLayoutFeatures = .{},
+    VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures: vk.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures = .{},
+    VkPhysicalDeviceShader64BitIndexingFeaturesEXT: vk.VkPhysicalDeviceShader64BitIndexingFeaturesEXT = .{},
+    VkPhysicalDeviceShaderAtomicInt64Features: vk.VkPhysicalDeviceShaderAtomicInt64Features = .{},
+    VkPhysicalDeviceShaderClockFeaturesKHR: vk.VkPhysicalDeviceShaderClockFeaturesKHR = .{},
+    VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures: vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures = .{},
+    VkPhysicalDeviceShaderExpectAssumeFeatures: vk.VkPhysicalDeviceShaderExpectAssumeFeatures = .{},
+    VkPhysicalDeviceShaderFloat16Int8Features: vk.VkPhysicalDeviceShaderFloat16Int8Features = .{},
+    VkPhysicalDeviceShaderFloatControls2Features: vk.VkPhysicalDeviceShaderFloatControls2Features = .{},
+    VkPhysicalDeviceShaderIntegerDotProductFeatures: vk.VkPhysicalDeviceShaderIntegerDotProductFeatures = .{},
+    VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT: vk.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT = .{},
+    VkPhysicalDeviceShaderObjectFeaturesEXT: vk.VkPhysicalDeviceShaderObjectFeaturesEXT = .{},
+    VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures: vk.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures = .{},
+    VkPhysicalDeviceShaderSubgroupRotateFeatures: vk.VkPhysicalDeviceShaderSubgroupRotateFeatures = .{},
+    VkPhysicalDeviceSubgroupSizeControlFeatures: vk.VkPhysicalDeviceSubgroupSizeControlFeatures = .{},
+    VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT: vk.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT = .{},
+    VkPhysicalDeviceSynchronization2Features: vk.VkPhysicalDeviceSynchronization2Features = .{},
+    VkPhysicalDeviceUniformBufferStandardLayoutFeatures: vk.VkPhysicalDeviceUniformBufferStandardLayoutFeatures = .{},
+    VkPhysicalDeviceVertexAttributeDivisorFeatures: vk.VkPhysicalDeviceVertexAttributeDivisorFeatures = .{},
+    VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT: vk.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT = .{},
+    VkPhysicalDeviceVulkanMemoryModelFeatures: vk.VkPhysicalDeviceVulkanMemoryModelFeatures = .{},
+    VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT: vk.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT = .{},
+    VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures: vk.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures = .{},
     VkPhysicalDeviceVulkan12Features: vk.VkPhysicalDeviceVulkan12Features = .{},
     VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT: vk.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT = .{},
     VkPhysicalDeviceTransformFeedbackFeaturesEXT: vk.VkPhysicalDeviceTransformFeedbackFeaturesEXT = .{},
@@ -39167,7 +39237,6 @@ pub const AdditionalPDF = struct {
     VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT: vk.VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT = .{},
     VkPhysicalDeviceShaderSMBuiltinsFeaturesNV: vk.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV = .{},
     VkPhysicalDeviceVulkan13Features: vk.VkPhysicalDeviceVulkan13Features = .{},
-    VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures: vk.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures = .{},
     VkPhysicalDeviceCooperativeVectorFeaturesNV: vk.VkPhysicalDeviceCooperativeVectorFeaturesNV = .{},
     VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV: vk.VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV = .{},
     VkPhysicalDeviceRawAccessChainsFeaturesNV: vk.VkPhysicalDeviceRawAccessChainsFeaturesNV = .{},
@@ -39177,13 +39246,9 @@ pub const AdditionalPDF = struct {
     VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL: vk.VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL = .{},
     VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT: vk.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT = .{},
     VkPhysicalDeviceVulkan14Features: vk.VkPhysicalDeviceVulkan14Features = .{},
-    VkPhysicalDeviceShaderExpectAssumeFeatures: vk.VkPhysicalDeviceShaderExpectAssumeFeatures = .{},
-    VkPhysicalDeviceShaderIntegerDotProductFeatures: vk.VkPhysicalDeviceShaderIntegerDotProductFeatures = .{},
     VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR: vk.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR = .{},
     VkPhysicalDeviceCooperativeMatrixFeaturesKHR: vk.VkPhysicalDeviceCooperativeMatrixFeaturesKHR = .{},
     VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT: vk.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT = .{},
-    VkPhysicalDeviceShaderSubgroupRotateFeatures: vk.VkPhysicalDeviceShaderSubgroupRotateFeatures = .{},
-    VkPhysicalDeviceShaderFloatControls2Features: vk.VkPhysicalDeviceShaderFloatControls2Features = .{},
     VkPhysicalDeviceShaderFmaFeaturesKHR: vk.VkPhysicalDeviceShaderFmaFeaturesKHR = .{},
     VkPhysicalDeviceShaderAtomicFloatFeaturesEXT: vk.VkPhysicalDeviceShaderAtomicFloatFeaturesEXT = .{},
 
@@ -39191,11 +39256,178 @@ pub const AdditionalPDF = struct {
         var pnext: ?*anyopaque = null;
         for (extensions) |ext| {
             const e = std.mem.span(ext);
-            if ((std.mem.eql(u8, e, "VK_EXT_robustness2") or
-                std.mem.eql(u8, e, "VK_KHR_robustness2")) and pdf.VkPhysicalDeviceRobustness2FeaturesKHR.pNext == null)
+            if ((std.mem.eql(u8, e, "VK_KHR_8bit_storage")) and pdf.VkPhysicalDevice8BitStorageFeatures.pNext == null)
             {
-                pdf.VkPhysicalDeviceRobustness2FeaturesKHR.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceRobustness2FeaturesKHR;
+                pdf.VkPhysicalDevice8BitStorageFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevice8BitStorageFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_acceleration_structure")) and pdf.VkPhysicalDeviceAccelerationStructureFeaturesKHR.pNext == null)
+            {
+                pdf.VkPhysicalDeviceAccelerationStructureFeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAccelerationStructureFeaturesKHR;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_attachment_feedback_loop_dynamic_state")) and pdf.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_attachment_feedback_loop_layout")) and pdf.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_blend_operation_advanced")) and pdf.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_border_color_swizzle")) and pdf.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceBorderColorSwizzleFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_buffer_device_address")) and pdf.VkPhysicalDeviceBufferDeviceAddressFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceBufferDeviceAddressFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceBufferDeviceAddressFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_color_write_enable")) and pdf.VkPhysicalDeviceColorWriteEnableFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceColorWriteEnableFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceColorWriteEnableFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_conditional_rendering")) and pdf.VkPhysicalDeviceConditionalRenderingFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceConditionalRenderingFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceConditionalRenderingFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_custom_border_color")) and pdf.VkPhysicalDeviceCustomBorderColorFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceCustomBorderColorFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceCustomBorderColorFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_custom_resolve")) and pdf.VkPhysicalDeviceCustomResolveFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceCustomResolveFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceCustomResolveFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_depth_bias_control")) and pdf.VkPhysicalDeviceDepthBiasControlFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDepthBiasControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthBiasControlFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_depth_clamp_control")) and pdf.VkPhysicalDeviceDepthClampControlFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDepthClampControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClampControlFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_depth_clip_control")) and pdf.VkPhysicalDeviceDepthClipControlFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDepthClipControlFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClipControlFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_depth_clip_enable")) and pdf.VkPhysicalDeviceDepthClipEnableFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDepthClipEnableFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDepthClipEnableFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_descriptor_buffer")) and pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_descriptor_indexing")) and pdf.VkPhysicalDeviceDescriptorIndexingFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDescriptorIndexingFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDescriptorIndexingFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_device_generated_commands_compute")) and pdf.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_device_generated_commands")) and pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_device_generated_commands")) and pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_dynamic_rendering")) and pdf.VkPhysicalDeviceDynamicRenderingFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDynamicRenderingFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDynamicRenderingFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_dynamic_rendering_local_read")) and pdf.VkPhysicalDeviceDynamicRenderingLocalReadFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceDynamicRenderingLocalReadFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceDynamicRenderingLocalReadFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state2")) and pdf.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicState2FeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state3")) and pdf.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicState3FeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_extended_dynamic_state")) and pdf.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceExtendedDynamicStateFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_VALVE_fragment_density_map_layered")) and pdf.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE.pNext == null)
+            {
+                pdf.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_fragment_shading_rate_enums")) and pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_graphics_pipeline_library")) and pdf.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_image_2d_view_of_3d")) and pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT;
                 continue;
             }
             if ((std.mem.eql(u8, e, "VK_EXT_image_robustness")) and pdf.VkPhysicalDeviceImageRobustnessFeatures.pNext == null)
@@ -39204,10 +39436,47 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceImageRobustnessFeatures;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_NV_fragment_shading_rate_enums")) and pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.pNext == null)
+            if ((std.mem.eql(u8, e, "VK_EXT_inline_uniform_block")) and pdf.VkPhysicalDeviceInlineUniformBlockFeatures.pNext == null)
             {
-                pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV;
+                pdf.VkPhysicalDeviceInlineUniformBlockFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceInlineUniformBlockFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_legacy_dithering")) and pdf.VkPhysicalDeviceLegacyDitheringFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceLegacyDitheringFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceLegacyDitheringFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_line_rasterization") or
+                std.mem.eql(u8, e, "VK_EXT_line_rasterization")) and pdf.VkPhysicalDeviceLineRasterizationFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceLineRasterizationFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceLineRasterizationFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_maintenance10")) and pdf.VkPhysicalDeviceMaintenance10FeaturesKHR.pNext == null)
+            {
+                pdf.VkPhysicalDeviceMaintenance10FeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance10FeaturesKHR;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_maintenance4")) and pdf.VkPhysicalDeviceMaintenance4Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceMaintenance4Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance4Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_maintenance5")) and pdf.VkPhysicalDeviceMaintenance5Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceMaintenance5Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance5Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_maintenance7")) and pdf.VkPhysicalDeviceMaintenance7FeaturesKHR.pNext == null)
+            {
+                pdf.VkPhysicalDeviceMaintenance7FeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMaintenance7FeaturesKHR;
                 continue;
             }
             if ((std.mem.eql(u8, e, "VK_EXT_mesh_shader")) and pdf.VkPhysicalDeviceMeshShaderFeaturesEXT.pNext == null)
@@ -39222,16 +39491,71 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceMeshShaderFeaturesNV;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_EXT_descriptor_buffer")) and pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT.pNext == null)
+            if ((std.mem.eql(u8, e, "VK_EXT_multisampled_render_to_single_sampled")) and pdf.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT.pNext == null)
             {
-                pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceDescriptorBufferFeaturesEXT;
+                pdf.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_EXT_shader_object")) and pdf.VkPhysicalDeviceShaderObjectFeaturesEXT.pNext == null)
+            if ((std.mem.eql(u8, e, "VK_VALVE_mutable_descriptor_type") or
+                std.mem.eql(u8, e, "VK_EXT_mutable_descriptor_type")) and pdf.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT.pNext == null)
             {
-                pdf.VkPhysicalDeviceShaderObjectFeaturesEXT.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderObjectFeaturesEXT;
+                pdf.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_non_seamless_cube_map")) and pdf.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_opacity_micromap")) and pdf.VkPhysicalDeviceOpacityMicromapFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceOpacityMicromapFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceOpacityMicromapFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_optical_flow")) and pdf.VkPhysicalDeviceOpticalFlowFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDeviceOpticalFlowFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceOpticalFlowFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_partitioned_acceleration_structure")) and pdf.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_NV_per_stage_descriptor_set")) and pdf.VkPhysicalDevicePerStageDescriptorSetFeaturesNV.pNext == null)
+            {
+                pdf.VkPhysicalDevicePerStageDescriptorSetFeaturesNV.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePerStageDescriptorSetFeaturesNV;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_pipeline_creation_cache_control")) and pdf.VkPhysicalDevicePipelineCreationCacheControlFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDevicePipelineCreationCacheControlFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineCreationCacheControlFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_ARM_pipeline_opacity_micromap")) and pdf.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM.pNext == null)
+            {
+                pdf.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineOpacityMicromapFeaturesARM;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_pipeline_protected_access")) and pdf.VkPhysicalDevicePipelineProtectedAccessFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDevicePipelineProtectedAccessFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineProtectedAccessFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_pipeline_robustness")) and pdf.VkPhysicalDevicePipelineRobustnessFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDevicePipelineRobustnessFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDevicePipelineRobustnessFeatures;
                 continue;
             }
             if ((std.mem.eql(u8, e, "VK_EXT_primitives_generated_query")) and pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT.pNext == null)
@@ -39240,10 +39564,170 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_EXT_image_2d_view_of_3d")) and pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.pNext == null)
+            if ((std.mem.eql(u8, e, "VK_EXT_provoking_vertex")) and pdf.VkPhysicalDeviceProvokingVertexFeaturesEXT.pNext == null)
             {
-                pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceImage2DViewOf3DFeaturesEXT;
+                pdf.VkPhysicalDeviceProvokingVertexFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceProvokingVertexFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_ARM_rasterization_order_attachment_access") or
+                std.mem.eql(u8, e, "VK_EXT_rasterization_order_attachment_access")) and pdf.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_robustness2") or
+                std.mem.eql(u8, e, "VK_KHR_robustness2")) and pdf.VkPhysicalDeviceRobustness2FeaturesKHR.pNext == null)
+            {
+                pdf.VkPhysicalDeviceRobustness2FeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceRobustness2FeaturesKHR;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_sampler_ycbcr_conversion")) and pdf.VkPhysicalDeviceSamplerYcbcrConversionFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceSamplerYcbcrConversionFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSamplerYcbcrConversionFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_scalar_block_layout")) and pdf.VkPhysicalDeviceScalarBlockLayoutFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceScalarBlockLayoutFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceScalarBlockLayoutFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_separate_depth_stencil_layouts")) and pdf.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_shader_64bit_indexing")) and pdf.VkPhysicalDeviceShader64BitIndexingFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShader64BitIndexingFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShader64BitIndexingFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_atomic_int64")) and pdf.VkPhysicalDeviceShaderAtomicInt64Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderAtomicInt64Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderAtomicInt64Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_clock")) and pdf.VkPhysicalDeviceShaderClockFeaturesKHR.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderClockFeaturesKHR.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderClockFeaturesKHR;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_shader_demote_to_helper_invocation")) and pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_expect_assume")) and pdf.VkPhysicalDeviceShaderExpectAssumeFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderExpectAssumeFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderExpectAssumeFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_float16_int8") or
+                std.mem.eql(u8, e, "VK_KHR_shader_float16_int8")) and pdf.VkPhysicalDeviceShaderFloat16Int8Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderFloat16Int8Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderFloat16Int8Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_float_controls2")) and pdf.VkPhysicalDeviceShaderFloatControls2Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderFloatControls2Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderFloatControls2Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_integer_dot_product")) and pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_shader_module_identifier")) and pdf.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_shader_object")) and pdf.VkPhysicalDeviceShaderObjectFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderObjectFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderObjectFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_subgroup_extended_types")) and pdf.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_shader_subgroup_rotate")) and pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_subgroup_size_control")) and pdf.VkPhysicalDeviceSubgroupSizeControlFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceSubgroupSizeControlFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSubgroupSizeControlFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_subpass_merge_feedback")) and pdf.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_synchronization2")) and pdf.VkPhysicalDeviceSynchronization2Features.pNext == null)
+            {
+                pdf.VkPhysicalDeviceSynchronization2Features.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceSynchronization2Features;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_uniform_buffer_standard_layout")) and pdf.VkPhysicalDeviceUniformBufferStandardLayoutFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceUniformBufferStandardLayoutFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceUniformBufferStandardLayoutFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_vertex_attribute_divisor") or
+                std.mem.eql(u8, e, "VK_EXT_vertex_attribute_divisor")) and pdf.VkPhysicalDeviceVertexAttributeDivisorFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceVertexAttributeDivisorFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceVertexAttributeDivisorFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_vertex_input_dynamic_state")) and pdf.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_vulkan_memory_model")) and pdf.VkPhysicalDeviceVulkanMemoryModelFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceVulkanMemoryModelFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceVulkanMemoryModelFeatures;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_EXT_zero_initialize_device_memory")) and pdf.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT.pNext == null)
+            {
+                pdf.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT;
+                continue;
+            }
+            if ((std.mem.eql(u8, e, "VK_KHR_zero_initialize_workgroup_memory")) and pdf.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures.pNext == null)
+            {
+                pdf.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures.pNext = pnext;
+                pnext = &pdf.VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures;
                 continue;
             }
             if ((std.mem.eql(u8, e, "VK_EXT_shader_image_atomic_int64")) and pdf.VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT.pNext == null)
@@ -39442,12 +39926,6 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceShaderSMBuiltinsFeaturesNV;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_EXT_shader_demote_to_helper_invocation")) and pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.pNext == null)
-            {
-                pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures;
-                continue;
-            }
             if ((std.mem.eql(u8, e, "VK_NV_cooperative_vector")) and pdf.VkPhysicalDeviceCooperativeVectorFeaturesNV.pNext == null)
             {
                 pdf.VkPhysicalDeviceCooperativeVectorFeaturesNV.pNext = pnext;
@@ -39496,18 +39974,6 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_KHR_shader_expect_assume")) and pdf.VkPhysicalDeviceShaderExpectAssumeFeatures.pNext == null)
-            {
-                pdf.VkPhysicalDeviceShaderExpectAssumeFeatures.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderExpectAssumeFeatures;
-                continue;
-            }
-            if ((std.mem.eql(u8, e, "VK_KHR_shader_integer_dot_product")) and pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures.pNext == null)
-            {
-                pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderIntegerDotProductFeatures;
-                continue;
-            }
             if ((std.mem.eql(u8, e, "VK_KHR_ray_tracing_maintenance1")) and pdf.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR.pNext == null)
             {
                 pdf.VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR.pNext = pnext;
@@ -39526,18 +39992,6 @@ pub const AdditionalPDF = struct {
                 pnext = &pdf.VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT;
                 continue;
             }
-            if ((std.mem.eql(u8, e, "VK_KHR_shader_subgroup_rotate")) and pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures.pNext == null)
-            {
-                pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderSubgroupRotateFeatures;
-                continue;
-            }
-            if ((std.mem.eql(u8, e, "VK_KHR_shader_float_controls2")) and pdf.VkPhysicalDeviceShaderFloatControls2Features.pNext == null)
-            {
-                pdf.VkPhysicalDeviceShaderFloatControls2Features.pNext = pnext;
-                pnext = &pdf.VkPhysicalDeviceShaderFloatControls2Features;
-                continue;
-            }
             if ((std.mem.eql(u8, e, "VK_KHR_shader_fma")) and pdf.VkPhysicalDeviceShaderFmaFeaturesKHR.pNext == null)
             {
                 pdf.VkPhysicalDeviceShaderFmaFeaturesKHR.pNext = pnext;
@@ -39551,6 +40005,8 @@ pub const AdditionalPDF = struct {
                 continue;
             }
         }
+        pdf.dummy.pNext = pnext;
+        pnext = &pdf.dummy;
         pdf.VkPhysicalDeviceVulkan12Features.pNext = pnext;
         pnext = &pdf.VkPhysicalDeviceVulkan12Features;
         pdf.VkPhysicalDeviceVulkan11Features.pNext = pnext;
