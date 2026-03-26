@@ -14,9 +14,9 @@ pub fn build(b: *std.Build) !void {
     create_exe(b, target, optimize, &args, "replay", "src/replay.zig", imports);
     create_exe(b, target, optimize, &args, "print_entries", "src/print_entries.zig", imports);
 
-    create_exe(b, target, optimize, &args, "gen_vk", "gen/gen_vk.zig", &.{});
-    create_exe(b, target, optimize, &args, "gen_vk_utils", "gen/gen_vk_utils.zig", &.{});
-    create_exe(b, target, optimize, &args, "gen_vk_validation", "gen/gen_vk_validation.zig", &.{});
+    create_exe(b, target, optimize, &args, "gen_vk", "src/gen_vk.zig", &.{});
+    create_exe(b, target, optimize, &args, "gen_vk_utils", "src/gen_vk_utils.zig", &.{});
+    create_exe(b, target, optimize, &args, "gen_vk_validation", "src/gen_vk_validation.zig", &.{});
 
     create_lib(b, target, optimize, &args, "fornax_capture_layer", "src/fornax_capture_layer.zig");
 }
