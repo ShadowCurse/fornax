@@ -39138,7 +39138,6 @@ pub const AdditionalPDF = struct {
     VkPhysicalDeviceDepthClipControlFeaturesEXT: vk.VkPhysicalDeviceDepthClipControlFeaturesEXT = .{},
     VkPhysicalDeviceDepthClipEnableFeaturesEXT: vk.VkPhysicalDeviceDepthClipEnableFeaturesEXT = .{},
     VkPhysicalDeviceDescriptorBufferFeaturesEXT: vk.VkPhysicalDeviceDescriptorBufferFeaturesEXT = .{},
-    dummy: vk.dummy = .{},
     VkPhysicalDeviceDescriptorIndexingFeatures: vk.VkPhysicalDeviceDescriptorIndexingFeatures = .{},
     VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV: vk.VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV = .{},
     VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT: vk.VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT = .{},
@@ -40005,8 +40004,6 @@ pub const AdditionalPDF = struct {
                 continue;
             }
         }
-        pdf.dummy.pNext = pnext;
-        pnext = &pdf.dummy;
         pdf.VkPhysicalDeviceVulkan12Features.pNext = pnext;
         pnext = &pdf.VkPhysicalDeviceVulkan12Features;
         pdf.VkPhysicalDeviceVulkan11Features.pNext = pnext;
