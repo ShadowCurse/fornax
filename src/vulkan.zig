@@ -990,6 +990,7 @@ pub fn create_vk_device(
         additional_pdf.* = .{};
         stats.pNext = additional_pdf.chain_supported(all_extension_names);
         vkGetPhysicalDeviceFeatures2KHR(physical_device.device, pdf);
+        stats.pipelineExecutableInfo = vk.VK_FALSE;
     } else vkGetPhysicalDeviceFeatures(physical_device.device, &pdf.features);
 
     // Workaround for older dxvk/vkd3d databases, where robustness2 or VRS was not captured,
