@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) !void {
     create_exe(b, target, optimize, &args, "gen_vk_utils", "gen/gen_vk_utils.zig", &.{});
     create_exe(b, target, optimize, &args, "gen_vk_validation", "gen/gen_vk_validation.zig", &.{});
 
-    create_lib(b, target, optimize, &args, "vk_device_capture_layer", "src/vk_device_capture_layer.zig");
+    create_lib(b, target, optimize, &args, "fornax_capture_layer", "src/fornax_capture_layer.zig");
 }
 
 const Args = struct {

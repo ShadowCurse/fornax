@@ -1,6 +1,7 @@
 const std = @import("std");
 const vk = @import("vk.zig");
 const log = @import("log.zig");
+const vu = @import("vk_utils.zig");
 
 const LAYER_NAME = "VK_LAYER_fornax_capture";
 const LAYER_DESCRIPTION = "Layer for capturing shader pipelines";
@@ -133,6 +134,8 @@ fn layer_vkCreateDevice(
 
             const vkCreateDevice: *const vk.vkCreateDevice =
                 @ptrCast(next_vkGetInstanceProcAddr(.none, "vkCreateDevice"));
+
+            vu.print_struct(pCreateInfo, true);
 
             return vkCreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
