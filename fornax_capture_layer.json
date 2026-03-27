@@ -1,7 +1,7 @@
 {
   "file_format_version" : "1.0.0",
   "layer" : {
-    "name": "VK_LAYER_fornax_capture",
+    "name": "VK_LAYER_FORNAX_capture",
     "type": "GLOBAL",
     "library_path": "./zig-out/lib/libvk_device_capture_layer.so",
     "api_version": "1.0.0",

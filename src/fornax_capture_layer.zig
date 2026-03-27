@@ -1,9 +1,8 @@
 const std = @import("std");
 const vk = @import("vk.zig");
 const log = @import("log.zig");
-const vu = @import("vk_utils.zig");
 
-const LAYER_NAME = "VK_LAYER_fornax_capture";
+const LAYER_NAME = "VK_LAYER_FORNAX_capture";
 const LAYER_DESCRIPTION = "Layer for capturing shader pipelines";
 
 var next_vkGetInstanceProcAddr: *const vk.vkGetInstanceProcAddr = undefined;
@@ -55,7 +54,7 @@ fn layer_vkEnumerateInstanceExtensionProperties(
 ) callconv(.c) vk.VkResult {
     _ = pProperties;
     if (pLayerName) |name| {
-        if (std.mem.eql(u8, std.mem.span(name), "VK_LAYER_SAMPLE_SampleLayer")) {
+        if (std.mem.eql(u8, std.mem.span(name), LAYER_NAME)) {
             if (pPropertyCount) |count| count.* = 0;
             return .VK_SUCCESS;
         }
@@ -134,8 +133,6 @@ fn layer_vkCreateDevice(
 
             const vkCreateDevice: *const vk.vkCreateDevice =
                 @ptrCast(next_vkGetInstanceProcAddr(.none, "vkCreateDevice"));
-
-            vu.print_struct(pCreateInfo, true);
 
             return vkCreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
