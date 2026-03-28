@@ -28,6 +28,9 @@ pub fn init(
     enable_vulkan_validation_layers: bool,
     validation: *vv.Validation,
 ) !vk.VkDevice {
+    const get_proc = try load_vulkan();
+    try load_basic_procs(get_proc);
+
     const api_version = get_api_version();
     log.info(@src(), "Supported vulkan version: {f}", .{api_version});
     const default_app_info: vk.VkApplicationInfo = .{
@@ -41,9 +44,6 @@ pub fn init(
     var app_info: *const vk.VkApplicationInfo = &default_app_info;
     var device_features2: ?*const vk.VkPhysicalDeviceFeatures2 = null;
     try configure_app_info(arena_alloc, tmp_alloc, db, &app_info, &device_features2);
-
-    const get_proc = try load_vulkan();
-    try load_basic_procs(get_proc);
 
     const instance = try create_vk_instance(
         tmp_alloc,
@@ -186,12 +186,18 @@ fn load_procs(
     inline for (names) |name| {
         const f = &@field(@This(), name);
         const type_info = @typeInfo(@TypeOf(f));
-        if (get_proc(instance, name)) |p| {
-            f.* = @ptrCast(p);
+        const child_type_info = @typeInfo(type_info.pointer.child);
+        if (child_type_info != .optional) {
+            const proc = get_proc(instance, name);
+            log.assert(@src(), proc != null, "Cannot load {s} function", .{name});
+            f.* = @ptrCast(proc.?);
         } else {
-            log.warn(@src(), "Cannot load {s} function", .{name});
-            if (type_info == .optional)
-                return error.CannotLoadVulkanProc;
+            log.info(@src(), "Getting optional function: {s}", .{name});
+            if (get_proc(instance, name)) |proc| {
+                f.* = @ptrCast(proc);
+            } else {
+                log.warn(@src(), "Cannot load optional {s} function", .{name});
+            }
         }
     }
 }
