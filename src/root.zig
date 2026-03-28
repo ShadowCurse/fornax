@@ -254,6 +254,7 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
         } else {
             break;
         }
+        if (task.queue.items.len == 0) continue;
 
         const tmp_alloc = task.arena.allocator();
         while (task.queue.pop()) |tuple| {
@@ -350,6 +351,7 @@ pub fn create_inner(
         } else {
             break;
         }
+        if (task.queue.items.len == 0) continue;
 
         const tmp_alloc = task.arena.allocator();
         while (task.queue.pop()) |tuple| {
@@ -369,6 +371,8 @@ pub fn create_inner(
                         try task.queue.append(tmp_alloc, .{ curr_entry, next_dep + 1 });
                         const dep = curr_entry.dependencies[next_dep];
                         try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
+                    } else {
+                        try task.queue.append(tmp_alloc, .{ curr_entry, next_dep });
                     }
                 },
                 .creating => {
