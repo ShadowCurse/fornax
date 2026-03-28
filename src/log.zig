@@ -181,9 +181,8 @@ fn fill_struct_comptime(comptime T: type, args: anytype) T {
     const args_fields = comptime @typeInfo(@TypeOf(args)).@"struct".fields;
     var t: T = undefined;
 
-    @field(t, "2") = profiler.thread_id orelse 0;
     inline for (args_fields, 0..) |_, i| {
-        const t_index = std.fmt.comptimePrint("{}", .{3 + i});
+        const t_index = std.fmt.comptimePrint("{}", .{2 + i});
         const args_index = std.fmt.comptimePrint("{}", .{i});
         @field(t, t_index) = @field(args, args_index);
     }
@@ -192,7 +191,7 @@ fn fill_struct_comptime(comptime T: type, args: anytype) T {
 
 fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: type) type {
     const type_fields = comptime @typeInfo(T).@"struct".fields;
-    var fields: [type_fields.len + 3]std.builtin.Type.StructField = undefined;
+    var fields: [type_fields.len + 2]std.builtin.Type.StructField = undefined;
     // file
     fields[0] = .{
         .name = "0",
@@ -209,14 +208,7 @@ fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: ty
         .is_comptime = true,
         .alignment = @alignOf(@TypeOf(src.line)),
     };
-    fields[2] = .{
-        .name = "2",
-        .type = u32,
-        .default_value_ptr = null,
-        .is_comptime = false,
-        .alignment = @alignOf(u32),
-    };
-    for (type_fields, 3..) |f, i| {
+    for (type_fields, 2..) |f, i| {
         var ff = f;
         ff.name = std.fmt.comptimePrint("{}", .{i});
         ff.is_comptime = false;
