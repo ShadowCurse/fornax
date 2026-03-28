@@ -452,10 +452,10 @@ test "parse/create" {
             }
         }
 
-        fn create(_: vk.VkDevice, _: *align(8) const anyopaque) !?*anyopaque {
+        fn create(_: vk.VkDevice, _: *align(8) const anyopaque) !vulkan.AnyHandle {
             unreachable;
         }
-        fn destroy(_: vk.VkDevice, _: *const anyopaque) void {
+        fn destroy(_: vk.VkDevice, _: vulkan.AnyHandle) void {
             unreachable;
         }
     };
@@ -534,7 +534,7 @@ test "parse/create" {
             .validation = &validation,
             .vk_device = undefined,
         };
-        try parse(TestParse, NoValidation, &thread_context);
+        try parse_inner(TestParse, NoValidation, &thread_context);
         try std.testing.expectEqual(.parsed, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
@@ -622,7 +622,7 @@ test "parse/create" {
             .validation = &validation,
             .vk_device = undefined,
         };
-        try parse(TestParse, NoValidation, &thread_context);
+        try parse_inner(TestParse, NoValidation, &thread_context);
         try std.testing.expectEqual(.invalid, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
@@ -671,7 +671,7 @@ test "parse/create" {
             pub fn create_graphics_pipeline(
                 _: vk.VkDevice,
                 create_info: *align(8) const anyopaque,
-            ) !?*anyopaque {
+            ) !vulkan.AnyHandle {
                 defer Global.create_counter += 1;
                 const c: *const u64 = @ptrCast(create_info);
                 switch (Global.create_counter) {
@@ -680,7 +680,7 @@ test "parse/create" {
                     2 => try std.testing.expectEqual(0xA, c.*),
                     else => unreachable,
                 }
-                return @ptrFromInt(c.*);
+                return c.*;
             }
         };
         const Destroy = struct {
@@ -690,13 +690,12 @@ test "parse/create" {
             pub const parse_shader_module = Dummy.destroy;
             pub const destroy_shader_module = Dummy.destroy;
             pub const destroy_render_pass = Dummy.destroy;
-            pub fn destroy_pipeline(_: vk.VkDevice, handle: *const anyopaque) void {
+            pub fn destroy_pipeline(_: vk.VkDevice, handle: vulkan.AnyHandle) void {
                 defer Global.destroy_counter += 1;
-                const c: u64 = @intFromPtr(handle);
                 switch (Global.destroy_counter) {
-                    0 => std.testing.expectEqual(0xA, c) catch unreachable,
-                    1 => std.testing.expectEqual(0xB, c) catch unreachable,
-                    2 => std.testing.expectEqual(0xC, c) catch unreachable,
+                    0 => std.testing.expectEqual(0xA, handle) catch unreachable,
+                    1 => std.testing.expectEqual(0xB, handle) catch unreachable,
+                    2 => std.testing.expectEqual(0xC, handle) catch unreachable,
                     else => unreachable,
                 }
             }
@@ -745,7 +744,7 @@ test "parse/create" {
             .validation = undefined,
             .vk_device = undefined,
         };
-        try create(Parse, Create, Destroy, &thread_context);
+        try create_inner(Parse, Create, NoValidation, Destroy, &thread_context);
 
         try std.testing.expectEqual(0xB, Global.gp0_1);
         try std.testing.expectEqual(0xC, Global.gp0_2);
@@ -793,7 +792,7 @@ test "parse/create" {
             pub fn create_graphics_pipeline(
                 _: vk.VkDevice,
                 create_info: *align(8) const anyopaque,
-            ) !?*anyopaque {
+            ) !vulkan.AnyHandle {
                 defer Global.create_counter += 1;
                 const c: *const u64 = @ptrCast(create_info);
                 switch (Global.create_counter) {
@@ -805,7 +804,7 @@ test "parse/create" {
                     2 => try std.testing.expectEqual(0xA, c.*),
                     else => unreachable,
                 }
-                return @ptrFromInt(c.*);
+                return c.*;
             }
         };
         const Destroy = struct {
@@ -815,11 +814,10 @@ test "parse/create" {
             pub const parse_shader_module = Dummy.destroy;
             pub const destroy_shader_module = Dummy.destroy;
             pub const destroy_render_pass = Dummy.destroy;
-            pub fn destroy_pipeline(_: vk.VkDevice, handle: *const anyopaque) void {
+            pub fn destroy_pipeline(_: vk.VkDevice, handle: vulkan.AnyHandle) void {
                 defer Global.destroy_counter += 1;
-                const c: u64 = @intFromPtr(handle);
                 switch (Global.destroy_counter) {
-                    0 => std.testing.expectEqual(0xB, c) catch unreachable,
+                    0 => std.testing.expectEqual(0xB, handle) catch unreachable,
                     else => unreachable,
                 }
             }
@@ -868,7 +866,7 @@ test "parse/create" {
             .validation = undefined,
             .vk_device = undefined,
         };
-        try create(Parse, Create, Destroy, &thread_context);
+        try create_inner(Parse, Create, NoValidation, Destroy, &thread_context);
 
         try std.testing.expectEqual(0, Global.gp0_1);
         try std.testing.expectEqual(0, Global.gp0_2);

@@ -1594,18 +1594,18 @@ test "test_parse_vk_mutable_descriptor_type_create_info_ext" {
     try parse_vk_mutable_descriptor_type_create_info_ext(&context, &item);
 
     try std.testing.expectEqual(
-        @as(u32, vk.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT),
+        vk.VkStructureType.VK_STRUCTURE_TYPE_MUTABLE_DESCRIPTOR_TYPE_CREATE_INFO_EXT,
         item.sType,
     );
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(2, item.mutableDescriptorTypeListCount);
-    try std.testing.expectEqual(2, item.pMutableDescriptorTypeLists[0].descriptorTypeCount);
-    try std.testing.expectEqual(69, item.pMutableDescriptorTypeLists[0].pDescriptorTypes[0]);
-    try std.testing.expectEqual(70, item.pMutableDescriptorTypeLists[0].pDescriptorTypes[1]);
-    try std.testing.expectEqual(3, item.pMutableDescriptorTypeLists[1].descriptorTypeCount);
-    try std.testing.expectEqual(71, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[0]);
-    try std.testing.expectEqual(72, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[1]);
-    try std.testing.expectEqual(73, item.pMutableDescriptorTypeLists[1].pDescriptorTypes[2]);
+    try std.testing.expectEqual(2, item.pMutableDescriptorTypeLists.?[0].descriptorTypeCount);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.pMutableDescriptorTypeLists.?[0].pDescriptorTypes.?[0])));
+    try std.testing.expectEqual(70, @as(i32, @intFromEnum(item.pMutableDescriptorTypeLists.?[0].pDescriptorTypes.?[1])));
+    try std.testing.expectEqual(3, item.pMutableDescriptorTypeLists.?[1].descriptorTypeCount);
+    try std.testing.expectEqual(71, @as(i32, @intFromEnum(item.pMutableDescriptorTypeLists.?[1].pDescriptorTypes.?[0])));
+    try std.testing.expectEqual(72, @as(i32, @intFromEnum(item.pMutableDescriptorTypeLists.?[1].pDescriptorTypes.?[1])));
+    try std.testing.expectEqual(73, @as(i32, @intFromEnum(item.pMutableDescriptorTypeLists.?[1].pDescriptorTypes.?[2])));
 }
 
 pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
@@ -1887,11 +1887,11 @@ test "test_parse_vk_application_info" {
     try parse_vk_application_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqualSlices(u8, "APP_NAME", std.mem.span(item.pApplicationName));
-    try std.testing.expectEqual(69, item.applicationVersion);
-    try std.testing.expectEqualSlices(u8, "ENGINE_NAME", std.mem.span(item.pEngineName));
-    try std.testing.expectEqual(69, item.engineVersion);
-    try std.testing.expectEqual(69, item.apiVersion);
+    try std.testing.expectEqualSlices(u8, "APP_NAME", std.mem.span(item.pApplicationName.?));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.applicationVersion)));
+    try std.testing.expectEqualSlices(u8, "ENGINE_NAME", std.mem.span(item.pEngineName.?));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.engineVersion)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.apiVersion)));
 }
 
 pub fn parse_vk_physical_device_features2(
@@ -1989,21 +1989,21 @@ test "test_parse_vk_sampler_create_info" {
     try parse_vk_sampler_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.magFilter);
-    try std.testing.expectEqual(69, item.minFilter);
-    try std.testing.expectEqual(69, item.mipmapMode);
-    try std.testing.expectEqual(69, item.addressModeU);
-    try std.testing.expectEqual(69, item.addressModeV);
-    try std.testing.expectEqual(69, item.addressModeW);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.magFilter)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.minFilter)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.mipmapMode)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.addressModeU)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.addressModeV)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.addressModeW)));
     try std.testing.expectEqual(69, item.mipLodBias);
     try std.testing.expectEqual(69, item.anisotropyEnable);
     try std.testing.expectEqual(69, item.maxAnisotropy);
     try std.testing.expectEqual(69, item.compareEnable);
-    try std.testing.expectEqual(69, item.compareOp);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.compareOp)));
     try std.testing.expectEqual(69, item.minLod);
     try std.testing.expectEqual(69, item.maxLod);
-    try std.testing.expectEqual(69, item.borderColor);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.borderColor)));
     try std.testing.expectEqual(69, item.unnormalizedCoordinates);
 }
 
@@ -2058,7 +2058,7 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
     try parse_vk_descriptor_set_layout_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.bindingCount);
     try std.testing.expect(item.pBindings != null);
 }
@@ -2118,7 +2118,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -2133,17 +2133,17 @@ test "test_parse_vk_descriptor_set_layout_binding" {
     try parse_vk_descriptor_set_layout_binding(&context, &item);
 
     try std.testing.expectEqual(69, item.binding);
-    try std.testing.expectEqual(69, item.descriptorType);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.descriptorType)));
     try std.testing.expectEqual(69, item.descriptorCount);
-    try std.testing.expectEqual(69, item.stageFlags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.stageFlags)));
     try std.testing.expect(item.pImmutableSamplers != null);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.pImmutableSamplers[0]));
+    try std.testing.expectEqual(0, @intFromEnum(item.pImmutableSamplers.?[0]));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.sampler, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.pImmutableSamplers[0]));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.pImmutableSamplers.?[0]));
 }
 
 pub fn parse_vk_pipeline_layout_create_info(
@@ -2202,7 +2202,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
 
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
@@ -2217,18 +2217,18 @@ test "test_parse_vk_pipeline_layout_create_info" {
     try parse_vk_pipeline_layout_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.setLayoutCount);
     try std.testing.expect(item.pSetLayouts != null);
     try std.testing.expectEqual(1, item.pushConstantRangeCount);
     try std.testing.expect(item.pPushConstantRanges != null);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.pSetLayouts[0]));
+    try std.testing.expectEqual(0, @intFromEnum(item.pSetLayouts.?[0]));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.descriptor_set_layout, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.pSetLayouts[0]));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.pSetLayouts.?[0]));
 }
 
 pub fn parse_vk_push_constant_range(context: *Context, item: *vk.VkPushConstantRange) Error!void {
@@ -2262,7 +2262,7 @@ test "test_parse_vk_push_constant_range" {
     var item: vk.VkPushConstantRange = undefined;
     try parse_vk_push_constant_range(&context, &item);
 
-    try std.testing.expectEqual(69, item.stageFlags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.stageFlags)));
     try std.testing.expectEqual(69, item.offset);
     try std.testing.expectEqual(69, item.size);
 }
@@ -2357,7 +2357,7 @@ test "test_parse_vk_shader_module_create_info" {
     try parse_vk_shader_module_create_info(&context, &item, code);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(4, item.codeSize);
     try std.testing.expect(item.pCode != null);
 }
@@ -2429,7 +2429,7 @@ test "test_parse_vk_render_pass_create_info" {
     try parse_vk_render_pass_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.attachmentCount);
     try std.testing.expect(item.pAttachments != null);
     try std.testing.expectEqual(1, item.subpassCount);
@@ -2510,7 +2510,7 @@ test "test_parse_vk_render_pass_create_info2" {
     try parse_vk_render_pass_create_info2(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.attachmentCount);
     try std.testing.expect(item.pAttachments != null);
     try std.testing.expectEqual(1, item.subpassCount);
@@ -2518,8 +2518,8 @@ test "test_parse_vk_render_pass_create_info2" {
     try std.testing.expectEqual(1, item.dependencyCount);
     try std.testing.expect(item.pDependencies != null);
     try std.testing.expectEqual(2, item.correlatedViewMaskCount);
-    try std.testing.expectEqual(69, item.pCorrelatedViewMasks[0]);
-    try std.testing.expectEqual(69, item.pCorrelatedViewMasks[1]);
+    try std.testing.expectEqual(69, item.pCorrelatedViewMasks.?[0]);
+    try std.testing.expectEqual(69, item.pCorrelatedViewMasks.?[1]);
 }
 
 pub fn parse_vk_subpass_dependency(
@@ -2562,11 +2562,11 @@ test "test_parse_vk_subpass_dependency" {
 
     try std.testing.expectEqual(69, item.srcSubpass);
     try std.testing.expectEqual(69, item.dstSubpass);
-    try std.testing.expectEqual(69, item.srcStageMask);
-    try std.testing.expectEqual(69, item.dstStageMask);
-    try std.testing.expectEqual(69, item.srcAccessMask);
-    try std.testing.expectEqual(69, item.dstAccessMask);
-    try std.testing.expectEqual(69, item.dependencyFlags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.srcStageMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dstStageMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.srcAccessMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dstAccessMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dependencyFlags)));
 }
 
 pub fn parse_vk_subpass_dependency2(
@@ -2611,11 +2611,11 @@ test "test_parse_vk_subpass_dependency2" {
     try std.testing.expectEqual(null, item.pNext);
     try std.testing.expectEqual(69, item.srcSubpass);
     try std.testing.expectEqual(69, item.dstSubpass);
-    try std.testing.expectEqual(69, item.srcStageMask);
-    try std.testing.expectEqual(69, item.dstStageMask);
-    try std.testing.expectEqual(69, item.srcAccessMask);
-    try std.testing.expectEqual(69, item.dstAccessMask);
-    try std.testing.expectEqual(69, item.dependencyFlags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.srcStageMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dstStageMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.srcAccessMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dstAccessMask)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.dependencyFlags)));
     try std.testing.expectEqual(69, item.viewOffset);
 }
 
@@ -2659,15 +2659,15 @@ test "test_parse_vk_attachment_description" {
     var item: vk.VkAttachmentDescription = undefined;
     try parse_vk_attachment_description(&context, &item);
 
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.format);
-    try std.testing.expectEqual(69, item.samples);
-    try std.testing.expectEqual(69, item.loadOp);
-    try std.testing.expectEqual(69, item.storeOp);
-    try std.testing.expectEqual(69, item.stencilLoadOp);
-    try std.testing.expectEqual(69, item.stencilStoreOp);
-    try std.testing.expectEqual(69, item.initialLayout);
-    try std.testing.expectEqual(69, item.finalLayout);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.format)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.samples)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.loadOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.storeOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilLoadOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilStoreOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.initialLayout)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.finalLayout)));
 }
 
 pub fn parse_vk_attachment_description2(
@@ -2711,15 +2711,15 @@ test "test_parse_vk_attachment_description2" {
     try parse_vk_attachment_description2(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.format);
-    try std.testing.expectEqual(69, item.samples);
-    try std.testing.expectEqual(69, item.loadOp);
-    try std.testing.expectEqual(69, item.storeOp);
-    try std.testing.expectEqual(69, item.stencilLoadOp);
-    try std.testing.expectEqual(69, item.stencilStoreOp);
-    try std.testing.expectEqual(69, item.initialLayout);
-    try std.testing.expectEqual(69, item.finalLayout);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.format)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.samples)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.loadOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.storeOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilLoadOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilStoreOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.initialLayout)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.finalLayout)));
 }
 
 pub fn parse_vk_subpass_description(
@@ -2800,8 +2800,8 @@ test "test_parse_vk_subpass_description" {
     var item: vk.VkSubpassDescription = undefined;
     try parse_vk_subpass_description(&context, &item);
 
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.pipelineBindPoint);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.pipelineBindPoint)));
     try std.testing.expectEqual(1, item.inputAttachmentCount);
     try std.testing.expect(item.pInputAttachments != null);
     try std.testing.expectEqual(1, item.colorAttachmentCount);
@@ -2809,8 +2809,8 @@ test "test_parse_vk_subpass_description" {
     try std.testing.expect(item.pResolveAttachments != null);
     try std.testing.expect(item.pDepthStencilAttachment != null);
     try std.testing.expectEqual(2, item.preserveAttachmentCount);
-    try std.testing.expectEqual(69, item.pPreserveAttachments[0]);
-    try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments.?[0]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments.?[1]);
 }
 
 pub fn parse_vk_subpass_description2(
@@ -2895,9 +2895,9 @@ test "test_parse_vk_subpass_description2" {
     try parse_vk_subpass_description2(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(69, item.viewMask);
-    try std.testing.expectEqual(69, item.pipelineBindPoint);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.pipelineBindPoint)));
     try std.testing.expectEqual(1, item.inputAttachmentCount);
     try std.testing.expect(item.pInputAttachments != null);
     try std.testing.expectEqual(1, item.colorAttachmentCount);
@@ -2905,8 +2905,8 @@ test "test_parse_vk_subpass_description2" {
     try std.testing.expect(item.pResolveAttachments != null);
     try std.testing.expect(item.pDepthStencilAttachment != null);
     try std.testing.expectEqual(2, item.preserveAttachmentCount);
-    try std.testing.expectEqual(69, item.pPreserveAttachments[0]);
-    try std.testing.expectEqual(69, item.pPreserveAttachments[1]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments.?[0]);
+    try std.testing.expectEqual(69, item.pPreserveAttachments.?[1]);
 }
 
 pub fn parse_vk_attachment_reference(
@@ -2943,7 +2943,7 @@ test "test_parse_vk_attachment_reference" {
     try parse_vk_attachment_reference(&context, &item);
 
     try std.testing.expectEqual(69, item.attachment);
-    try std.testing.expectEqual(69, item.layout);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.layout)));
 }
 
 pub fn parse_vk_attachment_reference2(
@@ -2981,8 +2981,8 @@ test "test_parse_vk_attachment_reference2" {
     try parse_vk_attachment_reference2(&context, &item);
 
     try std.testing.expectEqual(69, item.attachment);
-    try std.testing.expectEqual(69, item.layout);
-    try std.testing.expectEqual(69, item.aspectMask);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.layout)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.aspectMask)));
 }
 
 pub fn parse_vk_graphics_pipeline_create_info(
@@ -3106,7 +3106,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
     try db.entries.getPtr(.render_pass).put(alloc, 0x2222222222222222, .{
         .tag = undefined,
@@ -3116,7 +3116,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
     var context = Context{
@@ -3130,7 +3130,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try parse_vk_graphics_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
     try std.testing.expect(item.pVertexInputState != null);
@@ -3143,20 +3143,20 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try std.testing.expect(item.pColorBlendState != null);
     try std.testing.expect(item.pDynamicState != null);
     try std.testing.expectEqual(69, item.subpass);
-    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(.none, item.basePipelineHandle);
     try std.testing.expectEqual(69, item.basePipelineIndex);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.layout));
-    try std.testing.expectEqual(0, @intFromPtr(item.renderPass));
+    try std.testing.expectEqual(0, @intFromEnum(item.layout));
+    try std.testing.expectEqual(0, @intFromEnum(item.renderPass));
     try std.testing.expectEqual(2, context.dependencies.items.len);
     try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.layout));
     try std.testing.expectEqual(.render_pass, context.dependencies.items[1].tag);
     try std.testing.expectEqual(0x2222222222222222, context.dependencies.items[1].hash);
-    context.dependencies.items[1].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.renderPass));
+    context.dependencies.items[1].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.renderPass));
 }
 
 pub fn parse_vk_pipeline_shader_stage_create_info(
@@ -3227,17 +3227,17 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
     try parse_vk_pipeline_shader_stage_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.stage);
-    try std.testing.expectEqualSlices(u8, "NAME", std.mem.span(item.pName));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.stage)));
+    try std.testing.expectEqualSlices(u8, "NAME", std.mem.span(item.pName.?));
     try std.testing.expect(item.pSpecializationInfo != null);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.module));
+    try std.testing.expectEqual(0, @intFromEnum(item.module));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.shader_module, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.module));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.module));
 }
 
 pub fn parse_vk_pipeline_vertex_input_state_create_info(
@@ -3300,7 +3300,7 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
     try parse_vk_pipeline_vertex_input_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.vertexBindingDescriptionCount);
     try std.testing.expect(item.pVertexBindingDescriptions != null);
     try std.testing.expectEqual(1, item.vertexAttributeDescriptionCount);
@@ -3342,8 +3342,8 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
     try parse_vk_pipeline_input_assembly_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.topology);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.topology)));
     try std.testing.expectEqual(69, item.primitiveRestartEnable);
 }
 
@@ -3381,7 +3381,7 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
     try parse_vk_pipeline_tessellation_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(69, item.patchControlPoints);
 }
 
@@ -3451,7 +3451,7 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
     try parse_vk_pipeline_viewport_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.viewportCount);
     try std.testing.expect(item.pViewports != null);
     try std.testing.expectEqual(1, item.scissorCount);
@@ -3501,12 +3501,12 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
     try parse_vk_pipeline_rasterization_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(69, item.depthClampEnable);
     try std.testing.expectEqual(69, item.rasterizerDiscardEnable);
-    try std.testing.expectEqual(69, item.polygonMode);
-    try std.testing.expectEqual(69, item.cullMode);
-    try std.testing.expectEqual(69, item.frontFace);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.polygonMode)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.cullMode)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.frontFace)));
     try std.testing.expectEqual(69, item.depthBiasEnable);
     try std.testing.expectEqual(69, item.depthBiasConstantFactor);
     try std.testing.expectEqual(69, item.depthBiasClamp);
@@ -3577,8 +3577,8 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
     try parse_vk_pipeline_multisample_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
-    try std.testing.expectEqual(69, item.rasterizationSamples);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.rasterizationSamples)));
     try std.testing.expectEqual(69, item.sampleShadingEnable);
     try std.testing.expectEqual(69, item.minSampleShading);
     try std.testing.expect(item.pSampleMask != null);
@@ -3624,10 +3624,10 @@ test "test_parse_vk_stencil_op_state" {
     var item: vk.VkStencilOpState = undefined;
     try parse_vk_stencil_op_state(&context, &item);
 
-    try std.testing.expectEqual(69, item.failOp);
-    try std.testing.expectEqual(69, item.passOp);
-    try std.testing.expectEqual(69, item.depthFailOp);
-    try std.testing.expectEqual(69, item.compareOp);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.failOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.passOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.depthFailOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.compareOp)));
     try std.testing.expectEqual(69, item.compareMask);
     try std.testing.expectEqual(69, item.writeMask);
     try std.testing.expectEqual(69, item.reference);
@@ -3702,10 +3702,10 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
     try parse_vk_pipeline_depth_stencil_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(69, item.depthTestEnable);
     try std.testing.expectEqual(69, item.depthWriteEnable);
-    try std.testing.expectEqual(69, item.depthCompareOp);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.depthCompareOp)));
     try std.testing.expectEqual(69, item.depthBoundsTestEnable);
     try std.testing.expectEqual(69, item.stencilTestEnable);
     try std.testing.expectEqual(vk.VkStencilOpState{}, item.front);
@@ -3784,9 +3784,9 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
     try parse_vk_pipeline_color_blend_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(69, item.logicOpEnable);
-    try std.testing.expectEqual(69, item.logicOp);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.logicOp)));
     try std.testing.expectEqual(1, item.attachmentCount);
     try std.testing.expect(item.pAttachments != null);
     try std.testing.expectEqual([4]f32{ 69.69, 69.69, 69.69, 69.69 }, item.blendConstants);
@@ -3841,7 +3841,7 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
     try parse_vk_pipeline_dynamic_state_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.dynamicStateCount);
     try std.testing.expect(item.pDynamicStates != null);
 }
@@ -3883,7 +3883,7 @@ test "test_parse_vk_vertex_input_attribute_description" {
 
     try std.testing.expectEqual(69, item.location);
     try std.testing.expectEqual(69, item.binding);
-    try std.testing.expectEqual(69, item.format);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.format)));
     try std.testing.expectEqual(69, item.offset);
 }
 
@@ -3923,7 +3923,7 @@ test "test_parse_vk_vertex_input_binding_description" {
 
     try std.testing.expectEqual(69, item.binding);
     try std.testing.expectEqual(69, item.stride);
-    try std.testing.expectEqual(69, item.inputRate);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.inputRate)));
 }
 
 pub fn parse_vk_pipeline_color_blend_attachment_state(
@@ -3966,13 +3966,13 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
     try parse_vk_pipeline_color_blend_attachment_state(&context, &item);
 
     try std.testing.expectEqual(69, item.blendEnable);
-    try std.testing.expectEqual(69, item.srcColorBlendFactor);
-    try std.testing.expectEqual(69, item.dstColorBlendFactor);
-    try std.testing.expectEqual(69, item.colorBlendOp);
-    try std.testing.expectEqual(69, item.srcAlphaBlendFactor);
-    try std.testing.expectEqual(69, item.dstAlphaBlendFactor);
-    try std.testing.expectEqual(69, item.alphaBlendOp);
-    try std.testing.expectEqual(69, item.colorWriteMask);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.srcColorBlendFactor)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.dstColorBlendFactor)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.colorBlendOp)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.srcAlphaBlendFactor)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.dstAlphaBlendFactor)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.alphaBlendOp)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.colorWriteMask)));
 }
 
 pub fn parse_vk_viewport(
@@ -4244,19 +4244,19 @@ test "test_parse_vk_compute_pipeline_create_info" {
     try parse_vk_compute_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(vk.VkPipelineShaderStageCreateInfo{
-        .sType = vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .sType = vk.VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
     }, item.stage);
-    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(.none, item.basePipelineHandle);
     try std.testing.expectEqual(69, item.basePipelineIndex);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.layout));
+    try std.testing.expectEqual(0, @intFromEnum(item.layout));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.layout));
 }
 
 pub fn parse_vk_raytracing_pipeline_create_info(
@@ -4347,7 +4347,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
     var context = Context{
@@ -4361,7 +4361,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     try parse_vk_raytracing_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.flags);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
     try std.testing.expectEqual(1, item.groupCount);
@@ -4370,15 +4370,15 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     try std.testing.expect(item.pLibraryInfo != null);
     try std.testing.expect(item.pLibraryInterface != null);
     try std.testing.expect(item.pDynamicState != null);
-    try std.testing.expectEqual(null, item.basePipelineHandle);
+    try std.testing.expectEqual(.none, item.basePipelineHandle);
     try std.testing.expectEqual(69, item.basePipelineIndex);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.layout));
+    try std.testing.expectEqual(0, @intFromEnum(item.layout));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.pipeline_layout, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.layout));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.layout));
 }
 
 pub fn parse_vk_ray_tracing_shader_group_create_info(
@@ -4418,7 +4418,7 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
     try parse_vk_ray_tracing_shader_group_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, item.type);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.type)));
     try std.testing.expectEqual(69, item.generalShader);
     try std.testing.expectEqual(69, item.closestHitShader);
     try std.testing.expectEqual(69, item.anyHitShader);
@@ -4470,7 +4470,7 @@ test "test_parse_vk_pipeline_library_create_info" {
         .payload_stored_size = undefined,
         .payload_decompressed_size = undefined,
         .payload_file_offset = undefined,
-        .handle = @ptrFromInt(0x69),
+        .handle = 0x69,
     });
     var scanner = std.json.Scanner.initCompleteInput(alloc, json);
     var context = Context{
@@ -4487,12 +4487,12 @@ test "test_parse_vk_pipeline_library_create_info" {
     try std.testing.expectEqual(1, item.libraryCount);
     try std.testing.expect(item.pLibraries != null);
 
-    try std.testing.expectEqual(0, @intFromPtr(item.pLibraries[0]));
+    try std.testing.expectEqual(0, @intFromEnum(item.pLibraries.?[0]));
     try std.testing.expectEqual(1, context.dependencies.items.len);
     try std.testing.expectEqual(.raytracing_pipeline, context.dependencies.items[0].tag);
     try std.testing.expectEqual(0x1111111111111111, context.dependencies.items[0].hash);
-    context.dependencies.items[0].ptr_to_handle.?.* = @ptrFromInt(0x69);
-    try std.testing.expectEqual(0x69, @intFromPtr(item.pLibraries[0]));
+    context.dependencies.items[0].ptr_to_handle.?.* = 0x69;
+    try std.testing.expectEqual(0x69, @intFromEnum(item.pLibraries.?[0]));
 }
 
 pub fn parse_vk_ray_tracing_pipeline_interface_create_info(
