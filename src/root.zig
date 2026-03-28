@@ -2,16 +2,96 @@
 // SPDX-License-Identifier: MIT
 
 const std = @import("std");
+const build_options = @import("build_options");
 const log = @import("log.zig");
+const parsing = @import("parsing.zig");
 const control_block = @import("control_block.zig");
 
 const vk = @import("vk.zig");
 const vv = @import("vk_validation.zig");
+const vulkan = @import("vulkan.zig");
 
 const Allocator = std.mem.Allocator;
 const Validation = vv.Validation;
 const Database = @import("database.zig");
 const Barrier = @import("barrier.zig");
+
+const DryCreate = struct {
+    const Self = @This();
+
+    pub const create_vk_sampler = Self.create;
+    pub const create_descriptor_set_layout = Self.create;
+    pub const create_pipeline_layout = Self.create;
+    pub const parse_shader_module = Self.create;
+    pub const create_shader_module = Self.create;
+    pub const create_render_pass = Self.create;
+    pub const create_raytracing_pipeline = Self.create;
+    pub const create_compute_pipeline = Self.create;
+    pub const create_graphics_pipeline = Self.create;
+
+    fn create(vk_device: vk.VkDevice, create_info: *align(8) const anyopaque) !?*anyopaque {
+        var result: *anyopaque = @ptrFromInt(0x69);
+        asm volatile (""
+            :
+            : [vk_device] "r" (vk_device),
+            : .{ .memory = true });
+        asm volatile (""
+            :
+            : [create_info] "r" (create_info),
+            : .{ .memory = true });
+        asm volatile (""
+            : [result] "=r" (result),
+        );
+        return result;
+    }
+};
+
+const DryDestroy = struct {
+    const Self = @This();
+
+    pub const destroy_vk_sampler = Self.destroy;
+    pub const destroy_descriptor_set_layout = Self.destroy;
+    pub const destroy_pipeline_layout = Self.destroy;
+    pub const parse_shader_module = Self.destroy;
+    pub const destroy_shader_module = Self.destroy;
+    pub const destroy_render_pass = Self.destroy;
+    pub const destroy_pipeline = Self.destroy;
+
+    fn destroy(vk_device: vk.VkDevice, handle: *const anyopaque) void {
+        asm volatile (""
+            :
+            : [vk_device] "r" (vk_device),
+        );
+        asm volatile (""
+            :
+            : [handle] "r" (handle),
+        );
+    }
+};
+
+const NoValidation = struct {
+    const Self = @This();
+
+    pub const validate_VkSamplerCreateInfo = validate;
+    pub const validate_VkDescriptorSetLayoutCreateInfo = validate;
+    pub const validate_VkPipelineLayoutCreateInfo = validate;
+    pub const validate_VkRenderPassCreateInfo = validate;
+    pub const validate_VkGraphicsPipelineCreateInfo = validate;
+    pub const validate_VkComputePipelineCreateInfo = validate;
+    pub const validate_VkRayTracingPipelineCreateInfoKHR = validate;
+    fn validate(_: *const vv.Extensions, _: *const anyopaque, _: bool) bool {
+        return true;
+    }
+
+    pub fn validate_shader_code(_: *const vv.Validation, _: *const anyopaque) bool {
+        return true;
+    }
+};
+
+const PARSE = parsing;
+const CREATE = if (build_options.no_driver) DryCreate else vulkan;
+const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
+const VALIDATE = if (build_options.no_validation) NoValidation else vv;
 
 const RootEntry = struct {
     entry: *Database.Entry,
@@ -134,7 +214,11 @@ pub fn spawn_threads(
     return threads;
 }
 
-pub fn parse(comptime PARSE: type, comptime VALIDATE: type, context: *Context) !void {
+pub fn parse(context: *Context) !void {
+    return parse_inner(PARSE, VALIDATE, context);
+}
+
+pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void {
     var progress = context.progress.start("parsing", 0);
     defer progress.end();
 
@@ -176,8 +260,8 @@ pub fn parse(comptime PARSE: type, comptime VALIDATE: type, context: *Context) !
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.parse(
-                PARSE,
-                VALIDATE,
+                P,
+                V,
                 shared_alloc,
                 task.root_entry.arena.allocator(),
                 thread_alloc,
@@ -222,11 +306,15 @@ pub fn parse(comptime PARSE: type, comptime VALIDATE: type, context: *Context) !
     }
 }
 
-pub fn create(
-    comptime PARSE: type,
-    comptime CREATE: type,
-    comptime VALIDATE: type,
-    comptime DESTROY: type,
+pub fn create(context: *Context) !void {
+    return create_inner(PARSE, CREATE, VALIDATE, DESTROY, context);
+}
+
+pub fn create_inner(
+    comptime P: type,
+    comptime C: type,
+    comptime V: type,
+    comptime D: type,
     context: *Context,
 ) !void {
     var progress = context.progress.start("creation", 0);
@@ -268,9 +356,9 @@ pub fn create(
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.create(
-                PARSE,
-                CREATE,
-                VALIDATE,
+                P,
+                C,
+                V,
                 tmp_alloc,
                 context.db,
                 context.validation,
@@ -288,7 +376,7 @@ pub fn create(
                     break;
                 },
                 .created => {
-                    curr_entry.destroy(DESTROY, context.vk_device);
+                    curr_entry.destroy(D, context.vk_device);
                 },
                 .invalid => {
                     log.debug(
@@ -296,7 +384,7 @@ pub fn create(
                         "Encountered invalid entry during creating {t} 0x{x:0>16}",
                         .{ curr_entry.tag, curr_entry.hash },
                     );
-                    curr_entry.destroy_dependencies(DESTROY, context.vk_device);
+                    curr_entry.destroy_dependencies(D, context.vk_device);
                     while (task.queue.pop()) |t| {
                         const e, _ = t;
                         log.debug(
@@ -305,7 +393,7 @@ pub fn create(
                             .{ e.tag, e.hash },
                         );
                         e.status.store(.invalid, .release);
-                        e.destroy_dependencies(DESTROY, context.vk_device);
+                        e.destroy_dependencies(D, context.vk_device);
                     }
                     _ = task.arena.reset(.retain_capacity);
                     break;
@@ -319,8 +407,6 @@ pub fn create(
 }
 
 test "parse/create" {
-    const parsing = @import("parsing.zig");
-
     const Dummy = struct {
         fn parse(
             _: Allocator,
@@ -372,24 +458,6 @@ test "parse/create" {
         fn destroy(_: vk.VkDevice, _: *const anyopaque) void {
             unreachable;
         }
-
-        fn validate(
-            _: *const vv.Extensions,
-            _: *const vk.VkRayTracingPipelineCreateInfoKHR,
-            _: bool,
-        ) bool {
-            return true;
-        }
-    };
-
-    const TestValidate = struct {
-        pub const validate_VkSamplerCreateInfo = Dummy.validate;
-        pub const validate_VkDescriptorSetLayoutCreateInfo = Dummy.validate;
-        pub const validate_VkPipelineLayoutCreateInfo = Dummy.validate;
-        pub const validate_VkRenderPassCreateInfo = Dummy.validate;
-        pub const validate_VkGraphicsPipelineCreateInfo = Dummy.validate;
-        pub const validate_VkComputePipelineCreateInfo = Dummy.validate;
-        pub const validate_VkRayTracingPipelineCreateInfoKHR = Dummy.validate;
     };
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -466,7 +534,7 @@ test "parse/create" {
             .validation = &validation,
             .vk_device = undefined,
         };
-        try parse(TestParse, TestValidate, &thread_context);
+        try parse(TestParse, NoValidation, &thread_context);
         try std.testing.expectEqual(.parsed, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {
@@ -554,7 +622,7 @@ test "parse/create" {
             .validation = &validation,
             .vk_device = undefined,
         };
-        try parse(TestParse, TestValidate, &thread_context);
+        try parse(TestParse, NoValidation, &thread_context);
         try std.testing.expectEqual(.invalid, test_entry.status.raw);
         const pipelines = db.entries.getPtr(.graphics_pipeline);
         for (pipelines.values()) |*entry| {

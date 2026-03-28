@@ -7,7 +7,6 @@ const vk = @import("vk.zig");
 const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
-// const vv = @import("vulkan_validation.zig");
 const vv = @import("vk_validation.zig");
 const vulkan = @import("vulkan.zig");
 const profiler = @import("profiler.zig");
@@ -138,5 +137,5 @@ pub fn process(context: *root.Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    root.parse(parsing, vv, context) catch unreachable;
+    root.parse(context) catch unreachable;
 }
