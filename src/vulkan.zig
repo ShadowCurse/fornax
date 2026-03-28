@@ -29,15 +29,7 @@ pub fn init(
     validation: *vv.Validation,
 ) !vk.VkDevice {
     const api_version = get_api_version();
-    log.info(
-        @src(),
-        "Supported vulkan version: {d}.{d}.{d}",
-        .{
-            api_version.major,
-            api_version.minor,
-            api_version.patch,
-        },
-    );
+    log.info(@src(), "Supported vulkan version: {f}", .{api_version});
     const default_app_info: vk.VkApplicationInfo = .{
         .pApplicationName = "replayer",
         .applicationVersion = .{ .patch = 1 },
@@ -237,12 +229,8 @@ fn configure_app_info(
 
         log.info(
             @src(),
-            "Requested app info vulkan version: {d}.{d}.{d}",
-            .{
-                parsed_application_info.application_info.apiVersion.major,
-                parsed_application_info.application_info.apiVersion.minor,
-                parsed_application_info.application_info.apiVersion.patch,
-            },
+            "Requested app info vulkan version: {f}",
+            .{parsed_application_info.application_info.apiVersion},
         );
         if (app_info.*.apiVersion.less(parsed_application_info.application_info.apiVersion)) {
             log.err(@src(), "Requested vulkan api version is above the supported version", .{});
@@ -285,14 +273,11 @@ pub fn contains_all_extensions(
         }
         if (log_prefix) |lp| {
             const version: vk.ApiVersion = @bitCast(e.specVersion);
-            log.debug(@src(), "({s})({s}) Extension version: {d}.{d}.{d} Name: {s}", .{
-                required,
-                lp,
-                version.major,
-                version.minor,
-                version.patch,
-                e.extensionName,
-            });
+            log.debug(
+                @src(),
+                "({s})({s}) Extension version: {f} Name: {s}",
+                .{ required, lp, version, e.extensionName },
+            );
         }
     }
     return found_extensions == to_find.len;
@@ -319,15 +304,11 @@ pub fn contains_all_layers(
         }
         if (log_prefix) |lp| {
             const version: vk.ApiVersion = @bitCast(l.specVersion);
-            log.debug(@src(), "({s})({s}) Layer name: {s} Spec version: {d}.{d}.{d} Description: {s}", .{
-                required,
-                lp,
-                l.layerName,
-                version.major,
-                version.minor,
-                version.patch,
-                l.description,
-            });
+            log.debug(
+                @src(),
+                "({s})({s}) Layer name: {s} Spec version: {f} Description: {s}",
+                .{ required, lp, l.layerName, version, l.description },
+            );
         }
     }
     return found_layers == to_find.len;
@@ -404,14 +385,12 @@ pub fn create_vk_instance(
     {
         log.info(
             @src(),
-            "Creating instance with application name: {s} engine name: {s} engine version: {d} api version: {d}.{d}.{d}",
+            "Creating instance with application name: {s} engine name: {s} engine version: {d} api version: {f}",
             .{
                 app_info.pApplicationName.?,
                 app_info.pEngineName.?,
                 @as(u32, @bitCast(app_info.engineVersion)),
-                app_info.apiVersion.major,
-                app_info.apiVersion.minor,
-                app_info.apiVersion.patch,
+                app_info.apiVersion,
             },
         );
     }
@@ -433,13 +412,8 @@ pub fn create_vk_instance(
     {
         log.debug(
             @src(),
-            "Created instance api version: {d}.{d}.{d} has_properties_2: {}",
-            .{
-                app_info.apiVersion.major,
-                app_info.apiVersion.minor,
-                app_info.apiVersion.patch,
-                has_properties_2,
-            },
+            "Created instance api version: {f} has_properties_2: {}",
+            .{ app_info.apiVersion, has_properties_2 },
         );
     }
     return .{
@@ -591,19 +565,15 @@ pub fn select_physical_device(
         log.debug(@src(),
             \\ Physical device:
             \\    Name: {s}
-            \\    API version: {d}.{d}.{d}
-            \\    Driver version: {d}.{d}.{d}
+            \\    API version: {f}
+            \\    Driver version: {f}
             \\    Vendor ID: {d}
             \\    Device Id: {d}
             \\    Device type: {d}
         , .{
             properties.deviceName,
-            api_version.major,
-            api_version.minor,
-            api_version.patch,
-            driver_version.major,
-            driver_version.minor,
-            driver_version.patch,
+            api_version,
+            driver_version,
             properties.vendorID,
             properties.deviceID,
             properties.deviceType,
@@ -979,13 +949,11 @@ pub fn create_vk_device(
             all_extensions_len += 1;
         } else enabled = "filtered";
         const version: vk.ApiVersion = @bitCast(e.specVersion);
-        log.debug(@src(), "(PhysicalDevice)({s:^8}) Extension version: {d}.{d}.{d} Name: {s}", .{
-            enabled,
-            version.major,
-            version.minor,
-            version.patch,
-            e.extensionName,
-        });
+        log.debug(
+            @src(),
+            "(PhysicalDevice)({s:^8}) Extension version: {f} Name: {s}",
+            .{ enabled, version, e.extensionName },
+        );
     }
     if (physical_device.has_validation_cache) {
         all_extension_names[all_extensions_len] = "VK_EXT_validation_cache";
