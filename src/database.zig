@@ -63,6 +63,7 @@ pub const Entry = struct {
     payload_crc: u32,
     payload_stored_size: u32,
     payload_decompressed_size: u32,
+    // TODO: maybe expand this to allow big files
     payload_file_offset: u32,
 
     create_info: ?*align(8) const anyopaque = null,
@@ -73,6 +74,20 @@ pub const Entry = struct {
     dependent_by: std.atomic.Value(u32) = .init(0),
     status: std.atomic.Value(Status) = .init(.not_parsed),
     dependencies_destroyed: std.atomic.Value(bool) = .init(false),
+
+    comptime {
+        const C = struct {
+            fn check_size() void {
+                log.comptime_assert(
+                    @src(),
+                    @sizeOf(Entry) == 64,
+                    "Database.Entry must be 64 bytes, but it is {d}",
+                    .{@as(u32, @sizeOf(Entry))},
+                );
+            }
+        };
+        C.check_size();
+    }
 
     pub const Tag = enum(u8) {
         application_info = 0,
@@ -160,6 +175,8 @@ pub const Entry = struct {
         alloc: Allocator,
         db: *const Database,
     ) ReadAndCheckCrcError![]const u8 {
+        // Alloc with cache line alignment for SIMD crc32 implementation.
+        // All entries should have crc32.
         const payload = try alloc.alignedAlloc(u8, .@"64", self.payload_stored_size);
 
         const read_bytes = try db.file.pread(payload, self.payload_file_offset);
@@ -280,12 +297,18 @@ pub const Entry = struct {
         self.create_info = result.create_info;
         const dependencies = try alloc.alloc(Dependency, result.dependencies.len);
         for (result.dependencies, 0..) |dep, i| {
-            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash).?;
+            const dep_entry = db.entries.getPtr(dep.tag).getPtr(dep.hash);
+            log.assert(
+                @src(),
+                dep_entry != null,
+                "Entry: {t} 0x{x:0>16} parsed correctly, but dependency {t} 0x{x:0>16} cannot be found",
+                .{ self.tag, self.hash, dep.tag, dep.hash },
+            );
             dependencies[i] = .{
-                .entry = dep_entry,
+                .entry = dep_entry.?,
                 .ptr_to_handle = @ptrCast(dep.ptr_to_handle),
             };
-            _ = dep_entry.dependent_by.fetchAdd(1, .release);
+            _ = dep_entry.?.dependent_by.fetchAdd(1, .release);
         }
         self.dependencies = dependencies;
     }
@@ -486,6 +509,12 @@ pub const Entry = struct {
                 "Entry: {t} 0x{x:0>16} has null handle for dependency {t} 0x{x:0>16}",
                 .{ self.tag, self.hash, dep.entry.tag, dep.entry.hash },
             );
+            log.assert(
+                @src(),
+                dep.ptr_to_handle != null,
+                "Entry: {t} 0x{x:0>16} Dependency {t} 0x{x:0>16} contains null ptr_to_handle",
+                .{ self.tag, self.hash, dep.entry.tag, dep.entry.hash },
+            );
             dep.ptr_to_handle.?.* = dep.entry.handle;
         }
         switch (self.tag) {
@@ -631,7 +660,7 @@ pub const FileEntry = extern struct {
     }
 };
 
-pub fn init(tmp_alloc: Allocator, path: []const u8) !Database {
+pub fn init(path: []const u8) !Database {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
@@ -660,7 +689,7 @@ pub fn init(tmp_alloc: Allocator, path: []const u8) !Database {
 
     // All database related allocations will be in this arena.
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    const arena_alloc = arena.allocator();
+    const alloc = arena.allocator();
 
     var entries: EntriesType = .initFill(.empty);
 
@@ -683,30 +712,38 @@ pub fn init(tmp_alloc: Allocator, path: []const u8) !Database {
         const payload_file_offset: u64 = file_offset;
         file_offset += entry.stored_size;
         const entry_tag = entry.get_tag() catch {
-            log.debug(@src(), "Skipping corrupted FileEntry", .{});
+            log.debug(@src(), "Skipping corrupted FileEntry: cannot parse tag: {any}", .{entry.tag_hash});
             continue;
         };
         // There is no used for these blobs, so skip them.
         if (entry_tag == .application_blob_link) continue;
 
-        const entry_hash = try entry.get_hash();
-        try entries.getPtr(entry_tag).put(tmp_alloc, entry_hash, .{
-            .tag = entry_tag,
-            .hash = entry_hash,
-            .payload_flag = if (entry.flags == .COMPRESSED) .compressed else .not_compressed,
-            .payload_crc = entry.crc,
-            .payload_stored_size = entry.stored_size,
-            .payload_decompressed_size = entry.decompressed_size,
-            .payload_file_offset = @intCast(payload_file_offset),
-        });
+        const entry_hash = entry.get_hash() catch {
+            log.debug(@src(), "Skipping corrupted FileEntry: cannot parse hash: {any}", .{entry.tag_hash});
+            continue;
+        };
+        const result = try entries.getPtr(entry_tag).getOrPut(alloc, entry_hash);
+        if (result.found_existing) log.warn(
+            @src(),
+            "Entry: {t} 0x{x:0>16} found duplicate at file offset: 0x{x}",
+            .{ entry_tag, entry_hash, file_offset - entry.stored_size - @sizeOf(FileEntry) },
+        ) else {
+            result.value_ptr.* = .{
+                .tag = entry_tag,
+                .hash = entry_hash,
+                .payload_flag = if (entry.flags == .COMPRESSED) .compressed else .not_compressed,
+                .payload_crc = entry.crc,
+                .payload_stored_size = entry.stored_size,
+                .payload_decompressed_size = entry.decompressed_size,
+                .payload_file_offset = @intCast(payload_file_offset),
+            };
+        }
     }
 
-    var final_entries: EntriesType = undefined;
-    var fe_iter = final_entries.iterator();
-    while (fe_iter.next()) |e| {
+    var iter = entries.iterator();
+    while (iter.next()) |e| {
         const map = entries.getPtrConst(e.key);
         log.info(@src(), "Found {s:<21} {d:>8}", .{ @tagName(e.key), map.count() });
-        e.value.* = try map.clone(arena_alloc);
     }
 
     // Later file is accessed by multiple threads at random offsets
@@ -719,7 +756,7 @@ pub fn init(tmp_alloc: Allocator, path: []const u8) !Database {
 
     return .{
         .file = file,
-        .entries = final_entries,
+        .entries = entries,
         .arena = arena,
     };
 }

@@ -63,8 +63,7 @@ pub fn main() !void {
     log.info(@src(), "Using {d} threads", .{thread_count});
 
     const db_path = std.mem.span(args.database_path.values[0]);
-    var db: Database = try .init(tmp_alloc, db_path);
-    _ = tmp_arena.reset(.retain_capacity);
+    var db: Database = try .init(db_path);
 
     var validation: vv.Validation = undefined;
     const vk_device = try vulkan.init(

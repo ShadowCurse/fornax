@@ -105,8 +105,7 @@ pub fn main() !void {
     }
 
     const db_path = std.mem.span(args.database_paths.values[0]);
-    var db: Database = try .init(tmp_alloc, db_path);
-    _ = tmp_arena.reset(.retain_capacity);
+    var db: Database = try .init(db_path);
 
     const thread_count = root.actual_thread_count(args.num_threads);
     log.info(@src(), "Using {d} threads", .{thread_count});
