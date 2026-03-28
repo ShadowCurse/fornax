@@ -417,6 +417,7 @@ pub const Entry = struct {
         self: *Entry,
         comptime PARSE: type,
         comptime CREATE: type,
+        comptime VALIDATE: type,
         tmp_alloc: Allocator,
         db: *Database,
         validation: *const Validation,
@@ -450,7 +451,7 @@ pub const Entry = struct {
             };
         }
 
-        self.create_inner(PARSE, CREATE, tmp_alloc, db, validation, vk_device) catch |err| {
+        self.create_inner(PARSE, CREATE, VALIDATE, tmp_alloc, db, validation, vk_device) catch |err| {
             log.debug(
                 @src(),
                 "Entry: {t} 0x{x:0>16} cannot be created: {t}",
@@ -469,6 +470,7 @@ pub const Entry = struct {
         self: *Entry,
         comptime PARSE: type,
         comptime CREATE: type,
+        comptime VALIDATE: type,
         tmp_alloc: Allocator,
         db: *Database,
         validation: *const Validation,
@@ -499,7 +501,7 @@ pub const Entry = struct {
                     payload,
                 );
                 try self.check_version_and_hash(result);
-                if (!vv.validate_shader_code(validation, @ptrCast(result.create_info)))
+                if (!VALIDATE.validate_shader_code(validation, @ptrCast(result.create_info)))
                     return error.InvalidShaderCode;
 
                 self.handle = @bitCast(try CREATE.create_shader_module(vk_device, @ptrCast(result.create_info)));

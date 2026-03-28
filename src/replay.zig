@@ -241,22 +241,42 @@ const DryDestroy = struct {
     }
 };
 
+const NoValidation = struct {
+    const Self = @This();
+
+    pub const validate_VkSamplerCreateInfo = validate;
+    pub const validate_VkDescriptorSetLayoutCreateInfo = validate;
+    pub const validate_VkPipelineLayoutCreateInfo = validate;
+    pub const validate_VkRenderPassCreateInfo = validate;
+    pub const validate_VkGraphicsPipelineCreateInfo = validate;
+    pub const validate_VkComputePipelineCreateInfo = validate;
+    pub const validate_VkRayTracingPipelineCreateInfoKHR = validate;
+    fn validate(_: *const vv.Extensions, _: *const anyopaque, _: bool) bool {
+        return true;
+    }
+
+    pub fn validate_shader_code(_: *const vv.Validation, _: *const anyopaque) bool {
+        return true;
+    }
+};
+
 const PARSE = parsing;
 const CREATE = if (build_options.no_driver) DryCreate else vulkan;
 const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
+const VALIDATE = if (build_options.no_validation) NoValidation else vv;
 
 pub fn parse(context: *root.Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    root.parse(PARSE, vv, context) catch unreachable;
+    root.parse(PARSE, VALIDATE, context) catch unreachable;
 }
 
 pub fn create(context: *root.Context) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    root.create(PARSE, CREATE, DESTROY, context) catch unreachable;
+    root.create(PARSE, CREATE, VALIDATE, DESTROY, context) catch unreachable;
 }
 
 comptime {

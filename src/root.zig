@@ -134,7 +134,7 @@ pub fn spawn_threads(
     return threads;
 }
 
-pub fn parse(comptime P: type, comptime V: type, context: *Context) !void {
+pub fn parse(comptime PARSE: type, comptime VALIDATE: type, context: *Context) !void {
     var progress = context.progress.start("parsing", 0);
     defer progress.end();
 
@@ -176,8 +176,8 @@ pub fn parse(comptime P: type, comptime V: type, context: *Context) !void {
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.parse(
-                P,
-                V,
+                PARSE,
+                VALIDATE,
                 shared_alloc,
                 task.root_entry.arena.allocator(),
                 thread_alloc,
@@ -223,9 +223,10 @@ pub fn parse(comptime P: type, comptime V: type, context: *Context) !void {
 }
 
 pub fn create(
-    comptime P: type,
-    comptime C: type,
-    comptime D: type,
+    comptime PARSE: type,
+    comptime CREATE: type,
+    comptime VALIDATE: type,
+    comptime DESTROY: type,
     context: *Context,
 ) !void {
     var progress = context.progress.start("creation", 0);
@@ -267,8 +268,9 @@ pub fn create(
             const curr_entry, const next_dep = tuple;
 
             switch (curr_entry.create(
-                P,
-                C,
+                PARSE,
+                CREATE,
+                VALIDATE,
                 tmp_alloc,
                 context.db,
                 context.validation,
@@ -286,7 +288,7 @@ pub fn create(
                     break;
                 },
                 .created => {
-                    curr_entry.destroy(D, context.vk_device);
+                    curr_entry.destroy(DESTROY, context.vk_device);
                 },
                 .invalid => {
                     log.debug(
@@ -294,7 +296,7 @@ pub fn create(
                         "Encountered invalid entry during creating {t} 0x{x:0>16}",
                         .{ curr_entry.tag, curr_entry.hash },
                     );
-                    curr_entry.destroy_dependencies(D, context.vk_device);
+                    curr_entry.destroy_dependencies(DESTROY, context.vk_device);
                     while (task.queue.pop()) |t| {
                         const e, _ = t;
                         log.debug(
@@ -303,7 +305,7 @@ pub fn create(
                             .{ e.tag, e.hash },
                         );
                         e.status.store(.invalid, .release);
-                        e.destroy_dependencies(D, context.vk_device);
+                        e.destroy_dependencies(DESTROY, context.vk_device);
                     }
                     _ = task.arena.reset(.retain_capacity);
                     break;

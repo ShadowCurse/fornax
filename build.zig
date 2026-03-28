@@ -25,6 +25,7 @@ const Args = struct {
     use_llvm: bool,
     profile: bool,
     no_driver: bool,
+    no_validation: bool,
     disable_shader_cache: bool,
     shader_cache_dir: ?[]const u8,
 
@@ -34,6 +35,7 @@ const Args = struct {
             .use_llvm = b.option(bool, "use_llvm", "Use LLVM backend") != null,
             .profile = b.option(bool, "profile", "Enable profiling") != null,
             .no_driver = b.option(bool, "no_driver", "Replace driver calls with stubs") != null,
+            .no_validation = b.option(bool, "no_validation", "Disable vulkan object validation") != null,
             .disable_shader_cache = b.option(
                 bool,
                 "disable_shader_cache",
@@ -60,6 +62,7 @@ fn create_exe(
     const build_options = b.addOptions();
     build_options.addOption(bool, "profile", args.profile);
     build_options.addOption(bool, "no_driver", args.no_driver);
+    build_options.addOption(bool, "no_validation", args.no_validation);
 
     const root_mudule = b.createModule(.{
         .root_source_file = b.path(source_file),
@@ -111,6 +114,7 @@ fn create_lib(
     const build_options = b.addOptions();
     build_options.addOption(bool, "profile", args.profile);
     build_options.addOption(bool, "no_driver", args.no_driver);
+    build_options.addOption(bool, "no_validation", args.no_validation);
 
     const root_mudule = b.createModule(.{
         .root_source_file = b.path(source_file),
