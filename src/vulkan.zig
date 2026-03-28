@@ -28,26 +28,34 @@ pub fn init(
     enable_vulkan_validation_layers: bool,
     validation: *vv.Validation,
 ) !vk.VkDevice {
-    const app_infos = db.entries.getPtrConst(.application_info).values();
-    if (app_infos.len == 0)
-        return error.NoApplicationInfoInTheDatabase;
-    const app_info_entry = &app_infos[0];
-    const app_info_payload = try app_info_entry.get_payload(arena_alloc, tmp_alloc, db);
-    const parsed_application_info = try parsing.parse_application_info(
-        arena_alloc,
-        tmp_alloc,
-        db,
-        app_info_payload,
+    const api_version = get_api_version();
+    log.info(
+        @src(),
+        "Supported vulkan version: {d}.{d}.{d}",
+        .{
+            api_version.major,
+            api_version.minor,
+            api_version.patch,
+        },
     );
-    if (parsed_application_info.version != 6)
-        return error.ApllicationInfoVersionMissmatch;
+    const default_app_info: vk.VkApplicationInfo = .{
+        .pApplicationName = "replayer",
+        .applicationVersion = .{ .patch = 1 },
+        .pEngineName = "replayer",
+        .engineVersion = .{ .patch = 1 },
+        .apiVersion = api_version,
+        .pNext = null,
+    };
+    var app_info: *const vk.VkApplicationInfo = &default_app_info;
+    var device_features2: ?*const vk.VkPhysicalDeviceFeatures2 = null;
+    try configure_app_info(arena_alloc, tmp_alloc, db, &app_info, &device_features2);
 
     const get_proc = try load_vulkan();
     try load_basic_procs(get_proc);
 
     const instance = try create_vk_instance(
         tmp_alloc,
-        parsed_application_info.application_info,
+        app_info,
         enable_vulkan_validation_layers,
     );
     try load_instance_procs(get_proc, instance.instance);
@@ -65,8 +73,8 @@ pub fn init(
         tmp_alloc,
         &instance,
         &physical_device,
-        parsed_application_info.application_info,
-        parsed_application_info.device_features2,
+        app_info,
+        device_features2,
         &validation.pdf,
         &validation.additional_pdf,
         enable_vulkan_validation_layers,
@@ -197,14 +205,53 @@ fn load_procs(
 }
 
 fn get_api_version() vk.ApiVersion {
-    var version: vk.ApiVersion = .{};
+    var version: vk.ApiVersion = vk.VK_API_VERSION_1_0;
     if (vkEnumerateInstanceVersion) |f| {
         if (f(@ptrCast(&version)) != .VK_SUCCESS)
-            log.warn(@src(), "Cannot get instance version", .{});
+            log.warn(@src(), "Cannot get instance version, defaulting to version 1.0.0", .{});
     } else {
-        version = vk.VK_API_VERSION_1_0;
+        log.warn(@src(), "No vkEnumerateInstanceVersion available, defaulting to version 1.0.0", .{});
     }
     return version;
+}
+
+fn configure_app_info(
+    arena_alloc: Allocator,
+    tmp_alloc: Allocator,
+    db: *const Database,
+    app_info: **const vk.VkApplicationInfo,
+    device_features2: *?*const vk.VkPhysicalDeviceFeatures2,
+) !void {
+    const app_infos = db.entries.getPtrConst(.application_info).values();
+    if (app_infos.len != 0) {
+        const app_info_entry = &app_infos[0];
+        const app_info_payload = try app_info_entry.get_payload(arena_alloc, tmp_alloc, db);
+        const parsed_application_info = try parsing.parse_application_info(
+            arena_alloc,
+            tmp_alloc,
+            db,
+            app_info_payload,
+        );
+        if (parsed_application_info.version != 6)
+            return error.ApllicationInfoVersionMissmatch;
+
+        log.info(
+            @src(),
+            "Requested app info vulkan version: {d}.{d}.{d}",
+            .{
+                parsed_application_info.application_info.apiVersion.major,
+                parsed_application_info.application_info.apiVersion.minor,
+                parsed_application_info.application_info.apiVersion.patch,
+            },
+        );
+        if (app_info.*.apiVersion.less(parsed_application_info.application_info.apiVersion)) {
+            log.err(@src(), "Requested vulkan api version is above the supported version", .{});
+            return error.UnsupportedVulkanApiVersion;
+        }
+
+        app_info.* = parsed_application_info.application_info;
+        device_features2.* = parsed_application_info.device_features2;
+    }
 }
 
 fn check_result(result: vk.VkResult) !void {
@@ -327,37 +374,11 @@ pub const Instance = struct {
 };
 pub fn create_vk_instance(
     arena_alloc: Allocator,
-    requested_app_info: ?*const vk.VkApplicationInfo,
+    app_info: *const vk.VkApplicationInfo,
     enable_validation: bool,
 ) !Instance {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
-
-    const api_version = get_api_version();
-    log.info(
-        @src(),
-        "Supported vulkan version: {d}.{d}.{d}",
-        .{
-            api_version.major,
-            api_version.minor,
-            api_version.patch,
-        },
-    );
-    if (requested_app_info) |app_info| {
-        log.info(
-            @src(),
-            "Requested app info vulkan version: {d}.{d}.{d}",
-            .{
-                app_info.apiVersion.major,
-                app_info.apiVersion.minor,
-                app_info.apiVersion.patch,
-            },
-        );
-        if (api_version.less(app_info.apiVersion)) {
-            log.err(@src(), "Requested vulkan api version is above the supported version", .{});
-            return error.UnsupportedVulkanApiVersion;
-        }
-    }
 
     const extensions = try get_instance_extensions(arena_alloc);
     if (!contains_all_extensions("Instance", extensions, &VK_ADDITIONAL_EXTENSIONS_NAMES))
@@ -380,17 +401,6 @@ pub fn create_vk_instance(
         break :blk &VK_VALIDATION_LAYERS_NAMES;
     } else &.{};
 
-    const app_info = if (requested_app_info) |app_info|
-        app_info
-    else
-        &vk.VkApplicationInfo{
-            .pApplicationName = "replayer",
-            .applicationVersion = .{ .patch = 1 },
-            .pEngineName = "replayer",
-            .engineVersion = .{ .patch = 1 },
-            .apiVersion = api_version,
-            .pNext = null,
-        };
     {
         log.info(
             @src(),
@@ -425,16 +435,16 @@ pub fn create_vk_instance(
             @src(),
             "Created instance api version: {d}.{d}.{d} has_properties_2: {}",
             .{
-                api_version.major,
-                api_version.minor,
-                api_version.patch,
+                app_info.apiVersion.major,
+                app_info.apiVersion.minor,
+                app_info.apiVersion.patch,
                 has_properties_2,
             },
         );
     }
     return .{
         .instance = vk_instance,
-        .api_version = api_version,
+        .api_version = app_info.apiVersion,
         .has_properties_2 = has_properties_2,
         .all_extension_names = all_extension_names,
     };
