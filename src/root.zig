@@ -467,8 +467,7 @@ test "parse/create" {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const alloc = arena.allocator();
 
-    var progress = std.Progress.start(.{});
-    defer progress.end();
+    var progress: std.Progress.Node = .none;
 
     var tmp_dir = std.testing.tmpDir(.{});
     defer tmp_dir.cleanup();
