@@ -83,6 +83,7 @@ fn create_exe(
         .name = name ++ "_unit_test",
         .root_module = root_mudule,
         .filters = b.args orelse &.{},
+        .use_llvm = args.use_llvm,
     });
     const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
 
