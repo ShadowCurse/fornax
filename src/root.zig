@@ -367,6 +367,7 @@ pub fn create_inner(
                         try task.queue.append(tmp_alloc, .{ dep.entry, 0 });
                     } else {
                         try task.queue.append(tmp_alloc, .{ curr_entry, next_dep });
+                        break;
                     }
                 },
                 .creating => {
