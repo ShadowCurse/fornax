@@ -1510,6 +1510,1021 @@ pub fn parse_vk_pipeline_viewport_depth_clip_control_create_info_ext(
     try parse_simple_type(context, obj);
 }
 
+pub fn parse_vk_pipeline_tessellation_domain_origin_state_create_info(
+    context: *Context,
+    obj: *vk.VkPipelineTessellationDomainOriginStateCreateInfo,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_pipeline_tessellation_domain_origin_state_create_info" {
+    const json =
+        \\{
+        \\  "domainOrigin": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineTessellationDomainOriginStateCreateInfo = undefined;
+    try parse_vk_pipeline_tessellation_domain_origin_state_create_info(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.domainOrigin)));
+}
+
+pub fn parse_vk_pipeline_rasterization_state_stream_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineRasterizationStateStreamCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_pipeline_rasterization_state_stream_create_info_ext" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "rasterizationStream": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineRasterizationStateStreamCreateInfoEXT = undefined;
+    try parse_vk_pipeline_rasterization_state_stream_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, item.rasterizationStream);
+}
+
+pub fn parse_vk_pipeline_color_blend_advanced_state_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_pipeline_color_blend_advanced_state_create_info_ext" {
+    const json =
+        \\{
+        \\  "srcPremultiplied": 69,
+        \\  "dstPremultiplied": 69,
+        \\  "blendOverlap": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT = undefined;
+    try parse_vk_pipeline_color_blend_advanced_state_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, item.srcPremultiplied);
+    try std.testing.expectEqual(69, item.dstPremultiplied);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.blendOverlap)));
+}
+
+pub fn parse_vk_pipeline_rasterization_conservative_state_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineRasterizationConservativeStateCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_pipeline_rasterization_conservative_state_create_info_ext" {
+    const json =
+        \\{
+        \\  "flags": 69,
+        \\  "conservativeRasterizationMode": 69,
+        \\  "extraPrimitiveOverestimationSize": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineRasterizationConservativeStateCreateInfoEXT = undefined;
+    try parse_vk_pipeline_rasterization_conservative_state_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @bitCast(item.flags)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.conservativeRasterizationMode)));
+    try std.testing.expectEqual(69, item.extraPrimitiveOverestimationSize);
+}
+
+pub fn parse_vk_pipeline_color_write_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineColorWriteCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "colorWriteEnables")) {
+            const enables = try parse_number_array(u32, context);
+            obj.pColorWriteEnables = @ptrCast(enables.ptr);
+            obj.attachmentCount = @intCast(enables.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_pipeline_color_write_create_info_ext" {
+    const json =
+        \\{
+        \\  "colorWriteEnables": [69, 69, 69, 69]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineColorWriteCreateInfoEXT = undefined;
+    try parse_vk_pipeline_color_write_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(4, item.attachmentCount);
+    try std.testing.expect(item.pColorWriteEnables != null);
+    try std.testing.expectEqual(69, item.pColorWriteEnables.?[0]);
+    try std.testing.expectEqual(69, item.pColorWriteEnables.?[1]);
+    try std.testing.expectEqual(69, item.pColorWriteEnables.?[2]);
+    try std.testing.expectEqual(69, item.pColorWriteEnables.?[3]);
+}
+
+pub fn parse_vk_sample_locations_info_ext(
+    context: *Context,
+    obj: *vk.VkSampleLocationsInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "sampleLocationsPerPixel")) {
+            obj.sampleLocationsPerPixel = try scanner_parse_bitfield(vk.VkSampleCountFlags, context.scanner);
+        } else if (std.mem.eql(u8, s, "sampleLocationGridSize")) {
+            try parse_vk_extent_2d(context, &obj.sampleLocationGridSize);
+        } else if (std.mem.eql(u8, s, "sampleLocations")) {
+            const locations = try parse_object_array(
+                vk.VkSampleLocationEXT,
+                parse_vk_sample_location_ext,
+                context,
+            );
+            obj.pSampleLocations = @ptrCast(locations.ptr);
+            obj.sampleLocationsCount = @intCast(locations.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_sample_locations_info_ext" {
+    const json =
+        \\{
+        \\  "sampleLocationsPerPixel": 69,
+        \\  "sampleLocationGridSize": {"width": 69, "height": 69},
+        \\  "sampleLocations": [{"x": 69, "y": 69}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSampleLocationsInfoEXT = undefined;
+    try parse_vk_sample_locations_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.sampleLocationsPerPixel)));
+    try std.testing.expectEqual(69, item.sampleLocationGridSize.width);
+    try std.testing.expectEqual(69, item.sampleLocationGridSize.height);
+    try std.testing.expectEqual(1, item.sampleLocationsCount);
+    try std.testing.expectEqual(69, item.pSampleLocations.?[0].x);
+    try std.testing.expectEqual(69, item.pSampleLocations.?[0].y);
+}
+
+pub fn parse_vk_extent_2d(
+    context: *Context,
+    item: *vk.VkExtent2D,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "width")) {
+            item.width = try scanner_parse_number(u32, context.scanner);
+        } else if (std.mem.eql(u8, s, "height")) {
+            item.height = try scanner_parse_number(u32, context.scanner);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_extent_2d" {
+    const json =
+        \\{
+        \\  "width": 69,
+        \\  "height": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkExtent2D = undefined;
+    try parse_vk_extent_2d(&context, &item);
+
+    try std.testing.expectEqual(69, item.width);
+    try std.testing.expectEqual(69, item.height);
+}
+
+pub fn parse_vk_sample_location_ext(
+    context: *Context,
+    item: *vk.VkSampleLocationEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "x")) {
+            item.x = try scanner_parse_number(f32, context.scanner);
+        } else if (std.mem.eql(u8, s, "y")) {
+            item.y = try scanner_parse_number(f32, context.scanner);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_sample_location_ext" {
+    const json =
+        \\{
+        \\  "x": 69,
+        \\  "y": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSampleLocationEXT = undefined;
+    try parse_vk_sample_location_ext(&context, &item);
+
+    try std.testing.expectEqual(69, item.x);
+    try std.testing.expectEqual(69, item.y);
+}
+
+pub fn parse_vk_pipeline_sample_locations_state_create_info_ext(
+    context: *Context,
+    obj: *vk.VkPipelineSampleLocationsStateCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "sampleLocationsEnable")) {
+            obj.sampleLocationsEnable = try scanner_parse_number(u32, context.scanner);
+        } else if (std.mem.eql(u8, s, "sampleLocationsInfo")) {
+            try parse_vk_sample_locations_info_ext(context, &obj.sampleLocationsInfo);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_pipeline_sample_locations_state_create_info_ext" {
+    const json =
+        \\{
+        \\  "sampleLocationsEnable": 69,
+        \\  "sampleLocationsInfo": {
+        \\    "sampleLocationsPerPixel": 69,
+        \\    "sampleLocationGridSize": {"width": 69, "height": 69},
+        \\    "sampleLocations": [{"x": 69, "y": 69}]
+        \\  }
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkPipelineSampleLocationsStateCreateInfoEXT = undefined;
+    try parse_vk_pipeline_sample_locations_state_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, item.sampleLocationsEnable);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.sampleLocationsInfo.sampleLocationsPerPixel)));
+    try std.testing.expectEqual(
+        vk.VkExtent2D{ .width = 69, .height = 69 },
+        item.sampleLocationsInfo.sampleLocationGridSize,
+    );
+    try std.testing.expectEqual(1, item.sampleLocationsInfo.sampleLocationsCount);
+    try std.testing.expectEqual(
+        vk.VkSampleLocationEXT{ .x = 69, .y = 69 },
+        item.sampleLocationsInfo.pSampleLocations.?[0],
+    );
+}
+
+pub fn parse_vk_render_pass_multiview_create_info(
+    context: *Context,
+    obj: *vk.VkRenderPassMultiviewCreateInfo,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "viewMasks")) {
+            const masks = try parse_number_array(u32, context);
+            obj.pViewMasks = @ptrCast(masks.ptr);
+            obj.subpassCount = @intCast(masks.len);
+        } else if (std.mem.eql(u8, s, "viewOffsets")) {
+            const offsets = try parse_number_array(i32, context);
+            obj.pViewOffsets = @ptrCast(offsets.ptr);
+            obj.dependencyCount = @intCast(offsets.len);
+        } else if (std.mem.eql(u8, s, "correlationMasks")) {
+            const masks = try parse_number_array(u32, context);
+            obj.pCorrelationMasks = @ptrCast(masks.ptr);
+            obj.correlationMaskCount = @intCast(masks.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_render_pass_multiview_create_info" {
+    const json =
+        \\{
+        \\  "viewMasks": [69, 69],
+        \\  "viewOffsets": [69, 69],
+        \\  "correlationMasks": [69]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRenderPassMultiviewCreateInfo = undefined;
+    try parse_vk_render_pass_multiview_create_info(&context, &item);
+
+    try std.testing.expectEqual(2, item.subpassCount);
+    try std.testing.expectEqual(69, item.pViewMasks.?[0]);
+    try std.testing.expectEqual(69, item.pViewMasks.?[1]);
+    try std.testing.expectEqual(2, item.dependencyCount);
+    try std.testing.expectEqual(69, item.pViewOffsets.?[0]);
+    try std.testing.expectEqual(69, item.pViewOffsets.?[1]);
+    try std.testing.expectEqual(1, item.correlationMaskCount);
+    try std.testing.expectEqual(69, item.pCorrelationMasks.?[0]);
+}
+
+pub fn parse_vk_attachment_description_stencil_layout(
+    context: *Context,
+    obj: *vk.VkAttachmentDescriptionStencilLayout,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_attachment_description_stencil_layout" {
+    const json =
+        \\{
+        \\  "stencilInitialLayout": 69,
+        \\  "stencilFinalLayout": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkAttachmentDescriptionStencilLayout = undefined;
+    try parse_vk_attachment_description_stencil_layout(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilInitialLayout)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilFinalLayout)));
+}
+
+pub fn parse_vk_attachment_reference_stencil_layout(
+    context: *Context,
+    obj: *vk.VkAttachmentReferenceStencilLayout,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_attachment_reference_stencil_layout" {
+    const json =
+        \\{
+        \\  "stencilLayout": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkAttachmentReferenceStencilLayout = undefined;
+    try parse_vk_attachment_reference_stencil_layout(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.stencilLayout)));
+}
+
+pub fn parse_vk_subpass_description_depth_stencil_resolve(
+    context: *Context,
+    obj: *vk.VkSubpassDescriptionDepthStencilResolve,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "depthResolveMode")) {
+            obj.depthResolveMode = try scanner_parse_bitfield(vk.VkResolveModeFlags, context.scanner);
+        } else if (std.mem.eql(u8, s, "stencilResolveMode")) {
+            obj.stencilResolveMode = try scanner_parse_bitfield(vk.VkResolveModeFlags, context.scanner);
+        } else if (std.mem.eql(u8, s, "depthStencilResolveAttachment")) {
+            const attachment = try context.alloc.create(vk.VkAttachmentReference2);
+            try parse_vk_attachment_reference2(context, attachment);
+            obj.pDepthStencilResolveAttachment = attachment;
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_subpass_description_depth_stencil_resolve" {
+    const json =
+        \\{
+        \\  "depthResolveMode": 69,
+        \\  "stencilResolveMode": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSubpassDescriptionDepthStencilResolve = undefined;
+    try parse_vk_subpass_description_depth_stencil_resolve(&context, &item);
+
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.depthResolveMode)));
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.stencilResolveMode)));
+}
+
+pub fn parse_vk_fragment_shading_rate_attachment_info_khr(
+    context: *Context,
+    obj: *vk.VkFragmentShadingRateAttachmentInfoKHR,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "fragmentShadingRateAttachment")) {
+            const attachment = try context.alloc.create(vk.VkAttachmentReference2);
+            try parse_vk_attachment_reference2(context, attachment);
+            obj.pFragmentShadingRateAttachment = attachment;
+        } else if (std.mem.eql(u8, s, "shadingRateAttachmentTexelSize")) {
+            try parse_vk_extent_2d(context, &obj.shadingRateAttachmentTexelSize);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_fragment_shading_rate_attachment_info_khr" {
+    const json =
+        \\{
+        \\  "shadingRateAttachmentTexelSize": {"width": 69, "height": 69}
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkFragmentShadingRateAttachmentInfoKHR = undefined;
+    try parse_vk_fragment_shading_rate_attachment_info_khr(&context, &item);
+
+    try std.testing.expectEqual(69, item.shadingRateAttachmentTexelSize.width);
+    try std.testing.expectEqual(69, item.shadingRateAttachmentTexelSize.height);
+}
+
+pub fn parse_vk_input_attachment_aspect_reference(
+    context: *Context,
+    obj: *vk.VkInputAttachmentAspectReference,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_input_attachment_aspect_reference" {
+    const json =
+        \\{
+        \\  "subpass": 69,
+        \\  "inputAttachmentIndex": 69,
+        \\  "aspectMask": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkInputAttachmentAspectReference = undefined;
+    try parse_vk_input_attachment_aspect_reference(&context, &item);
+
+    try std.testing.expectEqual(69, item.subpass);
+    try std.testing.expectEqual(69, item.inputAttachmentIndex);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.aspectMask)));
+}
+
+pub fn parse_vk_render_pass_input_attachment_aspect_create_info(
+    context: *Context,
+    obj: *vk.VkRenderPassInputAttachmentAspectCreateInfo,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "aspectReferences")) {
+            const refs = try parse_object_array(
+                vk.VkInputAttachmentAspectReference,
+                parse_vk_input_attachment_aspect_reference,
+                context,
+            );
+            obj.pAspectReferences = @ptrCast(refs.ptr);
+            obj.aspectReferenceCount = @intCast(refs.len);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_render_pass_input_attachment_aspect_create_info" {
+    const json =
+        \\{
+        \\  "aspectReferences": [{"subpass": 69, "inputAttachmentIndex": 69, "aspectMask": 69}]
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkRenderPassInputAttachmentAspectCreateInfo = undefined;
+    try parse_vk_render_pass_input_attachment_aspect_create_info(&context, &item);
+
+    try std.testing.expectEqual(1, item.aspectReferenceCount);
+    try std.testing.expectEqual(69, item.pAspectReferences.?[0].subpass);
+    try std.testing.expectEqual(69, item.pAspectReferences.?[0].inputAttachmentIndex);
+    try std.testing.expectEqual(69, @as(u32, @bitCast(item.pAspectReferences.?[0].aspectMask)));
+}
+
+pub fn parse_vk_sampler_reduction_mode_create_info(
+    context: *Context,
+    obj: *vk.VkSamplerReductionModeCreateInfo,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+pub fn parse_vk_component_mapping(
+    context: *Context,
+    obj: *vk.VkComponentMapping,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    try parse_simple_type(context, obj);
+}
+
+test "test_parse_vk_sampler_reduction_mode_create_info" {
+    const json =
+        \\{
+        \\  "reductionMode": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSamplerReductionModeCreateInfo = undefined;
+    try parse_vk_sampler_reduction_mode_create_info(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.reductionMode)));
+}
+
+test "test_parse_vk_component_mapping" {
+    const json =
+        \\{
+        \\  "r": 69,
+        \\  "g": 69,
+        \\  "b": 69,
+        \\  "a": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkComponentMapping = undefined;
+    try parse_vk_component_mapping(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.r)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.g)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.b)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.a)));
+}
+
+pub fn parse_vk_sampler_ycbcr_conversion_create_info(
+    context: *Context,
+    obj: *vk.VkSamplerYcbcrConversionCreateInfo,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "format")) {
+            obj.format = try scanner_parse_enum(vk.VkFormat, context.scanner);
+        } else if (std.mem.eql(u8, s, "ycbcrModel")) {
+            obj.ycbcrModel = try scanner_parse_enum(vk.VkSamplerYcbcrModelConversion, context.scanner);
+        } else if (std.mem.eql(u8, s, "ycbcrRange")) {
+            obj.ycbcrRange = try scanner_parse_enum(vk.VkSamplerYcbcrRange, context.scanner);
+        } else if (std.mem.eql(u8, s, "components")) {
+            try parse_vk_component_mapping(context, &obj.components);
+        } else if (std.mem.eql(u8, s, "xChromaOffset")) {
+            obj.xChromaOffset = try scanner_parse_enum(vk.VkChromaLocation, context.scanner);
+        } else if (std.mem.eql(u8, s, "yChromaOffset")) {
+            obj.yChromaOffset = try scanner_parse_enum(vk.VkChromaLocation, context.scanner);
+        } else if (std.mem.eql(u8, s, "chromaFilter")) {
+            obj.chromaFilter = try scanner_parse_enum(vk.VkFilter, context.scanner);
+        } else if (std.mem.eql(u8, s, "forceExplicitReconstruction")) {
+            obj.forceExplicitReconstruction = try scanner_parse_number(u32, context.scanner);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_sampler_ycbcr_conversion_create_info" {
+    const json =
+        \\{
+        \\  "format": 69,
+        \\  "ycbcrModel": 69,
+        \\  "ycbcrRange": 69,
+        \\  "components": {"r": 69, "g": 69, "b": 69, "a": 69},
+        \\  "xChromaOffset": 69,
+        \\  "yChromaOffset": 69,
+        \\  "chromaFilter": 69,
+        \\  "forceExplicitReconstruction": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSamplerYcbcrConversionCreateInfo = undefined;
+    try parse_vk_sampler_ycbcr_conversion_create_info(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.format)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.ycbcrModel)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.ycbcrRange)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.r)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.g)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.b)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.a)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.xChromaOffset)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.yChromaOffset)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.chromaFilter)));
+    try std.testing.expectEqual(69, item.forceExplicitReconstruction);
+}
+
+pub fn parse_vk_clear_color_value(
+    context: *Context,
+    obj: *vk.VkClearColorValue,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    // Fossilize parses as uint32
+    try scanner_array_begin(context.scanner);
+    var idx: usize = 0;
+    while (try scanner_array_next_number(context.scanner)) |v| {
+        if (idx < 4) {
+            obj.uint32[idx] = try std.fmt.parseInt(u32, v, 10);
+            idx += 1;
+        }
+    }
+}
+
+test "test_parse_vk_clear_color_value" {
+    const json = "[69, 69, 69, 69]";
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkClearColorValue = undefined;
+    try parse_vk_clear_color_value(&context, &item);
+
+    try std.testing.expectEqual(69, item.uint32[0]);
+    try std.testing.expectEqual(69, item.uint32[1]);
+    try std.testing.expectEqual(69, item.uint32[2]);
+    try std.testing.expectEqual(69, item.uint32[3]);
+}
+
+pub fn parse_vk_sampler_custom_border_color_create_info_ext(
+    context: *Context,
+    obj: *vk.VkSamplerCustomBorderColorCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{ .customBorderColor = undefined };
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "customBorderColor")) {
+            try parse_vk_clear_color_value(context, &obj.customBorderColor);
+        } else if (std.mem.eql(u8, s, "format")) {
+            obj.format = try scanner_parse_enum(vk.VkFormat, context.scanner);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_sampler_custom_border_color_create_info_ext" {
+    const json =
+        \\{
+        \\  "customBorderColor": [69, 69, 69, 69],
+        \\  "format": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSamplerCustomBorderColorCreateInfoEXT = undefined;
+    try parse_vk_sampler_custom_border_color_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, item.customBorderColor.uint32[0]);
+    try std.testing.expectEqual(69, item.customBorderColor.uint32[1]);
+    try std.testing.expectEqual(69, item.customBorderColor.uint32[2]);
+    try std.testing.expectEqual(69, item.customBorderColor.uint32[3]);
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.format)));
+}
+
+pub fn parse_vk_sampler_border_color_component_mapping_create_info_ext(
+    context: *Context,
+    obj: *vk.VkSamplerBorderColorComponentMappingCreateInfoEXT,
+) Error!void {
+    const prof_point = MEASUREMENTS.start(@src());
+    defer MEASUREMENTS.end(prof_point);
+
+    obj.* = .{};
+    while (try scanner_object_next_field(context.scanner)) |s| {
+        if (std.mem.eql(u8, s, "components")) {
+            try parse_vk_component_mapping(context, &obj.components);
+        } else if (std.mem.eql(u8, s, "srgb")) {
+            obj.srgb = try scanner_parse_number(u32, context.scanner);
+        } else {
+            const v = try scanner_next_number_or_string(context.scanner);
+            log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
+        }
+    }
+}
+
+test "test_parse_vk_sampler_border_color_component_mapping_create_info_ext" {
+    const json =
+        \\{
+        \\  "components": {"r": 69, "g": 69, "b": 69, "a": 69},
+        \\  "srgb": 69
+        \\}
+    ;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const alloc = arena.allocator();
+
+    const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
+    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var context = Context{
+        .alloc = alloc,
+        .tmp_alloc = alloc,
+        .scanner = &scanner,
+        .db = &db,
+    };
+
+    var item: vk.VkSamplerBorderColorComponentMappingCreateInfoEXT = undefined;
+    try parse_vk_sampler_border_color_component_mapping_create_info_ext(&context, &item);
+
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.r)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.g)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.b)));
+    try std.testing.expectEqual(69, @as(i32, @intFromEnum(item.components.a)));
+    try std.testing.expectEqual(69, item.srgb);
+}
+
 pub fn parse_vk_mutable_descriptor_type_list_ext(
     context: *Context,
     item: *vk.VkMutableDescriptorTypeListEXT,
@@ -1651,13 +2666,12 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                         try chain.chain(vk.VkPhysicalDeviceFragmentShadingRateFeaturesKHR);
                     try parse_vk_physical_device_fragment_shading_rate_features_khr(c, item);
                 },
-                // TODO check bindings
-                // .VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO_EXT,
-                // => {
-                //     const item =
-                //         try chain.chain(vk.VkDescriptorSetLayoutBindingFlagsCreateInfoEXT);
-                //     try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, item);
-                // },
+                .VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+                => {
+                    const item =
+                        try chain.chain(vk.VkDescriptorSetLayoutBindingFlagsCreateInfo);
+                    try parse_vk_descriptor_set_layout_binding_flags_create_info_ext(c, item);
+                },
                 .VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
                 => {
                     const item = try chain.chain(vk.VkPhysicalDeviceRobustness2FeaturesEXT);
@@ -1698,15 +2712,45 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                         item,
                     );
                 },
-                // .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_KHR,
-                // => {
-                //     const item = try chain.chain(vk.VkPipelineRasterizationLineStateCreateInfo);
-                //     try parse_vk_pipeline_rasterization_line_state_create_info(c, item);
-                // },
+                .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkPipelineRasterizationLineStateCreateInfo);
+                    try parse_vk_pipeline_rasterization_line_state_create_info(c, item);
+                },
                 .VK_STRUCTURE_TYPE_PIPELINE_ROBUSTNESS_CREATE_INFO,
                 => {
                     const item = try chain.chain(vk.VkPipelineRobustnessCreateInfo);
                     try parse_vk_pipeline_robustness_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkPipelineTessellationDomainOriginStateCreateInfo);
+                    try parse_vk_pipeline_tessellation_domain_origin_state_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_STREAM_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPipelineRasterizationStateStreamCreateInfoEXT);
+                    try parse_vk_pipeline_rasterization_state_stream_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPipelineColorBlendAdvancedStateCreateInfoEXT);
+                    try parse_vk_pipeline_color_blend_advanced_state_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_CONSERVATIVE_STATE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPipelineRasterizationConservativeStateCreateInfoEXT);
+                    try parse_vk_pipeline_rasterization_conservative_state_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_COLOR_WRITE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPipelineColorWriteCreateInfoEXT);
+                    try parse_vk_pipeline_color_write_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkPipelineSampleLocationsStateCreateInfoEXT);
+                    try parse_vk_pipeline_sample_locations_state_create_info_ext(c, item);
                 },
                 .VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT,
                 => {
@@ -1728,6 +2772,56 @@ pub fn parse_pnext_chain(context: *Context) Error!?*anyopaque {
                 => {
                     const item = try chain.chain(vk.VkMutableDescriptorTypeCreateInfoEXT);
                     try parse_vk_mutable_descriptor_type_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkRenderPassMultiviewCreateInfo);
+                    try parse_vk_render_pass_multiview_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT,
+                => {
+                    const item = try chain.chain(vk.VkAttachmentDescriptionStencilLayout);
+                    try parse_vk_attachment_description_stencil_layout(c, item);
+                },
+                .VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT,
+                => {
+                    const item = try chain.chain(vk.VkAttachmentReferenceStencilLayout);
+                    try parse_vk_attachment_reference_stencil_layout(c, item);
+                },
+                .VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE,
+                => {
+                    const item = try chain.chain(vk.VkSubpassDescriptionDepthStencilResolve);
+                    try parse_vk_subpass_description_depth_stencil_resolve(c, item);
+                },
+                .VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR,
+                => {
+                    const item = try chain.chain(vk.VkFragmentShadingRateAttachmentInfoKHR);
+                    try parse_vk_fragment_shading_rate_attachment_info_khr(c, item);
+                },
+                .VK_STRUCTURE_TYPE_RENDER_PASS_INPUT_ATTACHMENT_ASPECT_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkRenderPassInputAttachmentAspectCreateInfo);
+                    try parse_vk_render_pass_input_attachment_aspect_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_SAMPLER_REDUCTION_MODE_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkSamplerReductionModeCreateInfo);
+                    try parse_vk_sampler_reduction_mode_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO,
+                => {
+                    const item = try chain.chain(vk.VkSamplerYcbcrConversionCreateInfo);
+                    try parse_vk_sampler_ycbcr_conversion_create_info(c, item);
+                },
+                .VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkSamplerCustomBorderColorCreateInfoEXT);
+                    try parse_vk_sampler_custom_border_color_create_info_ext(c, item);
+                },
+                .VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT,
+                => {
+                    const item = try chain.chain(vk.VkSamplerBorderColorComponentMappingCreateInfoEXT);
+                    try parse_vk_sampler_border_color_component_mapping_create_info_ext(c, item);
                 },
                 .VK_STRUCTURE_TYPE_PIPELINE_DISCARD_RECTANGLE_STATE_CREATE_INFO_EXT,
                 => {
