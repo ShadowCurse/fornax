@@ -227,11 +227,8 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
     const thread_alloc = context.arena.allocator();
     defer _ = context.arena.reset(.retain_capacity);
 
-    var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
-    const gpa_alloc = gpa_allocator.allocator();
-
     var tasks: Tasks = .{};
-    for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
+    for (&tasks.tasks) |*t| t.arena = .init(thread_alloc);
     while (true) {
         defer progress.completeOne();
 
@@ -265,7 +262,7 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                 V,
                 shared_alloc,
                 task.root_entry.arena.allocator(),
-                thread_alloc,
+                tmp_alloc,
                 context.db,
                 context.validation,
             )) {
@@ -324,11 +321,8 @@ pub fn create_inner(
     const work_queue = context.work_queue;
     const thread_alloc = context.arena.allocator();
 
-    var gpa_allocator: std.heap.DebugAllocator(.{}) = .{ .backing_allocator = thread_alloc };
-    const gpa_alloc = gpa_allocator.allocator();
-
     var tasks: Tasks = .{};
-    for (&tasks.tasks) |*t| t.arena = .init(gpa_alloc);
+    for (&tasks.tasks) |*t| t.arena = .init(thread_alloc);
     while (true) {
         defer progress.completeOne();
 
