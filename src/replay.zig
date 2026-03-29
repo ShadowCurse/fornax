@@ -113,13 +113,14 @@ pub fn main() !void {
     if (args.shmem_fd) |shmem_fd| try control_block.init(shmem_fd, &db, thread_count);
 
     var validation: vv.Validation = undefined;
-    const vk_device = try vulkan.init(
+    const vk_instance, const vk_device = try vulkan.init(
         arena_alloc,
         tmp_alloc,
         &db,
         args.enable_validation,
         &validation,
     );
+    defer vulkan.deinit(vk_instance, vk_device);
     _ = tmp_arena.reset(.retain_capacity);
 
     const root_entries = try root.init_root_entries(arena_alloc, &db);

@@ -66,13 +66,14 @@ pub fn main() !void {
     var db: Database = try .init(db_path);
 
     var validation: vv.Validation = undefined;
-    const vk_device = try vulkan.init(
+    const vk_instance, const vk_device = try vulkan.init(
         arena_alloc,
         tmp_alloc,
         &db,
         false,
         &validation,
     );
+    defer vulkan.deinit(vk_instance, vk_device);
     _ = tmp_arena.reset(.retain_capacity);
 
     const root_entries = try root.init_root_entries(arena_alloc, &db);

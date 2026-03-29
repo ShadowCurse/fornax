@@ -27,7 +27,7 @@ pub fn init(
     db: *const Database,
     enable_vulkan_validation_layers: bool,
     validation: *vv.Validation,
-) !vk.VkDevice {
+) !struct { vk.VkInstance, vk.VkDevice } {
     const get_proc = try load_vulkan();
     try load_basic_procs(get_proc);
 
@@ -79,7 +79,16 @@ pub fn init(
         device.all_extension_names,
     );
 
-    return device.device;
+    return .{ instance.instance, device.device };
+}
+
+// Ensure that the asynchronous writes to the shader cache initiated by the
+// driver will finish before the application exits.
+// Mesa does the clean up in the disk_cache.c: disk_cache_destroy function which is called by
+// drivers on vkDestroyInstance.
+pub fn deinit(instance: vk.VkInstance, device: vk.VkDevice) void {
+    vkDestroyDevice(device, null);
+    vkDestroyInstance(instance, null);
 }
 
 const VK_VALIDATION_LAYERS_NAMES = [_][*c]const u8{"VK_LAYER_KHRONOS_validation"};
@@ -125,6 +134,7 @@ var vkGetPhysicalDeviceQueueFamilyProperties: *const vk.vkGetPhysicalDeviceQueue
 var vkEnumerateDeviceLayerProperties: *const vk.vkEnumerateDeviceLayerProperties = undefined;
 var vkEnumerateDeviceExtensionProperties: *const vk.vkEnumerateDeviceExtensionProperties = undefined;
 var vkCreateDevice: *const vk.vkCreateDevice = undefined;
+var vkDestroyDevice: *const vk.vkDestroyDevice = undefined;
 var vkCreatePipelineLayout: *const vk.vkCreatePipelineLayout = undefined;
 var vkDestroyPipelineLayout: *const vk.vkDestroyPipelineLayout = undefined;
 var vkCreateShaderModule: *const vk.vkCreateShaderModule = undefined;
@@ -159,6 +169,7 @@ fn load_instance_procs(
             "vkEnumerateDeviceLayerProperties",
             "vkEnumerateDeviceExtensionProperties",
             "vkCreateDevice",
+            "vkDestroyDevice",
             "vkCreatePipelineLayout",
             "vkDestroyPipelineLayout",
             "vkCreateShaderModule",
