@@ -118,12 +118,25 @@ fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase
                                     \\
                                 , .{ .field_name = sf.name, .field_type = type_str });
                             },
-                            .bitfield_idx => |_| {
+                            .bitfield_idx => |bitfield_idx| {
+                                const bitfield = type_db.get_bitfield(bitfield_idx);
+
                                 w.write(
                                     \\    for (0..offset + 1) |_| log.output("    ", .{{}});
-                                    \\    log.output("{[field_name]s}: {[field_type]s} = {{any}},\n", .{{value.{[field_name]s}}});
+                                    \\    log.output("{[field_name]s}: {[field_type]s} = {{{{", .{{}});
                                     \\
                                 , .{ .field_name = sf.name, .field_type = type_str });
+                                for (bitfield.bits) |bit| {
+                                    w.write(
+                                        \\    if (@field(value.{[field_name]s}, "{[bit_name]s}"))
+                                        \\        log.output(".{{s}},", .{{"{[bit_name]s}"}});
+                                        \\
+                                    , .{ .field_name = sf.name, .bit_name = bit.name });
+                                }
+                                w.write(
+                                    \\    log.output("}}}},\n", .{{}});
+                                    \\
+                                , .{});
                             },
                             .enum_idx => |_| {
                                 w.write(
@@ -192,7 +205,7 @@ fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase
                                 {
                                     w.write(
                                         \\        for (0..offset + 1) |_| log.output("    ", .{{}});
-                                        \\        log.output("{[field_name]s}: {[field_type]s} = {{s}}\n,", .{{v}});
+                                        \\        log.output("{[field_name]s}: {[field_type]s} = {{s}},\n", .{{v}});
                                         \\    }}
                                         \\
                                     , .{ .field_name = sf.name, .field_type = type_str });
@@ -377,7 +390,7 @@ fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase
         , .{});
     }
     w.write(
-        \\pub fn print_struct(value: anytype, follow_pnext: bool) void {{
+        \\pub fn print_struct(name: []const u8, value: anytype, follow_pnext: bool) void {{
         \\    var base: *const vk.VkBaseOutStructure = @ptrCast(value);
         \\    while(true) {{
         \\        switch (base.sType) {{
@@ -390,7 +403,7 @@ fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase
                 if (std.mem.eql(u8, sf.name, "sType")) {
                     if (sf.stype_value) |stype|
                         w.write(
-                            \\            .{[stype]s} => print_{[name]s}("", @ptrCast(base), 0),
+                            \\            .{[stype]s} => print_{[name]s}(name, @ptrCast(base), 0),
                             \\
                         , .{ .stype = stype, .name = s.name });
                 }
@@ -398,7 +411,7 @@ fn write_print_struct(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase
         }
     }
     w.write(
-        \\            else => log.output("Unknown type: {{t}}\n", .{{base.sType}}),
+        \\            else => log.output("{{s}}: unknown type: {{t}}\n", .{{name, base.sType}}),
         \\        }}
         \\        if (follow_pnext) {{
         \\            if (base.pNext) |pnext| {{
