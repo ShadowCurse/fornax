@@ -8,6 +8,7 @@ const log = @import("log.zig");
 const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const vv = @import("vk_validation.zig");
+const vu = @import("vk_utils.zig");
 const vulkan = @import("vulkan.zig");
 
 const Database = @import("database.zig");
@@ -19,6 +20,10 @@ pub const log_options = log.Options{
 
 const Args = struct {
     database_path: []const u8 = &.{},
+    graph: bool = false,
+    create_info: bool = false,
+    hash: ?u64 = null,
+    tag: ?Database.Entry.Tag = null,
 };
 
 pub fn main() !void {
@@ -81,14 +86,13 @@ pub fn main() !void {
     process(&contexts[0]);
     for (secondary_threads) |st| st.join();
 
-    for (std.enums.values(Database.Entry.Tag)) |tag| {
-        const entries = db.entries.getPtrConst(tag).values();
-        log.output("#### {t} ####\n", .{tag});
-        for (entries) |entry| try entry.print_graph(&db);
+    if (args.tag) |tag|
+        try print_entries_of_tag(&args, &db, tag)
+    else for (std.enums.values(Database.Entry.Tag)) |tag| {
+        try print_entries_of_tag(&args, &db, tag);
     }
 
-    var total_used_bytes = arena.queryCapacity() + tmp_arena.queryCapacity() +
-        db.arena.queryCapacity();
+    var total_used_bytes = arena.queryCapacity() + db.arena.queryCapacity();
     for (contexts) |*c| total_used_bytes += c.arena.queryCapacity();
     log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
     const rusage = std.posix.getrusage(0);
@@ -97,6 +101,35 @@ pub fn main() !void {
         rusage.minflt,
         rusage.majflt,
     });
+}
+
+pub fn print_entries_of_tag(args: *const Args, db: *const Database, tag: Database.Entry.Tag) !void {
+    const entries = db.entries.getPtrConst(tag).values();
+
+    if (args.hash) |h| {
+        var entry: ?*const Database.Entry = null;
+        for (entries) |*e| if (e.hash == h) {
+            entry = e;
+        };
+        if (entry) |e| try print_entry(args, db, e);
+    } else {
+        log.output("#### {t} ####\n", .{tag});
+        for (entries) |*e| try print_entry(args, db, e);
+    }
+}
+
+pub fn print_entry(args: *const Args, db: *const Database, entry: *const Database.Entry) !void {
+    if (args.graph)
+        try entry.print_graph(db);
+    if (args.create_info) {
+        var buff: [256]u8 = undefined;
+        const name = try std.fmt.bufPrint(&buff, "0x{x:0>16}", .{entry.hash});
+        if (entry.create_info) |ci| {
+            vu.print_struct(name, ci, true);
+        } else {
+            log.output("{s}: no create_info\n", .{name});
+        }
+    }
 }
 
 pub fn secondary_thread_process(context: *root.Context) void {
