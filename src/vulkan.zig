@@ -69,6 +69,7 @@ pub fn init(
         device_features2,
         &validation.pdf,
         &validation.additional_pdf,
+        &validation.additional_properties,
         enable_vulkan_validation_layers,
     );
     validation.api_version = instance.api_version;
@@ -128,6 +129,7 @@ var vkDestroyInstance: *const vk.vkDestroyInstance = undefined;
 var vkCreateDebugReportCallbackEXT: ?*const vk.vkCreateDebugReportCallbackEXT = null;
 var vkEnumeratePhysicalDevices: *const vk.vkEnumeratePhysicalDevices = undefined;
 var vkGetPhysicalDeviceProperties: *const vk.vkGetPhysicalDeviceProperties = undefined;
+var vkGetPhysicalDeviceProperties2KHR: *const vk.vkGetPhysicalDeviceProperties2KHR = undefined;
 var vkGetPhysicalDeviceFeatures: *const vk.vkGetPhysicalDeviceFeatures = undefined;
 var vkGetPhysicalDeviceFeatures2KHR: *const vk.vkGetPhysicalDeviceFeatures2KHR = undefined;
 var vkGetPhysicalDeviceQueueFamilyProperties: *const vk.vkGetPhysicalDeviceQueueFamilyProperties = undefined;
@@ -163,6 +165,7 @@ fn load_instance_procs(
             "vkCreateDebugReportCallbackEXT",
             "vkEnumeratePhysicalDevices",
             "vkGetPhysicalDeviceProperties",
+            "vkGetPhysicalDeviceProperties2KHR",
             "vkGetPhysicalDeviceFeatures",
             "vkGetPhysicalDeviceFeatures2KHR",
             "vkGetPhysicalDeviceQueueFamilyProperties",
@@ -946,6 +949,7 @@ pub fn create_vk_device(
     wanted_physical_device_features2: ?*const vk.VkPhysicalDeviceFeatures2,
     pdf: *vk.VkPhysicalDeviceFeatures2,
     additional_pdf: *vv.AdditionalPDF,
+    additional_properties: *vv.AdditionalProperties,
     enable_validation: bool,
 ) !Device {
     const prof_point = MEASUREMENTS.start(@src());
@@ -978,7 +982,7 @@ pub fn create_vk_device(
     }
     all_extension_names = all_extension_names[0..all_extensions_len];
 
-    pdf.* = vk.VkPhysicalDeviceFeatures2{};
+    pdf.* = .{};
     var stats: vk.VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR = .{};
     pdf.pNext = &stats;
     if (instance.has_properties_2) {
@@ -987,6 +991,13 @@ pub fn create_vk_device(
         vkGetPhysicalDeviceFeatures2KHR(physical_device.device, pdf);
         stats.pipelineExecutableInfo = vk.VK_FALSE;
     } else vkGetPhysicalDeviceFeatures(physical_device.device, &pdf.features);
+
+    additional_properties.* = .{};
+    var pdp: vk.VkPhysicalDeviceProperties2 = .{};
+    if (instance.has_properties_2) {
+        pdp.pNext = additional_properties.chain_supported(all_extension_names);
+        vkGetPhysicalDeviceProperties2KHR(physical_device.device, &pdp);
+    } else vkGetPhysicalDeviceProperties(physical_device.device, &pdp.properties);
 
     // Workaround for older dxvk/vkd3d databases, where robustness2 or VRS was not captured,
     // but we expect them to be present. New databases will capture robustness2.
