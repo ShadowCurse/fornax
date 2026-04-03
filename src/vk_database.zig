@@ -206,6 +206,7 @@ pub const TypeDatabase = struct {
         name: []const u8 = &.{},
         fields: []const Field = &.{},
         extends: []const Type.Idx = &.{},
+        extended_by: []const Struct.Idx = &.{},
         enabled_by_extensions: []const []const u8 = &.{},
         // metedata
         comment: ?[]const u8 = null,
@@ -1127,6 +1128,21 @@ pub const TypeDatabase = struct {
         };
         for (&ADDITIONAL_FUNCTIONS) |*command| {
             try Inner.add_function(alloc, &db, &visited, command);
+        }
+
+        for (db.structs.items) |*s| {
+            var extended_by: std.ArrayListUnmanaged(Struct.Idx) = .empty;
+            for (db.structs.items, 0..) |*s2, i| {
+                for (s2.extends) |type_idx| {
+                    const struct_idx = db.get_type_follow_alias(type_idx).base.struct_idx;
+                    const ext = db.get_struct(struct_idx);
+                    if (std.mem.eql(u8, ext.name, s.name)) {
+                        try extended_by.append(alloc, .init(i + 1));
+                        break;
+                    }
+                }
+            }
+            s.extended_by = extended_by.items;
         }
 
         return db;

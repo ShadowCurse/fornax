@@ -382,13 +382,21 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                         base == .enum_idx)
                     {
                         const name = try type_db.type_string(alloc, sf.type_idx);
-                        const last_arg = if (base == .struct_idx) ", false" else &.{};
-                        w.write(
-                            \\    if (!validate_{s}(extensions, &item.{s}{s}))
-                            \\        return false;
-                            \\
-                        , .{ name, sf.name, last_arg });
-                        used_extensions = true;
+                        if (std.mem.eql(u8, name, "VkStructureType")) {
+                            w.write(
+                                \\    if (item.{s} != vk.{s}.STYPE)
+                                \\        return false;
+                                \\
+                            , .{ sf.name, @"struct".name });
+                        } else {
+                            const last_arg = if (base == .struct_idx) ", false" else &.{};
+                            w.write(
+                                \\    if (!validate_{s}(extensions, &item.{s}{s}))
+                                \\        return false;
+                                \\
+                            , .{ name, sf.name, last_arg });
+                            used_extensions = true;
+                        }
                         used_item = true;
                     }
                 },
@@ -466,6 +474,7 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                             \\            return false;
                             \\
                         , .{ base_type_str, last_arg });
+                        used_extensions = true;
                     }
                     w.write(
                         \\    }}
@@ -480,10 +489,10 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                         continue;
                     const base_type_str = try type_db.type_string(alloc, array.base_type_idx);
                     w.write(
-                        \\        for (item.{s}) |v| {{
-                        \\            if (!validate_{s}(extensions, v))
-                        \\                return false;
-                        \\        }}
+                        \\    for (&item.{s}) |*v| {{
+                        \\        if (!validate_{s}(extensions, v))
+                        \\            return false;
+                        \\    }}
                         \\
                     , .{ sf.name, base_type_str });
                     used_item = true;
@@ -504,8 +513,7 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
             , .{});
             used_validate_pnext = true;
 
-            for (@"struct".extends) |type_idx| {
-                const struct_idx = type_db.get_type_follow_alias(type_idx).base.struct_idx;
+            for (@"struct".extended_by) |struct_idx| {
                 const s = type_db.get_struct(struct_idx);
                 const stype = s.stype().?;
                 w.write(
@@ -514,6 +522,7 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                     \\                return false,
                     \\
                 , .{ .stype = stype, .type = s.name });
+                used_extensions = true;
             }
             w.write(
                 \\            else => |v| {{
