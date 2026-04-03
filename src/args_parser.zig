@@ -29,34 +29,68 @@ pub fn parse(comptime T: type, alloc: Allocator) !T {
             @field(t, field.name).values = remaining_args;
         } else if (find_arg(field)) |r| {
             const i, const arg = r;
-            switch (field.type) {
-                void => {
-                    consumed_args |= @as(u64, 1) << @truncate(i);
-                },
-                bool => {
-                    consumed_args |= @as(u64, 1) << @truncate(i);
-                    @field(t, field.name) = true;
-                },
-                ?i32 => {
-                    consumed_args |= @as(u64, 1) << @truncate(i);
-                    consumed_args |= @as(u64, 1) << @truncate(i + 1);
-                    @field(t, field.name) = try std.fmt.parseInt(i32, arg, 10);
-                },
-                ?u32 => {
-                    consumed_args |= @as(u64, 1) << @truncate(i);
-                    consumed_args |= @as(u64, 1) << @truncate(i + 1);
-                    @field(t, field.name) = try std.fmt.parseInt(u32, arg, 10);
-                },
-                []const u8, ?[]const u8 => {
-                    consumed_args |= @as(u64, 1) << @truncate(i);
-                    consumed_args |= @as(u64, 1) << @truncate(i + 1);
-                    @field(t, field.name) = arg;
-                },
-                else => unreachable,
+            const field_type_info = @typeInfo(field.type);
+            switch (field_type_info) {
+                .optional => |optional| try handle_arg(T, &t, optional.child, field.name, &consumed_args, i, arg),
+                else => try handle_arg(T, &t, field.type, field.name, &consumed_args, i, arg),
             }
         }
     }
     return t;
+}
+
+fn handle_arg(
+    comptime T: type,
+    t: *T,
+    comptime field_type: type,
+    comptime field_name: []const u8,
+    consumed_args: *u64,
+    i: u32,
+    arg: []const u8,
+) !void {
+    switch (field_type) {
+        void => {
+            consumed_args.* |= @as(u64, 1) << @truncate(i);
+        },
+        bool => {
+            consumed_args.* |= @as(u64, 1) << @truncate(i);
+            @field(t, field_name) = true;
+        },
+        i32, u32, u64 => {
+            consumed_args.* |= @as(u64, 1) << @truncate(i);
+            consumed_args.* |= @as(u64, 1) << @truncate(i + 1);
+            if (std.mem.startsWith(u8, arg, "0x"))
+                @field(t, field_name) = try std.fmt.parseInt(field_type, arg[2..], 16)
+            else
+                @field(t, field_name) = try std.fmt.parseInt(field_type, arg, 10);
+        },
+        []const u8 => {
+            consumed_args.* |= @as(u64, 1) << @truncate(i);
+            consumed_args.* |= @as(u64, 1) << @truncate(i + 1);
+            @field(t, field_name) = arg;
+        },
+        else => {
+            const field_type_info = @typeInfo(field_type);
+            switch (field_type_info) {
+                .@"enum" => |@"enum"| {
+                    inline for (@"enum".fields) |f| {
+                        if (std.mem.eql(u8, arg, f.name)) {
+                            consumed_args.* |= @as(u64, 1) << @truncate(i);
+                            consumed_args.* |= @as(u64, 1) << @truncate(i + 1);
+                            @field(t, field_name) = @enumFromInt(f.value);
+                            break;
+                        }
+                    }
+                    const original_type = @typeInfo(@TypeOf(@field(t, field_name)));
+                    if (original_type == .optional and @field(t, field_name) == null) {
+                        log.err(@src(), "Argument --{s} invalid value of {s}", .{ field_name_to_arg_name(field_name), arg });
+                        return error.InvalidEnum;
+                    }
+                },
+                else => unreachable,
+            }
+        },
+    }
 }
 
 fn find_arg(comptime field: std.builtin.Type.StructField) ?struct { u32, []const u8 } {
