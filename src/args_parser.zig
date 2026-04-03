@@ -47,7 +47,7 @@ pub fn parse(comptime T: type, alloc: Allocator) !T {
                     consumed_args |= @as(u64, 1) << @truncate(i + 1);
                     @field(t, field.name) = try std.fmt.parseInt(u32, arg, 10);
                 },
-                ?[]const u8 => {
+                []const u8, ?[]const u8 => {
                     consumed_args |= @as(u64, 1) << @truncate(i);
                     consumed_args |= @as(u64, 1) << @truncate(i + 1);
                     @field(t, field.name) = arg;

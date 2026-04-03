@@ -9,52 +9,26 @@ const args_parser = @import("args_parser.zig");
 const parsing = @import("parsing.zig");
 const vv = @import("vk_validation.zig");
 const vulkan = @import("vulkan.zig");
-const profiler = @import("profiler.zig");
 
 const Database = @import("database.zig");
 const Allocator = std.mem.Allocator;
 
 pub const log_options = log.Options{
-    .level = .info,
-};
-
-pub const profiler_options = profiler.Options{
-    .enabled = false,
-};
-
-pub const MEASUREMENTS = profiler.Measurements("main", &.{
-    "main",
-    "process",
-});
-
-const ALL_MEASUREMENTS = &.{
-    MEASUREMENTS,
-    parsing.MEASUREMENTS,
-    vulkan.MEASUREMENTS,
-    Database.MEASUREMENTS,
+    .level = .err,
 };
 
 const Args = struct {
-    output_path: ?[]const u8 = null,
-    database_path: args_parser.RemainingArgs = .{},
+    database_path: []const u8 = &.{},
 };
 
 pub fn main() !void {
-    profiler.start_measurement();
-    defer profiler.print(ALL_MEASUREMENTS);
-    defer profiler.end_measurement();
-
-    const prof_point = MEASUREMENTS.start(@src());
-    defer MEASUREMENTS.end(prof_point);
-
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const arena_alloc = arena.allocator();
     var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const tmp_alloc = tmp_arena.allocator();
 
     const args = try args_parser.parse(Args, arena_alloc);
-
-    if (args.database_path.values.len != 1) {
+    if (args.database_path.len == 0) {
         args_parser.print_help(Args);
         return;
     }
@@ -62,8 +36,7 @@ pub fn main() !void {
     const thread_count = root.actual_thread_count(null);
     log.info(@src(), "Using {d} threads", .{thread_count});
 
-    const db_path = std.mem.span(args.database_path.values[0]);
-    var db: Database = try .init(db_path);
+    var db: Database = try .init(args.database_path);
 
     var validation: vv.Validation = undefined;
     const vk_instance, const vk_device = try vulkan.init(
@@ -127,15 +100,9 @@ pub fn main() !void {
 }
 
 pub fn secondary_thread_process(context: *root.Context) void {
-    profiler.start_measurement();
-    defer profiler.end_measurement();
-
     process(context);
 }
 
 pub fn process(context: *root.Context) void {
-    const prof_point = MEASUREMENTS.start(@src());
-    defer MEASUREMENTS.end(prof_point);
-
     root.parse(context) catch unreachable;
 }
