@@ -221,7 +221,7 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
 }
 
 pub fn print(comptime types: []const type) void {
-    @setEvalBranchQuota(50_000);
+    @setEvalBranchQuota(100_000);
 
     if (options.enabled) {
         const longest_name_aligment = comptime blk: {

@@ -20,6 +20,7 @@ const Database = @import("database.zig");
 
 pub const log_options = log.Options{
     .level = .info,
+    .colors = true,
 };
 
 pub const profiler_options = profiler.Options{

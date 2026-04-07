@@ -29,8 +29,8 @@ const DryCreate = struct {
     pub const create_compute_pipeline = Self.create;
     pub const create_graphics_pipeline = Self.create;
 
-    fn create(vk_device: vk.VkDevice, create_info: *align(8) const anyopaque) !?*anyopaque {
-        var result: *anyopaque = @ptrFromInt(0x69);
+    fn create(vk_device: vk.VkDevice, create_info: *align(8) const anyopaque) !vulkan.AnyHandle {
+        var result: vulkan.AnyHandle = 0x69;
         asm volatile (""
             :
             : [vk_device] "r" (vk_device),
@@ -57,7 +57,7 @@ const DryDestroy = struct {
     pub const destroy_render_pass = Self.destroy;
     pub const destroy_pipeline = Self.destroy;
 
-    fn destroy(vk_device: vk.VkDevice, handle: *const anyopaque) void {
+    fn destroy(vk_device: vk.VkDevice, handle: vulkan.AnyHandle) void {
         asm volatile (""
             :
             : [vk_device] "r" (vk_device),
