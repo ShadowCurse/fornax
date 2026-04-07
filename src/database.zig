@@ -638,23 +638,16 @@ pub const FileEntry = extern struct {
         return std.fmt.parseInt(u64, value_str, 16);
     }
 
-    pub fn format(
-        value: *const FileEntry,
-        comptime fmt: []const u8,
-        options: std.fmt.FormatOptions,
-        writer: anytype,
-    ) !void {
-        _ = fmt;
-        _ = options;
-        try writer.print(
+    pub fn format(self: *const FileEntry, w: *std.Io.Writer) !void {
+        try w.print(
             "tag: {s:<21} value: 0x{x:<16} stored_size: {d:<6} flags: {s:<14} crc: {d:<10} decompressed_size: {d}",
             .{
-                @tagName(try value.get_tag()),
-                try value.get_hash(),
-                value.stored_size,
-                @tagName(value.flags),
-                value.crc,
-                value.decompressed_size,
+                @tagName(try self.get_tag()),
+                try self.get_hash(),
+                self.stored_size,
+                @tagName(self.flags),
+                self.crc,
+                self.decompressed_size,
             },
         );
     }
