@@ -103,12 +103,12 @@ pub const Entry = struct {
     };
 
     pub const Status = enum(u8) {
-        not_parsed,
-        parsing,
-        parsed,
-        creating,
-        created,
-        invalid,
+        not_parsed = 0,
+        parsing = 1,
+        parsed = 2,
+        creating = 3,
+        created = 4,
+        invalid = 5,
     };
 
     pub const PayloadFlags = enum {
@@ -210,10 +210,10 @@ pub const Entry = struct {
         }
     }
 
-    pub const ParseResult = enum {
-        parsed,
-        parsing,
-        invalid,
+    pub const ParseResult = enum(u8) {
+        parsing = 1,
+        parsed = 2,
+        invalid = 5,
     };
     pub fn parse(
         self: *Entry,
@@ -430,11 +430,11 @@ pub const Entry = struct {
         }
     }
 
-    pub const CreateResult = enum {
-        dependencies,
-        creating,
-        created,
-        invalid,
+    pub const CreateResult = enum(u8) {
+        creating = 3,
+        created = 4,
+        invalid = 5,
+        dependencies = 6,
     };
     pub fn create(
         self: *Entry,
@@ -519,8 +519,10 @@ pub const Entry = struct {
         }
         switch (self.tag) {
             .sampler => self.handle = try CREATE.create_vk_sampler(vk_device, @ptrCast(self.create_info)),
-            .descriptor_set_layout => self.handle = @bitCast(try CREATE.create_descriptor_set_layout(vk_device, @ptrCast(self.create_info))),
-            .pipeline_layout => self.handle = @bitCast(try CREATE.create_pipeline_layout(vk_device, @ptrCast(self.create_info))),
+            .descriptor_set_layout => self.handle =
+                @bitCast(try CREATE.create_descriptor_set_layout(vk_device, @ptrCast(self.create_info))),
+            .pipeline_layout => self.handle =
+                @bitCast(try CREATE.create_pipeline_layout(vk_device, @ptrCast(self.create_info))),
             .shader_module => {
                 const payload = try self.get_payload(tmp_alloc, tmp_alloc, db);
                 const result = try PARSE.parse_shader_module(
@@ -533,12 +535,17 @@ pub const Entry = struct {
                 if (!VALIDATE.validate_shader_code(validation, @ptrCast(result.create_info)))
                     return error.InvalidShaderCode;
 
-                self.handle = @bitCast(try CREATE.create_shader_module(vk_device, @ptrCast(result.create_info)));
+                self.handle =
+                    @bitCast(try CREATE.create_shader_module(vk_device, @ptrCast(result.create_info)));
             },
-            .render_pass => self.handle = @bitCast(try CREATE.create_render_pass(vk_device, @ptrCast(self.create_info))),
-            .graphics_pipeline => self.handle = @bitCast(try CREATE.create_graphics_pipeline(vk_device, @ptrCast(self.create_info))),
-            .compute_pipeline => self.handle = @bitCast(try CREATE.create_compute_pipeline(vk_device, @ptrCast(self.create_info))),
-            .raytracing_pipeline => self.handle = @bitCast(try CREATE.create_raytracing_pipeline(vk_device, @ptrCast(self.create_info))),
+            .render_pass => self.handle =
+                @bitCast(try CREATE.create_render_pass(vk_device, @ptrCast(self.create_info))),
+            .graphics_pipeline => self.handle =
+                @bitCast(try CREATE.create_graphics_pipeline(vk_device, @ptrCast(self.create_info))),
+            .compute_pipeline => self.handle =
+                @bitCast(try CREATE.create_compute_pipeline(vk_device, @ptrCast(self.create_info))),
+            .raytracing_pipeline => self.handle =
+                @bitCast(try CREATE.create_raytracing_pipeline(vk_device, @ptrCast(self.create_info))),
             else => {},
         }
     }
