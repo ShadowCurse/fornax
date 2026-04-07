@@ -22,7 +22,8 @@ const Allocator = std.mem.Allocator;
 pub const MEASUREMENTS = profiler.Measurements(
     "database",
     profiler.all_function_names_in_struct(@This()) ++
-        profiler.all_function_names_in_struct(Entry),
+        profiler.all_function_names_in_struct(Entry) ++
+        .{"mz_uncompress"},
 );
 
 file: std.fs.File,
@@ -156,13 +157,33 @@ pub const Entry = struct {
                 const payload = try self.read_and_check_crc(tmp_alloc, db);
                 const decompressed_payload = try alloc.alloc(u8, self.payload_decompressed_size);
                 var decompressed_len: u64 = self.payload_decompressed_size;
-                if (miniz.mz_uncompress(
-                    decompressed_payload.ptr,
-                    &decompressed_len,
-                    payload.ptr,
-                    payload.len,
-                ) != miniz.MZ_OK)
-                    return error.CannotUncompressPayload;
+
+                {
+                    const pp = MEASUREMENTS.start_named("mz_uncompress");
+                    defer MEASUREMENTS.end(pp);
+
+                    const MzAlloc = struct {
+                        fn mz_alloc(alloc_ptr: ?*anyopaque, items: usize, size: usize) callconv(.c) ?*anyopaque {
+                            const a: *Allocator = @ptrCast(@alignCast(alloc_ptr.?));
+                            const total_bytes = items * size;
+                            const total_bytes_aligned_8 = (total_bytes + 8) & ~@as(usize, 7);
+                            const result = a.alloc(u64, total_bytes_aligned_8 / 8) catch return null;
+                            return @ptrCast(result.ptr);
+                        }
+                        fn mz_free(_: ?*anyopaque, _: ?*anyopaque) callconv(.c) void {}
+                    };
+
+                    if (miniz.mz_uncompress(
+                        decompressed_payload.ptr,
+                        &decompressed_len,
+                        payload.ptr,
+                        payload.len,
+                        &MzAlloc.mz_alloc,
+                        &MzAlloc.mz_free,
+                        @ptrCast(@constCast(&tmp_alloc)),
+                    ) != miniz.MZ_OK)
+                        return error.CannotUncompressPayload;
+                }
                 if (decompressed_len != self.payload_decompressed_size)
                     return error.DecompressedSizeMissmatch;
                 return decompressed_payload;

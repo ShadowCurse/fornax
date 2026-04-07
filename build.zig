@@ -146,8 +146,7 @@ pub fn create_miniz_module(
         .{ .include_path = "miniz_export.h" },
         .{ .MINIZ_EXPORT = void{} },
     );
-    const miniz_c = b.addWriteFiles().add("translate_miniz.h",
-        \\#define MINIZ_EXPORT
+    const miniz_header = b.addWriteFiles().add("translate_miniz.h",
         \\#define MINIZ_NO_STDIO
         \\#define MINIZ_NO_MALLOC
         \\#define MINIZ_NO_ARCHIVE_APIS
@@ -159,7 +158,7 @@ pub fn create_miniz_module(
     const miniz_translate = b.addTranslateC(.{
         .target = target,
         .optimize = optimize,
-        .root_source_file = miniz_c,
+        .root_source_file = miniz_header,
     });
     miniz_translate.addConfigHeader(miniz_config_header);
     miniz_translate.addIncludePath(b.path("thirdparty/miniz"));
@@ -171,6 +170,12 @@ pub fn create_miniz_module(
     });
     miniz_mod.addConfigHeader(miniz_config_header);
     miniz_mod.addIncludePath(b.path("thirdparty/miniz"));
+    miniz_mod.addCMacro("MINIZ_NO_STDIO", "");
+    miniz_mod.addCMacro("MINIZ_NO_MALLOC", "");
+    miniz_mod.addCMacro("MINIZ_NO_ARCHIVE_APIS", "");
+    miniz_mod.addCMacro("MINIZ_NO_DEFLATE_APIS", "");
+    miniz_mod.addCMacro("MINIZ_LITTLE_ENDIAN", "1");
+    miniz_mod.addCMacro("MINIZ_HAS_64BIT_REGISTERS", "1");
     miniz_mod.addCSourceFiles(.{
         .files = &.{
             "thirdparty/miniz/miniz.c",
