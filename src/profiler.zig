@@ -201,7 +201,7 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
                             @src(),
                             "t: {d:>3} | {s:<" ++
                                 std.fmt.comptimePrint("{d}", .{NAME_ALIGN + 1}) ++
-                                "} | hit: {d:>9} | exclusive: {d:>12} | cycles {d:>12.3} ms | {d:>7.3}% | inclusive: {d:>12} | cycles {d:>12.3} ms | {d:>7.3}%",
+                                "} | hit: {d:>9} | exclusive: {d:>12} cycles | {d:>12.3} ms | {d:>7.3}% | inclusive: {d:>12} cycles | {d:>12.3} ms | {d:>7.3}%",
                             .{
                                 tid,
                                 full_name,
