@@ -1,3 +1,14 @@
+// Copyright (c) 2026 Egor Lazarchuk
+//
+// Based in part on miniz project which is:
+// Copyright (c) 2013-2014 RAD Game Tools and Valve Software
+// Copyright (c) 2010-2014 Rich Geldreich and Tenacious Software LLC
+//
+// Based in part on chromium project which is:
+// Copyright (c) 2017 The Chromium Authors
+//
+// SPDX-License-Identifier: MIT
+
 const std = @import("std");
 const builtin = @import("builtin");
 const miniz = @import("miniz");
