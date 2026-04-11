@@ -1,6 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const miniz = @import("miniz");
+const simd = @import("simd.zig");
 const profiler = @import("profiler.zig");
 
 // Implementation from miniz
@@ -67,30 +68,6 @@ pub fn crc32(init_crc: u32, bytes: []align(16) const u8) u32 {
 
     return ~crc;
 }
-
-const simd = struct {
-    pub const m128i = @Vector(2, u64);
-    pub inline fn pclmulqdq(a: m128i, b: m128i, comptime mask: u64) m128i {
-        const assembly = std.fmt.comptimePrint("pclmulqdq ${d}, %[b], %[a]", .{mask});
-        return asm volatile (assembly
-            : [ret] "=x" (-> m128i),
-            : [a] "0" (a),
-              [b] "x" (b),
-        );
-    }
-
-    // Shift the whole 16 bytes right by `bytes` nuber of bytes
-    pub inline fn shift_right(a: m128i, comptime bytes: u8) m128i {
-        const b: @Vector(16, u8) = @bitCast(a);
-        // The `shift left` is because shift is done with a @shuffle
-        // with selection mask shifted by `bytes` to the left
-        // orig:      0 [ 0 0 0 0 a b c   d ]
-        // shuffle: [ 0   0 0 0 0 a b c ] d
-        // final:   [0 0 0 0 0 a b c]
-        const c = std.simd.shiftElementsLeft(b, bytes, 0);
-        return @bitCast(c);
-    }
-};
 
 // https://chromium.googlesource.com/chromium/src/+/a0771caebe87477558454cc6d793562e3afe74ac/third_party/zlib/crc32_simd.c#24
 // Paper: "Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction" *  V. Gopal, E. Ozturk, et al., 2009
