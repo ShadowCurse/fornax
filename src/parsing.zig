@@ -7,12 +7,14 @@
 
 const std = @import("std");
 const log = @import("log.zig");
+const simd = @import("simd.zig");
 const profiler = @import("profiler.zig");
 
 const vk = @import("vk.zig");
 const vu = @import("vk_utils.zig");
 const vulkan = @import("vulkan.zig");
 
+const Json = @import("json.zig");
 const Database = @import("database.zig");
 
 const Allocator = std.mem.Allocator;
@@ -26,11 +28,11 @@ pub const Context = struct {
     alloc: Allocator,
     tmp_alloc: Allocator,
     dependencies: std.ArrayListUnmanaged(Dependency) = .empty,
-    scanner: *std.json.Scanner,
+    scanner: *Json,
     db: *const Database,
 };
 
-pub const ScannerError = std.json.Scanner.NextError || error{ InvalidJson, UnknownPnextChain };
+pub const ScannerError = error{ InvalidJson, UnknownPnextChain };
 pub const ParseIntError = std.fmt.ParseIntError;
 pub const ParseFloatError = std.fmt.ParseFloatError;
 pub const DecoderError = std.base64.Error;
@@ -59,7 +61,7 @@ pub fn parse_application_info(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const vk_application_info = try alloc.create(vk.VkApplicationInfo);
     const vk_physical_device_features2 = try alloc.create(vk.VkPhysicalDeviceFeatures2);
 
@@ -136,7 +138,7 @@ pub fn parse_sampler(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkSamplerCreateInfo);
     create_info.* = .{};
 
@@ -160,7 +162,7 @@ pub fn parse_sampler(
         } else if (std.mem.eql(u8, s, "samplers")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_simple_type(&context, create_info);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
@@ -198,7 +200,7 @@ pub fn parse_descriptor_set_layout(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info =
         try alloc.create(vk.VkDescriptorSetLayoutCreateInfo);
 
@@ -222,7 +224,7 @@ pub fn parse_descriptor_set_layout(
         } else if (std.mem.eql(u8, s, "setLayouts")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_descriptor_set_layout_create_info(
                 &context,
                 create_info,
@@ -264,7 +266,7 @@ pub fn parse_pipeline_layout(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkPipelineLayoutCreateInfo);
 
     var result: ResultWithDependencies = .{
@@ -287,7 +289,7 @@ pub fn parse_pipeline_layout(
         } else if (std.mem.eql(u8, s, "pipelineLayouts")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_pipeline_layout_create_info(
                 &context,
                 create_info,
@@ -337,7 +339,7 @@ pub fn parse_shader_module(
     // The 0 byte is not included into the `json_str.len`, so add it manually.
     const shader_code_payload = payload[json_str.len + 1 ..];
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkShaderModuleCreateInfo);
 
     var result: Result = .{
@@ -360,7 +362,7 @@ pub fn parse_shader_module(
         } else if (std.mem.eql(u8, s, "shaderModules")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_shader_module_create_info(
                 &context,
                 create_info,
@@ -402,7 +404,7 @@ pub fn parse_render_pass(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
 
     var result: Result = .{
         .version = 0,
@@ -424,14 +426,14 @@ pub fn parse_render_pass(
         } else if (std.mem.eql(u8, s, "renderPasses")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             const create_info = try alloc.create(vk.VkRenderPassCreateInfo);
             try parse_vk_render_pass_create_info(&context, create_info);
             result.create_info = @ptrCast(create_info);
         } else if (std.mem.eql(u8, s, "renderPasses2")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             const create_info = try alloc.create(vk.VkRenderPassCreateInfo2);
             try parse_vk_render_pass_create_info2(&context, create_info);
             result.create_info = @ptrCast(create_info);
@@ -471,7 +473,7 @@ pub fn parse_compute_pipeline(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkComputePipelineCreateInfo);
 
     var result: ResultWithDependencies = .{
@@ -494,7 +496,7 @@ pub fn parse_compute_pipeline(
         } else if (std.mem.eql(u8, s, "computePipelines")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_compute_pipeline_create_info(
                 &context,
                 create_info,
@@ -537,7 +539,7 @@ pub fn parse_raytracing_pipeline(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkRayTracingPipelineCreateInfoKHR);
 
     var result: ResultWithDependencies = .{
@@ -560,7 +562,7 @@ pub fn parse_raytracing_pipeline(
         } else if (std.mem.eql(u8, s, "raytracingPipelines")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_raytracing_pipeline_create_info(&context, create_info);
         }
     }
@@ -600,7 +602,7 @@ pub fn parse_graphics_pipeline(
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    var scanner = std.json.Scanner.initCompleteInput(tmp_alloc, json_str);
+    var scanner = Json.init(tmp_alloc, json_str);
     const create_info = try alloc.create(vk.VkGraphicsPipelineCreateInfo);
 
     var result: ResultWithDependencies = .{
@@ -623,7 +625,7 @@ pub fn parse_graphics_pipeline(
         } else if (std.mem.eql(u8, s, "graphicsPipelines")) {
             try scanner_object_begin(context.scanner);
             const ss = try scanner_next_string(context.scanner);
-            result.hash = try std.fmt.parseInt(u64, ss, 16);
+            result.hash = str_to_hash(ss);
             try parse_vk_graphics_pipeline_create_info(
                 &context,
                 create_info,
@@ -657,109 +659,103 @@ test "parse_graphics_pipeline" {
     try std.testing.expectEqual(0x1111111111111111, result.hash);
 }
 
-pub fn print_unexpected_token(token: std.json.Token) void {
+fn str_to_hash(str: []const u8) u64 {
+    var input: simd.u8x16 = undefined;
+    // also asserts that the len of the string is 16
+    @memcpy(@as([]u8, @ptrCast(&input)), str);
+
+    // ASCII for digits and hex
+    // 0x30: 0
+    // 0x31: 1
+    // 0x32: 2
+    // 0x33: 3
+    // 0x34: 4
+    // 0x35: 5
+    // 0x36: 6
+    // 0x37: 7
+    // 0x38: 8
+    // 0x39: 9
+    //
+    // 0x41: A
+    // 0x42: B
+    // 0x43: C
+    // 0x44: D
+    // 0x45: E
+    // 0x46: F
+    //
+    // 0x61: a
+    // 0x62: b
+    // 0x63: c
+    // 0x64: d
+    // 0x65: e
+    // 0x66: f
+    //
+    // So for 0-9 we need to select 0 if first nible is 0x3
+    // For hex we need to select 9 if the first nible is 0x4 or 0x6. 9 is needed because hex values
+    // start from 1 like 0x41 and 0x61 and not from 0 like 0x30
+
+    // zig fmt: off
+    // 0xF for never used
+    const HI_NIBBLE: simd.u8x16 = .{
+        0x0, 0x0, 0x0, 0x0,
+        0x9, 0x0, 0x9, 0x0,
+        0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0,
+    };
+    // zig fmt: on
+    const lo_nibbles = input & @as(simd.u8x16, @splat(0x0f));
+    const hi_nibbles = input >> @as(@Vector(16, u3), @splat(4));
+    const hi_result = simd.vpshufb_128(HI_NIBBLE, hi_nibbles);
+
+    const r = lo_nibbles + hi_result;
+
+    const hi_mask: @Vector(8, i32) = .{ 0, 2, 4, 6, 8, 10, 12, 14 };
+    const lo_mask: @Vector(8, i32) = .{ 1, 3, 5, 7, 9, 11, 13, 15 };
+    var hi = @shuffle(u8, r, undefined, hi_mask);
+    const lo = @shuffle(u8, r, undefined, lo_mask);
+    hi <<= @splat(4);
+    const final = hi | lo;
+
+    // need byteSwap since the order of bytes in the string is reverse of order
+    // of bytes in the value
+    return @byteSwap(@as(u64, @bitCast(final)));
+}
+
+test "str_to_hash" {
+    const hex_str = "959dfe0bd6073194";
+    const r = str_to_hash(hex_str);
+    try std.testing.expectEqual(0x959dfe0bd6073194, r);
+}
+
+pub fn print_unexpected_token(token: Json.Token) void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
     switch (token) {
-        .object_begin => log.err(
+        .object_begin,
+        .object_end,
+        .array_begin,
+        .array_end,
+        .end_of_document,
+        => log.err(
             @src(),
             "Got unexpected token type {s}",
             .{@tagName(std.meta.activeTag(token))},
         ),
-        .object_end => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-        .array_begin => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-        .array_end => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-
-        .true => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-        .false => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-        .null => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
-
         .number => |v| log.err(
             @src(),
             "Got unexpected token type {s} with value: {s}",
             .{ @tagName(std.meta.activeTag(token)), v },
         ),
-        .partial_number => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .allocated_number => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-
         .string => |v| log.err(
             @src(),
             "Got unexpected token type {s} with value: {s}",
             .{ @tagName(std.meta.activeTag(token)), v },
         ),
-        .partial_string => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .partial_string_escaped_1 => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .partial_string_escaped_2 => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .partial_string_escaped_3 => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .partial_string_escaped_4 => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-        .allocated_string => |v| log.err(
-            @src(),
-            "Got unexpected token type {s} with value: {s}",
-            .{ @tagName(std.meta.activeTag(token)), v },
-        ),
-
-        .end_of_document => log.err(
-            @src(),
-            "Got unexpected token type {s}",
-            .{@tagName(std.meta.activeTag(token))},
-        ),
     }
 }
 
-pub fn scanner_parse_enum(comptime T: type, scanner: *std.json.Scanner) Error!T {
+pub fn scanner_parse_enum(comptime T: type, scanner: *Json) Error!T {
     comptime var integer_type = u32;
     if (@bitSizeOf(T) == 64) integer_type = u64;
 
@@ -769,7 +765,7 @@ pub fn scanner_parse_enum(comptime T: type, scanner: *std.json.Scanner) Error!T 
     return t;
 }
 
-pub fn scanner_parse_bitfield(comptime T: type, scanner: *std.json.Scanner) Error!T {
+pub fn scanner_parse_bitfield(comptime T: type, scanner: *Json) Error!T {
     comptime var integer_type = u32;
     if (@bitSizeOf(T) == 64) integer_type = u64;
 
@@ -779,7 +775,7 @@ pub fn scanner_parse_bitfield(comptime T: type, scanner: *std.json.Scanner) Erro
     return t;
 }
 
-pub fn scanner_parse_number(comptime T: type, scanner: *std.json.Scanner) Error!T {
+pub fn scanner_parse_number(comptime T: type, scanner: *Json) Error!T {
     const n = try scanner_next_number(scanner);
     if (T == f32) {
         const t = try std.fmt.parseFloat(T, n);
@@ -790,11 +786,11 @@ pub fn scanner_parse_number(comptime T: type, scanner: *std.json.Scanner) Error!
     }
 }
 
-pub fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_number(scanner: *Json) ScannerError![]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .number => |v| return v,
         else => |t| {
             print_unexpected_token(t);
@@ -803,11 +799,11 @@ pub fn scanner_next_number(scanner: *std.json.Scanner) ScannerError![]const u8 {
     }
 }
 
-pub fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_string(scanner: *Json) ScannerError![]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .string => |s| return s,
         else => |t| {
             print_unexpected_token(t);
@@ -816,11 +812,11 @@ pub fn scanner_next_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
     }
 }
 
-pub fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]const u8 {
+pub fn scanner_next_number_or_string(scanner: *Json) ScannerError![]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .string => |s| return s,
         .number => |v| return v,
         else => |t| {
@@ -830,13 +826,13 @@ pub fn scanner_next_number_or_string(scanner: *std.json.Scanner) ScannerError![]
     }
 }
 
-pub fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_object_next_field(scanner: *Json) ScannerError!?[]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    loop: switch (try scanner.next()) {
+    loop: switch (scanner.next()) {
         .string => |s| return s,
-        .object_begin => continue :loop try scanner.next(),
+        .object_begin => continue :loop scanner.next(),
         .end_of_document, .object_end => return null,
         else => |t| {
             print_unexpected_token(t);
@@ -845,12 +841,12 @@ pub fn scanner_object_next_field(scanner: *std.json.Scanner) ScannerError!?[]con
     }
 }
 
-pub fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
+pub fn scanner_array_next_object(scanner: *Json) ScannerError!bool {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+    loop: switch (scanner.next()) {
+        .array_begin => continue :loop scanner.next(),
         .array_end => return false,
         .object_begin => return true,
         else => |t| {
@@ -860,11 +856,11 @@ pub fn scanner_array_next_object(scanner: *std.json.Scanner) ScannerError!bool {
     }
 }
 
-pub fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
+pub fn scanner_array_next_array(scanner: *Json) ScannerError!bool {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .array_begin => return true,
         .array_end => return false,
         else => |t| {
@@ -874,12 +870,12 @@ pub fn scanner_array_next_array(scanner: *std.json.Scanner) ScannerError!bool {
     }
 }
 
-pub fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_array_next_number(scanner: *Json) ScannerError!?[]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+    loop: switch (scanner.next()) {
+        .array_begin => continue :loop scanner.next(),
         .array_end => return null,
         .number => |v| return v,
         else => |t| {
@@ -889,12 +885,12 @@ pub fn scanner_array_next_number(scanner: *std.json.Scanner) ScannerError!?[]con
     }
 }
 
-pub fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]const u8 {
+pub fn scanner_array_next_string(scanner: *Json) ScannerError!?[]const u8 {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    loop: switch (try scanner.next()) {
-        .array_begin => continue :loop try scanner.next(),
+    loop: switch (scanner.next()) {
+        .array_begin => continue :loop scanner.next(),
         .array_end => return null,
         .string => |s| return s,
         else => |t| {
@@ -904,11 +900,11 @@ pub fn scanner_array_next_string(scanner: *std.json.Scanner) ScannerError!?[]con
     }
 }
 
-pub fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
+pub fn scanner_object_begin(scanner: *Json) ScannerError!void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .object_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -917,11 +913,11 @@ pub fn scanner_object_begin(scanner: *std.json.Scanner) ScannerError!void {
     }
 }
 
-pub fn scanner_array_begin(scanner: *std.json.Scanner) ScannerError!void {
+pub fn scanner_array_begin(scanner: *Json) ScannerError!void {
     const prof_point = MEASUREMENTS.start(@src());
     defer MEASUREMENTS.end(prof_point);
 
-    switch (try scanner.next()) {
+    switch (scanner.next()) {
         .array_begin => return,
         else => |t| {
             print_unexpected_token(t);
@@ -1133,7 +1129,7 @@ test "parse_object_array" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1531,7 +1527,7 @@ test "test_parse_vk_pipeline_tessellation_domain_origin_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1567,7 +1563,7 @@ test "test_parse_vk_pipeline_rasterization_state_stream_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1605,7 +1601,7 @@ test "test_parse_vk_pipeline_color_blend_advanced_state_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1644,7 +1640,7 @@ test "test_parse_vk_pipeline_rasterization_conservative_state_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1690,7 +1686,7 @@ test "test_parse_vk_pipeline_color_write_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1749,7 +1745,7 @@ test "test_parse_vk_sample_locations_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1798,7 +1794,7 @@ test "test_parse_vk_extent_2d" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1843,7 +1839,7 @@ test "test_parse_vk_sample_location_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1893,7 +1889,7 @@ test "test_parse_vk_pipeline_sample_locations_state_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -1957,7 +1953,7 @@ test "test_parse_vk_render_pass_multiview_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2000,7 +1996,7 @@ test "test_parse_vk_attachment_description_stencil_layout" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2036,7 +2032,7 @@ test "test_parse_vk_attachment_reference_stencil_layout" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2085,7 +2081,7 @@ test "test_parse_vk_subpass_description_depth_stencil_resolve" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2132,7 +2128,7 @@ test "test_parse_vk_fragment_shading_rate_attachment_info_khr" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2170,7 +2166,7 @@ test "test_parse_vk_input_attachment_aspect_reference" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2220,7 +2216,7 @@ test "test_parse_vk_render_pass_input_attachment_aspect_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2269,7 +2265,7 @@ test "test_parse_vk_sampler_reduction_mode_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2296,7 +2292,7 @@ test "test_parse_vk_component_mapping" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2362,7 +2358,7 @@ test "test_parse_vk_sampler_ycbcr_conversion_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2410,7 +2406,7 @@ test "test_parse_vk_clear_color_value" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2458,7 +2454,7 @@ test "test_parse_vk_sampler_custom_border_color_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2507,7 +2503,7 @@ test "test_parse_vk_sampler_border_color_component_mapping_create_info_ext" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2597,7 +2593,7 @@ test "test_parse_vk_mutable_descriptor_type_create_info_ext" {
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -2969,7 +2965,7 @@ test "test_parse_vk_application_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3018,7 +3014,7 @@ test "test_parse_vk_physical_device_features2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3071,7 +3067,7 @@ test "test_parse_vk_sampler_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3140,7 +3136,7 @@ test "test_parse_vk_descriptor_set_layout_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3215,7 +3211,7 @@ test "test_parse_vk_descriptor_set_layout_binding" {
         .handle = 0x69,
     });
 
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3299,7 +3295,7 @@ test "test_parse_vk_pipeline_layout_create_info" {
         .handle = 0x69,
     });
 
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3345,7 +3341,7 @@ test "test_parse_vk_push_constant_range" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3439,7 +3435,7 @@ test "test_parse_vk_shader_module_create_info" {
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
 
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3511,7 +3507,7 @@ test "test_parse_vk_render_pass_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3592,7 +3588,7 @@ test "test_parse_vk_render_pass_create_info2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3643,7 +3639,7 @@ test "test_parse_vk_subpass_dependency" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3691,7 +3687,7 @@ test "test_parse_vk_subpass_dependency2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3742,7 +3738,7 @@ test "test_parse_vk_attachment_description" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3793,7 +3789,7 @@ test "test_parse_vk_attachment_description2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3883,7 +3879,7 @@ test "test_parse_vk_subpass_description" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -3977,7 +3973,7 @@ test "test_parse_vk_subpass_description2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4025,7 +4021,7 @@ test "test_parse_vk_attachment_reference" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4063,7 +4059,7 @@ test "test_parse_vk_attachment_reference2" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4212,7 +4208,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         .payload_file_offset = undefined,
         .handle = 0x69,
     });
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4309,7 +4305,7 @@ test "test_parse_vk_pipeline_shader_stage_create_info" {
         .payload_file_offset = undefined,
         .handle = undefined,
     });
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4382,7 +4378,7 @@ test "test_parse_vk_pipeline_vertex_input_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4424,7 +4420,7 @@ test "test_parse_vk_pipeline_input_assembly_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4463,7 +4459,7 @@ test "test_parse_vk_pipeline_tessellation_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4533,7 +4529,7 @@ test "test_parse_vk_pipeline_viewport_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4583,7 +4579,7 @@ test "test_parse_vk_pipeline_rasterization_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4659,7 +4655,7 @@ test "test_parse_vk_pipeline_multisample_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4707,7 +4703,7 @@ test "test_parse_vk_stencil_op_state" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4784,7 +4780,7 @@ test "test_parse_vk_pipeline_depth_stencil_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4866,7 +4862,7 @@ test "test_parse_vk_pipeline_color_blend_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4923,7 +4919,7 @@ test "test_parse_vk_pipeline_dynamic_state_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -4964,7 +4960,7 @@ test "test_parse_vk_vertex_input_attribute_description" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5004,7 +5000,7 @@ test "test_parse_vk_vertex_input_binding_description" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5048,7 +5044,7 @@ test "test_parse_vk_pipeline_color_blend_attachment_state" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5095,7 +5091,7 @@ test "test_parse_vk_viewport" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5150,7 +5146,7 @@ test "test_parse_vk_rect_2d" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5190,7 +5186,7 @@ test "test_parse_vk_specialization_map_entry" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5250,7 +5246,7 @@ test "test_parse_vk_specialization_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5326,7 +5322,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
         .handle = undefined,
     });
 
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5443,7 +5439,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         .payload_file_offset = undefined,
         .handle = 0x69,
     });
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5500,7 +5496,7 @@ test "test_parse_vk_ray_tracing_shader_group_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5566,7 +5562,7 @@ test "test_parse_vk_pipeline_library_create_info" {
         .payload_file_offset = undefined,
         .handle = 0x69,
     });
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
@@ -5611,7 +5607,7 @@ test "test_parse_vk_ray_tracing_pipeline_interface_create_info" {
     const alloc = arena.allocator();
 
     const db: Database = .{ .file = undefined, .entries = .initFill(.empty), .arena = arena };
-    var scanner = std.json.Scanner.initCompleteInput(alloc, json);
+    var scanner = Json.init(alloc, json);
     var context = Context{
         .alloc = alloc,
         .tmp_alloc = alloc,
