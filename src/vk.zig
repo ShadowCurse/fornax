@@ -586,6 +586,7 @@ pub const VkAccessFlags = packed struct(u32) {
     // bit: 27
     VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT: bool = false,
     _: u4 = 0,
+    pub const VK_ACCESS_NONE: @This() = @bitCast(@as(u32, 0x0));
 };
 pub const VkBufferUsageFlags = packed struct(u32) {
     // Comment: Can be used as a source of transfer operations
@@ -1305,6 +1306,7 @@ pub const VkImageAspectFlags = packed struct(u32) {
     // bit: 10
     VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT: bool = false,
     _: u21 = 0,
+    pub const VK_IMAGE_ASPECT_NONE: @This() = @bitCast(@as(u32, 0x0));
 };
 pub const VkSparseMemoryBindFlags = packed struct(u32) {
     // Comment: Operation binds resource metadata to memory
@@ -1436,6 +1438,7 @@ pub const VkPipelineStageFlags = packed struct(u32) {
     // bit: 25
     VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR: bool = false,
     _: u6 = 0,
+    pub const VK_PIPELINE_STAGE_NONE: @This() = @bitCast(@as(u32, 0x0));
 };
 pub const VkSampleCountFlags = packed struct(u32) {
     // Comment: Sample count 1 supported

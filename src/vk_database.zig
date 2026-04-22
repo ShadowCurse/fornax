@@ -494,212 +494,255 @@ pub const TypeDatabase = struct {
             }
         }
 
-        for (xml_database.types.bitmasks) |*bitmask| {
-            switch (bitmask.value) {
-                .type => |t| {
-                    var bitwidth: u32 = 0;
-                    if (std.mem.eql(u8, t, "VkFlags"))
-                        bitwidth = 32;
-                    if (std.mem.eql(u8, t, "VkFlags64"))
-                        bitwidth = 64;
-                    const b: Bitfield = .{
-                        .name = bitmask.name,
-                        .backing_integer_width = bitwidth,
-                        .bits = &.{},
-                        .constants = &.{},
-                    };
-                    _ = try db.add_bitfield(b);
-                },
-                .enum_name => |enum_name| {
-                    if (xml_database.enum_by_name(enum_name)) |@"enum"| {
-                        var additions: std.ArrayListUnmanaged(struct {
-                            ext_name: []const u8,
-                            items: XmlDatabase.Extension.EnumAdditions,
-                        }) = .empty;
-                        for (xml_database.features.items) |ext| {
-                            const ex = try ext.enum_additions(alloc, @"enum".name);
-                            if (ex.items.len != 0) try additions.append(
-                                alloc,
-                                .{ .ext_name = ext.name, .items = ex },
-                            );
-                        }
-                        for (xml_database.extensions.items) |ext| {
-                            if (ext.supported == .disabled) continue;
-                            const ex = try ext.enum_additions(alloc, @"enum".name);
-                            if (ex.items.len != 0) try additions.append(
-                                alloc,
-                                .{ .ext_name = ext.name, .items = ex },
-                            );
-                        }
+        // bitmasks and enums
+        {
+            const Inner = struct {
+                fn enum_offset(extension_number: i32, offset: i32) i32 {
+                    const BASE = 1000000000;
+                    const RANGE = 1000;
+                    const result = BASE + (extension_number - 1) * RANGE + offset;
+                    return result;
+                }
 
-                        var bits: std.ArrayListUnmanaged(Bitfield.Bit) = .empty;
-                        var constants: std.ArrayListUnmanaged(Bitfield.Constant) = .empty;
-                        for (@"enum".items) |item| {
-                            switch (item.value) {
-                                .bitpos => |bitpos| {
-                                    const bit: Bitfield.Bit = .{
-                                        .name = item.name,
-                                        .bit = bitpos,
-                                        .comment = item.comment,
-                                    };
-                                    try bits.append(alloc, bit);
-                                },
-                                .value => |value| {
-                                    try constants.append(
-                                        alloc,
-                                        .{ .name = item.name, .value = @intCast(value) },
-                                    );
-                                },
+                fn less_than_bit(_: void, a: Bitfield.Bit, b: Bitfield.Bit) bool {
+                    return a.bit < b.bit;
+                }
+                fn less_than_enum(_: void, a: Enum.Value, b: Enum.Value) bool {
+                    return a.value < b.value;
+                }
+            };
+
+            for (xml_database.types.bitmasks) |*bitmask| {
+                switch (bitmask.value) {
+                    .type => |t| {
+                        var bitwidth: u32 = 0;
+                        if (std.mem.eql(u8, t, "VkFlags"))
+                            bitwidth = 32;
+                        if (std.mem.eql(u8, t, "VkFlags64"))
+                            bitwidth = 64;
+                        const b: Bitfield = .{
+                            .name = bitmask.name,
+                            .backing_integer_width = bitwidth,
+                            .bits = &.{},
+                            .constants = &.{},
+                        };
+                        _ = try db.add_bitfield(b);
+                    },
+                    .enum_name => |enum_name| {
+                        if (xml_database.enum_by_name(enum_name)) |@"enum"| {
+                            var additions: std.ArrayListUnmanaged(struct {
+                                ext_name: []const u8,
+                                items: XmlDatabase.Extension.EnumAdditions,
+                            }) = .empty;
+                            for (xml_database.features.items) |ext| {
+                                const ex = try ext.enum_additions(alloc, @"enum".name);
+                                if (ex.items.len != 0) try additions.append(
+                                    alloc,
+                                    .{ .ext_name = ext.name, .items = ex },
+                                );
                             }
+                            for (xml_database.extensions.items) |ext| {
+                                if (ext.supported == .disabled) continue;
+                                const ex = try ext.enum_additions(alloc, @"enum".name);
+                                if (ex.items.len != 0) try additions.append(
+                                    alloc,
+                                    .{ .ext_name = ext.name, .items = ex },
+                                );
+                            }
+
+                            var bits: std.ArrayListUnmanaged(Bitfield.Bit) = .empty;
+                            var constants: std.ArrayListUnmanaged(Bitfield.Constant) = .empty;
+                            for (@"enum".items) |item| {
+                                switch (item.value) {
+                                    .bitpos => |bitpos| {
+                                        const bit: Bitfield.Bit = .{
+                                            .name = item.name,
+                                            .bit = bitpos,
+                                            .comment = item.comment,
+                                        };
+                                        try bits.append(alloc, bit);
+                                    },
+                                    .value => |value| {
+                                        try constants.append(
+                                            alloc,
+                                            .{ .name = item.name, .value = @intCast(value) },
+                                        );
+                                    },
+                                }
+                            }
+                            for (additions.items) |addition| {
+                                for (addition.items.items) |add| {
+                                    if (add.value == .bitpos) {
+                                        const bit: Bitfield.Bit = .{
+                                            .name = add.name,
+                                            .bit = add.value.bitpos,
+                                            .enabled_by_extension = addition.ext_name,
+                                        };
+                                        try bits.append(alloc, bit);
+                                    } else if (add.value == .value) {
+                                        try constants.append(
+                                            alloc,
+                                            .{ .name = add.name, .value = @intCast(add.value.value) },
+                                        );
+                                    } else if (add.value == .offset) {
+                                        const offset = add.value.offset;
+                                        var value = Inner.enum_offset(
+                                            @intCast(offset.extnumber),
+                                            @intCast(offset.offset),
+                                        );
+                                        if (offset.negative) value *= -1;
+                                        try constants.append(
+                                            alloc,
+                                            .{ .name = add.name, .value = @intCast(value) },
+                                        );
+                                    } else if (add.value == .alias) {
+                                        const alias = add.value.alias;
+                                        for (bits.items) |*bit| {
+                                            if (std.mem.eql(u8, bit.name, alias)) {
+                                                var b = bit.*;
+                                                b.enabled_by_extension = addition.ext_name;
+                                                try bits.append(alloc, b);
+                                                break;
+                                            }
+                                        } else {
+                                            for (@"enum".items) |item| {
+                                                if (std.mem.eql(u8, item.name, alias)) {
+                                                    if (item.value == .bitpos) {
+                                                        try bits.append(alloc, .{
+                                                            .name = add.name,
+                                                            .bit = item.value.bitpos,
+                                                            .enabled_by_extension = addition.ext_name,
+                                                        });
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            std.mem.sortUnstable(Bitfield.Bit, bits.items, {}, Inner.less_than_bit);
+
+                            const b: Bitfield = .{
+                                .name = bitmask.name,
+                                .backing_integer_width = @"enum".bitwidth,
+                                .bits = bits.items,
+                                .constants = constants.items,
+                            };
+                            const b_idx = try db.add_bitfield(b);
+
+                            const a: Type.Alias = .{
+                                .name = @"enum".name,
+                                .type_idx = b_idx,
+                            };
+                            _ = try db.add_alias(a);
                         }
-                        for (additions.items) |addition| {
-                            for (addition.items.items) |add| {
-                                if (add.value == .bitpos) {
-                                    const bit: Bitfield.Bit = .{
-                                        .name = add.name,
-                                        .bit = add.value.bitpos,
-                                        .enabled_by_extension = addition.ext_name,
-                                    };
-                                    try bits.append(alloc, bit);
-                                } else if (add.value == .alias) {
-                                    const alias = add.value.alias;
-                                    for (bits.items) |*bit| {
-                                        if (std.mem.eql(u8, bit.name, alias)) {
-                                            var b = bit.*;
-                                            b.enabled_by_extension = addition.ext_name;
-                                            try bits.append(alloc, b);
+                    },
+                    else => {},
+                }
+            }
+
+            for (xml_database.enums.items) |*@"enum"| {
+                if (@"enum".type == .@"enum") {
+                    var additions: std.ArrayListUnmanaged(struct {
+                        ext_name: []const u8,
+                        items: XmlDatabase.Extension.EnumAdditions,
+                    }) = .empty;
+                    for (xml_database.features.items) |ext| {
+                        const ex = try ext.enum_additions(alloc, @"enum".name);
+                        if (ex.items.len != 0) try additions.append(
+                            alloc,
+                            .{ .ext_name = ext.name, .items = ex },
+                        );
+                    }
+                    for (xml_database.extensions.items) |ext| {
+                        if (ext.supported == .disabled) continue;
+                        const ex = try ext.enum_additions(alloc, @"enum".name);
+                        if (ex.items.len != 0) try additions.append(
+                            alloc,
+                            .{ .ext_name = ext.name, .items = ex },
+                        );
+                    }
+
+                    var values: std.ArrayListUnmanaged(Enum.Value) = .empty;
+                    for (@"enum".items) |item| {
+                        if (item.value == .value) {
+                            const value = item.value.value;
+                            const enum_value: Enum.Value = .{
+                                .name = item.name,
+                                .value = @intCast(value),
+                                .comment = item.comment,
+                            };
+                            try values.append(alloc, enum_value);
+                        }
+                    }
+                    for (additions.items) |addition| {
+                        for (addition.items.items) |add| {
+                            if (add.value == .value) {
+                                const value = add.value.value;
+                                const enum_value: Enum.Value = .{
+                                    .name = add.name,
+                                    .value = @intCast(value),
+                                    .enabled_by_extension = addition.ext_name,
+                                };
+                                try values.append(alloc, enum_value);
+                            } else if (add.value == .offset) {
+                                const offset = add.value.offset;
+                                var value = Inner.enum_offset(
+                                    @intCast(offset.extnumber),
+                                    @intCast(offset.offset),
+                                );
+                                if (offset.negative) value *= -1;
+                                const enum_value: Enum.Value = .{
+                                    .name = add.name,
+                                    .value = value,
+                                    .enabled_by_extension = addition.ext_name,
+                                };
+                                try values.append(alloc, enum_value);
+                            } else if (add.value == .alias) {
+                                const alias = add.value.alias;
+                                for (values.items) |*value| {
+                                    if (std.mem.eql(u8, value.name, alias)) {
+                                        var v = value.*;
+                                        v.enabled_by_extension = addition.ext_name;
+                                        try values.append(alloc, v);
+                                        break;
+                                    }
+                                } else {
+                                    for (@"enum".items) |item| {
+                                        if (std.mem.eql(u8, item.name, alias)) {
+                                            if (item.value == .value) {
+                                                try values.append(alloc, .{
+                                                    .name = add.name,
+                                                    .value = @intCast(item.value.value),
+                                                    .enabled_by_extension = addition.ext_name,
+                                                });
+                                            }
                                             break;
                                         }
                                     }
                                 }
                             }
                         }
-
-                        const Inner = struct {
-                            fn less_than(_: void, a: Bitfield.Bit, b: Bitfield.Bit) bool {
-                                return a.bit < b.bit;
-                            }
-                        };
-                        std.mem.sortUnstable(Bitfield.Bit, bits.items, {}, Inner.less_than);
-
-                        const b: Bitfield = .{
-                            .name = bitmask.name,
-                            .backing_integer_width = @"enum".bitwidth,
-                            .bits = bits.items,
-                            .constants = constants.items,
-                        };
-                        const b_idx = try db.add_bitfield(b);
-
-                        const a: Type.Alias = .{
-                            .name = @"enum".name,
-                            .type_idx = b_idx,
-                        };
-                        _ = try db.add_alias(a);
                     }
-                },
-                else => {},
+                    std.mem.sortUnstable(Enum.Value, values.items, {}, Inner.less_than_enum);
+                    const e: Enum = .{
+                        .name = @"enum".name,
+                        .backing_integer_width = @"enum".bitwidth,
+                        .values = values.items,
+                    };
+                    _ = try db.add_enum(e);
+                }
             }
-        }
 
-        for (xml_database.enums.items) |*@"enum"| {
-            if (@"enum".type == .@"enum") {
-                const Inner = struct {
-                    fn enum_offset(extension_number: i32, offset: i32) i32 {
-                        const BASE = 1000000000;
-                        const RANGE = 1000;
-                        const result = BASE + (extension_number - 1) * RANGE + offset;
-                        return result;
-                    }
-
-                    fn less_than(_: void, a: Enum.Value, b: Enum.Value) bool {
-                        return a.value < b.value;
-                    }
+            for (xml_database.types.enum_aliases) |enum_alias| {
+                const idx = try db.resolve_base(enum_alias.alias);
+                const a: Type.Alias = .{
+                    .name = enum_alias.name,
+                    .type_idx = idx,
                 };
-                var additions: std.ArrayListUnmanaged(struct {
-                    ext_name: []const u8,
-                    items: XmlDatabase.Extension.EnumAdditions,
-                }) = .empty;
-                for (xml_database.features.items) |ext| {
-                    const ex = try ext.enum_additions(alloc, @"enum".name);
-                    if (ex.items.len != 0) try additions.append(
-                        alloc,
-                        .{ .ext_name = ext.name, .items = ex },
-                    );
-                }
-                for (xml_database.extensions.items) |ext| {
-                    if (ext.supported == .disabled) continue;
-                    const ex = try ext.enum_additions(alloc, @"enum".name);
-                    if (ex.items.len != 0) try additions.append(
-                        alloc,
-                        .{ .ext_name = ext.name, .items = ex },
-                    );
-                }
-
-                var values: std.ArrayListUnmanaged(Enum.Value) = .empty;
-                for (@"enum".items) |item| {
-                    if (item.value == .value) {
-                        const value = item.value.value;
-                        const enum_value: Enum.Value = .{
-                            .name = item.name,
-                            .value = @intCast(value),
-                            .comment = item.comment,
-                        };
-                        try values.append(alloc, enum_value);
-                    }
-                }
-                for (additions.items) |addition| {
-                    for (addition.items.items) |add| {
-                        if (add.value == .value) {
-                            const value = add.value.value;
-                            const enum_value: Enum.Value = .{
-                                .name = add.name,
-                                .value = @intCast(value),
-                                .enabled_by_extension = addition.ext_name,
-                            };
-                            try values.append(alloc, enum_value);
-                        } else if (add.value == .offset) {
-                            const offset = add.value.offset;
-                            var value = Inner.enum_offset(
-                                @intCast(offset.extnumber),
-                                @intCast(offset.offset),
-                            );
-                            if (offset.negative) value *= -1;
-                            const enum_value: Enum.Value = .{
-                                .name = add.name,
-                                .value = value,
-                                .enabled_by_extension = addition.ext_name,
-                            };
-                            try values.append(alloc, enum_value);
-                        } else if (add.value == .alias) {
-                            const alias = add.value.alias;
-                            for (values.items) |*value| {
-                                if (std.mem.eql(u8, value.name, alias)) {
-                                    var v = value.*;
-                                    v.enabled_by_extension = addition.ext_name;
-                                    try values.append(alloc, v);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                std.mem.sortUnstable(Enum.Value, values.items, {}, Inner.less_than);
-                const e: Enum = .{
-                    .name = @"enum".name,
-                    .backing_integer_width = @"enum".bitwidth,
-                    .values = values.items,
-                };
-                _ = try db.add_enum(e);
+                _ = try db.add_alias(a);
             }
-        }
-
-        for (xml_database.types.enum_aliases) |enum_alias| {
-            const idx = try db.resolve_base(enum_alias.alias);
-            const a: Type.Alias = .{
-                .name = enum_alias.name,
-                .type_idx = idx,
-            };
-            _ = try db.add_alias(a);
         }
 
         outer: for (xml_database.types.structs) |@"struct"| {
@@ -2212,6 +2255,12 @@ pub const XmlDatabase = struct {
                         if (try parse_extension(alloc, &parser)) |e|
                             try features.append(alloc, e);
                     } else {
+                        // <comment>
+                        // <platforms>
+                        // <tags>
+                        // <formats>
+                        // <sync/syncstage/syncaccess/syncpipeline>
+                        // <videocodecs/videoprofiles/videocapabilities/videoformat>
                         parser.skip_current_element();
                     }
                 },
@@ -2692,6 +2741,8 @@ pub const XmlDatabase = struct {
                 else
                     parser.skip_current_element();
             } else {
+                // <remove>
+                // <deprecate>
                 parser.skip_current_element();
             }
         }
