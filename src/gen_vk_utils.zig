@@ -5,7 +5,6 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const root = @import("root");
-const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 
 const IN_PATH = "thirdparty/vk.xml";
@@ -23,22 +22,20 @@ const HEADER =
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const alloc = arena.allocator();
+    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+    const tmp_alloc = tmp_arena.allocator();
 
     const xml_file = try std.fs.cwd().openFile(IN_PATH, .{});
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    const xml_db: XmlDatabase = try .init(alloc, buffer);
-    var type_db: TypeDatabase = try .from_xml_database(alloc, &xml_db);
+    var type_db: TypeDatabase = try .from_xml(alloc, tmp_alloc, buffer);
 
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
     defer file.close();
     var writer: Writer = try .init(alloc, file);
     defer writer.flush();
-
-    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
-    const tmp_alloc = tmp_arena.allocator();
 
     writer.write(HEADER, .{@src().file});
     try write_print_struct(tmp_alloc, &writer, &type_db);

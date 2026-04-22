@@ -3,8 +3,6 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const XmlParser = @import("xml_parser.zig");
-const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 
 const IN_PATH = "thirdparty/vk.xml";
@@ -19,13 +17,14 @@ const HEADER =
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const alloc = arena.allocator();
+    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+    const tmp_alloc = tmp_arena.allocator();
 
     const xml_file = try std.fs.cwd().openFile(IN_PATH, .{});
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    const xml_db: XmlDatabase = try .init(alloc, buffer);
-    var type_db: TypeDatabase = try .from_xml_database(alloc, &xml_db);
+    var type_db: TypeDatabase = try .from_xml(alloc, tmp_alloc, buffer);
 
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
@@ -33,11 +32,9 @@ pub fn main() !void {
     var writer: Writer = try .init(alloc, file);
     defer writer.flush();
 
-    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
-    const tmp_alloc = tmp_arena.allocator();
 
     writer.write(HEADER, .{@src().file});
-    write_constants(&writer, &xml_db);
+    write_constants(&writer, &type_db);
     write_versions(&writer);
     write_handles(&writer, &type_db);
     try write_bitfields(&writer, &type_db);
@@ -51,7 +48,7 @@ pub fn main() !void {
     try write_aliases(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
     write_unknown_types(&writer, &type_db);
-    write_extensions(&writer, &xml_db);
+    write_extensions(&writer, &type_db);
 }
 
 const Writer = struct {
@@ -89,17 +86,18 @@ const Writer = struct {
     }
 };
 
-fn write_constants(w: *Writer, xml_db: *const XmlDatabase) void {
+fn write_constants(w: *Writer, type_db: *const TypeDatabase) void {
     w.write(
         \\// Constants
         \\
     , .{});
-    for (xml_db.constants.items) |*c| {
+    for (type_db.constants.items) |*c| {
         switch (c.value) {
-            .invalid => {},
+            .void => {},
             .u32 => |v| w.write("pub const {s}: u32 = {d};\n", .{ c.name, v }),
             .u64 => |v| w.write("pub const {s}: u64 = {d};\n", .{ c.name, v }),
             .f32 => |v| w.write("pub const {s}: f32 = {d};\n", .{ c.name, v }),
+            else => unreachable,
         }
     }
 }
@@ -756,7 +754,7 @@ fn write_unknown_types(w: *Writer, type_db: *const TypeDatabase) void {
     }
 }
 
-fn write_extensions(w: *Writer, db: *const XmlDatabase) void {
+fn write_extensions(w: *Writer, db: *const TypeDatabase) void {
     w.write(
         \\
         \\// Extensions

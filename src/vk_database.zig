@@ -18,6 +18,13 @@ pub const TypeDatabase = struct {
     unions: std.ArrayListUnmanaged(@This().Union) = .empty,
     functions: std.ArrayListUnmanaged(@This().Function) = .empty,
 
+    extensions: std.ArrayListUnmanaged(Extension) = .empty,
+    features: std.ArrayListUnmanaged(Extension) = .empty,
+    spirv: Spirv = .{},
+
+    pub const Extension = Xml.Extension;
+    pub const Spirv = Xml.Spirv;
+
     pub const BuiltinType = enum {
         void,
         anyopaque,
@@ -418,8 +425,63 @@ pub const TypeDatabase = struct {
         };
     };
 
-    pub fn from_xml_database(alloc: Allocator, xml_database: *const XmlDatabase) !TypeDatabase {
-        var db: TypeDatabase = .{ .alloc = alloc };
+    // pub fn from_xml_database(alloc: Allocator, xml_database: *const Xml) !TypeDatabase {
+    pub fn from_xml(alloc: Allocator, tmp_alloc: Allocator, buffer: []const u8) !TypeDatabase {
+        var xml_types: Xml.Types = undefined;
+        var xml_features: std.ArrayListUnmanaged(Xml.Extension) = .empty;
+        var xml_extensions: std.ArrayListUnmanaged(Xml.Extension) = .empty;
+        var xml_enums: std.ArrayListUnmanaged(Xml.Enum) = .empty;
+        var xml_constants: Xml.Constants = undefined;
+        var xml_commands: std.ArrayListUnmanaged(Xml.Command) = .empty;
+        var xml_spirv: Xml.Spirv = undefined;
+        var parser: XmlParser = .init(buffer);
+        while (parser.peek_next()) |token| {
+            switch (token) {
+                .element_start => |es| {
+                    if (std.mem.eql(u8, es, "registry")) {
+                        _ = parser.next();
+                        continue;
+                    } else if (std.mem.eql(u8, es, "types")) {
+                        xml_types = try Xml.parse_types(tmp_alloc, &parser);
+                    } else if (std.mem.eql(u8, es, "extensions")) {
+                        xml_extensions = try Xml.parse_extensions(alloc, &parser);
+                    } else if (std.mem.eql(u8, es, "commands")) {
+                        xml_commands = try Xml.parse_commands(tmp_alloc, &parser);
+                    } else if (std.mem.eql(u8, es, "spirvextensions")) {
+                        xml_spirv = try Xml.parse_spirv(alloc, &parser);
+                    } else if (std.mem.eql(u8, es, "enums")) {
+                        if (try Xml.parse_enum(tmp_alloc, &parser)) |e| {
+                            try xml_enums.append(tmp_alloc, e);
+                        } else {
+                            if (try Xml.parse_constants(tmp_alloc, &parser)) |c| {
+                                xml_constants = c;
+                            } else {
+                                parser.skip_current_element();
+                            }
+                        }
+                    } else if (std.mem.eql(u8, es, "feature")) {
+                        if (try Xml.parse_extension(alloc, &parser)) |e|
+                            try xml_features.append(alloc, e);
+                    } else {
+                        // <comment>
+                        // <platforms>
+                        // <tags>
+                        // <formats>
+                        // <sync/syncstage/syncaccess/syncpipeline>
+                        // <videocodecs/videoprofiles/videocapabilities/videoformat>
+                        parser.skip_current_element();
+                    }
+                },
+                else => _ = parser.next(),
+            }
+        }
+
+        var db: TypeDatabase = .{
+            .alloc = alloc,
+            .extensions = xml_extensions,
+            .features = xml_features,
+            .spirv = xml_spirv,
+        };
         _ = try db.add_builtin(.void);
         _ = try db.add_builtin(.anyopaque);
         _ = try db.add_builtin(.bool);
@@ -450,7 +512,7 @@ pub const TypeDatabase = struct {
         const u8_slice_ptr_idx = try db.resolve_pointer(u8_slice_ptr);
         _ = try db.add_alias(.{ .name = "u8_slice", .type_idx = u8_slice_ptr_idx });
 
-        for (xml_database.constants.items) |*constant| {
+        for (xml_constants.items) |*constant| {
             var value: BuiltinValue = .void;
             switch (constant.value) {
                 .invalid => {},
@@ -461,7 +523,7 @@ pub const TypeDatabase = struct {
             _ = try db.add_constant(.{ .name = constant.name, .value = value });
         }
 
-        for (xml_database.types.basetypes) |*basetype| {
+        for (xml_types.basetypes) |*basetype| {
             var idx = try db.resolve_base(basetype.type);
             if (basetype.pointer) {
                 const pointer: Type.Pointer = .{
@@ -476,7 +538,7 @@ pub const TypeDatabase = struct {
             _ = try db.add_alias(alias);
         }
 
-        for (xml_database.types.handles) |*handle| {
+        for (xml_types.handles) |*handle| {
             if (handle.alias) |alias| {
                 const idx = try db.resolve_base(alias);
                 const a: Type.Alias = .{
@@ -510,9 +572,17 @@ pub const TypeDatabase = struct {
                 fn less_than_enum(_: void, a: Enum.Value, b: Enum.Value) bool {
                     return a.value < b.value;
                 }
+
+                fn enum_by_name(xe: []Xml.Enum, enum_name: []const u8) ?*const Xml.Enum {
+                    for (xe) |*e| {
+                        if (std.mem.eql(u8, e.name, enum_name))
+                            return e;
+                    }
+                    return null;
+                }
             };
 
-            for (xml_database.types.bitmasks) |*bitmask| {
+            for (xml_types.bitmasks) |*bitmask| {
                 switch (bitmask.value) {
                     .type => |t| {
                         var bitwidth: u32 = 0;
@@ -529,19 +599,19 @@ pub const TypeDatabase = struct {
                         _ = try db.add_bitfield(b);
                     },
                     .enum_name => |enum_name| {
-                        if (xml_database.enum_by_name(enum_name)) |@"enum"| {
+                        if (Inner.enum_by_name(xml_enums.items, enum_name)) |@"enum"| {
                             var additions: std.ArrayListUnmanaged(struct {
                                 ext_name: []const u8,
-                                items: XmlDatabase.Extension.EnumAdditions,
+                                items: Xml.Extension.EnumAdditions,
                             }) = .empty;
-                            for (xml_database.features.items) |ext| {
+                            for (xml_features.items) |ext| {
                                 const ex = try ext.enum_additions(alloc, @"enum".name);
                                 if (ex.items.len != 0) try additions.append(
                                     alloc,
                                     .{ .ext_name = ext.name, .items = ex },
                                 );
                             }
-                            for (xml_database.extensions.items) |ext| {
+                            for (xml_extensions.items) |ext| {
                                 if (ext.supported == .disabled) continue;
                                 const ex = try ext.enum_additions(alloc, @"enum".name);
                                 if (ex.items.len != 0) try additions.append(
@@ -642,20 +712,20 @@ pub const TypeDatabase = struct {
                 }
             }
 
-            for (xml_database.enums.items) |*@"enum"| {
+            for (xml_enums.items) |*@"enum"| {
                 if (@"enum".type == .@"enum") {
                     var additions: std.ArrayListUnmanaged(struct {
                         ext_name: []const u8,
-                        items: XmlDatabase.Extension.EnumAdditions,
+                        items: Xml.Extension.EnumAdditions,
                     }) = .empty;
-                    for (xml_database.features.items) |ext| {
+                    for (xml_features.items) |ext| {
                         const ex = try ext.enum_additions(alloc, @"enum".name);
                         if (ex.items.len != 0) try additions.append(
                             alloc,
                             .{ .ext_name = ext.name, .items = ex },
                         );
                     }
-                    for (xml_database.extensions.items) |ext| {
+                    for (xml_extensions.items) |ext| {
                         if (ext.supported == .disabled) continue;
                         const ex = try ext.enum_additions(alloc, @"enum".name);
                         if (ex.items.len != 0) try additions.append(
@@ -735,7 +805,7 @@ pub const TypeDatabase = struct {
                 }
             }
 
-            for (xml_database.types.enum_aliases) |enum_alias| {
+            for (xml_types.enum_aliases) |enum_alias| {
                 const idx = try db.resolve_base(enum_alias.alias);
                 const a: Type.Alias = .{
                     .name = enum_alias.name,
@@ -745,7 +815,7 @@ pub const TypeDatabase = struct {
             }
         }
 
-        outer: for (xml_database.types.structs) |@"struct"| {
+        outer: for (xml_types.structs) |@"struct"| {
             if (@"struct".alias) |alias| {
                 const type_idx = try db.resolve_base(alias);
                 const a: Type.Alias = .{
@@ -756,16 +826,16 @@ pub const TypeDatabase = struct {
             } else {
                 var enabled_by_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
 
-                for (xml_database.types.structs) |s2| {
+                for (xml_types.structs) |s2| {
                     if (s2.alias) |alias| {
                         if (std.mem.eql(u8, @"struct".name, alias)) {
-                            for (xml_database.features.items) |ext| {
+                            for (xml_features.items) |ext| {
                                 if (ext.unlocks_type(s2.name)) {
                                     try enabled_by_extensions.append(alloc, ext.name);
                                     break;
                                 }
                             }
-                            for (xml_database.extensions.items) |ext| {
+                            for (xml_extensions.items) |ext| {
                                 if (ext.unlocks_type(s2.name)) {
                                     if (ext.supported == .disabled) {
                                         continue :outer;
@@ -779,13 +849,13 @@ pub const TypeDatabase = struct {
                     }
                 }
 
-                for (xml_database.features.items) |ext| {
+                for (xml_features.items) |ext| {
                     if (ext.unlocks_type(@"struct".name)) {
                         try enabled_by_extensions.append(alloc, ext.name);
                         break;
                     }
                 }
-                for (xml_database.extensions.items) |ext| {
+                for (xml_extensions.items) |ext| {
                     if (ext.unlocks_type(@"struct".name)) {
                         if (ext.supported == .disabled) {
                             continue :outer;
@@ -870,7 +940,7 @@ pub const TypeDatabase = struct {
             }
         }
 
-        outer: for (xml_database.types.unions) |@"union"| {
+        outer: for (xml_types.unions) |@"union"| {
             if (@"union".alias) |alias| {
                 const type_idx = try db.resolve_base(alias);
                 const a: Type.Alias = .{
@@ -881,16 +951,16 @@ pub const TypeDatabase = struct {
             } else {
                 var enabled_by_extensions: std.ArrayListUnmanaged([]const u8) = .empty;
 
-                for (xml_database.types.unions) |un2| {
+                for (xml_types.unions) |un2| {
                     if (un2.alias) |alias| {
                         if (std.mem.eql(u8, @"union".name, alias)) {
-                            for (xml_database.features.items) |ext| {
+                            for (xml_features.items) |ext| {
                                 if (ext.unlocks_type(un2.name)) {
                                     try enabled_by_extensions.append(alloc, ext.name);
                                     break;
                                 }
                             }
-                            for (xml_database.extensions.items) |ext| {
+                            for (xml_extensions.items) |ext| {
                                 if (ext.unlocks_type(un2.name)) {
                                     if (ext.supported == .disabled) {
                                         continue :outer;
@@ -904,11 +974,11 @@ pub const TypeDatabase = struct {
                     }
                 }
 
-                for (xml_database.features.items) |ext| {
+                for (xml_features.items) |ext| {
                     if (ext.unlocks_type(@"union".name))
                         try enabled_by_extensions.append(alloc, ext.name);
                 }
-                for (xml_database.extensions.items) |ext| {
+                for (xml_extensions.items) |ext| {
                     if (ext.unlocks_type(@"union".name)) {
                         if (ext.supported == .disabled) {
                             continue :outer;
@@ -952,7 +1022,7 @@ pub const TypeDatabase = struct {
                 _alloc: Allocator,
                 _db: *TypeDatabase,
                 visited: *std.StringArrayHashMapUnmanaged(void),
-                command: *const XmlDatabase.Command,
+                command: *const Xml.Command,
             ) !void {
                 if (visited.get(command.name) != null) return;
                 try visited.put(_alloc, command.name, {});
@@ -1018,11 +1088,11 @@ pub const TypeDatabase = struct {
         };
 
         var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
-        for (xml_database.commands.items) |*command| {
+        for (xml_commands.items) |*command| {
             try Inner.add_function(alloc, &db, &visited, command);
         }
 
-        const ADDITIONAL_FUNCTIONS = [_]XmlDatabase.Command{
+        const ADDITIONAL_FUNCTIONS = [_]Xml.Command{
             .{
                 .name = "vkInternalAllocationNotification",
                 .return_type = "void",
@@ -1189,6 +1259,17 @@ pub const TypeDatabase = struct {
         }
 
         return db;
+    }
+
+    pub fn extension_by_name(self: *const TypeDatabase, extension_name: []const u8) ?*const Extension {
+        var result: ?*const Extension = null;
+        for (self.extensions.items) |*ext| {
+            if (std.mem.eql(u8, ext.name, extension_name)) {
+                result = ext;
+                break;
+            }
+        }
+        return result;
     }
 
     pub fn get_type(
@@ -2206,141 +2287,7 @@ test "c_type_parts_to_type" {
 
 // Descriptions of XML tags/attributes:
 // https://registry.khronos.org/vulkan/specs/latest/registry.html
-pub const XmlDatabase = struct {
-    types: Types = .{},
-    features: std.ArrayListUnmanaged(Extension) = .empty,
-    extensions: std.ArrayListUnmanaged(Extension) = .empty,
-    enums: std.ArrayListUnmanaged(Enum) = .empty,
-    constants: Constants = .{},
-    commands: std.ArrayListUnmanaged(Command) = .empty,
-    // formats
-    spirv: Spirv = .{},
-
-    const Self = @This();
-
-    pub fn init(alloc: Allocator, buffer: []const u8) !Self {
-        var types: Types = undefined;
-        var features: std.ArrayListUnmanaged(Extension) = .empty;
-        var extensions: std.ArrayListUnmanaged(Extension) = .empty;
-        var enums: std.ArrayListUnmanaged(Enum) = .empty;
-        var constants: Constants = undefined;
-        var commands: std.ArrayListUnmanaged(Command) = .empty;
-        var spirv: Spirv = undefined;
-        var parser: XmlParser = .init(buffer);
-        while (parser.peek_next()) |token| {
-            switch (token) {
-                .element_start => |es| {
-                    if (std.mem.eql(u8, es, "registry")) {
-                        _ = parser.next();
-                        continue;
-                    } else if (std.mem.eql(u8, es, "types")) {
-                        types = try parse_types(alloc, &parser);
-                    } else if (std.mem.eql(u8, es, "extensions")) {
-                        extensions = try parse_extensions(alloc, &parser);
-                    } else if (std.mem.eql(u8, es, "commands")) {
-                        commands = try parse_commands(alloc, &parser);
-                    } else if (std.mem.eql(u8, es, "spirvextensions")) {
-                        spirv = try parse_spirv(alloc, &parser);
-                    } else if (std.mem.eql(u8, es, "enums")) {
-                        if (try parse_enum(alloc, &parser)) |e| {
-                            try enums.append(alloc, e);
-                        } else {
-                            if (try parse_constants(alloc, &parser)) |c| {
-                                constants = c;
-                            } else {
-                                parser.skip_current_element();
-                            }
-                        }
-                    } else if (std.mem.eql(u8, es, "feature")) {
-                        if (try parse_extension(alloc, &parser)) |e|
-                            try features.append(alloc, e);
-                    } else {
-                        // <comment>
-                        // <platforms>
-                        // <tags>
-                        // <formats>
-                        // <sync/syncstage/syncaccess/syncpipeline>
-                        // <videocodecs/videoprofiles/videocapabilities/videoformat>
-                        parser.skip_current_element();
-                    }
-                },
-                else => {
-                    _ = parser.next();
-                },
-            }
-        }
-        return .{
-            .types = types,
-            .features = features,
-            .extensions = extensions,
-            .enums = enums,
-            .constants = constants,
-            .commands = commands,
-            .spirv = spirv,
-        };
-    }
-
-    /// Find extension with the `extension_name`
-    pub fn extension_by_name(self: *const Self, extension_name: []const u8) ?*const Extension {
-        var result: ?*const Extension = null;
-        for (self.extensions.items) |*ext| {
-            if (std.mem.eql(u8, ext.name, extension_name)) {
-                result = ext;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /// Find bitmask with `bitmask_name`
-    pub fn bitmask_by_name(self: *const Self, bitmask_name: []const u8) ?*const Bitmask {
-        for (self.types.bitmasks) |*e| {
-            if (std.mem.eql(u8, e.name, bitmask_name))
-                return e;
-        }
-        return null;
-    }
-
-    /// Find enum with `enum_name`
-    pub fn enum_by_name(self: *const Self, enum_name: []const u8) ?*const Enum {
-        for (self.enums.items) |*e| {
-            if (std.mem.eql(u8, e.name, enum_name))
-                return e;
-        }
-        return null;
-    }
-
-    /// Find struct with with the `struct_name`. If the `struct_name` is
-    /// an alias to other struct, returns other struct
-    pub fn struct_by_name(self: *const Self, struct_name: []const u8) ?*const Struct {
-        for (self.types.structs) |*s| {
-            if (std.mem.eql(u8, s.name, struct_name)) {
-                if (s.alias) |alias| return self.struct_by_name(alias);
-                return s;
-            }
-        }
-        return null;
-    }
-
-    /// Find the struct which is the aliased by the `struct_name`
-    pub fn struct_alias_of(self: *const Self, struct_name: []const u8) ?*const Struct {
-        for (self.types.structs) |*s| {
-            if (s.alias) |alias| {
-                if (std.mem.eql(u8, alias, struct_name)) {
-                    return s;
-                }
-            }
-        }
-        return null;
-    }
-
-    /// Check if the struct with `struct_name` exists
-    pub fn is_struct_name(self: *const Self, struct_name: []const u8) bool {
-        for (self.types.structs) |*s|
-            if (std.mem.eql(u8, s.name, struct_name)) return true;
-        return false;
-    }
-
+pub const Xml = struct {
     fn parse_attributes(
         comptime PREFIX: []const u8,
         comptime PEEK: bool,

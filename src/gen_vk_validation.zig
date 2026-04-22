@@ -5,7 +5,6 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const root = @import("root");
-const XmlDatabase = @import("vk_database.zig").XmlDatabase;
 const TypeDatabase = @import("vk_database.zig").TypeDatabase;
 
 const IN_PATH = "thirdparty/vk.xml";
@@ -24,13 +23,14 @@ const HEADER =
 pub fn main() !void {
     var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
     const alloc = arena.allocator();
+    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+    const tmp_alloc = tmp_arena.allocator();
 
     const xml_file = try std.fs.cwd().openFile(IN_PATH, .{});
     const buffer = try alloc.alloc(u8, (try xml_file.stat()).size);
     _ = try xml_file.readAll(buffer);
 
-    const xml_db: XmlDatabase = try .init(alloc, buffer);
-    const type_db: TypeDatabase = try .from_xml_database(alloc, &xml_db);
+    var type_db: TypeDatabase = try .from_xml(alloc, tmp_alloc, buffer);
 
     std.fs.cwd().deleteFile(OUT_PATH) catch {};
     const file = try std.fs.cwd().createFile(OUT_PATH, .{});
@@ -38,17 +38,14 @@ pub fn main() !void {
     var writer: Writer = try .init(alloc, file);
     defer writer.flush();
 
-    var tmp_arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
-    const tmp_alloc = tmp_arena.allocator();
-
     writer.write(HEADER, .{@src().file});
-    try write_extension_type(tmp_alloc, &writer, &xml_db);
+    try write_extension_type(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_types_validation(tmp_alloc, &writer, &type_db, &xml_db);
+    try write_types_validation(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_additional_types(tmp_alloc, &writer, &type_db, &xml_db);
+    try write_additional_types(tmp_alloc, &writer, &type_db);
     _ = tmp_arena.reset(.retain_capacity);
-    try write_spirv_validation(&writer, &type_db, &xml_db);
+    try write_spirv_validation(&writer, &type_db);
     _ = writer.writer.interface.write(VALIDATE_SHADER_CODE) catch unreachable;
     _ = writer.writer.interface.write(VALIDATION_STRUCT) catch unreachable;
 }
@@ -166,7 +163,7 @@ fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
 // ((VK_KHR_get_physical_device_properties2,VK_VERSION_1_1)+VK_KHR_dynamic_rendering),VK_VERSION_1_3
 // into:
 // ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version
-fn write_depends(alloc: Allocator, w: *Writer, instance_extensions: []*const XmlDatabase.Extension, depends: []const u8) !void {
+fn write_depends(alloc: Allocator, w: *Writer, instance_extensions: []*const TypeDatabase.Extension, depends: []const u8) !void {
     w.write(" and (", .{});
     var output: std.ArrayListUnmanaged(u8) = .empty;
     var writer = output.writer(alloc);
@@ -213,10 +210,10 @@ fn write_depends(alloc: Allocator, w: *Writer, instance_extensions: []*const Xml
     w.write("{s})", .{output.items});
 }
 
-fn write_extension_type(alloc: Allocator, w: *Writer, xml_db: *const XmlDatabase) !void {
-    var instance_extensions: std.ArrayListUnmanaged(*const XmlDatabase.Extension) = .empty;
-    var device_extensions: std.ArrayListUnmanaged(*const XmlDatabase.Extension) = .empty;
-    for (xml_db.extensions.items) |*ext| {
+fn write_extension_type(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
+    var instance_extensions: std.ArrayListUnmanaged(*const TypeDatabase.Extension) = .empty;
+    var device_extensions: std.ArrayListUnmanaged(*const TypeDatabase.Extension) = .empty;
+    for (type_db.extensions.items) |*ext| {
         if (ext.type == .instance and ext.supported == .supported) {
             try instance_extensions.append(alloc, ext);
         } else if (ext.type == .device and ext.supported == .supported) {
@@ -354,7 +351,7 @@ fn write_extension_type(alloc: Allocator, w: *Writer, xml_db: *const XmlDatabase
     , .{});
 }
 
-fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
+fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
     // Structs
     for (type_db.structs.items) |*@"struct"| {
         w.write(
@@ -593,7 +590,7 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
-                    const e = xml_db.extension_by_name(ext).?;
+                    const e = type_db.extension_by_name(ext).?;
                     w.write(
                         \\    if (extensions.{t}.{s} and item.* == .{s})
                         \\        return true;
@@ -645,7 +642,7 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
                     !std.mem.startsWith(u8, ext, "VK_COMPUTE") and
                     !std.mem.startsWith(u8, ext, "VKSC"))
                 {
-                    const e = xml_db.extension_by_name(ext).?;
+                    const e = type_db.extension_by_name(ext).?;
                     w.write(
                         \\extensions.{t}.{s}
                     , .{ e.type, ext });
@@ -1067,7 +1064,7 @@ const additional_pdfs = [_][]const u8{
     "VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeaturesKHR",
 };
 
-fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !struct {
+fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const TypeDatabase) !struct {
     []const []const u8,
     []const []const u8,
 } {
@@ -1082,7 +1079,7 @@ fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const Type
     for (spirv_capabilities) |tuple| {
         const cap_name, const val = tuple;
         _ = val;
-        for (xml_db.spirv.capabilities) |cap| {
+        for (type_db.spirv.capabilities) |cap| {
             if (std.mem.eql(u8, cap.name, cap_name)) {
                 for (cap.enable) |enable| {
                     switch (enable) {
@@ -1109,8 +1106,8 @@ fn gather_features_and_props_struct_names(alloc: Allocator, type_db: *const Type
     return .{ features.keys(), props.keys() };
 }
 
-fn write_additional_types(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
-    const features, const props = try gather_features_and_props_struct_names(alloc, type_db, xml_db);
+fn write_additional_types(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
+    const features, const props = try gather_features_and_props_struct_names(alloc, type_db);
     {
         w.write(
             \\pub const AdditionalPDF = struct {{
@@ -1286,14 +1283,14 @@ fn write_additional_types(alloc: Allocator, w: *Writer, type_db: *const TypeData
     }
 }
 
-fn write_spirv_validation(w: *Writer, type_db: *const TypeDatabase, xml_db: *const XmlDatabase) !void {
+fn write_spirv_validation(w: *Writer, type_db: *const TypeDatabase) !void {
     w.write(
         \\
         \\pub fn validate_spirv_extension(validation: *const Validation, extension_name: []const u8) bool {{
         \\
     , .{});
-    for (xml_db.spirv.extensions) |*sext| {
-        if (xml_db.extension_by_name(sext.extension)) |ext| {
+    for (type_db.spirv.extensions) |*sext| {
+        if (type_db.extension_by_name(sext.extension)) |ext| {
             if (sext.version) |v| {
                 w.write(
                     \\    if (std.mem.eql(u8, extension_name, "{[sname]s}"))
@@ -1328,7 +1325,7 @@ fn write_spirv_validation(w: *Writer, type_db: *const TypeDatabase, xml_db: *con
     , .{});
     for (spirv_capabilities) |tuple| {
         const cap_name, const val = tuple;
-        for (xml_db.spirv.capabilities) |cap| {
+        for (type_db.spirv.capabilities) |cap| {
             if (std.mem.eql(u8, cap.name, cap_name)) {
                 w.write(
                     \\        // {s}
@@ -1385,7 +1382,7 @@ fn write_spirv_validation(w: *Writer, type_db: *const TypeDatabase, xml_db: *con
                                 , .{ .version = vk_version_to_api_version(v).? });
                             },
                             .extension => |e| {
-                                if (xml_db.extension_by_name(e)) |ext| {
+                                if (type_db.extension_by_name(e)) |ext| {
                                     w.write(
                                         \\            if (validation.extensions.{[type]t}.{[extension]s}) return true;
                                         \\
