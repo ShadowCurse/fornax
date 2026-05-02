@@ -45881,8 +45881,6 @@ pub const vkFreeFunction = fn (
 ) callconv(.c) void;
 // Can be used without queues: false
 pub const vkVoidFunction = fn (
-    pUserData: *anyopaque,
-    pMemory: *anyopaque,
 ) callconv(.c) void;
 // Can be used without queues: false
 pub const vkDebugReportCallbackEXT = fn (
@@ -45906,12 +45904,12 @@ pub const vkDebugUtilsMessengerCallbackEXT = fn (
 pub const vkFaultCallbackFunction = fn (
     unrecordedFaults: u32,
     faultCount: u32,
-    pFaults: *const anyopaque,
+    pFaults: *const VkFaultData,
 ) callconv(.c) void;
 // Can be used without queues: false
 pub const vkDeviceMemoryReportCallbackEXT = fn (
     pCallbackData: *const VkDeviceMemoryReportCallbackDataEXT,
-    pUserData: *const anyopaque,
+    pUserData: *anyopaque,
 ) callconv(.c) void;
 // Can be used without queues: false
 pub const vkGetInstanceProcAddrLUNARG = fn (

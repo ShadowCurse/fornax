@@ -425,7 +425,6 @@ pub const TypeDatabase = struct {
         };
     };
 
-    // pub fn from_xml_database(alloc: Allocator, xml_database: *const Xml) !TypeDatabase {
     pub fn from_xml(alloc: Allocator, tmp_alloc: Allocator, buffer: []const u8) !TypeDatabase {
         var xml_types: Xml.Types = undefined;
         var xml_features: std.ArrayListUnmanaged(Xml.Extension) = .empty;
@@ -1088,160 +1087,8 @@ pub const TypeDatabase = struct {
         };
 
         var visited: std.StringArrayHashMapUnmanaged(void) = .empty;
-        for (xml_commands.items) |*command| {
-            try Inner.add_function(alloc, &db, &visited, command);
-        }
-
-        const ADDITIONAL_FUNCTIONS = [_]Xml.Command{
-            .{
-                .name = "vkInternalAllocationNotification",
-                .return_type = "void",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "size", .type_middle = "size_t" },
-                    .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
-                    .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-                },
-            },
-            .{
-                .name = "vkInternalFreeNotification",
-                .return_type = "void",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "size", .type_middle = "size_t" },
-                    .{ .name = "allocationType", .type_middle = "VkInternalAllocationType" },
-                    .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-                },
-            },
-            .{
-                .name = "vkReallocationFunction",
-                .return_type = "u8_slice",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "pOriginal", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "size", .type_middle = "size_t" },
-                    .{ .name = "alignment", .type_middle = "size_t" },
-                    .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-                },
-            },
-            .{
-                .name = "vkAllocationFunction",
-                .return_type = "u8_slice",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "size", .type_middle = "size_t" },
-                    .{ .name = "alignment", .type_middle = "size_t" },
-                    .{ .name = "allocationScope", .type_middle = "VkSystemAllocationScope" },
-                },
-            },
-            .{
-                .name = "vkFreeFunction",
-                .return_type = "void",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
-                },
-            },
-            .{
-                .name = "vkVoidFunction",
-                .return_type = "void",
-                .parameters = &.{
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                    .{ .name = "pMemory", .type_middle = "void", .type_back = "*" },
-                },
-            },
-            .{
-                .name = "vkDebugReportCallbackEXT",
-                .return_type = "VkBool32",
-                .parameters = &.{
-                    .{ .name = "flags", .type_middle = "VkDebugReportFlagsEXT" },
-                    .{ .name = "objectType", .type_middle = "VkDebugReportObjectTypeEXT" },
-                    .{ .name = "object", .type_middle = "uint64_t" },
-                    .{ .name = "location", .type_middle = "size_t" },
-                    .{ .name = "messageCode", .type_middle = "int32_t" },
-                    .{
-                        .name = "pLayerPrefix",
-                        .type_front = "const",
-                        .type_middle = "char",
-                        .type_back = "*",
-                    },
-                    .{
-                        .name = "pMessage",
-                        .type_front = "const",
-                        .type_middle = "char",
-                        .type_back = "*",
-                    },
-                    .{
-                        .name = "pUserData",
-                        .type_middle = "void",
-                        .type_back = "*",
-                    },
-                },
-            },
-            .{
-                .name = "vkDebugUtilsMessengerCallbackEXT",
-                .return_type = "VkBool32",
-                .parameters = &.{
-                    .{ .name = "messageSeverity", .type_middle = "VkDebugUtilsMessageSeverityFlagBitsEXT" },
-                    .{ .name = "messageTypes", .type_middle = "VkDebugUtilsMessageTypeFlagsEXT" },
-                    .{
-                        .name = "pCallbackData",
-                        .type_front = "const",
-                        .type_middle = "VkDebugUtilsMessengerCallbackDataEXT",
-                        .type_back = "*",
-                    },
-                    .{ .name = "pUserData", .type_middle = "void", .type_back = "*" },
-                },
-            },
-            .{
-                .name = "vkFaultCallbackFunction",
-                .return_type = "void",
-                .parameters = &.{
-                    .{ .name = "unrecordedFaults", .type_middle = "VkBool32" },
-                    .{ .name = "faultCount", .type_middle = "uint32_t" },
-                    .{
-                        .name = "pFaults",
-                        .type_front = "const",
-                        .type_middle = "void",
-                        .type_back = "*",
-                    },
-                },
-            },
-            .{
-                .name = "vkDeviceMemoryReportCallbackEXT",
-                .return_type = "void",
-                .parameters = &.{
-                    .{
-                        .name = "pCallbackData",
-                        .type_front = "const",
-                        .type_middle = "VkDeviceMemoryReportCallbackDataEXT",
-                        .type_back = "*",
-                    },
-                    .{
-                        .name = "pUserData",
-                        .type_front = "const",
-                        .type_middle = "void",
-                        .type_back = "*",
-                    },
-                },
-            },
-            .{
-                .name = "vkGetInstanceProcAddrLUNARG",
-                .return_type = "PFN_vkVoidFunction",
-                .parameters = &.{
-                    .{ .name = "instance", .type_middle = "VkInstance" },
-                    .{
-                        .name = "pName",
-                        .type_front = "const",
-                        .type_middle = "char",
-                        .type_back = "*",
-                    },
-                },
-            },
-        };
-        for (&ADDITIONAL_FUNCTIONS) |*command| {
-            try Inner.add_function(alloc, &db, &visited, command);
-        }
+        for (xml_commands.items) |*command| try Inner.add_function(alloc, &db, &visited, command);
+        for (xml_types.funcpointers) |*command| try Inner.add_function(alloc, &db, &visited, command);
 
         for (db.structs.items) |*s| {
             var extended_by: std.ArrayListUnmanaged(Struct.Idx) = .empty;
@@ -2863,6 +2710,7 @@ pub const Xml = struct {
         handles: []const Handle = &.{},
         bitmasks: []const Bitmask = &.{},
         enum_aliases: []const EnumAlias = &.{},
+        funcpointers: []const Command = &.{},
         structs: []const Struct = &.{},
         unions: []const Union = &.{},
     };
@@ -3116,6 +2964,210 @@ pub const Xml = struct {
                 .value = .{ .alias = "A" },
             };
             try std.testing.expectEqualDeep(expected, b);
+        }
+    }
+
+    pub fn parse_funcpointer(alloc: Allocator, original_parser: *XmlParser) !?Command {
+        if (!original_parser.check_peek_element_start("type")) return null;
+
+        var parser = original_parser.*;
+        _ = parser.element_start();
+
+        const first_attr = parser.attribute() orelse return null;
+        if (!std.mem.eql(u8, first_attr.name, "category") or
+            !std.mem.eql(u8, first_attr.value, "funcpointer"))
+            return null;
+
+        _ = parser.skip_attributes();
+
+        // Everything starts with "typedef RETURN_TYPE (VKAPI_PTR *"
+        const preamble = parser.text() orelse return null;
+        const typedef_prefix = "typedef ";
+        const vkapi_suffix = " (VKAPI_PTR *";
+        if (!std.mem.startsWith(u8, preamble, typedef_prefix)) return null;
+        const after_typedef = preamble[typedef_prefix.len..];
+        const return_type_end = std.mem.indexOf(u8, after_typedef, vkapi_suffix) orelse return null;
+        var return_type = after_typedef[0..return_type_end];
+        // "void*" -> "u8_slice" since commands usually only have 1 part for return type, but
+        // here there are 2, so we cheat a bit
+        if (std.mem.eql(u8, return_type, "void*")) {
+            return_type = "u8_slice";
+        }
+
+        parser.skip_to_specific_element_start("name");
+        const full_name = parser.text() orelse return null;
+        parser.skip_to_specific_element_end("name");
+        if (!std.mem.startsWith(u8, full_name, "PFN_")) return null;
+        const name = full_name["PFN_".len..];
+
+        // Unfortunately the consistency is an imaginary concept and so arguments
+        // are defined a bit differently for funcpointers compared to normal commands.
+        //
+        // After </name>, the text contains ")(" followed by parameters or "(void);"
+        // Parameters are: [const] <type>T</type>[*] paramName[,]
+        // We track whether the next parameter has a "const" prefix from
+        // text that appears before its <type> element.
+        var parameters: std.ArrayListUnmanaged(Command.Parameter) = .empty;
+        var next_is_const: bool = false;
+        while (true) {
+            switch (parser.peek_next() orelse break) {
+                .element_end => break,
+                .element_start => |es| {
+                    if (!std.mem.eql(u8, es, "type")) break;
+
+                    var param: Command.Parameter = .{};
+                    if (next_is_const) {
+                        param.type_front = "const";
+                        next_is_const = false;
+                    }
+
+                    _ = parser.element_start();
+                    _ = parser.skip_attributes();
+                    param.type_middle = parser.text() orelse break;
+                    parser.skip_to_specific_element_end("type");
+
+                    // After </type>: text like "* paramName, const " or " paramName);"
+                    // Split at comma to separate current param info from next param prefix.
+                    if (parser.peek_text()) |after_type| {
+                        _ = parser.text();
+                        // Find the comma or ");" that ends this parameter
+                        var current_part = after_type;
+                        if (std.mem.indexOf(u8, after_type, ",")) |comma_idx| {
+                            current_part = after_type[0..comma_idx];
+                            // Check remainder after comma for "const" prefix
+                            const remainder = std.mem.trim(u8, after_type[comma_idx + 1 ..], " \n\r\t");
+                            if (std.mem.startsWith(u8, remainder, "const")) next_is_const = true;
+                        } else if (std.mem.indexOf(u8, after_type, ");")) |end_idx| {
+                            current_part = after_type[0..end_idx];
+                        }
+
+                        const trimmed = std.mem.trim(u8, current_part, " \n\r\t");
+                        if (std.mem.startsWith(u8, trimmed, "*")) {
+                            param.type_back = "*";
+                            param.name = std.mem.trim(u8, trimmed[1..], " \n\r\t");
+                        } else {
+                            param.name = trimmed;
+                        }
+                    }
+                    try parameters.append(alloc, param);
+                },
+                .text => {
+                    // Text between </name> and first <type>, or other inter-element text
+                    const t = parser.text() orelse break;
+                    const trimmed = std.mem.trim(u8, t, " \n\r\t,()");
+                    if (std.mem.startsWith(u8, trimmed, "const")) next_is_const = true;
+                },
+                else => _ = parser.next(),
+            }
+        }
+        parser.skip_to_specific_element_end("type");
+
+        original_parser.* = parser;
+        return .{
+            .name = name,
+            .return_type = return_type,
+            .parameters = parameters.items,
+        };
+    }
+
+    test "parse_funcpointer" {
+        const alloc = std.testing.allocator;
+        {
+            // Simple funcpointer with no parameters
+            const text =
+                \\<type category="funcpointer">typedef void (VKAPI_PTR *<name>PFN_vkVoidFunction</name>)(void);</type>----
+            ;
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkVoidFunction", f.name);
+            try std.testing.expectEqualSlices(u8, "void", f.return_type);
+            try std.testing.expectEqual(0, f.parameters.len);
+        }
+        {
+            // Funcpointer with parameters
+            const text = "<type category=\"funcpointer\">typedef void (VKAPI_PTR *<name>PFN_vkFreeFunction</name>)(\n" ++
+                "    <type>void</type>*                                       pUserData,\n" ++
+                "    <type>void</type>*                                       pMemory);</type>----";
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkFreeFunction", f.name);
+            try std.testing.expectEqualSlices(u8, "void", f.return_type);
+            try std.testing.expectEqual(2, f.parameters.len);
+            try std.testing.expectEqualSlices(u8, "pUserData", f.parameters[0].name);
+            try std.testing.expectEqualSlices(u8, "void", f.parameters[0].type_middle);
+            try std.testing.expectEqualSlices(u8, "*", f.parameters[0].type_back);
+            try std.testing.expectEqualSlices(u8, "pMemory", f.parameters[1].name);
+        }
+        {
+            // Funcpointer with const parameters
+            const text = "<type category=\"funcpointer\">typedef VkBool32 (VKAPI_PTR *<name>PFN_vkDebugReportCallbackEXT</name>)(\n" ++
+                "    <type>VkDebugReportFlagsEXT</type>                       flags,\n" ++
+                "    const <type>char</type>*                                 pLayerPrefix,\n" ++
+                "    <type>void</type>*                                       pUserData);</type>----";
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkDebugReportCallbackEXT", f.name);
+            try std.testing.expectEqualSlices(u8, "VkBool32", f.return_type);
+            try std.testing.expectEqual(3, f.parameters.len);
+            try std.testing.expectEqualSlices(u8, "flags", f.parameters[0].name);
+            try std.testing.expectEqualSlices(u8, "VkDebugReportFlagsEXT", f.parameters[0].type_middle);
+            try std.testing.expectEqualSlices(u8, &.{}, f.parameters[0].type_back);
+            try std.testing.expectEqualSlices(u8, "pLayerPrefix", f.parameters[1].name);
+            try std.testing.expectEqualSlices(u8, "const", f.parameters[1].type_front);
+            try std.testing.expectEqualSlices(u8, "char", f.parameters[1].type_middle);
+            try std.testing.expectEqualSlices(u8, "*", f.parameters[1].type_back);
+            try std.testing.expectEqualSlices(u8, "pUserData", f.parameters[2].name);
+        }
+        {
+            // Funcpointer with void* return type
+            const text = "<type category=\"funcpointer\">typedef void* (VKAPI_PTR *<name>PFN_vkAllocationFunction</name>)(\n" ++
+                "    <type>void</type>*                                       pUserData,\n" ++
+                "    <type>size_t</type>                                      size);</type>----";
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkAllocationFunction", f.name);
+            try std.testing.expectEqualSlices(u8, "u8_slice", f.return_type);
+            try std.testing.expectEqual(2, f.parameters.len);
+        }
+        {
+            // Funcpointer with PFN return type
+            const text = "<type category=\"funcpointer\" requires=\"VkInstance\">typedef PFN_vkVoidFunction (VKAPI_PTR *<name>PFN_vkGetInstanceProcAddrLUNARG</name>)(\n" ++
+                "    <type>VkInstance</type> instance, const <type>char</type>* pName);</type>----";
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkGetInstanceProcAddrLUNARG", f.name);
+            try std.testing.expectEqualSlices(u8, "PFN_vkVoidFunction", f.return_type);
+            try std.testing.expectEqual(2, f.parameters.len);
+            try std.testing.expectEqualSlices(u8, "instance", f.parameters[0].name);
+            try std.testing.expectEqualSlices(u8, "VkInstance", f.parameters[0].type_middle);
+            try std.testing.expectEqualSlices(u8, "pName", f.parameters[1].name);
+            try std.testing.expectEqualSlices(u8, "const", f.parameters[1].type_front);
+            try std.testing.expectEqualSlices(u8, "char", f.parameters[1].type_middle);
+            try std.testing.expectEqualSlices(u8, "*", f.parameters[1].type_back);
+        }
+        {
+            // Funcpointer where first param is const (preceded only by ")(")
+            const text = "<type category=\"funcpointer\" requires=\"VkDeviceMemoryReportCallbackDataEXT\">typedef void (VKAPI_PTR *<name>PFN_vkDeviceMemoryReportCallbackEXT</name>)(\n" ++
+                "    const <type>VkDeviceMemoryReportCallbackDataEXT</type>*  pCallbackData,\n" ++
+                "    <type>void</type>*                                       pUserData);</type>----";
+            var parser: XmlParser = .init(text);
+            const f = (try parse_funcpointer(alloc, &parser)).?;
+            try std.testing.expectEqualSlices(u8, "----", parser.buffer);
+            try std.testing.expectEqualSlices(u8, "vkDeviceMemoryReportCallbackEXT", f.name);
+            try std.testing.expectEqual(2, f.parameters.len);
+            try std.testing.expectEqualSlices(u8, "pCallbackData", f.parameters[0].name);
+            try std.testing.expectEqualSlices(u8, "const", f.parameters[0].type_front);
+            try std.testing.expectEqualSlices(u8, "VkDeviceMemoryReportCallbackDataEXT", f.parameters[0].type_middle);
+            try std.testing.expectEqualSlices(u8, "*", f.parameters[0].type_back);
+            try std.testing.expectEqualSlices(u8, "pUserData", f.parameters[1].name);
+            try std.testing.expectEqualSlices(u8, &.{}, f.parameters[1].type_front);
+            try std.testing.expectEqualSlices(u8, "void", f.parameters[1].type_middle);
+            try std.testing.expectEqualSlices(u8, "*", f.parameters[1].type_back);
         }
     }
 
@@ -3778,6 +3830,7 @@ pub const Xml = struct {
         var handles: std.ArrayListUnmanaged(Handle) = .empty;
         var bitmasks: std.ArrayListUnmanaged(Bitmask) = .empty;
         var enum_aliases: std.ArrayListUnmanaged(EnumAlias) = .empty;
+        var funcpointers: std.ArrayListUnmanaged(Command) = .empty;
         var structs: std.ArrayListUnmanaged(Struct) = .empty;
         var unions: std.ArrayListUnmanaged(Union) = .empty;
         while (true) {
@@ -3789,6 +3842,8 @@ pub const Xml = struct {
                 try bitmasks.append(alloc, v);
             } else if (parse_enum_alias(parser)) |v| {
                 try enum_aliases.append(alloc, v);
+            } else if (try parse_funcpointer(alloc, parser)) |v| {
+                try funcpointers.append(alloc, v);
             } else if (try parse_struct(alloc, parser)) |v| {
                 try structs.append(alloc, v);
             } else if (try parse_union(alloc, parser)) |v| {
@@ -3808,6 +3863,7 @@ pub const Xml = struct {
             .handles = handles.items,
             .bitmasks = bitmasks.items,
             .enum_aliases = enum_aliases.items,
+            .funcpointers = funcpointers.items,
             .structs = structs.items,
             .unions = unions.items,
         };
