@@ -58,8 +58,8 @@ pub const EntriesType = std.EnumArray(
     std.AutoArrayHashMapUnmanaged(u64, Entry),
 );
 pub const Entry = struct {
+    hash: u64 align(64),
     tag: Tag,
-    hash: u64,
 
     payload_flag: PayloadFlags,
     payload_crc: u32,
@@ -83,12 +83,21 @@ pub const Entry = struct {
                 log.comptime_assert(
                     @src(),
                     @sizeOf(Entry) == 64,
-                    "Database.Entry must be 64 bytes, but it is {d}",
+                    "Database.Entry must be 64 bytes in size, but it is {d}",
                     .{@as(u32, @sizeOf(Entry))},
+                );
+            }
+            fn check_align() void {
+                log.comptime_assert(
+                    @src(),
+                    @alignOf(Entry) == 64,
+                    "Database.Entry must be 64 bytes aligned, but it is {d}",
+                    .{@as(u32, @alignOf(Entry))},
                 );
             }
         };
         C.check_size();
+        C.check_align();
     }
 
     pub const Tag = enum(u8) {
