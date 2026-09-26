@@ -164,7 +164,7 @@ pub fn create_miniz_module(
         .{ .include_path = "miniz_export.h" },
         .{ .MINIZ_EXPORT = void{} },
     );
-    const miniz_header = b.addWriteFiles().add("translate_miniz.h",
+    const miniz_header = b.addWriteFiles().add("miniz_translate.h",
         \\#define MINIZ_NO_TIME
         \\#define MINIZ_NO_STDIO
         \\#define MINIZ_NO_MALLOC
@@ -173,19 +173,6 @@ pub fn create_miniz_module(
         \\#define MINIZ_LITTLE_ENDIAN 1
         \\#define MINIZ_HAS_64BIT_REGISTERS 1
         \\#include "miniz.h"
-        \\
-        \\void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
-        \\    unsigned char*       d = (unsigned char*)dest;
-        \\    const unsigned char* s = (const unsigned char*)src;
-        \\    while (n--) *d++ = *s++;
-        \\    return dest;
-        \\}
-        \\
-        \\void* memset(void* s, int c, size_t n) {
-        \\    unsigned char *p = (unsigned char*)s;
-        \\    while (n--) *p++ = (unsigned char)c;
-        \\    return s;
-        \\}
     );
     const miniz_translate = b.addTranslateC(.{
         .target = target,
@@ -208,6 +195,21 @@ pub fn create_miniz_module(
     miniz_mod.addCMacro("MINIZ_NO_DEFLATE_APIS", "");
     miniz_mod.addCMacro("MINIZ_LITTLE_ENDIAN", "1");
     miniz_mod.addCMacro("MINIZ_HAS_64BIT_REGISTERS", "1");
+    const miniz_utils = b.addWriteFiles().add("miniz_utils.c",
+        \\#include <stddef.h>
+        \\void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
+        \\    unsigned char*       d = (unsigned char*)dest;
+        \\    const unsigned char* s = (const unsigned char*)src;
+        \\    while (n--) *d++ = *s++;
+        \\    return dest;
+        \\}
+        \\
+        \\void* memset(void* s, int c, size_t n) {
+        \\    unsigned char *p = (unsigned char*)s;
+        \\    while (n--) *p++ = (unsigned char)c;
+        \\    return s;
+        \\}
+    );
     miniz_mod.addCSourceFiles(.{
         .files = &.{
             "thirdparty/miniz/miniz.c",
@@ -215,5 +217,6 @@ pub fn create_miniz_module(
             "thirdparty/miniz/miniz_tinfl.c",
         },
     });
+    miniz_mod.addCSourceFile(.{ .file = miniz_utils });
     return miniz_mod;
 }
