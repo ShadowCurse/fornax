@@ -47,14 +47,11 @@ pub fn comptime_err(
     comptime args: anytype,
 ) noreturn {
     const T = make_struct_comptime(src, @TypeOf(args));
-    const t = fill_struct_comptime(T, args);
+    const t = fill_struct_comptime(T, src.file, src.line, args);
     if (comptime options.colors)
-        @compileError(std.fmt.comptimePrint(
-            RED ++ "[{s}:{}:COMPILE][{d}] " ++ format ++ DEFAULT_COLOR,
-            t,
-        ))
+        @compileError(std.fmt.comptimePrint(RED ++ "[{s}:{}:COMPILE] " ++ format ++ DEFAULT_COLOR, t))
     else
-        @compileError(std.fmt.comptimePrint("[{s}:{}:COMPILE][{d}] " ++ format, t));
+        @compileError(std.fmt.comptimePrint("[{s}:{}:COMPILE] " ++ format, t));
 }
 
 pub fn comptime_assert(
@@ -210,9 +207,12 @@ pub fn output(comptime format: []const u8, args: anytype) void {
     }
 }
 
-fn fill_struct_comptime(comptime T: type, args: anytype) T {
+fn fill_struct_comptime(comptime T: type, comptime file: [:0]const u8, comptime line: u32, args: anytype) T {
     const args_fields = comptime @typeInfo(@TypeOf(args)).@"struct".fields;
     var t: T = undefined;
+
+    @field(t, "0") = file;
+    @field(t, "1") = line;
 
     inline for (args_fields, 0..) |_, i| {
         const t_index = std.fmt.comptimePrint("{}", .{2 + i});
@@ -224,7 +224,6 @@ fn fill_struct_comptime(comptime T: type, args: anytype) T {
 
 fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: type) type {
     const type_fields = comptime @typeInfo(T).@"struct".fields;
-    // var fields: [type_fields.len + 2]std.builtin.Type.StructField = undefined;
 
     var field_names: [type_fields.len + 2][]const u8 = undefined;
     var field_types: [type_fields.len + 2]type = undefined;
