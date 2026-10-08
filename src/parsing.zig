@@ -38,7 +38,6 @@ pub const ParseIntError = std.fmt.ParseIntError;
 pub const ParseFloatError = std.fmt.ParseFloatError;
 pub const DecoderError = std.base64.Error;
 pub const AdditionalError = error{
-    BasePipelinesNotSupported,
     InvalidShaderPayloadEncoding,
     InvalidShaderPayload,
     NoShaderCodePayload,
@@ -4157,17 +4156,19 @@ pub fn parse_vk_graphics_pipeline_create_info(
         } else if (std.mem.eql(u8, s, "subpass")) {
             item.subpass = try scanner_parse_number(u32, context.scanner);
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
-            const v = try scanner_next_string(context.scanner);
-            const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
-            if (base_pipeline_hash != 0)
-                return error.BasePipelinesNotSupported;
+            _ = try scanner_next_string(context.scanner);
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
+            _ = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+    // Strip derivative bits so the pipeline will be created from scratch
+    item.flags.VK_PIPELINE_CREATE_DERIVATIVE_BIT = false;
+    item.flags.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = false;
+    item.basePipelineHandle = .none;
+    item.basePipelineIndex = -1;
 }
 
 test "test_parse_vk_graphics_pipeline_create_info" {
@@ -4187,7 +4188,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
         \\  "layout": "1111111111111111",
         \\  "renderPass": "2222222222222222",
         \\  "subpass": 69,
-        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineHandle": "3333333333333333",
         \\  "basePipelineIndex": 69
         \\}
     ;
@@ -4227,7 +4228,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try parse_vk_graphics_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(65, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
     try std.testing.expect(item.pVertexInputState != null);
@@ -4241,7 +4242,7 @@ test "test_parse_vk_graphics_pipeline_create_info" {
     try std.testing.expect(item.pDynamicState != null);
     try std.testing.expectEqual(69, item.subpass);
     try std.testing.expectEqual(.none, item.basePipelineHandle);
-    try std.testing.expectEqual(69, item.basePipelineIndex);
+    try std.testing.expectEqual(-1, item.basePipelineIndex);
 
     try std.testing.expectEqual(0, @intFromEnum(item.layout));
     try std.testing.expectEqual(0, @intFromEnum(item.renderPass));
@@ -5291,17 +5292,19 @@ pub fn parse_vk_compute_pipeline_create_info(
         } else if (std.mem.eql(u8, s, "layout")) {
             try parse_single_handle(context, .pipeline_layout, @ptrCast(&item.layout));
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
-            const v = try scanner_next_string(context.scanner);
-            const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
-            if (base_pipeline_hash != 0)
-                return error.BasePipelinesNotSupported;
+            _ = try scanner_next_string(context.scanner);
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
+            _ = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+    // Strip derivative bits so the pipeline will be created from scratch
+    item.flags.VK_PIPELINE_CREATE_DERIVATIVE_BIT = false;
+    item.flags.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = false;
+    item.basePipelineHandle = .none;
+    item.basePipelineIndex = -1;
 }
 
 test "test_parse_vk_compute_pipeline_create_info" {
@@ -5310,7 +5313,7 @@ test "test_parse_vk_compute_pipeline_create_info" {
         \\  "flags": 69,
         \\  "stage": {},
         \\  "layout": "1111111111111111",
-        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineHandle": "3333333333333333",
         \\  "basePipelineIndex": 69
         \\}
     ;
@@ -5341,12 +5344,12 @@ test "test_parse_vk_compute_pipeline_create_info" {
     try parse_vk_compute_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(65, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(vk.VkPipelineShaderStageCreateInfo{
         .sType = vk.VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
     }, item.stage);
     try std.testing.expectEqual(.none, item.basePipelineHandle);
-    try std.testing.expectEqual(69, item.basePipelineIndex);
+    try std.testing.expectEqual(-1, item.basePipelineIndex);
 
     try std.testing.expectEqual(0, @intFromEnum(item.layout));
     try std.testing.expectEqual(1, context.dependencies.items.len);
@@ -5404,17 +5407,19 @@ pub fn parse_vk_raytracing_pipeline_create_info(
         } else if (std.mem.eql(u8, s, "layout")) {
             try parse_single_handle(context, .pipeline_layout, @ptrCast(&item.layout));
         } else if (std.mem.eql(u8, s, "basePipelineHandle")) {
-            const v = try scanner_next_string(context.scanner);
-            const base_pipeline_hash = try std.fmt.parseInt(u64, v, 16);
-            if (base_pipeline_hash != 0)
-                return error.BasePipelinesNotSupported;
+            _ = try scanner_next_string(context.scanner);
         } else if (std.mem.eql(u8, s, "basePipelineIndex")) {
-            item.basePipelineIndex = try scanner_parse_number(i32, context.scanner);
+            _ = try scanner_parse_number(i32, context.scanner);
         } else {
             const v = try scanner_next_number_or_string(context.scanner);
             log.warn(@src(), "Skipping unknown field {s}: {s}", .{ s, v });
         }
     }
+    // Strip derivative bits so the pipeline will be created from scratch
+    item.flags.VK_PIPELINE_CREATE_DERIVATIVE_BIT = false;
+    item.flags.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT = false;
+    item.basePipelineHandle = .none;
+    item.basePipelineIndex = -1;
 }
 
 test "test_parse_vk_raytracing_pipeline_create_info" {
@@ -5428,7 +5433,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
         \\  "libraryInterface": {},
         \\  "dynamicState": {},
         \\  "layout": "1111111111111111",
-        \\  "basePipelineHandle": "0000000000000000",
+        \\  "basePipelineHandle": "3333333333333333",
         \\  "basePipelineIndex": 69
         \\}
     ;
@@ -5458,7 +5463,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     try parse_vk_raytracing_pipeline_create_info(&context, &item);
 
     try std.testing.expectEqual(null, item.pNext);
-    try std.testing.expectEqual(69, @as(u32, @bitCast(item.flags)));
+    try std.testing.expectEqual(65, @as(u32, @bitCast(item.flags)));
     try std.testing.expectEqual(1, item.stageCount);
     try std.testing.expect(item.pStages != null);
     try std.testing.expectEqual(1, item.groupCount);
@@ -5468,7 +5473,7 @@ test "test_parse_vk_raytracing_pipeline_create_info" {
     try std.testing.expect(item.pLibraryInterface != null);
     try std.testing.expect(item.pDynamicState != null);
     try std.testing.expectEqual(.none, item.basePipelineHandle);
-    try std.testing.expectEqual(69, item.basePipelineIndex);
+    try std.testing.expectEqual(-1, item.basePipelineIndex);
 
     try std.testing.expectEqual(0, @intFromEnum(item.layout));
     try std.testing.expectEqual(1, context.dependencies.items.len);
