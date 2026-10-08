@@ -107,26 +107,24 @@ const CREATE = if (build_options.no_driver) DryCreate else vulkan;
 const DESTROY = if (build_options.no_driver) DryDestroy else vulkan;
 const VALIDATE = if (build_options.no_validation) NoValidation else vv;
 
-const RootEntry = struct {
-    entry: *Database.Entry,
-    arena: std.heap.ArenaAllocator,
-};
-pub fn init_root_entries(alloc: Allocator, db: *Database) ![]RootEntry {
-    const graphics_pipelines = db.entries.getPtrConst(.graphics_pipeline).values().len;
-    const compute_pipelines = db.entries.getPtrConst(.compute_pipeline).values().len;
-    const raytracing_pipelines = db.entries.getPtrConst(.raytracing_pipeline).values().len;
+pub fn init_root_entries(alloc: Allocator, db: *Database) ![]*Database.Entry {
+    const PIPELINE_TAGS = [_]Database.Entry.Tag{ .graphics_pipeline, .compute_pipeline, .raytracing_pipeline };
 
-    const total_pipelines = graphics_pipelines + compute_pipelines + raytracing_pipelines;
-    const root_entries: []RootEntry = try alloc.alloc(RootEntry, total_pipelines);
+    var total_pipelines: usize = 0;
+    for (PIPELINE_TAGS) |tag| {
+        total_pipelines += db.entries.getPtrConst(tag).values().len;
+    }
+
+    const root_entries = try alloc.alloc(*Database.Entry, total_pipelines);
     var re = root_entries;
-    for (db.entries.getPtr(.graphics_pipeline).values(), re[0..graphics_pipelines]) |*e, *r|
-        r.* = .{ .entry = e, .arena = .init(std.heap.page_allocator) };
-    re = re[graphics_pipelines..];
-    for (db.entries.getPtr(.compute_pipeline).values(), re[0..compute_pipelines]) |*e, *r|
-        r.* = .{ .entry = e, .arena = .init(std.heap.page_allocator) };
-    re = re[compute_pipelines..];
-    for (db.entries.getPtr(.raytracing_pipeline).values(), re[0..raytracing_pipelines]) |*e, *r|
-        r.* = .{ .entry = e, .arena = .init(std.heap.page_allocator) };
+    for (PIPELINE_TAGS) |tag| {
+        const values = db.entries.getPtr(tag).values();
+        for (values, re[0..values.len]) |*e, *r| {
+            r.* = e;
+        }
+        re = re[values.len..];
+    }
+    log.assert(@src(), re.len == 0, "Not all root entries were initialized: {d} left", .{re.len});
     return root_entries;
 }
 
@@ -139,27 +137,27 @@ pub fn actual_thread_count(num_threads: ?u32) u32 {
 }
 
 pub const WorkQueue = struct {
-    entries: []RootEntry,
+    entries: []*Database.Entry,
     next_parse: std.atomic.Value(u32) = .init(0),
     next_create: std.atomic.Value(u32) = .init(0),
 
     const Self = @This();
-    pub fn take_next_parse(self: *Self) ?*RootEntry {
-        var result: ?*RootEntry = null;
+    pub fn take_next_parse(self: *Self) ?*Database.Entry {
+        var result: ?*Database.Entry = null;
         const next = self.next_parse.fetchAdd(1, .acq_rel);
-        if (next < self.entries.len) result = &self.entries[next];
+        if (next < self.entries.len) result = self.entries[next];
         return result;
     }
-    pub fn take_next_create(self: *Self) ?*RootEntry {
-        var result: ?*RootEntry = null;
+    pub fn take_next_create(self: *Self) ?*Database.Entry {
+        var result: ?*Database.Entry = null;
         const next = self.next_create.fetchAdd(1, .acq_rel);
-        if (next < self.entries.len) result = &self.entries[next];
+        if (next < self.entries.len) result = self.entries[next];
         return result;
     }
 };
 
 pub const Task = struct {
-    root_entry: *RootEntry = undefined,
+    root_entry: *Database.Entry = undefined,
     queue: std.ArrayListUnmanaged(struct { *Database.Entry, u32 }) = .empty,
     arena: std.heap.ArenaAllocator = undefined,
 };
@@ -180,6 +178,7 @@ pub const Tasks = struct {
 
 pub const Context = struct {
     arena: std.heap.ArenaAllocator,
+    tmp_arena: std.heap.ArenaAllocator,
     shared_alloc: Allocator,
     barrier: *Barrier,
     db: *Database,
@@ -203,6 +202,7 @@ pub fn init_contexts(
     for (contexts) |*c| {
         c.* = .{
             .arena = .init(std.heap.page_allocator),
+            .tmp_arena = .init(std.heap.page_allocator),
             .shared_alloc = shared_alloc,
             .barrier = barrier,
             .db = db,
@@ -234,10 +234,11 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
     const work_queue = context.work_queue;
     const shared_alloc = context.shared_alloc;
     const thread_alloc = context.arena.allocator();
-    defer _ = context.arena.reset(.retain_capacity);
+    const thread_tmp_alloc = context.tmp_arena.allocator();
+    defer _ = context.tmp_arena.reset(.retain_capacity);
 
     var tasks: Tasks = .{};
-    for (&tasks.tasks) |*t| t.arena = .init(thread_alloc);
+    for (&tasks.tasks) |*t| t.arena = .init(thread_tmp_alloc);
     while (true) {
         const task = tasks.next();
         if (task.queue.items.len == 0) {
@@ -245,12 +246,12 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                 log.debug(
                     @src(),
                     "Adding new parse task: {t} 0x{x:0>16}",
-                    .{ root_entry.entry.tag, root_entry.entry.hash },
+                    .{ root_entry.tag, root_entry.hash },
                 );
                 task.root_entry = root_entry;
                 task.queue = .empty;
                 _ = task.arena.reset(.retain_capacity);
-                try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
+                try task.queue.append(task.arena.allocator(), .{ root_entry, 0 });
             }
         }
         for (&tasks.tasks) |*t| {
@@ -268,7 +269,7 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                 P,
                 V,
                 shared_alloc,
-                task.root_entry.arena.allocator(),
+                thread_alloc,
                 tmp_alloc,
                 context.db,
                 context.validation,
@@ -301,12 +302,12 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
                         e.status.store(.invalid, .release);
                         e.decrement_dependencies();
                     }
-                    control_block.record_failed_entry(task.root_entry.entry.tag);
+                    control_block.record_failed_entry(task.root_entry.tag);
                     break;
                 },
             }
         } else {
-            control_block.record_parsed_entry(task.root_entry.entry.tag);
+            control_block.record_parsed_entry(task.root_entry.tag);
         }
     }
 }
@@ -323,10 +324,10 @@ pub fn create_inner(
     context: *Context,
 ) !void {
     const work_queue = context.work_queue;
-    const thread_alloc = context.arena.allocator();
+    const thread_tmp_alloc = context.tmp_arena.allocator();
 
     var tasks: Tasks = .{};
-    for (&tasks.tasks) |*t| t.arena = .init(thread_alloc);
+    for (&tasks.tasks) |*t| t.arena = .init(thread_tmp_alloc);
     while (true) {
         const task = tasks.next();
         if (task.queue.items.len == 0) {
@@ -334,12 +335,12 @@ pub fn create_inner(
                 log.debug(
                     @src(),
                     "Adding new create task: {t} 0x{x:0>16}",
-                    .{ root_entry.entry.tag, root_entry.entry.hash },
+                    .{ root_entry.tag, root_entry.hash },
                 );
                 task.root_entry = root_entry;
                 task.queue = .empty;
                 _ = task.arena.reset(.retain_capacity);
-                try task.queue.append(task.arena.allocator(), .{ root_entry.entry, 0 });
+                try task.queue.append(task.arena.allocator(), .{ root_entry, 0 });
             }
         }
         for (&tasks.tasks) |*t| {
@@ -402,7 +403,7 @@ pub fn create_inner(
             }
         } else {
             _ = task.arena.reset(.retain_capacity);
-            control_block.record_successful_entry(task.root_entry.entry.tag);
+            control_block.record_successful_entry(task.root_entry.tag);
         }
     }
 }
@@ -519,11 +520,12 @@ test "parse/create" {
             .payload_decompressed_size = 0,
             .payload_file_offset = 0,
         };
-        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        var root_entries = [_]*Database.Entry{&test_entry};
         var work_queue: WorkQueue = .{ .entries = &root_entries };
         var validation: vv.Validation = undefined;
         var thread_context: Context = .{
             .arena = .init(alloc),
+            .tmp_arena = .init(alloc),
             .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
@@ -606,11 +608,12 @@ test "parse/create" {
             .payload_decompressed_size = 0,
             .payload_file_offset = 0,
         };
-        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        var root_entries = [_]*Database.Entry{&test_entry};
         var work_queue: WorkQueue = .{ .entries = &root_entries };
         var validation: vv.Validation = undefined;
         var thread_context: Context = .{
             .arena = .init(alloc),
+            .tmp_arena = .init(alloc),
             .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
@@ -728,10 +731,11 @@ test "parse/create" {
                 },
             },
         };
-        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        var root_entries = [_]*Database.Entry{&test_entry};
         var work_queue: WorkQueue = .{ .entries = &root_entries };
         var thread_context: Context = .{
             .arena = .init(alloc),
+            .tmp_arena = .init(alloc),
             .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
@@ -849,10 +853,11 @@ test "parse/create" {
                 },
             },
         };
-        var root_entries: [1]RootEntry = .{.{ .entry = &test_entry, .arena = .init(alloc) }};
+        var root_entries = [_]*Database.Entry{&test_entry};
         var work_queue: WorkQueue = .{ .entries = &root_entries };
         var thread_context: Context = .{
             .arena = .init(alloc),
+            .tmp_arena = .init(alloc),
             .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,

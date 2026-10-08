@@ -166,7 +166,7 @@ pub fn actual_main(init: std.process.Init.Minimal) !void {
         vk_device,
     );
     // Reuse already existing arena
-    contexts[0].arena = tmp_arena;
+    contexts[0].tmp_arena = tmp_arena;
 
     const secondary_threads = try root.spawn_threads(
         arena_alloc,
@@ -183,8 +183,11 @@ pub fn actual_main(init: std.process.Init.Minimal) !void {
     //     cb.progress_complete.store(1, .release);
 
     var total_used_bytes = arena.queryCapacity() + db.arena.queryCapacity();
-    for (contexts) |*c| total_used_bytes += c.arena.queryCapacity();
-    log.info(@src(), "Total allocators memory: {d}MB", .{total_used_bytes / 1024 / 1024});
+    for (contexts) |*c| {
+        total_used_bytes += c.arena.queryCapacity();
+        total_used_bytes += c.tmp_arena.queryCapacity();
+    }
+    log.info(@src(), "Total allocators reserved capacity: {d}MB", .{total_used_bytes / 1024 / 1024});
     const rusage = std.posix.getrusage(0);
     log.info(@src(), "Resource usage: max rss: {d}MB minor faults: {d} major faults: {d}", .{
         @as(usize, @intCast(rusage.maxrss)) / 1024,
