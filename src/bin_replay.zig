@@ -32,7 +32,7 @@ pub const profiler_options = profiler.Options{
 };
 
 pub const MEASUREMENTS = profiler.Measurements("main", &.{
-    "main",
+    "actual_main",
     "process",
     "parse",
     "create",
