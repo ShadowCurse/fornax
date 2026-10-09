@@ -179,7 +179,6 @@ pub const Tasks = struct {
 pub const Context = struct {
     arena: std.heap.ArenaAllocator,
     tmp_arena: std.heap.ArenaAllocator,
-    shared_alloc: Allocator,
     barrier: *Barrier,
     db: *Database,
     work_queue: *WorkQueue,
@@ -190,7 +189,6 @@ pub const Context = struct {
 
 pub fn init_contexts(
     alloc: Allocator,
-    shared_alloc: Allocator,
     barrier: *Barrier,
     db: *Database,
     work_queue: *WorkQueue,
@@ -203,7 +201,6 @@ pub fn init_contexts(
         c.* = .{
             .arena = .init(std.heap.page_allocator),
             .tmp_arena = .init(std.heap.page_allocator),
-            .shared_alloc = shared_alloc,
             .barrier = barrier,
             .db = db,
             .work_queue = work_queue,
@@ -232,7 +229,6 @@ pub fn parse(context: *Context) !void {
 
 pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void {
     const work_queue = context.work_queue;
-    const shared_alloc = context.shared_alloc;
     const thread_alloc = context.arena.allocator();
     const thread_tmp_alloc = context.tmp_arena.allocator();
     defer _ = context.tmp_arena.reset(.retain_capacity);
@@ -268,7 +264,7 @@ pub fn parse_inner(comptime P: type, comptime V: type, context: *Context) !void 
             switch (curr_entry.parse(
                 P,
                 V,
-                shared_alloc,
+                thread_alloc,
                 thread_alloc,
                 tmp_alloc,
                 context.db,
@@ -526,7 +522,6 @@ test "parse/create" {
         var thread_context: Context = .{
             .arena = .init(alloc),
             .tmp_arena = .init(alloc),
-            .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
             .work_queue = &work_queue,
@@ -614,7 +609,6 @@ test "parse/create" {
         var thread_context: Context = .{
             .arena = .init(alloc),
             .tmp_arena = .init(alloc),
-            .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
             .work_queue = &work_queue,
@@ -736,7 +730,6 @@ test "parse/create" {
         var thread_context: Context = .{
             .arena = .init(alloc),
             .tmp_arena = .init(alloc),
-            .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
             .work_queue = &work_queue,
@@ -858,7 +851,6 @@ test "parse/create" {
         var thread_context: Context = .{
             .arena = .init(alloc),
             .tmp_arena = .init(alloc),
-            .shared_alloc = alloc,
             .barrier = undefined,
             .db = &db,
             .work_queue = &work_queue,

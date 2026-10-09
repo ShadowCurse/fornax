@@ -153,11 +153,9 @@ pub fn actual_main(init: std.process.Init.Minimal) !void {
     const root_entries = try root.init_root_entries(arena_alloc, &db);
     var work_queue: root.WorkQueue = .{ .entries = root_entries };
 
-    const shared_alloc = db.arena.allocator();
     var barrier: Barrier = .{ .total_threads = thread_count };
     const contexts = try root.init_contexts(
         arena_alloc,
-        shared_alloc,
         &barrier,
         &db,
         &work_queue,
