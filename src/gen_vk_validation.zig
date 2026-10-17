@@ -589,10 +589,28 @@ fn write_types_validation(alloc: Allocator, w: *Writer, type_db: *const TypeData
         w.write(
             \\    const valid_bits: u{[bits]d} = @bitCast(valid_value);
             \\    const current_bits: u{[bits]d} = @bitCast(item.*);
+            \\
+        , .{ .bits = bitfield.backing_integer_width });
+        var declared_bits: u64 = 0;
+        for (bitfield.bits) |bit| {
+            declared_bits |= @as(u64, 1) << @intCast(bit.bit);
+        }
+        for (bitfield.constants) |constant| {
+            // No need to add comparisons with constants that fully made out of allowed bits
+            if (constant.value & ~declared_bits == 0) {
+                continue;
+            }
+            w.write(
+                \\    if (current_bits == @as(u{[bits]d}, @bitCast(vk.{[name]s}.{[constant]s})))
+                \\        return true;
+                \\
+            , .{ .bits = bitfield.backing_integer_width, .name = bitfield.name, .constant = constant.name });
+        }
+        w.write(
             \\    return (current_bits & ~valid_bits) == 0;
             \\}}
             \\
-        , .{ .bits = bitfield.backing_integer_width });
+        , .{});
     }
 }
 

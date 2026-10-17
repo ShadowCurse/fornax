@@ -40810,6 +40810,8 @@ pub fn validate_VkShaderStageFlags(extensions: *const Extensions, item: *const v
         .VK_SHADER_STAGE_CLUSTER_CULLING_BIT_HUAWEI = extensions.device.VK_HUAWEI_cluster_culling_shader    };
     const valid_bits: u32 = @bitCast(valid_value);
     const current_bits: u32 = @bitCast(item.*);
+    if (current_bits == @as(u32, @bitCast(vk.VkShaderStageFlags.VK_SHADER_STAGE_ALL)))
+        return true;
     return (current_bits & ~valid_bits) == 0;
 }
 
@@ -42033,6 +42035,8 @@ pub fn validate_VkSpirvResourceTypeFlagsEXT(extensions: *const Extensions, item:
         .VK_SPIRV_RESOURCE_TYPE_TENSOR_BIT_ARM = extensions.device.VK_EXT_descriptor_heap    };
     const valid_bits: u32 = @bitCast(valid_value);
     const current_bits: u32 = @bitCast(item.*);
+    if (current_bits == @as(u32, @bitCast(vk.VkSpirvResourceTypeFlagsEXT.VK_SPIRV_RESOURCE_TYPE_ALL_EXT)))
+        return true;
     return (current_bits & ~valid_bits) == 0;
 }
 
