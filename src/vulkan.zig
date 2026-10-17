@@ -432,7 +432,8 @@ pub fn create_vk_instance(
     );
     return .{
         .instance = vk_instance,
-        .api_version = app_info.apiVersion,
+        // For compatibility only major.minor matters
+        .api_version = .{ .major = app_info.apiVersion.major, .minor = app_info.apiVersion.minor },
         .has_properties_2 = has_properties_2,
         .all_extension_names = all_extension_names,
     };
