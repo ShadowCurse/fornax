@@ -603,37 +603,37 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_display") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_display")) {
                 self.instance.VK_KHR_display = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_xlib_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_xlib_surface")) {
                 self.instance.VK_KHR_xlib_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_xcb_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_xcb_surface")) {
                 self.instance.VK_KHR_xcb_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_wayland_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_wayland_surface")) {
                 self.instance.VK_KHR_wayland_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_android_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_android_surface")) {
                 self.instance.VK_KHR_android_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_win32_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_win32_surface")) {
                 self.instance.VK_KHR_win32_surface = true;
                 break;
             }
@@ -645,7 +645,7 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_GGP_stream_descriptor_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_GGP_stream_descriptor_surface")) {
                 self.instance.VK_GGP_stream_descriptor_surface = true;
                 break;
             }
@@ -669,7 +669,7 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NN_vi_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_NN_vi_surface")) {
                 self.instance.VK_NN_vi_surface = true;
                 break;
             }
@@ -681,67 +681,67 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_capabilities")) {
                 self.instance.VK_KHR_external_memory_capabilities = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_capabilities")) {
                 self.instance.VK_KHR_external_semaphore_capabilities = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_direct_mode_display") and (self.instance.VK_KHR_display)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_direct_mode_display")) {
                 self.instance.VK_EXT_direct_mode_display = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_acquire_xlib_display") and (self.instance.VK_EXT_direct_mode_display)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_acquire_xlib_display")) {
                 self.instance.VK_EXT_acquire_xlib_display = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_display_surface_counter") and (self.instance.VK_KHR_display)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_display_surface_counter")) {
                 self.instance.VK_EXT_display_surface_counter = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_colorspace") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_colorspace")) {
                 self.instance.VK_EXT_swapchain_colorspace = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_capabilities") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_capabilities")) {
                 self.instance.VK_KHR_external_fence_capabilities = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_get_surface_capabilities2") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_surface_capabilities2")) {
                 self.instance.VK_KHR_get_surface_capabilities2 = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_get_display_properties2") and (self.instance.VK_KHR_display)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_get_display_properties2")) {
                 self.instance.VK_KHR_get_display_properties2 = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_MVK_ios_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_MVK_ios_surface")) {
                 self.instance.VK_MVK_ios_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_MVK_macos_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_MVK_macos_surface")) {
                 self.instance.VK_MVK_macos_surface = true;
                 break;
             }
@@ -753,19 +753,19 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_FUCHSIA_imagepipe_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_FUCHSIA_imagepipe_surface")) {
                 self.instance.VK_FUCHSIA_imagepipe_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_metal_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_metal_surface")) {
                 self.instance.VK_EXT_metal_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_surface_protected_capabilities") and (!api_version.less(vk.VK_API_VERSION_1_1) and self.instance.VK_KHR_get_surface_capabilities2)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_surface_protected_capabilities")) {
                 self.instance.VK_KHR_surface_protected_capabilities = true;
                 break;
             }
@@ -777,31 +777,31 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_headless_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_headless_surface")) {
                 self.instance.VK_EXT_headless_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_surface_maintenance1") and (self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_surface_maintenance1")) {
                 self.instance.VK_EXT_surface_maintenance1 = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_acquire_drm_display") and (self.instance.VK_EXT_direct_mode_display)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_acquire_drm_display")) {
                 self.instance.VK_EXT_acquire_drm_display = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_directfb_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_directfb_surface")) {
                 self.instance.VK_EXT_directfb_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QNX_screen_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_QNX_screen_surface")) {
                 self.instance.VK_QNX_screen_surface = true;
                 break;
             }
@@ -813,7 +813,7 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_GOOGLE_surfaceless_query") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_GOOGLE_surfaceless_query")) {
                 self.instance.VK_GOOGLE_surfaceless_query = true;
                 break;
             }
@@ -831,7 +831,7 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_surface_maintenance1") and (self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_surface_maintenance1")) {
                 self.instance.VK_KHR_surface_maintenance1 = true;
                 break;
             }
@@ -843,32 +843,32 @@ pub const Extensions = struct {
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_display_stereo") and (self.instance.VK_KHR_display and self.instance.VK_KHR_get_display_properties2)) {
+            if (std.mem.eql(u8, ext, "VK_NV_display_stereo")) {
                 self.instance.VK_NV_display_stereo = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_OHOS_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_OHOS_surface")) {
                 self.instance.VK_OHOS_surface = true;
                 break;
             }
         }
         for (ie) |ext| {
-            if (std.mem.eql(u8, ext, "VK_SEC_ubm_surface") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_SEC_ubm_surface")) {
                 self.instance.VK_SEC_ubm_surface = true;
                 break;
             }
         }
         // Device extensions
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_swapchain") and (self.instance.VK_KHR_surface)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain")) {
                 self.device.VK_KHR_swapchain = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_display_swapchain") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_display)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_display_swapchain")) {
                 self.device.VK_KHR_display_swapchain = true;
                 break;
             }
@@ -916,19 +916,19 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_debug_marker") and (self.instance.VK_EXT_debug_report)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_debug_marker")) {
                 self.device.VK_EXT_debug_marker = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_queue") and ((!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_synchronization2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_queue")) {
                 self.device.VK_KHR_video_queue = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_queue") and (self.device.VK_KHR_video_queue and (self.device.VK_KHR_synchronization2 or !api_version.less(vk.VK_API_VERSION_1_3)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_queue")) {
                 self.device.VK_KHR_video_decode_queue = true;
                 break;
             }
@@ -946,7 +946,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_transform_feedback") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_transform_feedback")) {
                 self.device.VK_EXT_transform_feedback = true;
                 break;
             }
@@ -988,25 +988,25 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h264") and (self.device.VK_KHR_video_encode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h264")) {
                 self.device.VK_KHR_video_encode_h264 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h265") and (self.device.VK_KHR_video_encode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_h265")) {
                 self.device.VK_KHR_video_encode_h265 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h264") and (self.device.VK_KHR_video_decode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h264")) {
                 self.device.VK_KHR_video_decode_h264 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_texture_gather_bias_lod") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_texture_gather_bias_lod")) {
                 self.device.VK_AMD_texture_gather_bias_lod = true;
                 break;
             }
@@ -1018,7 +1018,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_depth_stencil_resolve) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering")) {
                 self.device.VK_KHR_dynamic_rendering = true;
                 break;
             }
@@ -1030,7 +1030,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_corner_sampled_image") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_corner_sampled_image")) {
                 self.device.VK_NV_corner_sampled_image = true;
                 break;
             }
@@ -1042,7 +1042,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_multiview") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_multiview")) {
                 self.device.VK_KHR_multiview = true;
                 break;
             }
@@ -1054,25 +1054,25 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_memory") and (self.instance.VK_NV_external_memory_capabilities)) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_memory")) {
                 self.device.VK_NV_external_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_memory_win32") and (self.device.VK_NV_external_memory)) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_memory_win32")) {
                 self.device.VK_NV_external_memory_win32 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_win32_keyed_mutex") and (self.device.VK_NV_external_memory_win32)) {
+            if (std.mem.eql(u8, ext, "VK_NV_win32_keyed_mutex")) {
                 self.device.VK_NV_win32_keyed_mutex = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_device_group") and (self.instance.VK_KHR_device_group_creation)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_device_group")) {
                 self.device.VK_KHR_device_group = true;
                 break;
             }
@@ -1096,19 +1096,19 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_texture_compression_astc_hdr") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_texture_compression_astc_hdr")) {
                 self.device.VK_EXT_texture_compression_astc_hdr = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_astc_decode_mode") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_astc_decode_mode")) {
                 self.device.VK_EXT_astc_decode_mode = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_robustness")) {
                 self.device.VK_EXT_pipeline_robustness = true;
                 break;
             }
@@ -1120,73 +1120,73 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_memory") and (self.instance.VK_KHR_external_memory_capabilities or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory")) {
                 self.device.VK_KHR_external_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_win32") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_win32")) {
                 self.device.VK_KHR_external_memory_win32 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_fd") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_memory_fd")) {
                 self.device.VK_KHR_external_memory_fd = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_win32_keyed_mutex") and (self.device.VK_KHR_external_memory_win32)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_win32_keyed_mutex")) {
                 self.device.VK_KHR_win32_keyed_mutex = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore") and (self.instance.VK_KHR_external_semaphore_capabilities)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore")) {
                 self.device.VK_KHR_external_semaphore = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_win32") and (self.device.VK_KHR_external_semaphore)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_win32")) {
                 self.device.VK_KHR_external_semaphore_win32 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_fd") and (self.device.VK_KHR_external_semaphore or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_semaphore_fd")) {
                 self.device.VK_KHR_external_semaphore_fd = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_push_descriptor") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_push_descriptor")) {
                 self.device.VK_KHR_push_descriptor = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_conditional_rendering") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_conditional_rendering")) {
                 self.device.VK_EXT_conditional_rendering = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_float16_int8") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float16_int8")) {
                 self.device.VK_KHR_shader_float16_int8 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_16bit_storage") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_16bit_storage")) {
                 self.device.VK_KHR_16bit_storage = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_incremental_present") and (self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_incremental_present")) {
                 self.device.VK_KHR_incremental_present = true;
                 break;
             }
@@ -1204,13 +1204,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_display_control") and (self.instance.VK_EXT_display_surface_counter and self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_display_control")) {
                 self.device.VK_EXT_display_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_GOOGLE_display_timing") and (self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_GOOGLE_display_timing")) {
                 self.device.VK_GOOGLE_display_timing = true;
                 break;
             }
@@ -1234,7 +1234,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NVX_multiview_per_view_attributes") and (self.device.VK_KHR_multiview or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NVX_multiview_per_view_attributes")) {
                 self.device.VK_NVX_multiview_per_view_attributes = true;
                 break;
             }
@@ -1246,73 +1246,73 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_discard_rectangles") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_discard_rectangles")) {
                 self.device.VK_EXT_discard_rectangles = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_conservative_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_conservative_rasterization")) {
                 self.device.VK_EXT_conservative_rasterization = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_enable") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_enable")) {
                 self.device.VK_EXT_depth_clip_enable = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_hdr_metadata") and (self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_hdr_metadata")) {
                 self.device.VK_EXT_hdr_metadata = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_imageless_framebuffer") and ((((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance2) or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_image_format_list) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_imageless_framebuffer")) {
                 self.device.VK_KHR_imageless_framebuffer = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_create_renderpass2") and ((self.device.VK_KHR_multiview and self.device.VK_KHR_maintenance2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_create_renderpass2")) {
                 self.device.VK_KHR_create_renderpass2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_IMG_relaxed_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_IMG_relaxed_line_rasterization")) {
                 self.device.VK_IMG_relaxed_line_rasterization = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shared_presentable_image") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_get_surface_capabilities2 and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shared_presentable_image")) {
                 self.device.VK_KHR_shared_presentable_image = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_fence") and (self.instance.VK_KHR_external_fence_capabilities)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence")) {
                 self.device.VK_KHR_external_fence = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_win32") and (self.device.VK_KHR_external_fence)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_win32")) {
                 self.device.VK_KHR_external_fence_win32 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_fd") and (self.device.VK_KHR_external_fence or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_external_fence_fd")) {
                 self.device.VK_KHR_external_fence_fd = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_performance_query") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_performance_query")) {
                 self.device.VK_KHR_performance_query = true;
                 break;
             }
@@ -1324,37 +1324,37 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_variable_pointers") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_variable_pointers")) {
                 self.device.VK_KHR_variable_pointers = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_dma_buf") and (self.device.VK_KHR_external_memory_fd)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_dma_buf")) {
                 self.device.VK_EXT_external_memory_dma_buf = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_queue_family_foreign") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_queue_family_foreign")) {
                 self.device.VK_EXT_queue_family_foreign = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_dedicated_allocation") and (self.device.VK_KHR_get_memory_requirements2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_dedicated_allocation")) {
                 self.device.VK_KHR_dedicated_allocation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ANDROID_external_memory_android_hardware_buffer") and (((self.device.VK_KHR_sampler_ycbcr_conversion and self.device.VK_KHR_external_memory and self.device.VK_KHR_dedicated_allocation) or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_queue_family_foreign)) {
+            if (std.mem.eql(u8, ext, "VK_ANDROID_external_memory_android_hardware_buffer")) {
                 self.device.VK_ANDROID_external_memory_android_hardware_buffer = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_sampler_filter_minmax") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_sampler_filter_minmax")) {
                 self.device.VK_EXT_sampler_filter_minmax = true;
                 break;
             }
@@ -1372,19 +1372,19 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_gpa_interface") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_gpa_interface")) {
                 self.device.VK_AMD_gpa_interface = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMDX_shader_enqueue") and (((self.device.VK_KHR_synchronization2 and self.device.VK_KHR_spirv_1_4 and self.device.VK_EXT_extended_dynamic_state) or !api_version.less(vk.VK_API_VERSION_1_3)) and self.device.VK_KHR_maintenance5 and self.device.VK_KHR_pipeline_library)) {
+            if (std.mem.eql(u8, ext, "VK_AMDX_shader_enqueue")) {
                 self.device.VK_AMDX_shader_enqueue = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_heap") and (((self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5) and (self.device.VK_KHR_buffer_device_address or !api_version.less(vk.VK_API_VERSION_1_2)) or !api_version.less(vk.VK_API_VERSION_1_4)))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_heap")) {
                 self.device.VK_EXT_descriptor_heap = true;
                 break;
             }
@@ -1402,7 +1402,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_inline_uniform_block") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance1) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_inline_uniform_block")) {
                 self.device.VK_EXT_inline_uniform_block = true;
                 break;
             }
@@ -1414,13 +1414,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_bfloat16") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_bfloat16")) {
                 self.device.VK_KHR_shader_bfloat16 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_sample_locations") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_sample_locations")) {
                 self.device.VK_EXT_sample_locations = true;
                 break;
             }
@@ -1444,7 +1444,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_blend_operation_advanced") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_blend_operation_advanced")) {
                 self.device.VK_EXT_blend_operation_advanced = true;
                 break;
             }
@@ -1456,19 +1456,19 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_acceleration_structure") and (((!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_EXT_descriptor_indexing and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_deferred_host_operations)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_acceleration_structure")) {
                 self.device.VK_KHR_acceleration_structure = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_pipeline") and ((self.device.VK_KHR_spirv_1_4 or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_pipeline")) {
                 self.device.VK_KHR_ray_tracing_pipeline = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_ray_query") and ((self.device.VK_KHR_spirv_1_4 or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_query")) {
                 self.device.VK_KHR_ray_query = true;
                 break;
             }
@@ -1486,7 +1486,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_shader_sm_builtins") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_shader_sm_builtins")) {
                 self.device.VK_NV_shader_sm_builtins = true;
                 break;
             }
@@ -1498,7 +1498,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_sampler_ycbcr_conversion") and ((self.device.VK_KHR_maintenance1 and self.device.VK_KHR_bind_memory2 and self.device.VK_KHR_get_memory_requirements2 and self.instance.VK_KHR_get_physical_device_properties2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_sampler_ycbcr_conversion")) {
                 self.device.VK_KHR_sampler_ycbcr_conversion = true;
                 break;
             }
@@ -1510,7 +1510,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_drm_format_modifier") and ((((self.device.VK_KHR_bind_memory2 and self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_sampler_ycbcr_conversion) or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_image_format_list) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_drm_format_modifier")) {
                 self.device.VK_EXT_image_drm_format_modifier = true;
                 break;
             }
@@ -1522,7 +1522,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_indexing") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_maintenance3) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_indexing")) {
                 self.device.VK_EXT_descriptor_indexing = true;
                 break;
             }
@@ -1534,31 +1534,31 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_portability_subset") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_portability_subset")) {
                 self.device.VK_KHR_portability_subset = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_shading_rate_image") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_shading_rate_image")) {
                 self.device.VK_NV_shading_rate_image = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_get_memory_requirements2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing")) {
                 self.device.VK_NV_ray_tracing = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_representative_fragment_test") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_representative_fragment_test")) {
                 self.device.VK_NV_representative_fragment_test = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance3") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance3")) {
                 self.device.VK_KHR_maintenance3 = true;
                 break;
             }
@@ -1582,13 +1582,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_cooperative_matrix_conversion") and (self.device.VK_KHR_cooperative_matrix)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_cooperative_matrix_conversion")) {
                 self.device.VK_QCOM_cooperative_matrix_conversion = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_elapsed_timer_query") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_elapsed_timer_query")) {
                 self.device.VK_QCOM_elapsed_timer_query = true;
                 break;
             }
@@ -1600,19 +1600,19 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_extended_types") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_extended_types")) {
                 self.device.VK_KHR_shader_subgroup_extended_types = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_8bit_storage") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_storage_buffer_storage_class) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_8bit_storage")) {
                 self.device.VK_KHR_8bit_storage = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_host") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_host")) {
                 self.device.VK_EXT_external_memory_host = true;
                 break;
             }
@@ -1624,13 +1624,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_atomic_int64") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_atomic_int64")) {
                 self.device.VK_KHR_shader_atomic_int64 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_clock") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_clock")) {
                 self.device.VK_KHR_shader_clock = true;
                 break;
             }
@@ -1642,25 +1642,25 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_calibrated_timestamps") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_calibrated_timestamps")) {
                 self.device.VK_EXT_calibrated_timestamps = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_shader_core_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_shader_core_properties")) {
                 self.device.VK_AMD_shader_core_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h265") and (self.device.VK_KHR_video_decode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_h265")) {
                 self.device.VK_KHR_video_decode_h265 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_global_priority") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_global_priority")) {
                 self.device.VK_KHR_global_priority = true;
                 break;
             }
@@ -1672,13 +1672,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_divisor") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_divisor")) {
                 self.device.VK_EXT_vertex_attribute_divisor = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_GGP_frame_token") and (self.device.VK_KHR_swapchain and self.instance.VK_GGP_stream_descriptor_surface)) {
+            if (std.mem.eql(u8, ext, "VK_GGP_frame_token")) {
                 self.device.VK_GGP_frame_token = true;
                 break;
             }
@@ -1690,85 +1690,85 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_driver_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_driver_properties")) {
                 self.device.VK_KHR_driver_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls")) {
                 self.device.VK_KHR_shader_float_controls = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_shader_subgroup_partitioned") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_shader_subgroup_partitioned")) {
                 self.device.VK_NV_shader_subgroup_partitioned = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_depth_stencil_resolve") and (self.device.VK_KHR_create_renderpass2 or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_depth_stencil_resolve")) {
                 self.device.VK_KHR_depth_stencil_resolve = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_mutable_format") and (self.device.VK_KHR_swapchain and (self.device.VK_KHR_maintenance2 or !api_version.less(vk.VK_API_VERSION_1_1)) and (self.device.VK_KHR_image_format_list or !api_version.less(vk.VK_API_VERSION_1_2)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_mutable_format")) {
                 self.device.VK_KHR_swapchain_mutable_format = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_compute_shader_derivatives") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_compute_shader_derivatives")) {
                 self.device.VK_NV_compute_shader_derivatives = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_mesh_shader") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_mesh_shader")) {
                 self.device.VK_NV_mesh_shader = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_fragment_shader_barycentric") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_fragment_shader_barycentric")) {
                 self.device.VK_NV_fragment_shader_barycentric = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_shader_image_footprint") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_shader_image_footprint")) {
                 self.device.VK_NV_shader_image_footprint = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_scissor_exclusive") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_scissor_exclusive")) {
                 self.device.VK_NV_scissor_exclusive = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_device_diagnostic_checkpoints") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_device_diagnostic_checkpoints")) {
                 self.device.VK_NV_device_diagnostic_checkpoints = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_timeline_semaphore") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_timeline_semaphore")) {
                 self.device.VK_KHR_timeline_semaphore = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_present_timing") and (self.device.VK_KHR_swapchain and self.device.VK_KHR_present_id2 and self.instance.VK_KHR_get_surface_capabilities2 and self.device.VK_KHR_calibrated_timestamps)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_present_timing")) {
                 self.device.VK_EXT_present_timing = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_INTEL_shader_integer_functions2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_INTEL_shader_integer_functions2")) {
                 self.device.VK_INTEL_shader_integer_functions2 = true;
                 break;
             }
@@ -1780,37 +1780,37 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_vulkan_memory_model") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_vulkan_memory_model")) {
                 self.device.VK_KHR_vulkan_memory_model = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pci_bus_info") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pci_bus_info")) {
                 self.device.VK_EXT_pci_bus_info = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_display_native_hdr") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.instance.VK_KHR_get_surface_capabilities2 and self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_AMD_display_native_hdr")) {
                 self.device.VK_AMD_display_native_hdr = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_terminate_invocation") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_terminate_invocation")) {
                 self.device.VK_KHR_shader_terminate_invocation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map")) {
                 self.device.VK_EXT_fragment_density_map = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_scalar_block_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_scalar_block_layout")) {
                 self.device.VK_EXT_scalar_block_layout = true;
                 break;
             }
@@ -1828,91 +1828,91 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_subgroup_size_control") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_subgroup_size_control")) {
                 self.device.VK_EXT_subgroup_size_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shading_rate") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_create_renderpass2) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shading_rate")) {
                 self.device.VK_KHR_fragment_shading_rate = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_shader_core_properties2") and (self.device.VK_AMD_shader_core_properties)) {
+            if (std.mem.eql(u8, ext, "VK_AMD_shader_core_properties2")) {
                 self.device.VK_AMD_shader_core_properties2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_device_coherent_memory") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_device_coherent_memory")) {
                 self.device.VK_AMD_device_coherent_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_constant_data") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_constant_data")) {
                 self.device.VK_KHR_shader_constant_data = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering_local_read") and (self.device.VK_KHR_dynamic_rendering or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_dynamic_rendering_local_read")) {
                 self.device.VK_KHR_dynamic_rendering_local_read = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_abort") and (self.device.VK_KHR_device_fault and self.device.VK_KHR_shader_constant_data)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_abort")) {
                 self.device.VK_KHR_shader_abort = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_image_atomic_int64") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_image_atomic_int64")) {
                 self.device.VK_EXT_shader_image_atomic_int64 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_quad_control") and (((!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_vulkan_memory_model) or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_shader_maximal_reconvergence)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_quad_control")) {
                 self.device.VK_KHR_shader_quad_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_spirv_1_4") and (!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_shader_float_controls)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_spirv_1_4")) {
                 self.device.VK_KHR_spirv_1_4 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_memory_budget") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_memory_budget")) {
                 self.device.VK_EXT_memory_budget = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_memory_priority") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_memory_priority")) {
                 self.device.VK_EXT_memory_priority = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_dedicated_allocation_image_aliasing") and ((self.device.VK_KHR_dedicated_allocation and self.instance.VK_KHR_get_physical_device_properties2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_dedicated_allocation_image_aliasing")) {
                 self.device.VK_NV_dedicated_allocation_image_aliasing = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_separate_depth_stencil_layouts") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_create_renderpass2) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_separate_depth_stencil_layouts")) {
                 self.device.VK_KHR_separate_depth_stencil_layouts = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_buffer_device_address") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_buffer_device_address")) {
                 self.device.VK_EXT_buffer_device_address = true;
                 break;
             }
@@ -1930,85 +1930,85 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_present_wait") and (self.device.VK_KHR_swapchain and self.device.VK_KHR_present_id)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_wait")) {
                 self.device.VK_KHR_present_wait = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix")) {
                 self.device.VK_NV_cooperative_matrix = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_coverage_reduction_mode") and (self.device.VK_NV_framebuffer_mixed_samples and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_NV_coverage_reduction_mode")) {
                 self.device.VK_NV_coverage_reduction_mode = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_fragment_shader_interlock") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_shader_interlock")) {
                 self.device.VK_EXT_fragment_shader_interlock = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_image_arrays") and (self.device.VK_KHR_sampler_ycbcr_conversion or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_image_arrays")) {
                 self.device.VK_EXT_ycbcr_image_arrays = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_uniform_buffer_standard_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_uniform_buffer_standard_layout")) {
                 self.device.VK_KHR_uniform_buffer_standard_layout = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_provoking_vertex") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_provoking_vertex")) {
                 self.device.VK_EXT_provoking_vertex = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_full_screen_exclusive") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2 and self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_full_screen_exclusive")) {
                 self.device.VK_EXT_full_screen_exclusive = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_buffer_device_address") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_device_group) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_buffer_device_address")) {
                 self.device.VK_KHR_buffer_device_address = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_line_rasterization")) {
                 self.device.VK_EXT_line_rasterization = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float")) {
                 self.device.VK_EXT_shader_atomic_float = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_host_query_reset") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_host_query_reset")) {
                 self.device.VK_EXT_host_query_reset = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_index_type_uint8") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_index_type_uint8")) {
                 self.device.VK_EXT_index_type_uint8 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state")) {
                 self.device.VK_EXT_extended_dynamic_state = true;
                 break;
             }
@@ -2020,13 +2020,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_executable_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_executable_properties")) {
                 self.device.VK_KHR_pipeline_executable_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_host_image_copy") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_copy_commands2 and self.device.VK_KHR_format_feature_flags2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_host_image_copy")) {
                 self.device.VK_EXT_host_image_copy = true;
                 break;
             }
@@ -2038,49 +2038,49 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_map_memory_placed") and (self.device.VK_KHR_map_memory2 or !api_version.less(vk.VK_API_VERSION_1_4))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_map_memory_placed")) {
                 self.device.VK_EXT_map_memory_placed = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float2") and (self.device.VK_EXT_shader_atomic_float)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_atomic_float2")) {
                 self.device.VK_EXT_shader_atomic_float2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_maintenance1") and (self.device.VK_KHR_swapchain and self.instance.VK_EXT_surface_maintenance1 and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_swapchain_maintenance1")) {
                 self.device.VK_EXT_swapchain_maintenance1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_demote_to_helper_invocation") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_demote_to_helper_invocation")) {
                 self.device.VK_EXT_shader_demote_to_helper_invocation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_device_generated_commands") and ((!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_NV_device_generated_commands")) {
                 self.device.VK_NV_device_generated_commands = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_inherited_viewport_scissor") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_inherited_viewport_scissor")) {
                 self.device.VK_NV_inherited_viewport_scissor = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_integer_dot_product") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_integer_dot_product")) {
                 self.device.VK_KHR_shader_integer_dot_product = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_texel_buffer_alignment") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_texel_buffer_alignment")) {
                 self.device.VK_EXT_texel_buffer_alignment = true;
                 break;
             }
@@ -2092,31 +2092,31 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_depth_bias_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_bias_control")) {
                 self.device.VK_EXT_depth_bias_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_device_memory_report") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_memory_report")) {
                 self.device.VK_EXT_device_memory_report = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_robustness2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_robustness2")) {
                 self.device.VK_EXT_robustness2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_custom_border_color") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_custom_border_color")) {
                 self.device.VK_EXT_custom_border_color = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_texture_compression_astc_3d") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_texture_compression_astc_3d")) {
                 self.device.VK_EXT_texture_compression_astc_3d = true;
                 break;
             }
@@ -2134,7 +2134,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_present_barrier") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.instance.VK_KHR_surface and self.instance.VK_KHR_get_surface_capabilities2 and self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_NV_present_barrier")) {
                 self.device.VK_NV_present_barrier = true;
                 break;
             }
@@ -2146,31 +2146,31 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_present_id") and (self.device.VK_KHR_swapchain and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_id")) {
                 self.device.VK_KHR_present_id = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_private_data") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_private_data")) {
                 self.device.VK_EXT_private_data = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_creation_cache_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_creation_cache_control")) {
                 self.device.VK_EXT_pipeline_creation_cache_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_queue") and (self.device.VK_KHR_video_queue and (self.device.VK_KHR_synchronization2 or !api_version.less(vk.VK_API_VERSION_1_3)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_queue")) {
                 self.device.VK_KHR_video_encode_queue = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_device_diagnostics_config") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_device_diagnostics_config")) {
                 self.device.VK_NV_device_diagnostics_config = true;
                 break;
             }
@@ -2182,31 +2182,31 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_queue_perf_hint") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_queue_perf_hint")) {
                 self.device.VK_QCOM_queue_perf_hint = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing3") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing3")) {
                 self.device.VK_QCOM_image_processing3 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_shader_multiple_wait_queues") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_shader_multiple_wait_queues")) {
                 self.device.VK_QCOM_shader_multiple_wait_queues = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_split_barrier") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_split_barrier")) {
                 self.device.VK_EXT_shader_split_barrier = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cuda_kernel_launch") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_cuda_kernel_launch")) {
                 self.device.VK_NV_cuda_kernel_launch = true;
                 break;
             }
@@ -2218,7 +2218,7 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_tile_shading") and (self.device.VK_QCOM_tile_properties)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_shading")) {
                 self.device.VK_QCOM_tile_shading = true;
                 break;
             }
@@ -2236,337 +2236,337 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_synchronization2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_synchronization2")) {
                 self.device.VK_KHR_synchronization2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_buffer") and (((((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_buffer_device_address and self.device.VK_EXT_descriptor_indexing) or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_synchronization2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_descriptor_buffer")) {
                 self.device.VK_EXT_descriptor_buffer = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_device_address_commands") and (((((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_synchronization2 and self.device.VK_EXT_extended_dynamic_state) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_device_address_commands")) {
                 self.device.VK_KHR_device_address_commands = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_graphics_pipeline_library") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_pipeline_library)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_graphics_pipeline_library")) {
                 self.device.VK_EXT_graphics_pipeline_library = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_shader_early_and_late_fragment_tests") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_shader_early_and_late_fragment_tests")) {
                 self.device.VK_AMD_shader_early_and_late_fragment_tests = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shader_barycentric") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_fragment_shader_barycentric")) {
                 self.device.VK_KHR_fragment_shader_barycentric = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_uniform_control_flow") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_uniform_control_flow")) {
                 self.device.VK_KHR_shader_subgroup_uniform_control_flow = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_zero_initialize_workgroup_memory") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_zero_initialize_workgroup_memory")) {
                 self.device.VK_KHR_zero_initialize_workgroup_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_fragment_shading_rate_enums") and (self.device.VK_KHR_fragment_shading_rate)) {
+            if (std.mem.eql(u8, ext, "VK_NV_fragment_shading_rate_enums")) {
                 self.device.VK_NV_fragment_shading_rate_enums = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_motion_blur") and (self.device.VK_KHR_ray_tracing_pipeline)) {
+            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_motion_blur")) {
                 self.device.VK_NV_ray_tracing_motion_blur = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_mesh_shader") and (self.device.VK_KHR_spirv_1_4 or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_mesh_shader")) {
                 self.device.VK_EXT_mesh_shader = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_2plane_444_formats") and (self.device.VK_KHR_sampler_ycbcr_conversion or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_ycbcr_2plane_444_formats")) {
                 self.device.VK_EXT_ycbcr_2plane_444_formats = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map2") and (self.device.VK_EXT_fragment_density_map)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map2")) {
                 self.device.VK_EXT_fragment_density_map2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_rotated_copy_commands") and (self.device.VK_KHR_copy_commands2 or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_rotated_copy_commands")) {
                 self.device.VK_QCOM_rotated_copy_commands = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_robustness")) {
                 self.device.VK_EXT_image_robustness = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_workgroup_memory_explicit_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_workgroup_memory_explicit_layout")) {
                 self.device.VK_KHR_workgroup_memory_explicit_layout = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_copy_commands2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_copy_commands2")) {
                 self.device.VK_KHR_copy_commands2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control")) {
                 self.device.VK_EXT_image_compression_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_layout") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_layout")) {
                 self.device.VK_EXT_attachment_feedback_loop_layout = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_4444_formats") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_4444_formats")) {
                 self.device.VK_EXT_4444_formats = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_device_fault") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_fault")) {
                 self.device.VK_EXT_device_fault = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_rasterization_order_attachment_access") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_rasterization_order_attachment_access")) {
                 self.device.VK_ARM_rasterization_order_attachment_access = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_rgba10x6_formats") and (self.device.VK_KHR_sampler_ycbcr_conversion or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_rgba10x6_formats")) {
                 self.device.VK_EXT_rgba10x6_formats = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_acquire_winrt_display") and (self.instance.VK_EXT_direct_mode_display)) {
+            if (std.mem.eql(u8, ext, "VK_NV_acquire_winrt_display")) {
                 self.device.VK_NV_acquire_winrt_display = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_VALVE_mutable_descriptor_type") and (self.device.VK_KHR_maintenance3)) {
+            if (std.mem.eql(u8, ext, "VK_VALVE_mutable_descriptor_type")) {
                 self.device.VK_VALVE_mutable_descriptor_type = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_vertex_input_dynamic_state") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_input_dynamic_state")) {
                 self.device.VK_EXT_vertex_input_dynamic_state = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_physical_device_drm") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_physical_device_drm")) {
                 self.device.VK_EXT_physical_device_drm = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_device_address_binding_report") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.instance.VK_EXT_debug_utils)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_address_binding_report")) {
                 self.device.VK_EXT_device_address_binding_report = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clip_control")) {
                 self.device.VK_EXT_depth_clip_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_primitive_topology_list_restart") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_primitive_topology_list_restart")) {
                 self.device.VK_EXT_primitive_topology_list_restart = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_format_feature_flags2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_format_feature_flags2")) {
                 self.device.VK_KHR_format_feature_flags2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_present_mode_fifo_latest_ready") and (self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_present_mode_fifo_latest_ready")) {
                 self.device.VK_EXT_present_mode_fifo_latest_ready = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_FUCHSIA_external_memory") and ((self.instance.VK_KHR_external_memory_capabilities and self.device.VK_KHR_external_memory) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_FUCHSIA_external_memory")) {
                 self.device.VK_FUCHSIA_external_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_FUCHSIA_external_semaphore") and (self.instance.VK_KHR_external_semaphore_capabilities and self.device.VK_KHR_external_semaphore)) {
+            if (std.mem.eql(u8, ext, "VK_FUCHSIA_external_semaphore")) {
                 self.device.VK_FUCHSIA_external_semaphore = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_FUCHSIA_buffer_collection") and (self.device.VK_FUCHSIA_external_memory and (self.device.VK_KHR_sampler_ycbcr_conversion or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_FUCHSIA_buffer_collection")) {
                 self.device.VK_FUCHSIA_buffer_collection = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_HUAWEI_subpass_shading") and (((self.device.VK_KHR_create_renderpass2 or !api_version.less(vk.VK_API_VERSION_1_2)) and self.device.VK_KHR_synchronization2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_HUAWEI_subpass_shading")) {
                 self.device.VK_HUAWEI_subpass_shading = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_HUAWEI_invocation_mask") and (self.device.VK_KHR_ray_tracing_pipeline and (self.device.VK_KHR_synchronization2 or !api_version.less(vk.VK_API_VERSION_1_3)))) {
+            if (std.mem.eql(u8, ext, "VK_HUAWEI_invocation_mask")) {
                 self.device.VK_HUAWEI_invocation_mask = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_memory_rdma") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_memory_rdma")) {
                 self.device.VK_NV_external_memory_rdma = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_properties")) {
                 self.device.VK_EXT_pipeline_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_sci_sync") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_sci_sync")) {
                 self.device.VK_NV_external_sci_sync = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_memory_sci_buf") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_memory_sci_buf")) {
                 self.device.VK_NV_external_memory_sci_buf = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_frame_boundary") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_frame_boundary")) {
                 self.device.VK_EXT_frame_boundary = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_multisampled_render_to_single_sampled") and ((self.device.VK_KHR_create_renderpass2 and self.device.VK_KHR_depth_stencil_resolve) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_multisampled_render_to_single_sampled")) {
                 self.device.VK_EXT_multisampled_render_to_single_sampled = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state2")) {
                 self.device.VK_EXT_extended_dynamic_state2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_color_write_enable") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_color_write_enable")) {
                 self.device.VK_EXT_color_write_enable = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_primitives_generated_query") and (self.device.VK_EXT_transform_feedback)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_primitives_generated_query")) {
                 self.device.VK_EXT_primitives_generated_query = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_maintenance1") and (self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_maintenance1")) {
                 self.device.VK_KHR_ray_tracing_maintenance1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_untyped_pointers") and (self.instance.VK_KHR_get_physical_device_properties2)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_untyped_pointers")) {
                 self.device.VK_KHR_shader_untyped_pointers = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_global_priority_query") and (self.device.VK_EXT_global_priority and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_global_priority_query")) {
                 self.device.VK_EXT_global_priority_query = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_VALVE_video_encode_rgb_conversion") and (self.device.VK_KHR_video_encode_queue and (self.device.VK_KHR_sampler_ycbcr_conversion or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_VALVE_video_encode_rgb_conversion")) {
                 self.device.VK_VALVE_video_encode_rgb_conversion = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_view_min_lod") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_view_min_lod")) {
                 self.device.VK_EXT_image_view_min_lod = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_multi_draw") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_multi_draw")) {
                 self.device.VK_EXT_multi_draw = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_2d_view_of_3d") and ((self.device.VK_KHR_maintenance1 and self.instance.VK_KHR_get_physical_device_properties2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_2d_view_of_3d")) {
                 self.device.VK_EXT_image_2d_view_of_3d = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_tile_image") and (!api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_tile_image")) {
                 self.device.VK_EXT_shader_tile_image = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_opacity_micromap") and (self.device.VK_KHR_acceleration_structure and (self.device.VK_KHR_synchronization2 or !api_version.less(vk.VK_API_VERSION_1_3)))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_opacity_micromap")) {
                 self.device.VK_EXT_opacity_micromap = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_displacement_micromap") and (self.device.VK_EXT_opacity_micromap)) {
+            if (std.mem.eql(u8, ext, "VK_NV_displacement_micromap")) {
                 self.device.VK_NV_displacement_micromap = true;
                 break;
             }
@@ -2578,433 +2578,433 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_HUAWEI_cluster_culling_shader") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_HUAWEI_cluster_culling_shader")) {
                 self.device.VK_HUAWEI_cluster_culling_shader = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_border_color_swizzle") and (self.device.VK_EXT_custom_border_color)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_border_color_swizzle")) {
                 self.device.VK_EXT_border_color_swizzle = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pageable_device_local_memory") and (self.device.VK_EXT_memory_priority)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pageable_device_local_memory")) {
                 self.device.VK_EXT_pageable_device_local_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance4") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance4")) {
                 self.device.VK_KHR_maintenance4 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_shader_core_properties") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_shader_core_properties")) {
                 self.device.VK_ARM_shader_core_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_rotate") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_subgroup_rotate")) {
                 self.device.VK_KHR_shader_subgroup_rotate = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_scheduling_controls") and (self.device.VK_ARM_shader_core_builtins)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_scheduling_controls")) {
                 self.device.VK_ARM_scheduling_controls = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_sliced_view_of_3d") and ((self.device.VK_KHR_maintenance1 and self.instance.VK_KHR_get_physical_device_properties2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_sliced_view_of_3d")) {
                 self.device.VK_EXT_image_sliced_view_of_3d = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_VALVE_descriptor_set_host_mapping") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_VALVE_descriptor_set_host_mapping")) {
                 self.device.VK_VALVE_descriptor_set_host_mapping = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_zero_one") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_zero_one")) {
                 self.device.VK_EXT_depth_clamp_zero_one = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_non_seamless_cube_map") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_non_seamless_cube_map")) {
                 self.device.VK_EXT_non_seamless_cube_map = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_render_pass_striped") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_synchronization2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_render_pass_striped")) {
                 self.device.VK_ARM_render_pass_striped = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_fragment_density_map_offset") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_fragment_density_map)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_fragment_density_map_offset")) {
                 self.device.VK_QCOM_fragment_density_map_offset = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_copy_memory_indirect") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_NV_copy_memory_indirect")) {
                 self.device.VK_NV_copy_memory_indirect = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_memory_decompression") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_NV_memory_decompression")) {
                 self.device.VK_NV_memory_decompression = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_device_generated_commands_compute") and (self.device.VK_NV_device_generated_commands)) {
+            if (std.mem.eql(u8, ext, "VK_NV_device_generated_commands_compute")) {
                 self.device.VK_NV_device_generated_commands_compute = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_linear_swept_spheres") and (self.device.VK_KHR_ray_tracing_pipeline)) {
+            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_linear_swept_spheres")) {
                 self.device.VK_NV_ray_tracing_linear_swept_spheres = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_linear_color_attachment") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_linear_color_attachment")) {
                 self.device.VK_NV_linear_color_attachment = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_maximal_reconvergence") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_maximal_reconvergence")) {
                 self.device.VK_KHR_shader_maximal_reconvergence = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control_swapchain") and (self.device.VK_EXT_image_compression_control)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_image_compression_control_swapchain")) {
                 self.device.VK_EXT_image_compression_control_swapchain = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing") and (self.device.VK_KHR_format_feature_flags2 or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing")) {
                 self.device.VK_QCOM_image_processing = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_nested_command_buffer") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_nested_command_buffer")) {
                 self.device.VK_EXT_nested_command_buffer = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_OHOS_external_memory") and (((self.device.VK_KHR_sampler_ycbcr_conversion and self.device.VK_KHR_external_memory and self.device.VK_KHR_dedicated_allocation) or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_queue_family_foreign)) {
+            if (std.mem.eql(u8, ext, "VK_OHOS_external_memory")) {
                 self.device.VK_OHOS_external_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_acquire_unmodified") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_acquire_unmodified")) {
                 self.device.VK_EXT_external_memory_acquire_unmodified = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state3") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_extended_dynamic_state3")) {
                 self.device.VK_EXT_extended_dynamic_state3 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_subpass_merge_feedback") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_subpass_merge_feedback")) {
                 self.device.VK_EXT_subpass_merge_feedback = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_tensors") and (!api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_tensors")) {
                 self.device.VK_ARM_tensors = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_module_identifier") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_pipeline_creation_cache_control) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_module_identifier")) {
                 self.device.VK_EXT_shader_module_identifier = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_rasterization_order_attachment_access") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_rasterization_order_attachment_access")) {
                 self.device.VK_EXT_rasterization_order_attachment_access = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_optical_flow") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_format_feature_flags2 and self.device.VK_KHR_synchronization2) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_NV_optical_flow")) {
                 self.device.VK_NV_optical_flow = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_legacy_dithering") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_legacy_dithering")) {
                 self.device.VK_EXT_legacy_dithering = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_protected_access") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_protected_access")) {
                 self.device.VK_EXT_pipeline_protected_access = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ANDROID_external_format_resolve") and (self.device.VK_ANDROID_external_memory_android_hardware_buffer)) {
+            if (std.mem.eql(u8, ext, "VK_ANDROID_external_format_resolve")) {
                 self.device.VK_ANDROID_external_format_resolve = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance5") and ((!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_dynamic_rendering) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance5")) {
                 self.device.VK_KHR_maintenance5 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMD_anti_lag") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_AMD_anti_lag")) {
                 self.device.VK_AMD_anti_lag = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_AMDX_dense_geometry_format") and (self.device.VK_KHR_acceleration_structure and (!api_version.less(vk.VK_API_VERSION_1_4) or self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5))) {
+            if (std.mem.eql(u8, ext, "VK_AMDX_dense_geometry_format")) {
                 self.device.VK_AMDX_dense_geometry_format = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_present_id2") and (self.instance.VK_KHR_get_surface_capabilities2 and self.instance.VK_KHR_surface and self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_id2")) {
                 self.device.VK_KHR_present_id2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_present_wait2") and (self.instance.VK_KHR_get_surface_capabilities2 and self.instance.VK_KHR_surface and self.device.VK_KHR_swapchain and self.device.VK_KHR_present_id2)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_wait2")) {
                 self.device.VK_KHR_present_wait2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_position_fetch") and (self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_ray_tracing_position_fetch")) {
                 self.device.VK_KHR_ray_tracing_position_fetch = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_object") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_dynamic_rendering) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_object")) {
                 self.device.VK_EXT_shader_object = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_binary") and (!api_version.less(vk.VK_API_VERSION_1_4) or self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_pipeline_binary")) {
                 self.device.VK_KHR_pipeline_binary = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_tile_properties") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_properties")) {
                 self.device.VK_QCOM_tile_properties = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_SEC_amigo_profiling") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_SEC_amigo_profiling")) {
                 self.device.VK_SEC_amigo_profiling = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_maintenance1") and (self.device.VK_KHR_swapchain and self.instance.VK_KHR_surface_maintenance1 and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_swapchain_maintenance1")) {
                 self.device.VK_KHR_swapchain_maintenance1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_viewports") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_viewports")) {
                 self.device.VK_QCOM_multiview_per_view_viewports = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_external_sci_sync2") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_external_sci_sync2")) {
                 self.device.VK_NV_external_sci_sync2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_invocation_reorder") and (self.device.VK_KHR_ray_tracing_pipeline)) {
+            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_invocation_reorder")) {
                 self.device.VK_NV_ray_tracing_invocation_reorder = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cooperative_vector") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_cooperative_vector")) {
                 self.device.VK_NV_cooperative_vector = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_extended_sparse_address_space") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_extended_sparse_address_space")) {
                 self.device.VK_NV_extended_sparse_address_space = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_mutable_descriptor_type") and (self.device.VK_KHR_maintenance3 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_mutable_descriptor_type")) {
                 self.device.VK_EXT_mutable_descriptor_type = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_legacy_vertex_attributes") and (self.device.VK_EXT_vertex_input_dynamic_state)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_legacy_vertex_attributes")) {
                 self.device.VK_EXT_legacy_vertex_attributes = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_shader_core_builtins") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_shader_core_builtins")) {
                 self.device.VK_ARM_shader_core_builtins = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_library_group_handles") and (self.device.VK_KHR_ray_tracing_pipeline and self.device.VK_KHR_pipeline_library)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_pipeline_library_group_handles")) {
                 self.device.VK_EXT_pipeline_library_group_handles = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_dynamic_rendering_unused_attachments") and (((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_dynamic_rendering) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_dynamic_rendering_unused_attachments")) {
                 self.device.VK_EXT_dynamic_rendering_unused_attachments = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_internally_synchronized_queues") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_internally_synchronized_queues")) {
                 self.device.VK_KHR_internally_synchronized_queues = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_low_latency2") and ((!api_version.less(vk.VK_API_VERSION_1_2) or self.device.VK_KHR_timeline_semaphore) and (self.device.VK_KHR_present_id or self.device.VK_KHR_present_id2))) {
+            if (std.mem.eql(u8, ext, "VK_NV_low_latency2")) {
                 self.device.VK_NV_low_latency2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_cooperative_matrix") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_cooperative_matrix")) {
                 self.device.VK_KHR_cooperative_matrix = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_data_graph") and (!api_version.less(vk.VK_API_VERSION_1_3) and (self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5) and self.device.VK_KHR_deferred_host_operations)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_data_graph")) {
                 self.device.VK_ARM_data_graph = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_data_graph_instruction_set_tosa") and (self.device.VK_ARM_data_graph)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_data_graph_instruction_set_tosa")) {
                 self.device.VK_ARM_data_graph_instruction_set_tosa = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_render_areas") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_multiview_per_view_render_areas")) {
                 self.device.VK_QCOM_multiview_per_view_render_areas = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_compute_shader_derivatives") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_compute_shader_derivatives")) {
                 self.device.VK_KHR_compute_shader_derivatives = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_av1") and (self.device.VK_KHR_video_decode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_av1")) {
                 self.device.VK_KHR_video_decode_av1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_av1") and (self.device.VK_KHR_video_encode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_av1")) {
                 self.device.VK_KHR_video_encode_av1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_vp9") and (self.device.VK_KHR_video_decode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_decode_vp9")) {
                 self.device.VK_KHR_video_decode_vp9 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance1") and (self.device.VK_KHR_video_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance1")) {
                 self.device.VK_KHR_video_maintenance1 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_per_stage_descriptor_set") and (self.device.VK_KHR_maintenance6 or !api_version.less(vk.VK_API_VERSION_1_4))) {
+            if (std.mem.eql(u8, ext, "VK_NV_per_stage_descriptor_set")) {
                 self.device.VK_NV_per_stage_descriptor_set = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing2") and (self.device.VK_QCOM_image_processing)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_image_processing2")) {
                 self.device.VK_QCOM_image_processing2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_weights") and (self.device.VK_EXT_filter_cubic)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_weights")) {
                 self.device.VK_QCOM_filter_cubic_weights = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_ycbcr_degamma") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_ycbcr_degamma")) {
                 self.device.VK_QCOM_ycbcr_degamma = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_clamp") and ((self.device.VK_EXT_filter_cubic) and (!api_version.less(vk.VK_API_VERSION_1_2) or self.device.VK_EXT_sampler_filter_minmax))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_filter_cubic_clamp")) {
                 self.device.VK_QCOM_filter_cubic_clamp = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_dynamic_state") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_attachment_feedback_loop_layout)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_attachment_feedback_loop_dynamic_state")) {
                 self.device.VK_EXT_attachment_feedback_loop_dynamic_state = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_vertex_attribute_divisor") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_vertex_attribute_divisor")) {
                 self.device.VK_KHR_vertex_attribute_divisor = true;
                 break;
             }
@@ -3016,97 +3016,97 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_unified_image_layouts") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_unified_image_layouts")) {
                 self.device.VK_KHR_unified_image_layouts = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls2") and (!api_version.less(vk.VK_API_VERSION_1_1) and self.device.VK_KHR_shader_float_controls)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_float_controls2")) {
                 self.device.VK_KHR_shader_float_controls2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QNX_external_memory_screen_buffer") and (((self.device.VK_KHR_sampler_ycbcr_conversion and self.device.VK_KHR_external_memory and self.device.VK_KHR_dedicated_allocation) or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_queue_family_foreign)) {
+            if (std.mem.eql(u8, ext, "VK_QNX_external_memory_screen_buffer")) {
                 self.device.VK_QNX_external_memory_screen_buffer = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_MSFT_layered_driver") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_MSFT_layered_driver")) {
                 self.device.VK_MSFT_layered_driver = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_index_type_uint8") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_index_type_uint8")) {
                 self.device.VK_KHR_index_type_uint8 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_line_rasterization") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_line_rasterization")) {
                 self.device.VK_KHR_line_rasterization = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_calibrated_timestamps") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_calibrated_timestamps")) {
                 self.device.VK_KHR_calibrated_timestamps = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_expect_assume") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_expect_assume")) {
                 self.device.VK_KHR_shader_expect_assume = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance6") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance6")) {
                 self.device.VK_KHR_maintenance6 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_descriptor_pool_overallocation") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_descriptor_pool_overallocation")) {
                 self.device.VK_NV_descriptor_pool_overallocation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_tile_memory_heap") and ((self.device.VK_KHR_get_memory_requirements2 and self.instance.VK_KHR_get_physical_device_properties2) or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_tile_memory_heap")) {
                 self.device.VK_QCOM_tile_memory_heap = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_copy_memory_indirect") and ((self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_buffer_device_address) or !api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_copy_memory_indirect")) {
                 self.device.VK_KHR_copy_memory_indirect = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_memory_decompression") and (self.instance.VK_KHR_get_physical_device_properties2 and self.device.VK_KHR_buffer_device_address)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_memory_decompression")) {
                 self.device.VK_EXT_memory_decompression = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_intra_refresh") and (self.device.VK_KHR_video_encode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_intra_refresh")) {
                 self.device.VK_KHR_video_encode_intra_refresh = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_quantization_map") and (self.device.VK_KHR_video_encode_queue and (self.device.VK_KHR_format_feature_flags2 or !api_version.less(vk.VK_API_VERSION_1_3)))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_quantization_map")) {
                 self.device.VK_KHR_video_encode_quantization_map = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_raw_access_chains") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_raw_access_chains")) {
                 self.device.VK_NV_raw_access_chains = true;
                 break;
             }
@@ -3118,91 +3118,91 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_relaxed_extended_instruction") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_relaxed_extended_instruction")) {
                 self.device.VK_KHR_shader_relaxed_extended_instruction = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_command_buffer_inheritance") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_command_buffer_inheritance")) {
                 self.device.VK_NV_command_buffer_inheritance = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance7") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance7")) {
                 self.device.VK_KHR_maintenance7 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_shader_atomic_float16_vector") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_shader_atomic_float16_vector")) {
                 self.device.VK_NV_shader_atomic_float16_vector = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_replicated_composites") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_replicated_composites")) {
                 self.device.VK_EXT_shader_replicated_composites = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_tensor_controls") and (self.device.VK_ARM_tensors)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_tensor_controls")) {
                 self.device.VK_ARM_tensor_controls = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_float8") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_float8")) {
                 self.device.VK_EXT_shader_float8 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_validation") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_ray_tracing_validation")) {
                 self.device.VK_NV_ray_tracing_validation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cluster_acceleration_structure") and (self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_NV_cluster_acceleration_structure")) {
                 self.device.VK_NV_cluster_acceleration_structure = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_partitioned_acceleration_structure") and (self.device.VK_KHR_acceleration_structure)) {
+            if (std.mem.eql(u8, ext, "VK_NV_partitioned_acceleration_structure")) {
                 self.device.VK_NV_partitioned_acceleration_structure = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_device_generated_commands") and (((self.device.VK_KHR_buffer_device_address or !api_version.less(vk.VK_API_VERSION_1_2)) and (self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5)) or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_device_generated_commands")) {
                 self.device.VK_EXT_device_generated_commands = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_device_fault") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_device_fault")) {
                 self.device.VK_KHR_device_fault = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance8") and (!api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance8")) {
                 self.device.VK_KHR_maintenance8 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_MESA_image_alignment_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_MESA_image_alignment_control")) {
                 self.device.VK_MESA_image_alignment_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_shader_fma") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_shader_fma")) {
                 self.device.VK_KHR_shader_fma = true;
                 break;
             }
@@ -3214,223 +3214,223 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_ray_tracing_invocation_reorder") and (self.device.VK_KHR_ray_tracing_pipeline)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_ray_tracing_invocation_reorder")) {
                 self.device.VK_EXT_ray_tracing_invocation_reorder = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_control") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_depth_clamp_control")) {
                 self.device.VK_EXT_depth_clamp_control = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance9") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance9")) {
                 self.device.VK_KHR_maintenance9 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance2") and (self.device.VK_KHR_video_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_maintenance2")) {
                 self.device.VK_KHR_video_maintenance2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_HUAWEI_hdr_vivid") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_KHR_swapchain and self.device.VK_EXT_hdr_metadata)) {
+            if (std.mem.eql(u8, ext, "VK_HUAWEI_hdr_vivid")) {
                 self.device.VK_HUAWEI_hdr_vivid = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix2") and (self.device.VK_KHR_cooperative_matrix)) {
+            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix2")) {
                 self.device.VK_NV_cooperative_matrix2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_pipeline_opacity_micromap") and (self.device.VK_EXT_opacity_micromap)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_pipeline_opacity_micromap")) {
                 self.device.VK_ARM_pipeline_opacity_micromap = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_feedback2") and (self.device.VK_KHR_video_encode_queue)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_video_encode_feedback2")) {
                 self.device.VK_KHR_video_encode_feedback2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_IMG_filter_linear_2d") and (self.device.VK_KHR_format_feature_flags2 or !api_version.less(vk.VK_API_VERSION_1_3))) {
+            if (std.mem.eql(u8, ext, "VK_IMG_filter_linear_2d")) {
                 self.device.VK_IMG_filter_linear_2d = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_metal") and (self.device.VK_KHR_external_memory or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_external_memory_metal")) {
                 self.device.VK_EXT_external_memory_metal = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_depth_clamp_zero_one") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_depth_clamp_zero_one")) {
                 self.device.VK_KHR_depth_clamp_zero_one = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_performance_counters_by_region") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_performance_counters_by_region")) {
                 self.device.VK_ARM_performance_counters_by_region = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_shader_instrumentation") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_shader_instrumentation")) {
                 self.device.VK_ARM_shader_instrumentation = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_robustness") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_vertex_attribute_robustness")) {
                 self.device.VK_EXT_vertex_attribute_robustness = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_format_pack") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_ARM_format_pack")) {
                 self.device.VK_ARM_format_pack = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_VALVE_fragment_density_map_layered") and ((!api_version.less(vk.VK_API_VERSION_1_4) or self.device.VK_KHR_extended_flags or self.device.VK_KHR_maintenance5) and self.device.VK_EXT_fragment_density_map)) {
+            if (std.mem.eql(u8, ext, "VK_VALVE_fragment_density_map_layered")) {
                 self.device.VK_VALVE_fragment_density_map_layered = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_robustness2") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_robustness2")) {
                 self.device.VK_KHR_robustness2 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_present_metering") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_present_metering")) {
                 self.device.VK_NV_present_metering = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_multisampled_render_to_swapchain") and (self.device.VK_KHR_swapchain and self.device.VK_EXT_multisampled_render_to_single_sampled)) {
+            if (std.mem.eql(u8, ext, "VK_EXT_multisampled_render_to_swapchain")) {
                 self.device.VK_EXT_multisampled_render_to_swapchain = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map_offset") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and self.device.VK_EXT_fragment_density_map and (self.device.VK_KHR_create_renderpass2 or !api_version.less(vk.VK_API_VERSION_1_2)) and (!api_version.less(vk.VK_API_VERSION_1_3) or self.device.VK_KHR_dynamic_rendering))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_fragment_density_map_offset")) {
                 self.device.VK_EXT_fragment_density_map_offset = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_zero_initialize_device_memory") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_zero_initialize_device_memory")) {
                 self.device.VK_EXT_zero_initialize_device_memory = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_present_mode_fifo_latest_ready") and (self.device.VK_KHR_swapchain)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_present_mode_fifo_latest_ready")) {
                 self.device.VK_KHR_present_mode_fifo_latest_ready = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_opacity_micromap") and (self.device.VK_KHR_acceleration_structure and self.device.VK_KHR_device_address_commands)) {
+            if (std.mem.eql(u8, ext, "VK_KHR_opacity_micromap")) {
                 self.device.VK_KHR_opacity_micromap = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_64bit_indexing") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_64bit_indexing")) {
                 self.device.VK_EXT_shader_64bit_indexing = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_custom_resolve") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_custom_resolve")) {
                 self.device.VK_EXT_custom_resolve = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_QCOM_data_graph_model") and (self.device.VK_ARM_data_graph)) {
+            if (std.mem.eql(u8, ext, "VK_QCOM_data_graph_model")) {
                 self.device.VK_QCOM_data_graph_model = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance10") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance10")) {
                 self.device.VK_KHR_maintenance10 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_ARM_data_graph_optical_flow") and (self.device.VK_ARM_data_graph)) {
+            if (std.mem.eql(u8, ext, "VK_ARM_data_graph_optical_flow")) {
                 self.device.VK_ARM_data_graph_optical_flow = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_long_vector") and (!api_version.less(vk.VK_API_VERSION_1_2))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_long_vector")) {
                 self.device.VK_EXT_shader_long_vector = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_SEC_pipeline_cache_incremental_mode") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_SEC_pipeline_cache_incremental_mode")) {
                 self.device.VK_SEC_pipeline_cache_incremental_mode = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_uniform_buffer_unsized_array") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_uniform_buffer_unsized_array")) {
                 self.device.VK_EXT_shader_uniform_buffer_unsized_array = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_compute_occupancy_priority") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_NV_compute_occupancy_priority")) {
                 self.device.VK_NV_compute_occupancy_priority = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_maintenance11") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_maintenance11")) {
                 self.device.VK_KHR_maintenance11 = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_subgroup_partitioned") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_subgroup_partitioned")) {
                 self.device.VK_EXT_shader_subgroup_partitioned = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_KHR_extended_flags") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_KHR_extended_flags")) {
                 self.device.VK_KHR_extended_flags = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_shader_ocp_microscaling_types") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_shader_ocp_microscaling_types")) {
                 self.device.VK_EXT_shader_ocp_microscaling_types = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_VALVE_shader_mixed_float_dot_product") and ((self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1)) and (self.device.VK_KHR_shader_float16_int8 or !api_version.less(vk.VK_API_VERSION_1_2)))) {
+            if (std.mem.eql(u8, ext, "VK_VALVE_shader_mixed_float_dot_product")) {
                 self.device.VK_VALVE_shader_mixed_float_dot_product = true;
                 break;
             }
@@ -3448,13 +3448,13 @@ pub const Extensions = struct {
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_EXT_primitive_restart_index") and (self.instance.VK_KHR_get_physical_device_properties2 or !api_version.less(vk.VK_API_VERSION_1_1))) {
+            if (std.mem.eql(u8, ext, "VK_EXT_primitive_restart_index")) {
                 self.device.VK_EXT_primitive_restart_index = true;
                 break;
             }
         }
         for (de) |ext| {
-            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix_decode_vector") and (self.device.VK_NV_cooperative_matrix2)) {
+            if (std.mem.eql(u8, ext, "VK_NV_cooperative_matrix_decode_vector")) {
                 self.device.VK_NV_cooperative_matrix_decode_vector = true;
                 break;
             }

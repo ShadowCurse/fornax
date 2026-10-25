@@ -138,65 +138,6 @@ fn vk_version_to_api_version(s: []const u8) ?[]const u8 {
     return null;
 }
 
-// Converst:
-// ((VK_KHR_get_physical_device_properties2,VK_VERSION_1_1)+VK_KHR_dynamic_rendering),VK_VERSION_1_3
-// into:
-// ((self.instance.VK_KHR_get_physical_device_properties2 or vk.VK_API_VERSION_1_1 <= api_version) and self.device.VK_KHR_dynamic_rendering) or vk.VK_API_VERSION_1_3 <= api_version
-fn write_depends(
-    alloc: Allocator,
-    w: *Writer,
-    instance_extensions: []*const TypeDatabase.Extension,
-    depends: []const u8,
-) !void {
-    w.write(" and (", .{});
-
-    var aw: std.Io.Writer.Allocating = .init(alloc);
-    defer aw.deinit();
-
-    const writer = &aw.writer;
-    var i: usize = 0;
-    while (i < depends.len) : (i += 1) {
-        const c = depends[i];
-        switch (c) {
-            '(' => _ = try writer.write("("),
-            ')' => _ = try writer.write(")"),
-            ',' => _ = try writer.write(" or "),
-            '+' => _ = try writer.write(" and "),
-            else => {
-                if (vk_version_to_api_version(depends[i..])) |version| {
-                    try writer.print("!api_version.less(vk.{s})", .{version});
-                    i += "VK_VERSION_1_1".len - 1;
-                } else {
-                    if (std.mem.indexOfAny(u8, depends[i..], ",+)")) |index| {
-                        const name = depends[i .. i + index];
-                        var t: []const u8 = "device";
-                        for (instance_extensions) |ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
-                                t = "instance";
-                                break;
-                            }
-                        }
-                        try writer.print("self.{s}.{s}", .{ t, name });
-                        i += index - 1;
-                    } else {
-                        const name = depends[i..];
-                        var t: []const u8 = "device";
-                        for (instance_extensions) |ext| {
-                            if (std.mem.eql(u8, name, ext.name)) {
-                                t = "instance";
-                                break;
-                            }
-                        }
-                        try writer.print("self.{s}.{s}", .{ t, name });
-                        i += depends[i..].len - 1;
-                    }
-                }
-            },
-        }
-    }
-    w.write("{s})", .{writer.buffer[0..writer.end]});
-}
-
 fn write_extension_type(alloc: Allocator, w: *Writer, type_db: *const TypeDatabase) !void {
     var instance_extensions: std.ArrayListUnmanaged(*const TypeDatabase.Extension) = .empty;
     var device_extensions: std.ArrayListUnmanaged(*const TypeDatabase.Extension) = .empty;
@@ -295,17 +236,13 @@ fn write_extension_type(alloc: Allocator, w: *Writer, type_db: *const TypeDataba
         for (instance_extensions.items) |ext| {
             w.write(
                 \\        for (ie) |ext| {{
-                \\            if (std.mem.eql(u8, ext, "{s}")
-            , .{ext.name});
-            if (ext.depends) |depends| try write_depends(alloc, w, instance_extensions.items, depends);
-            w.write(
-                \\) {{
-                \\                self.instance.{s} = true;
+                \\            if (std.mem.eql(u8, ext, "{[ext]s}")) {{
+                \\                self.instance.{[ext]s} = true;
                 \\                break;
                 \\            }}
                 \\        }}
                 \\
-            , .{ext.name});
+            , .{ .ext = ext.name });
         }
     }
     w.write(
@@ -316,17 +253,13 @@ fn write_extension_type(alloc: Allocator, w: *Writer, type_db: *const TypeDataba
         for (device_extensions.items) |ext| {
             w.write(
                 \\        for (de) |ext| {{
-                \\            if (std.mem.eql(u8, ext, "{s}")
-            , .{ext.name});
-            if (ext.depends) |depends| try write_depends(alloc, w, instance_extensions.items, depends);
-            w.write(
-                \\) {{
-                \\                self.device.{s} = true;
+                \\            if (std.mem.eql(u8, ext, "{[ext]s}")) {{
+                \\                self.device.{[ext]s} = true;
                 \\                break;
                 \\            }}
                 \\        }}
                 \\
-            , .{ext.name});
+            , .{ .ext = ext.name });
         }
     }
 
