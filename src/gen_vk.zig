@@ -499,45 +499,42 @@ fn write_single_struct_field(
                 const enum_idx = array_base_type.enum_idx();
                 if (enum_idx != .none) {
                     const e = type_db.get_enum(enum_idx);
-                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}.{[default]s}}}", .{
+                    s = try std.fmt.allocPrint(alloc, "{[base_type]s}.{[default]s}", .{
                         .base_type = base_type_str,
                         .default = e.values[0].name,
                     });
                 }
                 const struct_idx = array_base_type.struct_idx();
                 if (struct_idx != .none) {
-                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}{{}}}}", .{
+                    s = try std.fmt.allocPrint(alloc, "{[base_type]s}{{}}", .{
                         .base_type = base_type_str,
                     });
                 }
                 const handle_idx = array_base_type.handle_idx();
                 if (handle_idx != .none) {
-                    s = try std.fmt.allocPrint(alloc, ".{{{[base_type]s}.none}}", .{
+                    s = try std.fmt.allocPrint(alloc, "{[base_type]s}.none", .{
                         .base_type = base_type_str,
                     });
                 }
                 switch (array.len) {
-                    .string => |string| {
+                    .string => {
                         w.write(
-                            \\    {[name]s}: {[type]s} = {[s]s} ** {[len]s},
+                            \\    {[name]s}: {[type]s} = @splat({[s]s}),
                             \\
                         , .{
                             .name = field.name,
                             .type = type_str,
                             .s = s,
-                            .len = string[1 .. string.len - 1],
                         });
                     },
-                    .type_idx => |tidx| {
-                        const ts = try type_db.type_string(alloc, tidx);
+                    .type_idx => {
                         w.write(
-                            \\    {[name]s}: {[type]s} = {[s]s} ** {[len]s},
+                            \\    {[name]s}: {[type]s} = @splat({[s]s}),
                             \\
                         , .{
                             .name = field.name,
                             .type = type_str,
                             .s = s,
-                            .len = ts,
                         });
                     },
                 }

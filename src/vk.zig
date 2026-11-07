@@ -950,13 +950,13 @@ pub const VkPipelineCreateFlags = packed struct(u32) {
     VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT: bool = false,
     // bit: 2
     VK_PIPELINE_CREATE_DERIVATIVE_BIT: bool = false,
-    // Extension: VK_KHR_device_group
     // Extension: VK_GRAPHICS_VERSION_1_1
+    // Extension: VK_KHR_device_group
     // bit: 3
     VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT: bool = false,
-    // Extension: VK_COMPUTE_VERSION_1_1
-    // Extension: VK_COMPUTE_VERSION_1_1
     // Extension: VK_KHR_device_group
+    // Extension: VK_COMPUTE_VERSION_1_1
+    // Extension: VK_COMPUTE_VERSION_1_1
     // Extension: VK_KHR_device_group
     // bit: 4
     VK_PIPELINE_CREATE_DISPATCH_BASE_BIT: bool = false,
@@ -973,8 +973,8 @@ pub const VkPipelineCreateFlags = packed struct(u32) {
     // Extension: VK_EXT_pipeline_creation_cache_control
     // bit: 8
     VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT: bool = false,
-    // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_pipeline_creation_cache_control
+    // Extension: VK_COMPUTE_VERSION_1_3
     // bit: 9
     VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT: bool = false,
     // Extension: VK_EXT_graphics_pipeline_library
@@ -2240,8 +2240,8 @@ pub const VkFormatFeatureFlags2 = packed struct(u64) {
     // Extension: VK_IMG_filter_linear_2d
     // bit: 45
     VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_FILTER_LINEAR_2D_BIT_IMG: bool = false,
-    // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_EXT_host_image_copy
+    // Extension: VK_BASE_VERSION_1_4
     // bit: 46
     VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT: bool = false,
     _46: u1 = 0,
@@ -5027,11 +5027,11 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_EXT_texture_compression_astc_hdr
     // Extension: VK_BASE_VERSION_1_3
     VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK = 1000066004,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_texture_compression_astc_hdr
+    // Extension: VK_BASE_VERSION_1_3
     VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK = 1000066005,
-    // Extension: VK_EXT_texture_compression_astc_hdr
     // Extension: VK_BASE_VERSION_1_3
+    // Extension: VK_EXT_texture_compression_astc_hdr
     VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK = 1000066006,
     // Extension: VK_EXT_texture_compression_astc_hdr
     // Extension: VK_BASE_VERSION_1_3
@@ -5102,17 +5102,17 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16 = 1000156015,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16 = 1000156016,
-    // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_R12X4_UNORM_PACK16 = 1000156017,
     // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_R12X4G12X4_UNORM_2PACK16 = 1000156018,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16 = 1000156019,
     // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
@@ -5120,14 +5120,14 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16 = 1000156021,
-    // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16 = 1000156022,
     // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16 = 1000156023,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16 = 1000156024,
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
@@ -5138,8 +5138,8 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_G16B16G16R16_422_UNORM = 1000156027,
-    // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_B16G16R16G16_422_UNORM = 1000156028,
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
@@ -5150,11 +5150,11 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
     VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM = 1000156031,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_G16_B16R16_2PLANE_422_UNORM = 1000156032,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_BASE_VERSION_1_1
     VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM = 1000156033,
     // Extension: VK_EXT_texture_compression_astc_3d
     VK_FORMAT_ASTC_3x3x3_UNORM_BLOCK_EXT = 1000288000,
@@ -5228,8 +5228,8 @@ pub const VkFormat = enum(i32) {
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_ycbcr_2plane_444_formats
     VK_FORMAT_G16_B16R16_2PLANE_444_UNORM = 1000330003,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_4444_formats
+    // Extension: VK_BASE_VERSION_1_3
     VK_FORMAT_A4R4G4B4_UNORM_PACK16 = 1000340000,
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_4444_formats
@@ -5514,14 +5514,14 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_DPB_SLOT_INFO_KHR = 1000040006,
     // Extension: VK_AMD_texture_gather_bias_lod
     VK_STRUCTURE_TYPE_TEXTURE_LOD_GATHER_FORMAT_PROPERTIES_AMD = 1000041000,
-    // Extension: VK_GRAPHICS_VERSION_1_3
     // Extension: VK_KHR_dynamic_rendering
+    // Extension: VK_GRAPHICS_VERSION_1_3
     VK_STRUCTURE_TYPE_RENDERING_INFO = 1000044000,
     // Extension: VK_KHR_dynamic_rendering
     // Extension: VK_GRAPHICS_VERSION_1_3
     VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO = 1000044001,
-    // Extension: VK_KHR_dynamic_rendering
     // Extension: VK_GRAPHICS_VERSION_1_3
+    // Extension: VK_KHR_dynamic_rendering
     VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO = 1000044002,
     // Extension: VK_KHR_dynamic_rendering
     // Extension: VK_GRAPHICS_VERSION_1_3
@@ -5547,8 +5547,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_GRAPHICS_VERSION_1_1
     // Extension: VK_KHR_multiview
     VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO = 1000053000,
-    // Extension: VK_GRAPHICS_VERSION_1_1
     // Extension: VK_KHR_multiview
+    // Extension: VK_GRAPHICS_VERSION_1_1
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES = 1000053001,
     // Extension: VK_KHR_multiview
     // Extension: VK_GRAPHICS_VERSION_1_1
@@ -5563,8 +5563,8 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_EXPORT_MEMORY_WIN32_HANDLE_INFO_NV = 1000057001,
     // Extension: VK_NV_win32_keyed_mutex
     VK_STRUCTURE_TYPE_WIN32_KEYED_MUTEX_ACQUIRE_RELEASE_INFO_NV = 1000058000,
-    // Extension: VK_KHR_get_physical_device_properties2
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_get_physical_device_properties2
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 = 1000059000,
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_get_physical_device_properties2
@@ -5599,8 +5599,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_device_group
     VK_STRUCTURE_TYPE_DEVICE_GROUP_COMMAND_BUFFER_BEGIN_INFO = 1000060004,
-    // Extension: VK_KHR_device_group
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_device_group
     VK_STRUCTURE_TYPE_DEVICE_GROUP_SUBMIT_INFO = 1000060005,
     // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_device_group
@@ -5623,11 +5623,11 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_device_group
     // Extension: VK_KHR_swapchain
     VK_STRUCTURE_TYPE_DEVICE_GROUP_SWAPCHAIN_CREATE_INFO_KHR = 1000060012,
-    // Extension: VK_BASE_VERSION_1_1
     // Extension: VK_KHR_device_group
+    // Extension: VK_BASE_VERSION_1_1
     VK_STRUCTURE_TYPE_BIND_BUFFER_MEMORY_DEVICE_GROUP_INFO = 1000060013,
-    // Extension: VK_KHR_device_group
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_device_group
     VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_DEVICE_GROUP_INFO = 1000060014,
     // Extension: VK_EXT_validation_flags
     VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT = 1000061000,
@@ -5636,8 +5636,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_GRAPHICS_VERSION_1_1
     // Extension: VK_GRAPHICS_VERSION_1_1
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES = 1000063000,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_texture_compression_astc_hdr
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXTURE_COMPRESSION_ASTC_HDR_FEATURES = 1000066000,
     // Extension: VK_EXT_astc_decode_mode
     VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT = 1000067000,
@@ -5792,20 +5792,20 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_create_renderpass2
     // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2 = 1000109000,
-    // Extension: VK_GRAPHICS_VERSION_1_2
     // Extension: VK_KHR_create_renderpass2
+    // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2 = 1000109001,
     // Extension: VK_KHR_create_renderpass2
     // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2 = 1000109002,
-    // Extension: VK_GRAPHICS_VERSION_1_2
     // Extension: VK_KHR_create_renderpass2
+    // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2 = 1000109003,
     // Extension: VK_KHR_create_renderpass2
     // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2 = 1000109004,
-    // Extension: VK_GRAPHICS_VERSION_1_2
     // Extension: VK_KHR_create_renderpass2
+    // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO = 1000109005,
     // Extension: VK_KHR_create_renderpass2
     // Extension: VK_GRAPHICS_VERSION_1_2
@@ -5978,8 +5978,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_inline_uniform_block
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES = 1000138000,
-    // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_inline_uniform_block
+    // Extension: VK_COMPUTE_VERSION_1_3
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES = 1000138001,
     // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_inline_uniform_block
@@ -6010,8 +6010,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_get_memory_requirements2
     // Extension: VK_BASE_VERSION_1_1
     VK_STRUCTURE_TYPE_BUFFER_MEMORY_REQUIREMENTS_INFO_2 = 1000146000,
-    // Extension: VK_KHR_get_memory_requirements2
     // Extension: VK_BASE_VERSION_1_1
+    // Extension: VK_KHR_get_memory_requirements2
     VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2 = 1000146001,
     // Extension: VK_KHR_get_memory_requirements2
     // Extension: VK_BASE_VERSION_1_1
@@ -6087,8 +6087,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_sampler_ycbcr_conversion
     // Extension: VK_COMPUTE_VERSION_1_1
     VK_STRUCTURE_TYPE_IMAGE_PLANE_MEMORY_REQUIREMENTS_INFO = 1000156003,
-    // Extension: VK_COMPUTE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
+    // Extension: VK_COMPUTE_VERSION_1_1
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES = 1000156004,
     // Extension: VK_COMPUTE_VERSION_1_1
     // Extension: VK_KHR_sampler_ycbcr_conversion
@@ -6168,11 +6168,11 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_REPRESENTATIVE_FRAGMENT_TEST_FEATURES_NV = 1000166000,
     // Extension: VK_NV_representative_fragment_test
     VK_STRUCTURE_TYPE_PIPELINE_REPRESENTATIVE_FRAGMENT_TEST_STATE_CREATE_INFO_NV = 1000166001,
-    // Extension: VK_KHR_maintenance3
     // Extension: VK_COMPUTE_VERSION_1_1
+    // Extension: VK_KHR_maintenance3
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES = 1000168000,
-    // Extension: VK_COMPUTE_VERSION_1_1
     // Extension: VK_KHR_maintenance3
+    // Extension: VK_COMPUTE_VERSION_1_1
     VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_SUPPORT = 1000168001,
     // Extension: VK_EXT_filter_cubic
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_IMAGE_FORMAT_INFO_EXT = 1000170000,
@@ -6274,17 +6274,17 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_timeline_semaphore
     // Extension: VK_BASE_VERSION_1_2
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_PROPERTIES = 1000207001,
-    // Extension: VK_KHR_timeline_semaphore
     // Extension: VK_BASE_VERSION_1_2
+    // Extension: VK_KHR_timeline_semaphore
     VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO = 1000207002,
     // Extension: VK_KHR_timeline_semaphore
     // Extension: VK_BASE_VERSION_1_2
     VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO = 1000207003,
-    // Extension: VK_BASE_VERSION_1_2
     // Extension: VK_KHR_timeline_semaphore
+    // Extension: VK_BASE_VERSION_1_2
     VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO = 1000207004,
-    // Extension: VK_BASE_VERSION_1_2
     // Extension: VK_KHR_timeline_semaphore
+    // Extension: VK_BASE_VERSION_1_2
     VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO = 1000207005,
     // Extension: VK_EXT_present_timing
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT = 1000208000,
@@ -6321,8 +6321,8 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PERFORMANCE_OVERRIDE_INFO_INTEL = 1000210004,
     // Extension: VK_INTEL_performance_query
     VK_STRUCTURE_TYPE_PERFORMANCE_CONFIGURATION_ACQUIRE_INFO_INTEL = 1000210005,
-    // Extension: VK_KHR_vulkan_memory_model
     // Extension: VK_BASE_VERSION_1_2
+    // Extension: VK_KHR_vulkan_memory_model
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES = 1000211000,
     // Extension: VK_EXT_pci_bus_info
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT = 1000212000,
@@ -6349,12 +6349,12 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_EXT_subgroup_size_control
     // Extension: VK_COMPUTE_VERSION_1_3
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_PROPERTIES = 1000225000,
-    // Extension: VK_EXT_subgroup_size_control
     // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_shader_object
-    VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO = 1000225001,
     // Extension: VK_EXT_subgroup_size_control
+    VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_REQUIRED_SUBGROUP_SIZE_CREATE_INFO = 1000225001,
     // Extension: VK_COMPUTE_VERSION_1_3
+    // Extension: VK_EXT_subgroup_size_control
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES = 1000225002,
     // Extension: VK_KHR_fragment_shading_rate
     VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR = 1000226000,
@@ -6372,14 +6372,14 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COHERENT_MEMORY_FEATURES_AMD = 1000229000,
     // Extension: VK_KHR_shader_constant_data
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CONSTANT_DATA_FEATURES_KHR = 1000231000,
-    // Extension: VK_KHR_dynamic_rendering_local_read
     // Extension: VK_GRAPHICS_VERSION_1_4
+    // Extension: VK_KHR_dynamic_rendering_local_read
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES = 1000232000,
-    // Extension: VK_KHR_dynamic_rendering_local_read
     // Extension: VK_GRAPHICS_VERSION_1_4
+    // Extension: VK_KHR_dynamic_rendering_local_read
     VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_LOCATION_INFO = 1000232001,
-    // Extension: VK_KHR_dynamic_rendering_local_read
     // Extension: VK_GRAPHICS_VERSION_1_4
+    // Extension: VK_KHR_dynamic_rendering_local_read
     VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO = 1000232002,
     // Extension: VK_KHR_shader_abort
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ABORT_FEATURES_KHR = 1000233000,
@@ -6407,23 +6407,23 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_GRAPHICS_VERSION_1_2
     // Extension: VK_KHR_separate_depth_stencil_layouts
     VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_STENCIL_LAYOUT = 1000241001,
-    // Extension: VK_GRAPHICS_VERSION_1_2
     // Extension: VK_KHR_separate_depth_stencil_layouts
+    // Extension: VK_GRAPHICS_VERSION_1_2
     VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_STENCIL_LAYOUT = 1000241002,
     // Extension: VK_EXT_buffer_device_address
     // Extension: VK_EXT_buffer_device_address
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT = 1000244000,
-    // Extension: VK_KHR_buffer_device_address
-    // Extension: VK_EXT_buffer_device_address
     // Extension: VK_BASE_VERSION_1_2
+    // Extension: VK_EXT_buffer_device_address
+    // Extension: VK_KHR_buffer_device_address
     VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO = 1000244001,
     // Extension: VK_EXT_buffer_device_address
     VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_CREATE_INFO_EXT = 1000244002,
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_EXT_tooling_info
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES = 1000245000,
-    // Extension: VK_EXT_separate_stencil_usage
     // Extension: VK_GRAPHICS_VERSION_1_2
+    // Extension: VK_EXT_separate_stencil_usage
     VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO = 1000246000,
     // Extension: VK_EXT_validation_features
     VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT = 1000247000,
@@ -6471,20 +6471,20 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_BASE_VERSION_1_2
     // Extension: VK_KHR_buffer_device_address
     VK_STRUCTURE_TYPE_MEMORY_OPAQUE_CAPTURE_ADDRESS_ALLOCATE_INFO = 1000257003,
-    // Extension: VK_BASE_VERSION_1_2
     // Extension: VK_KHR_buffer_device_address
+    // Extension: VK_BASE_VERSION_1_2
     VK_STRUCTURE_TYPE_DEVICE_MEMORY_OPAQUE_CAPTURE_ADDRESS_INFO = 1000257004,
+    // Extension: VK_EXT_line_rasterization
+    // Extension: VK_GRAPHICS_VERSION_1_4
     // Extension: VK_KHR_line_rasterization
-    // Extension: VK_GRAPHICS_VERSION_1_4
-    // Extension: VK_EXT_line_rasterization
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES = 1000259000,
-    // Extension: VK_GRAPHICS_VERSION_1_4
     // Extension: VK_EXT_line_rasterization
+    // Extension: VK_GRAPHICS_VERSION_1_4
     // Extension: VK_KHR_line_rasterization
     VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO = 1000259001,
-    // Extension: VK_KHR_line_rasterization
     // Extension: VK_GRAPHICS_VERSION_1_4
     // Extension: VK_EXT_line_rasterization
+    // Extension: VK_KHR_line_rasterization
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_PROPERTIES = 1000259002,
     // Extension: VK_EXT_shader_atomic_float
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT_FEATURES_EXT = 1000260000,
@@ -6513,11 +6513,11 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES = 1000270000,
-    // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_PROPERTIES = 1000270001,
-    // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY = 1000270002,
     // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_EXT_host_image_copy
@@ -6528,23 +6528,23 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO = 1000270005,
-    // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO = 1000270006,
-    // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO = 1000270007,
-    // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_host_image_copy
     VK_STRUCTURE_TYPE_SUBRESOURCE_HOST_MEMCPY_SIZE = 1000270008,
     // Extension: VK_EXT_host_image_copy
     // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_HOST_IMAGE_COPY_DEVICE_PERFORMANCE_QUERY = 1000270009,
-    // Extension: VK_KHR_map_memory2
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_KHR_map_memory2
     VK_STRUCTURE_TYPE_MEMORY_MAP_INFO = 1000271000,
-    // Extension: VK_KHR_map_memory2
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_KHR_map_memory2
     VK_STRUCTURE_TYPE_MEMORY_UNMAP_INFO = 1000271001,
     // Extension: VK_EXT_map_memory_placed
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAP_MEMORY_PLACED_FEATURES_EXT = 1000272000,
@@ -6595,8 +6595,8 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV = 1000278000,
     // Extension: VK_NV_inherited_viewport_scissor
     VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV = 1000278001,
-    // Extension: VK_KHR_shader_integer_dot_product
     // Extension: VK_COMPUTE_VERSION_1_3
+    // Extension: VK_KHR_shader_integer_dot_product
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES = 1000280000,
     // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_KHR_shader_integer_dot_product
@@ -6774,17 +6774,17 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_synchronization2
     VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2 = 1000314001,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_synchronization2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 = 1000314002,
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_synchronization2
     VK_STRUCTURE_TYPE_DEPENDENCY_INFO = 1000314003,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_synchronization2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_SUBMIT_INFO_2 = 1000314004,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_synchronization2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO = 1000314005,
     // Extension: VK_KHR_synchronization2
     // Extension: VK_BASE_VERSION_1_3
@@ -6866,8 +6866,8 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_PROPERTIES_KHR = 1000322000,
     // Extension: VK_KHR_shader_subgroup_uniform_control_flow
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR = 1000323000,
-    // Extension: VK_KHR_zero_initialize_workgroup_memory
     // Extension: VK_COMPUTE_VERSION_1_3
+    // Extension: VK_KHR_zero_initialize_workgroup_memory
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ZERO_INITIALIZE_WORKGROUP_MEMORY_FEATURES = 1000325000,
     // Extension: VK_NV_fragment_shading_rate_enums
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_ENUMS_PROPERTIES_NV = 1000326000,
@@ -6893,34 +6893,34 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_2_PROPERTIES_EXT = 1000332001,
     // Extension: VK_QCOM_rotated_copy_commands
     VK_STRUCTURE_TYPE_COPY_COMMAND_TRANSFORM_INFO_QCOM = 1000333000,
-    // Extension: VK_COMPUTE_VERSION_1_3
     // Extension: VK_EXT_image_robustness
+    // Extension: VK_COMPUTE_VERSION_1_3
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES = 1000335000,
     // Extension: VK_KHR_workgroup_memory_explicit_layout
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_WORKGROUP_MEMORY_EXPLICIT_LAYOUT_FEATURES_KHR = 1000336000,
     // Extension: VK_KHR_copy_commands2
     // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2 = 1000337000,
-    // Extension: VK_KHR_copy_commands2
     // Extension: VK_BASE_VERSION_1_3
+    // Extension: VK_KHR_copy_commands2
     VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2 = 1000337001,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2 = 1000337002,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2 = 1000337003,
-    // Extension: VK_KHR_copy_commands2
     // Extension: VK_GRAPHICS_VERSION_1_3
+    // Extension: VK_KHR_copy_commands2
     VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2 = 1000337004,
+    // Extension: VK_KHR_copy_commands2
     // Extension: VK_GRAPHICS_VERSION_1_3
-    // Extension: VK_KHR_copy_commands2
     VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2 = 1000337005,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_BUFFER_COPY_2 = 1000337006,
-    // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
+    // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_IMAGE_COPY_2 = 1000337007,
     // Extension: VK_GRAPHICS_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
@@ -6928,20 +6928,20 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_BASE_VERSION_1_3
     // Extension: VK_KHR_copy_commands2
     VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2 = 1000337009,
-    // Extension: VK_KHR_copy_commands2
     // Extension: VK_GRAPHICS_VERSION_1_3
+    // Extension: VK_KHR_copy_commands2
     VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2 = 1000337010,
     // Extension: VK_EXT_image_compression_control
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_COMPRESSION_CONTROL_FEATURES_EXT = 1000338000,
     // Extension: VK_EXT_image_compression_control
     VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_CONTROL_EXT = 1000338001,
     // Extension: VK_KHR_maintenance5
-    // Extension: VK_EXT_image_compression_control
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_image_compression_control
     VK_STRUCTURE_TYPE_SUBRESOURCE_LAYOUT_2 = 1000338002,
     // Extension: VK_KHR_maintenance5
-    // Extension: VK_EXT_image_compression_control
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_image_compression_control
     VK_STRUCTURE_TYPE_IMAGE_SUBRESOURCE_2 = 1000338003,
     // Extension: VK_EXT_image_compression_control
     VK_STRUCTURE_TYPE_IMAGE_COMPRESSION_PROPERTIES_EXT = 1000338004,
@@ -7051,8 +7051,8 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_NV_external_sci_sync
     // Extension: VK_NV_external_sci_sync2
     VK_STRUCTURE_TYPE_FENCE_GET_SCI_SYNC_INFO_NV = 1000373002,
-    // Extension: VK_NV_external_sci_sync2
     // Extension: VK_NV_external_sci_sync
+    // Extension: VK_NV_external_sci_sync2
     VK_STRUCTURE_TYPE_SCI_SYNC_ATTRIBUTES_INFO_NV = 1000373003,
     // Extension: VK_NV_external_sci_sync
     VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_SCI_SYNC_INFO_NV = 1000373004,
@@ -7097,13 +7097,13 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_MAINTENANCE_1_FEATURES_KHR = 1000386000,
     // Extension: VK_KHR_shader_untyped_pointers
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_UNTYPED_POINTERS_FEATURES_KHR = 1000387000,
-    // Extension: VK_KHR_global_priority
     // Extension: VK_EXT_global_priority_query
+    // Extension: VK_KHR_global_priority
     // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES = 1000388000,
-    // Extension: VK_EXT_global_priority_query
     // Extension: VK_KHR_global_priority
     // Extension: VK_BASE_VERSION_1_4
+    // Extension: VK_EXT_global_priority_query
     VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES = 1000388001,
     // Extension: VK_VALVE_video_encode_rgb_conversion
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_ENCODE_RGB_CONVERSION_FEATURES_VALVE = 1000390000,
@@ -7174,13 +7174,13 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_maintenance4
     // Extension: VK_BASE_VERSION_1_3
     VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS = 1000413002,
-    // Extension: VK_KHR_maintenance4
     // Extension: VK_BASE_VERSION_1_3
+    // Extension: VK_KHR_maintenance4
     VK_STRUCTURE_TYPE_DEVICE_IMAGE_MEMORY_REQUIREMENTS = 1000413003,
     // Extension: VK_ARM_shader_core_properties
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_ARM = 1000415000,
-    // Extension: VK_KHR_shader_subgroup_rotate
     // Extension: VK_COMPUTE_VERSION_1_4
+    // Extension: VK_KHR_shader_subgroup_rotate
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES = 1000416000,
     // Extension: VK_ARM_scheduling_controls
     VK_STRUCTURE_TYPE_DEVICE_QUEUE_SHADER_CORE_CONTROL_CREATE_INFO_ARM = 1000417000,
@@ -7371,8 +7371,8 @@ pub const VkStructureType = enum(i32) {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_FORMAT_RESOLVE_PROPERTIES_ANDROID = 1000468001,
     // Extension: VK_ANDROID_external_format_resolve
     VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_RESOLVE_PROPERTIES_ANDROID = 1000468002,
-    // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_KHR_maintenance5
+    // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_5_FEATURES = 1000470000,
     // Extension: VK_KHR_maintenance5
     // Extension: VK_BASE_VERSION_1_4
@@ -7380,16 +7380,16 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_maintenance5
     // Extension: VK_GRAPHICS_VERSION_1_4
     VK_STRUCTURE_TYPE_RENDERING_AREA_INFO = 1000470003,
-    // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_KHR_maintenance5
+    // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_DEVICE_IMAGE_SUBRESOURCE_INFO = 1000470004,
-    // Extension: VK_KHR_extended_flags
+    // Extension: VK_KHR_maintenance5
     // Extension: VK_COMPUTE_VERSION_1_4
-    // Extension: VK_KHR_maintenance5
-    VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO = 1000470005,
-    // Extension: VK_BASE_VERSION_1_4
-    // Extension: VK_KHR_maintenance5
     // Extension: VK_KHR_extended_flags
+    VK_STRUCTURE_TYPE_PIPELINE_CREATE_FLAGS_2_CREATE_INFO = 1000470005,
+    // Extension: VK_KHR_extended_flags
+    // Extension: VK_KHR_maintenance5
+    // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_BUFFER_USAGE_FLAGS_2_CREATE_INFO = 1000470006,
     // Extension: VK_AMD_anti_lag
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ANTI_LAG_FEATURES_AMD = 1000476000,
@@ -7657,20 +7657,20 @@ pub const VkStructureType = enum(i32) {
     // Extension: VK_KHR_maintenance6
     // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_FEATURES = 1000545000,
-    // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_KHR_maintenance6
+    // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES = 1000545001,
-    // Extension: VK_BASE_VERSION_1_4
     // Extension: VK_KHR_maintenance6
+    // Extension: VK_BASE_VERSION_1_4
     VK_STRUCTURE_TYPE_BIND_MEMORY_STATUS = 1000545002,
     // Extension: VK_COMPUTE_VERSION_1_4
     // Extension: VK_KHR_maintenance6
     VK_STRUCTURE_TYPE_BIND_DESCRIPTOR_SETS_INFO = 1000545003,
-    // Extension: VK_COMPUTE_VERSION_1_4
     // Extension: VK_KHR_maintenance6
+    // Extension: VK_COMPUTE_VERSION_1_4
     VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO = 1000545004,
-    // Extension: VK_KHR_maintenance6
     // Extension: VK_COMPUTE_VERSION_1_4
+    // Extension: VK_KHR_maintenance6
     VK_STRUCTURE_TYPE_PUSH_DESCRIPTOR_SET_INFO = 1000545005,
     // Extension: VK_KHR_maintenance6
     // Extension: VK_COMPUTE_VERSION_1_4
@@ -10114,14 +10114,14 @@ pub const VkPhysicalDeviceMemoryProperties = extern struct {
     // Length expression: memoryTypeCount
     // Extern sync: false
     // Optional: false
-    memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = .{VkMemoryType{}} ** VK_MAX_MEMORY_TYPES,
+    memoryTypes: [VK_MAX_MEMORY_TYPES]VkMemoryType = @splat(VkMemoryType{}),
     // Extern sync: false
     // Optional: false
     memoryHeapCount: u32 = 0,
     // Length expression: memoryHeapCount
     // Extern sync: false
     // Optional: false
-    memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = .{VkMemoryHeap{}} ** VK_MAX_MEMORY_HEAPS,
+    memoryHeaps: [VK_MAX_MEMORY_HEAPS]VkMemoryHeap = @splat(VkMemoryHeap{}),
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
@@ -10980,14 +10980,14 @@ pub const VkImageBlit = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    srcOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
+    srcOffsets: [2]VkOffset3D = @splat(VkOffset3D{}),
     // Extern sync: false
     // Optional: false
     dstSubresource: VkImageSubresourceLayers = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    dstOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
+    dstOffsets: [2]VkOffset3D = @splat(VkOffset3D{}),
 };
 // Extension: VK_BASE_VERSION_1_0
 // Returned only: false
@@ -17004,7 +17004,7 @@ pub const VkPhysicalDeviceGroupProperties = extern struct {
     // Length expression: physicalDeviceCount
     // Extern sync: false
     // Optional: false
-    physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = .{VkPhysicalDevice.none} ** VK_MAX_DEVICE_GROUP_SIZE,
+    physicalDevices: [VK_MAX_DEVICE_GROUP_SIZE]VkPhysicalDevice = @splat(VkPhysicalDevice.none),
     // Extern sync: false
     // Optional: false
     subsetAllocation: u32 = 0,
@@ -20130,7 +20130,7 @@ pub const VkQueueFamilyGlobalPriorityProperties = extern struct {
     // Length expression: priorityCount
     // Extern sync: false
     // Optional: false
-    priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = .{VkQueueGlobalPriority.VK_QUEUE_GLOBAL_PRIORITY_LOW} ** VK_MAX_GLOBAL_PRIORITY_SIZE,
+    priorities: [VK_MAX_GLOBAL_PRIORITY_SIZE]VkQueueGlobalPriority = @splat(VkQueueGlobalPriority.VK_QUEUE_GLOBAL_PRIORITY_LOW),
 };
 // Extension: VK_EXT_debug_utils
 // Extends: VkPipelineShaderStageCreateInfo,VkResourceDescriptorInfoEXT,VkSamplerCreateInfo
@@ -27896,14 +27896,14 @@ pub const VkImageBlit2 = extern struct {
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    srcOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
+    srcOffsets: [2]VkOffset3D = @splat(VkOffset3D{}),
     // Extern sync: false
     // Optional: false
     dstSubresource: VkImageSubresourceLayers = .{},
     // Extern sync: false
     // Optional: false
     // Comment: Specified in pixels for both compressed and uncompressed images
-    dstOffsets: [2]VkOffset3D = .{VkOffset3D{}} ** 2,
+    dstOffsets: [2]VkOffset3D = @splat(VkOffset3D{}),
 };
 // Extension: VK_KHR_copy_commands2
 // Extension: VK_BASE_VERSION_1_3
@@ -28206,7 +28206,7 @@ pub const VkPipelineFragmentShadingRateStateCreateInfoKHR = extern struct {
     fragmentSize: VkExtent2D = .{},
     // Extern sync: false
     // Optional: false
-    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = .{VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR} ** 2,
+    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = @splat(VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR),
 };
 // Extension: VK_KHR_fragment_shading_rate
 // Extends: VkPhysicalDeviceFeatures2,VkDeviceCreateInfo
@@ -28387,7 +28387,7 @@ pub const VkPipelineFragmentShadingRateEnumStateCreateInfoNV = extern struct {
     shadingRate: VkFragmentShadingRateNV = .VK_FRAGMENT_SHADING_RATE_1_INVOCATION_PER_PIXEL_NV,
     // Extern sync: false
     // Optional: false
-    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = .{VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR} ** 2,
+    combinerOps: [2]VkFragmentShadingRateCombinerOpKHR = @splat(VkFragmentShadingRateCombinerOpKHR.VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR),
 };
 // Extension: VK_KHR_acceleration_structure
 // Returned only: true

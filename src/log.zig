@@ -223,11 +223,12 @@ fn fill_struct_comptime(comptime T: type, comptime file: [:0]const u8, comptime 
 }
 
 fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: type) type {
-    const type_fields = comptime @typeInfo(T).@"struct".fields;
+    const type_field_types = comptime @typeInfo(T).@"struct".field_types;
+    const type_field_attrs = comptime @typeInfo(T).@"struct".field_attrs;
 
-    var field_names: [type_fields.len + 2][]const u8 = undefined;
-    var field_types: [type_fields.len + 2]type = undefined;
-    var field_attrs: [type_fields.len + 2]std.builtin.Type.StructField.Attributes = undefined;
+    var field_names: [type_field_types.len + 2][]const u8 = undefined;
+    var field_types: [type_field_types.len + 2]type = undefined;
+    var field_attrs: [type_field_types.len + 2]std.builtin.Type.Struct.FieldAttributes = undefined;
 
     // file
     field_names[0] = "0";
@@ -245,14 +246,10 @@ fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: ty
         .@"align" = @alignOf(@TypeOf(src.line)),
         .default_value_ptr = @ptrCast(&src.line),
     };
-    for (type_fields, 2..) |f, i| {
+    for (type_field_types, type_field_attrs, 2..) |ft, fa, i| {
         field_names[i] = std.fmt.comptimePrint("{}", .{i});
-        field_types[i] = f.type;
-        field_attrs[i] = .{
-            .@"comptime" = f.is_comptime,
-            .@"align" = f.alignment,
-            .default_value_ptr = f.default_value_ptr,
-        };
+        field_types[i] = ft;
+        field_attrs[i] = fa;
     }
 
     return @Struct(
@@ -267,14 +264,14 @@ fn make_struct_comptime(comptime src: std.builtin.SourceLocation, comptime T: ty
 fn fill_struct(comptime T: type, file: [:0]const u8, line: u32, args: anytype) T {
     @setEvalBranchQuota(5000);
 
-    const args_fields = comptime @typeInfo(@TypeOf(args)).@"struct".fields;
+    const args_field_len = comptime @typeInfo(@TypeOf(args)).@"struct".field_names.len;
     var t: T = undefined;
 
     @field(t, "0") = file;
     @field(t, "1") = line;
     @field(t, "2") = profiler.thread_id orelse 0;
 
-    inline for (args_fields, 0..) |_, i| {
+    inline for (0..args_field_len) |i| {
         const t_index = std.fmt.comptimePrint("{}", .{3 + i});
         const args_index = std.fmt.comptimePrint("{}", .{i});
         @field(t, t_index) = @field(args, args_index);
@@ -283,10 +280,12 @@ fn fill_struct(comptime T: type, file: [:0]const u8, line: u32, args: anytype) T
 }
 
 fn make_struct(comptime T: type) type {
-    const type_fields = comptime @typeInfo(T).@"struct".fields;
-    var field_names: [type_fields.len + 3][]const u8 = undefined;
-    var field_types: [type_fields.len + 3]type = undefined;
-    var field_attrs: [type_fields.len + 3]std.builtin.Type.StructField.Attributes = undefined;
+    const type_field_types = comptime @typeInfo(T).@"struct".field_types;
+    const type_field_attrs = comptime @typeInfo(T).@"struct".field_attrs;
+
+    var field_names: [type_field_types.len + 3][]const u8 = undefined;
+    var field_types: [type_field_types.len + 3]type = undefined;
+    var field_attrs: [type_field_types.len + 3]std.builtin.Type.Struct.FieldAttributes = undefined;
     // file
     field_names[0] = "0";
     field_types[0] = [:0]const u8;
@@ -310,14 +309,10 @@ fn make_struct(comptime T: type) type {
         .@"align" = @alignOf(u32),
         .default_value_ptr = null,
     };
-    for (type_fields, 3..) |f, i| {
+    for (type_field_types, type_field_attrs, 3..) |ft, fa, i| {
         field_names[i] = std.fmt.comptimePrint("{}", .{i});
-        field_types[i] = f.type;
-        field_attrs[i] = .{
-            .@"comptime" = f.is_comptime,
-            .@"align" = f.alignment,
-            .default_value_ptr = f.default_value_ptr,
-        };
+        field_types[i] = ft;
+        field_attrs[i] = fa;
     }
 
     return @Struct(

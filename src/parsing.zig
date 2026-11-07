@@ -937,43 +937,44 @@ pub fn parse_simple_type(context: *Context, output: anytype) Error!void {
     defer MEASUREMENTS.end(prof_point);
 
     const output_type = @typeInfo(@TypeOf(output)).pointer.child;
-    const output_fields = @typeInfo(output_type).@"struct".fields;
+    const output_field_names = @typeInfo(output_type).@"struct".field_names;
+    const output_field_types = @typeInfo(output_type).@"struct".field_types;
     log.comptime_assert(
         @src(),
-        output_fields.len <= 32,
+        output_field_names.len <= 32,
         "Type contains more than 32 fields",
         .{},
     );
     var parsed_field: u32 = 0;
     while (try scanner_object_next_field(context.scanner)) |s| {
         var consumed: bool = false;
-        inline for (output_fields, 0..) |field, i| {
-            if ((parsed_field & 1 << i == 0) and std.mem.eql(u8, s, field.name)) {
+        inline for (output_field_names, output_field_types, 0..) |field_name, field_type, i| {
+            if ((parsed_field & 1 << i == 0) and std.mem.eql(u8, s, field_name)) {
                 parsed_field |= 1 << i;
-                switch (field.type) {
+                switch (field_type) {
                     i16, u16, i32, u32, u64, usize, c_uint => {
-                        @field(output, field.name) = try scanner_parse_number(field.type, context.scanner);
+                        @field(output, field_name) = try scanner_parse_number(field_type, context.scanner);
                         consumed = true;
                     },
                     f32 => {
-                        @field(output, field.name) = try scanner_parse_number(field.type, context.scanner);
+                        @field(output, field_name) = try scanner_parse_number(field_type, context.scanner);
                         consumed = true;
                     },
                     ?*anyopaque,
                     ?*const anyopaque,
                     => {
-                        if (std.mem.eql(u8, "pNext", field.name)) {
-                            @field(output, field.name) = try parse_pnext_chain(context);
+                        if (std.mem.eql(u8, "pNext", field_name)) {
+                            @field(output, field_name) = try parse_pnext_chain(context);
                             consumed = true;
                         }
                     },
                     else => {
-                        const field_type_info = @typeInfo(field.type);
+                        const field_type_info = @typeInfo(field_type);
                         if (field_type_info == .@"enum") {
-                            @field(output, field.name) = try scanner_parse_enum(field.type, context.scanner);
+                            @field(output, field_name) = try scanner_parse_enum(field_type, context.scanner);
                             consumed = true;
                         } else if (field_type_info == .@"struct" and field_type_info.@"struct".layout == .@"packed") {
-                            @field(output, field.name) = try scanner_parse_bitfield(field.type, context.scanner);
+                            @field(output, field_name) = try scanner_parse_bitfield(field_type, context.scanner);
                             consumed = true;
                         }
                     },
@@ -2938,11 +2939,11 @@ pub fn parse_vk_application_info(
     while (try scanner_object_next_field(context.scanner)) |s| {
         if (std.mem.eql(u8, s, "applicationName")) {
             const name_str = try scanner_next_string(context.scanner);
-            const name = try context.alloc.dupeZ(u8, name_str);
+            const name = try context.alloc.dupeSentinel(u8, name_str, 0);
             item.pApplicationName = @ptrCast(name.ptr);
         } else if (std.mem.eql(u8, s, "engineName")) {
             const name_str = try scanner_next_string(context.scanner);
-            const name = try context.alloc.dupeZ(u8, name_str);
+            const name = try context.alloc.dupeSentinel(u8, name_str, 0);
             item.pEngineName = @ptrCast(name.ptr);
         } else if (std.mem.eql(u8, s, "applicationVersion")) {
             item.applicationVersion = try scanner_parse_bitfield(vk.ApiVersion, context.scanner);
@@ -4276,7 +4277,7 @@ pub fn parse_vk_pipeline_shader_stage_create_info(
             try parse_single_handle(context, .shader_module, @ptrCast(&item.module));
         } else if (std.mem.eql(u8, s, "name")) {
             const name_str = try scanner_next_string(context.scanner);
-            const name = try context.alloc.dupeZ(u8, name_str);
+            const name = try context.alloc.dupeSentinel(u8, name_str, 0);
             item.pName = @ptrCast(name.ptr);
         } else if (std.mem.eql(u8, s, "specializationInfo")) {
             const info = try context.alloc.create(vk.VkSpecializationInfo);

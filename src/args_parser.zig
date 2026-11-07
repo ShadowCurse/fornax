@@ -8,14 +8,15 @@ const Allocator = std.mem.Allocator;
 pub const RemainingArgs = struct { values: []const [*:0]const u8 = &.{} };
 
 pub fn parse(args: std.process.Args, comptime T: type, alloc: Allocator) !T {
-    const type_fields = @typeInfo(T).@"struct".fields;
+    const type_field_names = @typeInfo(T).@"struct".field_names;
+    const type_field_types = @typeInfo(T).@"struct".field_types;
 
     var t: T = .{};
     // Track which args were consumed, including the 0th arg.
     var consumed_args: u64 = 0;
-    inline for (type_fields, 0..) |field, field_idx| {
-        if (field.type == RemainingArgs) {
-            if (field_idx != type_fields.len - 1)
+    inline for (type_field_names, type_field_types, 0..) |field_name, field_type, field_idx| {
+        if (field_type == RemainingArgs) {
+            if (field_idx != type_field_names.len - 1)
                 @compileError("The LastArgs valum must be last in the args type definition");
             const remaining_args_len = args.vector.len - 1 - @popCount(consumed_args);
             const remaining_args = try alloc.alloc([*:0]const u8, remaining_args_len);
@@ -26,13 +27,21 @@ pub fn parse(args: std.process.Args, comptime T: type, alloc: Allocator) !T {
                     remaining_args_idx += 1;
                 }
             }
-            @field(t, field.name).values = remaining_args;
-        } else if (find_arg(args, field)) |r| {
+            @field(t, field_name).values = remaining_args;
+        } else if (find_arg(args, field_type, field_name)) |r| {
             const i, const arg = r;
-            const field_type_info = @typeInfo(field.type);
+            const field_type_info = @typeInfo(field_type);
             switch (field_type_info) {
-                .optional => |optional| try handle_arg(T, &t, optional.child, field.name, &consumed_args, i, arg),
-                else => try handle_arg(T, &t, field.type, field.name, &consumed_args, i, arg),
+                .optional => |optional| try handle_arg(
+                    T,
+                    &t,
+                    optional.child,
+                    field_name,
+                    &consumed_args,
+                    i,
+                    arg,
+                ),
+                else => try handle_arg(T, &t, field_type, field_name, &consumed_args, i, arg),
             }
         }
     }
@@ -83,7 +92,11 @@ fn handle_arg(
                     }
                     const original_type = @typeInfo(@TypeOf(@field(t, field_name)));
                     if (original_type == .optional and @field(t, field_name) == null) {
-                        log.err(@src(), "Argument --{s} invalid value of {s}", .{ field_name_to_arg_name(field_name), arg });
+                        log.err(
+                            @src(),
+                            "Argument --{s} invalid value of {s}",
+                            .{ field_name_to_arg_name(field_name), arg },
+                        );
                         return error.InvalidEnum;
                     }
                 },
@@ -93,8 +106,12 @@ fn handle_arg(
     }
 }
 
-fn find_arg(args: std.process.Args, comptime field: std.builtin.Type.StructField) ?struct { u32, [:0]const u8 } {
-    const name = std.fmt.comptimePrint("--{s}", .{field.name});
+fn find_arg(
+    args: std.process.Args,
+    comptime field_type: type,
+    comptime field_name: [:0]const u8,
+) ?struct { u32, [:0]const u8 } {
+    const name = std.fmt.comptimePrint("--{s}", .{field_name});
     var arg_name: [name.len]u8 = undefined;
     _ = std.mem.replace(u8, name, "_", "-", &arg_name);
 
@@ -104,8 +121,8 @@ fn find_arg(args: std.process.Args, comptime field: std.builtin.Type.StructField
     var i: u32 = 1;
     while (args_iter.next()) |arg| : (i += 1) {
         if (std.mem.eql(u8, arg, &arg_name)) {
-            return switch (field.type) {
-                void, bool => .{ i, field.name },
+            return switch (field_type) {
+                void, bool => .{ i, field_name },
                 else => if (args_iter.next()) |next| .{ i, next } else null,
             };
         }
@@ -120,37 +137,38 @@ fn field_name_to_arg_name(comptime field_name: []const u8) [field_name.len]u8 {
 }
 
 pub fn print_help(comptime T: type) void {
-    const type_fields = comptime @typeInfo(T).@"struct".fields;
+    const type_field_names = comptime @typeInfo(T).@"struct".field_names;
 
     log.output("Usage:\n", .{});
-    inline for (type_fields) |field| {
-        const arg_name = field_name_to_arg_name(field.name);
+    inline for (type_field_names) |field_name| {
+        const arg_name = field_name_to_arg_name(field_name);
         log.output("\t--{s}\n", .{&arg_name});
     }
 }
 
 pub fn print_args(args: anytype) void {
-    const type_fields = comptime @typeInfo(@TypeOf(args)).@"struct".fields;
-    inline for (type_fields) |field| {
-        const arg_name = field_name_to_arg_name(field.name);
-        switch (field.type) {
+    const type_field_names = comptime @typeInfo(@TypeOf(args)).@"struct".field_names;
+    const type_field_types = comptime @typeInfo(@TypeOf(args)).@"struct".field_types;
+    inline for (type_field_names, type_field_types) |field_name, field_type| {
+        const arg_name = field_name_to_arg_name(field_name);
+        switch (field_type) {
             void => {
                 log.output("\t{s}\n", .{&arg_name});
             },
             bool => {
-                log.output("\t{s}: {}\n", .{ &arg_name, @field(args, field.name) });
+                log.output("\t{s}: {}\n", .{ &arg_name, @field(args, field_name) });
             },
             ?i32 => {
-                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field.name) });
+                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field_name) });
             },
             ?u32 => {
-                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field.name) });
+                log.output("\t{s}: {?}\n", .{ &arg_name, @field(args, field_name) });
             },
             ?[]const u8 => {
-                log.output("\t{s}: {?s}\n", .{ &arg_name, @field(args, field.name) });
+                log.output("\t{s}: {?s}\n", .{ &arg_name, @field(args, field_name) });
             },
             RemainingArgs => {
-                for (@field(args, field.name).values) |p|
+                for (@field(args, field_name).values) |p|
                     log.output("\t{s}: {s}\n", .{ &arg_name, p });
             },
             else => unreachable,

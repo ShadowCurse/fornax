@@ -57,22 +57,22 @@ fn get_auxv(argc: u64, argv: [*]const [*:0]const u8) [*]std.elf.Auxv {
     return @ptrCast(@alignCast(@constCast(envp + n_env + 1)));
 }
 
-fn phdrs_from_auxv(auxv: [*]const std.elf.Auxv) []std.elf.Phdr {
+fn phdrs_from_auxv(auxv: [*]const std.elf.Auxv) []std.elf.Elf64.Phdr {
     var at_phdr: usize = 0;
     var at_phnum: usize = 0;
     var i: usize = 0;
-    while (auxv[i].a_type != std.elf.AT_NULL) : (i += 1) {
+    while (auxv[i].a_type != std.elf.AT.NULL) : (i += 1) {
         switch (auxv[i].a_type) {
-            std.elf.AT_PHDR => at_phdr = auxv[i].a_un.a_val,
-            std.elf.AT_PHNUM => at_phnum = auxv[i].a_un.a_val,
+            std.elf.AT.PHDR => at_phdr = auxv[i].a_un.a_val,
+            std.elf.AT.PHNUM => at_phnum = auxv[i].a_un.a_val,
             else => {},
         }
     }
-    return @as([*]std.elf.Phdr, @ptrFromInt(at_phdr))[0..at_phnum];
+    return @as([*]std.elf.Elf64.Phdr, @ptrFromInt(at_phdr))[0..at_phnum];
 }
 
 /// Based on the `std.os.linux.tls.computeAreaDesc`
-fn compute_tls_area_desc(phdrs: []const std.elf.Phdr) @TypeOf(std.os.linux.tls.area_desc) {
+fn compute_tls_area_desc(phdrs: []const std.elf.Elf64.Phdr) @TypeOf(std.os.linux.tls.area_desc) {
     const word = @sizeOf(usize);
     // Sizes of private types: `AbiTcb`, `ZigTcb` and `Dtv` from `std/os/linux/tls.zig`
     const abi_tcb_size: usize = switch (@import("builtin").cpu.arch) {
@@ -84,12 +84,12 @@ fn compute_tls_area_desc(phdrs: []const std.elf.Phdr) @TypeOf(std.os.linux.tls.a
     const dtv_size: usize = 2 * word; // { len: usize, tls_block: [*]u8 }
     const dtv_align: usize = word;
 
-    var tls_phdr: ?*const std.elf.Phdr = null;
+    var tls_phdr: ?*const std.elf.Elf64.Phdr = null;
     var img_base: usize = 0;
     for (phdrs) |*phdr| {
-        switch (phdr.p_type) {
-            std.elf.PT_PHDR => img_base = @intFromPtr(phdrs.ptr) - phdr.p_vaddr,
-            std.elf.PT_TLS => tls_phdr = phdr,
+        switch (phdr.type) {
+            std.elf.PT.PHDR => img_base = @intFromPtr(phdrs.ptr) - phdr.vaddr,
+            std.elf.PT.TLS => tls_phdr = phdr,
             else => {},
         }
     }
@@ -98,12 +98,12 @@ fn compute_tls_area_desc(phdrs: []const std.elf.Phdr) @TypeOf(std.os.linux.tls.a
     var block_init: []const u8 = undefined;
     var block_size: usize = undefined;
     if (tls_phdr) |phdr| {
-        align_factor = phdr.p_align;
+        align_factor = phdr.@"align";
 
         // The effective size in memory is represented by `p_memsz`; the length of the data stored
         // in the `PT_TLS` segment is `p_filesz` and may be less than the former.
-        block_init = @as([*]u8, @ptrFromInt(img_base + phdr.p_vaddr))[0..phdr.p_filesz];
-        block_size = phdr.p_memsz;
+        block_init = @as([*]u8, @ptrFromInt(img_base + phdr.vaddr))[0..phdr.filesz];
+        block_size = phdr.memsz;
     } else {
         align_factor = @alignOf(usize);
 

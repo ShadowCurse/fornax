@@ -99,7 +99,7 @@ fn create_exe(
     const unit_tests = b.addTest(.{
         .name = name ++ "_unit_test",
         .root_module = root_mudule,
-        .filters = b.args orelse &.{},
+        // .filters = b.args orelse &.{},
         .use_llvm = args.use_llvm,
     });
     const unit_tests_install_step = b.addInstallArtifact(unit_tests, .{});
@@ -111,7 +111,8 @@ fn create_exe(
     if (args.disable_shader_cache) run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DISABLE", "1");
     if (args.shader_cache_dir) |scd| run_cmd.setEnvironmentVariable("MESA_SHADER_CACHE_DIR", scd);
     if (args.custom_mesa_icd) run_cmd.setEnvironmentVariable("VK_DRIVER_FILES", "custom_mesa_icd.json");
-    if (b.args) |a| run_cmd.addArgs(a);
+    run_cmd.addPassthruArgs();
+
     run_cmd.step.dependOn(&install_step.step);
     const run_step = b.step(name ++ "_run", "Run the `" ++ name ++ "` binary");
     run_step.dependOn(&run_cmd.step);
@@ -162,7 +163,7 @@ pub fn create_miniz_module(
 ) *std.Build.Module {
     const miniz_config_header = b.addConfigHeader(
         .{ .include_path = "miniz_export.h" },
-        .{ .MINIZ_EXPORT = void{} },
+        .{ .MINIZ_EXPORT = {} },
     );
     const miniz_header = b.addWriteFiles().add("miniz_translate.h",
         \\#define MINIZ_NO_TIME

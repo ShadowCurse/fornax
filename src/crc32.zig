@@ -274,7 +274,7 @@ test "crc32_correctness" {
     var pcg: std.Random.Pcg = .init(0x69);
     const random = pcg.random();
 
-    var buf align(4096) = [_]u8{0} ** (1 << 20);
+    var buf: [1 << 20]u8 align(4096) = @splat(0);
 
     var miniz_stats: Stats = .{};
     var crc32_stats: Stats = .{};

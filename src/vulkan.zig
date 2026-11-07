@@ -790,17 +790,22 @@ pub fn filter_features(
     const Inner = struct {
         fn reset(item: anytype) void {
             const child = @typeInfo(@TypeOf(item)).pointer.child;
-            const type_info = @typeInfo(child).@"struct";
-            inline for (type_info.fields) |field| {
-                if (field.type == vk.VkBool32) @field(item, field.name) = vk.VK_FALSE;
+            const type_field_names = @typeInfo(child).@"struct".field_names;
+            const type_field_types = @typeInfo(child).@"struct".field_types;
+
+            inline for (type_field_names, type_field_types) |field_name, field_type| {
+                if (field_type == vk.VkBool32) {
+                    @field(item, field_name) = vk.VK_FALSE;
+                }
             }
         }
         fn apply(comptime T: type, item1: *T, item2: *const T) void {
-            const type_info = @typeInfo(T).@"struct";
-            inline for (type_info.fields) |field| {
-                if (field.type == vk.VkBool32) {
-                    @field(item1, field.name) =
-                        @field(item1, field.name) & @field(item2, field.name);
+            const type_field_names = @typeInfo(T).@"struct".field_names;
+            const type_field_types = @typeInfo(T).@"struct".field_types;
+
+            inline for (type_field_names, type_field_types) |field_name, field_type| {
+                if (field_type == vk.VkBool32) {
+                    @field(item1, field_name) = @field(item1, field_name) & @field(item2, field_name);
                 }
             }
         }
@@ -898,11 +903,15 @@ pub fn filter_active_extensions(
     const Inner = struct {
         fn all_disabled(item: anytype) bool {
             const child = @typeInfo(@TypeOf(item)).pointer.child;
-            const type_info = @typeInfo(child).@"struct";
-            inline for (type_info.fields) |field| {
-                if (field.type == vk.VkBool32)
-                    if (@field(item, field.name) == vk.VK_TRUE)
+            const type_field_names = @typeInfo(child).@"struct".field_names;
+            const type_field_types = @typeInfo(child).@"struct".field_types;
+
+            inline for (type_field_names, type_field_types) |field_name, field_type| {
+                if (field_type == vk.VkBool32) {
+                    if (@field(item, field_name) == vk.VK_TRUE) {
                         return false;
+                    }
+                }
             }
             return true;
         }

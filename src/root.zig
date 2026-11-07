@@ -162,7 +162,7 @@ pub const Task = struct {
     arena: std.heap.ArenaAllocator = undefined,
 };
 pub const Tasks = struct {
-    tasks: [MAX_TASKS]Task = .{Task{}} ** MAX_TASKS,
+    tasks: [MAX_TASKS]Task = @splat(Task{}),
     current: u8 = 0,
 
     const MAX_TASKS = 8;

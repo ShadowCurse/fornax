@@ -7,7 +7,7 @@ const builtin = @import("builtin");
 
 pub var global_freq: u64 = 0;
 pub var global_last_thread_id: std.atomic.Value(u32) = .init(0);
-pub var times: [options.num_threads]Time = .{Time{}} ** options.num_threads;
+pub var times: [options.num_threads]Time = @splat(Time{});
 pub threadlocal var current: ?*Measurement = null;
 pub threadlocal var thread_id: ?u32 = null;
 
@@ -73,8 +73,9 @@ fn cntfrq_el0() u64 {
 pub fn all_function_names_in_struct(comptime T: type) []const [:0]const u8 {
     const type_info = @typeInfo(T);
     var result: []const [:0]const u8 = &.{};
-    for (type_info.@"struct".decls) |decl|
-        result = result ++ &[1][:0]const u8{decl.name};
+    for (type_info.@"struct".decl_names) |decl_name| {
+        result = result ++ &[1][:0]const u8{decl_name};
+    }
     return result;
 }
 
@@ -133,7 +134,7 @@ pub fn Measurements(comptime FILE: []const u8, comptime NAMES: []const []const u
     else
         struct {
             pub var measurements: [options.num_threads][num_of_measurements]Measurement =
-                .{.{Measurement{}} ** num_of_measurements} ** options.num_threads;
+                @splat(.{@splat(.{@splat(.{Measurement{}})})});
 
             pub const Point = struct {
                 start_time: u64,
